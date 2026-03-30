@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAOS — Kernel for Agent Orchestration & Sandboxing</title>
+<meta name="description" content="Every AI agent gets an isolated, auditable virtual filesystem inside a single SQLite file. Checkpoint, restore, debug — all locally, all free.">
+<meta property="og:title" content="KAOS — Kernel for Agent Orchestration & Sandboxing">
+<meta property="og:description" content="Isolated, auditable, portable agent runtimes backed by SQLite. Run multi-agent systems locally with zero API costs.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+/* ── Reset & Base ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;
+  --bg2:#12121a;
+  --bg3:#1a1a26;
+  --fg:#e4e4ef;
+  --fg2:#9494a8;
+  --accent:#6c5ce7;
+  --accent2:#a29bfe;
+  --green:#00e676;
+  --orange:#ff9100;
+  --red:#ff5252;
+  --cyan:#18ffff;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;
+  --max:1100px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan)}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+
+/* ── Layout ───────────────────────────────────────── */
+.wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+section{padding:5rem 0}
+
+/* ── Nav ──────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.2rem;color:var(--fg);letter-spacing:2px}
+nav .logo span{color:var(--accent2)}
+nav ul{list-style:none;display:flex;gap:1.8rem}
+nav a{color:var(--fg2);font-size:.9rem;font-weight:500;transition:color .2s}
+nav a:hover{color:var(--fg)}
+.nav-cta{background:var(--accent);color:#fff !important;padding:.4rem 1rem;border-radius:6px;font-size:.85rem}
+.nav-cta:hover{background:var(--accent2);color:#fff !important}
+
+/* ── Hero ─────────────────────────────────────────── */
+.hero{padding:10rem 0 6rem;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(108,92,231,.12) 0%,transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(2.5rem,6vw,4.2rem);font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:1.5rem}
+.hero h1 .highlight{background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .subtitle{font-size:clamp(1.05rem,2.5vw,1.3rem);color:var(--fg2);max-width:720px;margin:0 auto 2.5rem;line-height:1.65}
+.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:8px;font-weight:600;font-size:.95rem;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);color:#fff;transform:translateY(-1px);box-shadow:0 8px 30px rgba(108,92,231,.3)}
+.btn-secondary{background:var(--bg3);color:var(--fg);border:1px solid rgba(255,255,255,.1)}
+.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);transform:translateY(-1px)}
+.badges{display:flex;gap:.6rem;justify-content:center;margin-top:2.5rem;flex-wrap:wrap}
+.badge{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.06)}
+.badge.green{color:var(--green);border-color:rgba(0,230,118,.2)}
+.badge.blue{color:var(--cyan);border-color:rgba(24,255,255,.2)}
+
+/* ── Install bar ──────────────────────────────────── */
+.install-bar{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.5rem;display:inline-flex;align-items:center;gap:1rem;font-family:var(--mono);font-size:.95rem;margin-top:2rem;color:var(--fg2)}
+.install-bar .prompt{color:var(--green)}
+.install-bar .cmd{color:var(--fg)}
+
+/* ── Problem ──────────────────────────────────────── */
+.problem{background:var(--bg2)}
+.problem h2{text-align:center;font-size:2rem;margin-bottom:1rem}
+.problem .lead{text-align:center;color:var(--fg2);margin-bottom:3rem;font-size:1.1rem}
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.pain-card{background:var(--bg);border:1px solid rgba(255,82,82,.15);border-radius:10px;padding:1.5rem}
+.pain-card h3{color:var(--red);font-size:1rem;margin-bottom:.5rem;font-family:var(--mono)}
+.pain-card p{color:var(--fg2);font-size:.92rem;line-height:1.6}
+
+/* ── Solution ─────────────────────────────────────── */
+.solution h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
+.code-block{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;margin:0 auto;max-width:800px}
+.code-header{display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);font-size:.8rem;color:var(--fg2);font-family:var(--mono)}
+.code-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.code-dot.r{background:var(--red)}.code-dot.y{background:var(--orange)}.code-dot.g{background:var(--green)}
+.code-block pre{padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.7;color:var(--fg2)}
+.code-block pre .comment{color:#636378}
+.code-block pre .keyword{color:var(--accent2)}
+.code-block pre .string{color:var(--green)}
+.code-block pre .func{color:var(--cyan)}
+.code-block pre .highlight-line{color:var(--fg);font-weight:500}
+.solution .note{text-align:center;margin-top:2rem;color:var(--fg2);font-size:1.05rem}
+.solution .note strong{color:var(--fg)}
+
+/* ── Comparison ───────────────────────────────────── */
+.comparison{background:var(--bg2)}
+.comparison h2{text-align:center;font-size:2rem;margin-bottom:.8rem}
+.comparison .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1.05rem}
+.comp-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.comp-table th{text-align:left;padding:.8rem 1rem;border-bottom:2px solid var(--accent);color:var(--fg);font-weight:600}
+.comp-table td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.comp-table td:first-child{color:var(--fg);font-weight:500}
+.comp-table td:nth-child(2){color:var(--fg2)}
+.comp-table td:nth-child(3){color:var(--green);font-family:var(--mono);font-size:.85rem}
+.comp-table tr:hover td{background:rgba(108,92,231,.05)}
+.comp-note{text-align:center;margin-top:2rem;color:var(--fg2);font-size:.95rem;font-style:italic}
+
+/* ── Features ─────────────────────────────────────── */
+.features h2{text-align:center;font-size:2rem;margin-bottom:3rem}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
+.feat-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem}
+.feat-card .icon{font-size:1.6rem;margin-bottom:.8rem}
+.feat-card h3{font-size:1.05rem;margin-bottom:.5rem}
+.feat-card p{color:var(--fg2);font-size:.9rem;line-height:1.6}
+.feat-card code{background:var(--bg3);padding:.15rem .4rem;border-radius:4px;font-size:.8rem;color:var(--accent2)}
+
+/* ── Architecture ─────────────────────────────────── */
+.architecture{background:var(--bg2)}
+.architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
+.arch-image{max-width:900px;margin:0 auto}
+.arch-image img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+
+/* ── Use Cases ────────────────────────────────────── */
+.use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
+.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
+.uc-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem;transition:border-color .2s}
+.uc-card:hover{border-color:var(--accent)}
+.uc-card h3{font-size:1.05rem;margin-bottom:.5rem;color:var(--accent2)}
+.uc-card p{color:var(--fg2);font-size:.9rem;line-height:1.6;margin-bottom:.8rem}
+.uc-card code{display:block;background:var(--bg);padding:.8rem 1rem;border-radius:6px;font-size:.78rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre}
+
+/* ── CTA ──────────────────────────────────────────── */
+.cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
+.cta h2{font-size:2rem;margin-bottom:1rem}
+.cta p{color:var(--fg2);margin-bottom:2rem;font-size:1.1rem}
+.cta .install-bar{margin-top:1.5rem;margin-bottom:0}
+
+/* ── Footer ───────────────────────────────────────── */
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
+
+/* ── Mobile ───────────────────────────────────────── */
+@media(max-width:768px){
+  nav ul{display:none}
+  .hero{padding:7rem 0 4rem}
+  section{padding:3.5rem 0}
+  .wrap{padding:0 1.2rem}
+  .pain-grid,.feat-grid,.uc-grid{grid-template-columns:1fr}
+  .comp-table{font-size:.8rem}
+  .comp-table th,.comp-table td{padding:.5rem .6rem}
+  .install-bar{font-size:.8rem;padding:.8rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+<div class="wrap">
+  <div class="logo"><span>K</span>AOS</div>
+  <ul>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#comparison">vs Others</a></li>
+    <li><a href="#use-cases">Use Cases</a></li>
+    <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
+    <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
+  </ul>
+</div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+<div class="wrap">
+  <h1>Stop letting your agents<br><span class="highlight">run without guardrails</span></h1>
+  <p class="subtitle">KAOS gives every AI agent an isolated, auditable virtual filesystem inside a single SQLite file. Checkpoint, restore, debug &mdash; run multi-agent systems locally with zero API costs.</p>
+  <div class="hero-buttons">
+    <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Tutorial</a>
+  </div>
+  <div class="install-bar">
+    <span class="prompt">$</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
+  </div>
+  <div class="badges">
+    <span class="badge green">84 tests passing</span>
+    <span class="badge blue">Python 3.11+</span>
+    <span class="badge">Apache 2.0</span>
+    <span class="badge">44 total deps</span>
+    <span class="badge">Zero AI SDK deps</span>
+  </div>
+</div>
+</section>
+
+<!-- Problem -->
+<section class="problem" id="problem">
+<div class="wrap">
+  <h2>The Problem With Multi-Agent Systems</h2>
+  <p class="lead">You're running multiple AI agents. Here's what goes wrong.</p>
+  <div class="pain-grid">
+    <div class="pain-card">
+      <h3>Agents step on each other</h3>
+      <p>Two agents write to the same file. One overwrites the other's work. You don't find out until production.</p>
+    </div>
+    <div class="pain-card">
+      <h3>You can't debug a rogue agent</h3>
+      <p>It made 47 tool calls, modified 12 files, and now the codebase is broken. What did it actually do? In what order? Good luck with <code>git log</code>.</p>
+    </div>
+    <div class="pain-card">
+      <h3>You can't roll back one agent</h3>
+      <p>The refactor agent broke everything. You <code>git reset --hard</code> and lose the work of the 3 other agents that were fine.</p>
+    </div>
+    <div class="pain-card">
+      <h3>State vanishes on crash</h3>
+      <p>Agent crashes mid-task. Its progress, findings, intermediate files &mdash; all gone. Start over from scratch.</p>
+    </div>
+    <div class="pain-card">
+      <h3>You can't inspect anything</h3>
+      <p>How many tokens did each agent use? Which tool calls failed? What files did agent X touch? You're <code>grep</code>-ing through logs &mdash; if you have logs.</p>
+    </div>
+    <div class="pain-card">
+      <h3>Your data leaves your machine</h3>
+      <p>Every agent call hits a cloud API. Your proprietary code, internal docs, and trade secrets travel over the wire to someone else's servers.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Solution -->
+<section class="solution" id="solution">
+<div class="wrap">
+  <h2>How KAOS Solves This</h2>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-dot r"></span>
+      <span class="code-dot y"></span>
+      <span class="code-dot g"></span>
+      &nbsp;example.py
+    </div>
+    <pre><span class="keyword">from</span> kaos <span class="keyword">import</span> Kaos
+
+db = <span class="func">Kaos</span>(<span class="string">"project.db"</span>)
+
+<span class="comment"># Each agent is isolated — they cannot see each other's files</span>
+agent_a = db.<span class="func">spawn</span>(<span class="string">"refactorer"</span>)
+agent_b = db.<span class="func">spawn</span>(<span class="string">"test-writer"</span>)
+
+<span class="highlight-line">db.write(agent_a, "/src/auth.py", b"# refactored auth module")</span>
+<span class="highlight-line">db.write(agent_b, "/src/auth.py", b"# test stubs for auth")</span>
+<span class="comment"># Both wrote to "/src/auth.py" — no conflict. Each has their own copy.</span>
+
+<span class="comment"># Checkpoint before risky operations</span>
+cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string">"before-migration"</span>)
+<span class="comment"># ... agent does something dangerous ...</span>
+<span class="highlight-line">db.restore(agent_a, cp)  <span class="comment"># roll back just this agent, others untouched</span></span>
+
+<span class="comment"># What exactly did it do? Query the audit trail with SQL.</span>
+<span class="highlight-line">db.query(<span class="string">"SELECT event_type, payload FROM events WHERE agent_id = ?"</span>, [agent_a])</span></pre>
+  </div>
+  <p class="note"><strong>Everything lives in one <code>.db</code> file.</strong> Copy it to back up. Send it to a teammate. Query with any SQLite client.</p>
+</div>
+</section>
+
+<!-- Comparison -->
+<section class="comparison" id="comparison">
+<div class="wrap">
+  <h2>KAOS vs. The Alternatives</h2>
+  <p class="lead">Other frameworks focus on prompt chaining. KAOS focuses on the runtime infrastructure underneath.</p>
+  <table class="comp-table">
+    <thead>
+      <tr><th>Problem</th><th>LangChain / CrewAI / AutoGen</th><th>KAOS</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Agent isolation</td><td>Shared filesystem</td><td>Enforced per-agent VFS</td></tr>
+      <tr><td>Audit trail</td><td>DIY logging</td><td>Append-only event journal</td></tr>
+      <tr><td>Rollback one agent</td><td>Not possible</td><td>db.restore(agent, cp)</td></tr>
+      <tr><td>Debug a failed agent</td><td>Read logs, hope for the best</td><td>SELECT * FROM events</td></tr>
+      <tr><td>Portable runtime</td><td>Cloud-dependent / in-memory</td><td>Single .db file, anywhere</td></tr>
+      <tr><td>State persistence</td><td>Framework-specific, lost on crash</td><td>SQLite &mdash; crash-safe</td></tr>
+      <tr><td>Token / cost tracking</td><td>Varies, often manual</td><td>SELECT SUM(token_count) ...</td></tr>
+    </tbody>
+  </table>
+  <p class="comp-note">KAOS isn't a replacement &mdash; it's the runtime layer they're missing. Use it underneath LangChain, or standalone with local LLMs.</p>
+</div>
+</section>
+
+<!-- Features -->
+<section class="features" id="features">
+<div class="wrap">
+  <h2>Key Capabilities</h2>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="icon">&#x1f512;</div>
+      <h3>Enforced Agent Isolation</h3>
+      <p>Every VFS operation is SQL-scoped with <code>WHERE agent_id = ?</code>. Physically impossible for one agent to access another's files. Optional FUSE tier adds OS-level mount + namespace isolation.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f4dc;</div>
+      <h3>Append-Only Audit Trail</h3>
+      <p>14 event types cover every operation: file reads, writes, deletes, tool calls with timing and token counts, state changes, lifecycle events. Query with SQL.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x23ea;</div>
+      <h3>Checkpoint / Restore / Diff</h3>
+      <p>Snapshot files + state at any point. Restore to any checkpoint. Diff two checkpoints to see exactly what changed. Auto-checkpoints every N iterations.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f9e0;</div>
+      <h3>Intelligent Model Routing</h3>
+      <p>GEPA router classifies task complexity and picks the right model. Trivial task? 7B. Complex architecture? 70B. Works with any OpenAI-compatible endpoint.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f4e6;</div>
+      <h3>Content-Addressable Blobs</h3>
+      <p>Files stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with GC.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f4be;</div>
+      <h3>Single-File Portability</h3>
+      <p>The entire runtime is one <code>.db</code> file. Back it up with <code>cp</code>. Send it to a colleague. Query with DBeaver, DataGrip, or <code>sqlite3</code>. No cloud, no Docker.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f680;</div>
+      <h3>Parallel Execution</h3>
+      <p>Run up to 8 concurrent agents (configurable) with semaphore control. Thread-local DB connections. MVCC isolation via SQLite WAL mode.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f6e0;</div>
+      <h3>Zero Bloat Dependencies</h3>
+      <p>No <code>openai</code>, no <code>litellm</code>, no <code>langchain</code>. Just httpx, click, rich, textual, mcp, pyyaml, zstandard, ulid-py. 44 packages total.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x1f50c;</div>
+      <h3>MCP Server + Claude Code</h3>
+      <p>11 MCP tools let Claude Code spawn agents, read/write files, checkpoint, restore, diff, and run SQL queries &mdash; all as native tool calls.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Architecture -->
+<section class="architecture">
+<div class="wrap">
+  <h2>Architecture</h2>
+  <div class="arch-image">
+    <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
+  </div>
+</div>
+</section>
+
+<!-- Use Cases -->
+<section class="use-cases" id="use-cases">
+<div class="wrap">
+  <h2>Use Cases</h2>
+  <div class="uc-grid">
+    <div class="uc-card">
+      <h3>Code Review Swarm</h3>
+      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel.</p>
+      <code>results = await ccr.run_parallel([
+  {"name": "security",  "prompt": "Find vulns..."},
+  {"name": "perf",      "prompt": "Find perf..."},
+  {"name": "style",     "prompt": "Review..."},
+  {"name": "tests",     "prompt": "What's missing?"},
+])</code>
+    </div>
+    <div class="uc-card">
+      <h3>Safe Refactoring</h3>
+      <p>Checkpoint before risky work, automatically restore on failure. Other agents keep running.</p>
+      <code>cp = db.checkpoint(agent, label="pre-migration")
+try:
+    await ccr.run_agent(agent, "Migrate DB")
+except Exception:
+    db.restore(agent, cp)  # rollback</code>
+    </div>
+    <div class="uc-card">
+      <h3>Post-Mortem Debugging</h3>
+      <p>An agent broke something. Query the audit trail to find out what, when, and why.</p>
+      <code>db.query("""
+  SELECT tool_name, error, duration_ms
+  FROM tool_calls
+  WHERE agent_id = ? AND status = 'error'
+""", [agent_id])</code>
+    </div>
+    <div class="uc-card">
+      <h3>Parallel Feature Development</h3>
+      <p>Tests, implementation, and docs agents work simultaneously with zero conflicts.</p>
+      <code>await ccr.run_parallel([
+  {"name": "tests", "prompt": "Write tests"},
+  {"name": "impl",  "prompt": "Implement"},
+  {"name": "docs",  "prompt": "Write docs"},
+])</code>
+    </div>
+    <div class="uc-card">
+      <h3>Cost & Token Tracking</h3>
+      <p>Know exactly how much each agent consumed. No more surprise bills.</p>
+      <code>db.query("""
+  SELECT a.name, SUM(tc.token_count) as tok
+  FROM agents a
+  JOIN tool_calls tc ON a.agent_id = tc.agent_id
+  GROUP BY a.agent_id ORDER BY tok DESC
+""")</code>
+    </div>
+    <div class="uc-card">
+      <h3>Export & Share</h3>
+      <p>Export an agent's complete state, send to a teammate, or back up before experiments.</p>
+      <code># CLI
+kaos export &lt;agent-id&gt; -o snapshot.db
+
+# Or just copy the whole runtime
+cp kaos.db backup.db</code>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+<div class="wrap">
+  <h2>Run It All Locally, For Free</h2>
+  <p>Your GPU. Your models. Your data stays on your machine.</p>
+  <div class="hero-buttons">
+    <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Full Tutorial</a>
+  </div>
+  <div class="install-bar">
+    <span class="prompt">$</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos init</span>
+  </div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer>
+<div class="wrap">
+  <div class="links">
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/mcp-integration.md">MCP Docs</a>
+    <a href="https://github.com/canivel/kaos/blob/main/LICENSE">Apache 2.0</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration & Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
+  <p style="margin-top:.4rem;font-style:italic;color:#636378">Named after the enemy spy agency in Get Smart (1965). Because KAOS is how you control your agents.</p>
+</div>
+</footer>
+
+</body>
+</html>

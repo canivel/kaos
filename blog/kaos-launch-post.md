@@ -251,15 +251,15 @@ GROUP BY a.agent_id ORDER BY tokens DESC
 
 ## The Dashboard
 
-<!-- PROMPT FOR IMAGE: Screenshot of a terminal TUI dashboard with dark background showing:
-- Header bar "KAOS Dashboard" with clock
-- Top panel "Agents" with green border showing stats: "Running: 2  Completed: 6  Failed: 1  Total: 11" and "Tool Calls: 146  Tokens: 45,230" and "Blobs: 32  Size: 12.4 KB"
-- Middle panel with a data table showing columns: Agent ID, Name, Status, Created, Heartbeat — with rows showing agents in various states (green "running", green "completed", red "failed", red "killed", yellow "paused")
-- Bottom panel with yellow border showing an event log with timestamped entries like "2026-03-30T15:00:01 sec-rev file_write /review.md" etc.
-- Footer bar with "q Quit  r Refresh"
-Terminal font, Textual/Rich styling -->
+Run `kaos dashboard` for a live TUI that shows agent status, aggregate stats, and event streams in real time.
 
-Run `kaos dashboard --db kaos.db` for a live TUI that shows agent status, aggregate stats, and event streams in real time.
+![KAOS Dashboard — real-time agent monitoring with status, token counts, and event log](image-1.png)
+
+The top bar shows aggregate stats at a glance — running/completed/failed counts, total tool calls and tokens, storage usage. The table shows every agent with its status (color-coded), file count, tool calls, and token consumption. The bottom panel streams events in real time — tool calls, state changes, checkpoints, errors.
+
+```bash
+kaos dashboard --db kaos.db
+```
 
 ---
 

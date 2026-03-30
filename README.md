@@ -201,6 +201,16 @@ kaos dashboard                         # Live TUI monitor
 kaos export <agent-id> -o backup.db    # Export a single agent
 ```
 
+### Live Dashboard
+
+Monitor all agents in real time — status, files, tool calls, token usage, and a streaming event log.
+
+```bash
+kaos dashboard
+```
+
+![KAOS Dashboard — real-time agent monitoring](image-1.png)
+
 ---
 
 ## Key Capabilities
