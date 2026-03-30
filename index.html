@@ -123,6 +123,9 @@ nav a:hover{color:var(--fg)}
 .architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
 .arch-image{max-width:900px;margin:0 auto}
 .arch-image img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+.dashboard-section{background:var(--bg2)}
+.dashboard-img{max-width:960px;margin:0 auto}
+.dashboard-img img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 12px 40px rgba(0,0,0,.5)}
 
 /* ── Use Cases ────────────────────────────────────── */
 .use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
@@ -351,6 +354,18 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="arch-image">
     <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
   </div>
+</div>
+</section>
+
+<!-- Dashboard -->
+<section class="dashboard-section">
+<div class="wrap">
+  <h2>Live Dashboard</h2>
+  <p class="lead" style="text-align:center;color:var(--fg2);margin-bottom:2rem">Monitor all agents in real time &mdash; status, files, tool calls, token usage, and a streaming event log.</p>
+  <div class="dashboard-img">
+    <img src="image-1.png" alt="KAOS Dashboard — real-time TUI showing agent status, token counts, and event log" loading="lazy">
+  </div>
+  <p style="text-align:center;margin-top:1.5rem;color:var(--fg2);font-family:var(--mono);font-size:.9rem">$ kaos dashboard</p>
 </div>
 </section>
 
