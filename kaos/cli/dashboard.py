@@ -2,21 +2,48 @@
 
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING
 
 from rich.text import Text
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.reactive import reactive
+from textual.containers import Container
+from textual.widget import Widget
 from textual.widgets import DataTable, Footer, Header, Static, RichLog
-from textual.timer import Timer
 
 if TYPE_CHECKING:
     from kaos.core import Kaos
 
 
-class AgentTable(Static):
+STATUS_STYLES = {
+    "running": "bold green",
+    "initialized": "bold cyan",
+    "completed": "green",
+    "failed": "bold red",
+    "killed": "red",
+    "paused": "yellow",
+}
+
+EVENT_COLORS = {
+    "agent_spawn": "green",
+    "agent_complete": "green",
+    "agent_fail": "red",
+    "agent_kill": "red",
+    "agent_pause": "yellow",
+    "agent_resume": "cyan",
+    "file_write": "bright_blue",
+    "file_read": "dim",
+    "file_delete": "magenta",
+    "tool_call_start": "bright_cyan",
+    "tool_call_end": "bright_cyan",
+    "state_change": "bright_yellow",
+    "checkpoint_create": "bright_green",
+    "checkpoint_restore": "bright_magenta",
+    "error": "bold red",
+    "warning": "yellow",
+}
+
+
+class AgentTable(Widget):
     """Widget displaying agent status table."""
 
     def __init__(self, afs: Kaos, **kwargs):
@@ -24,12 +51,13 @@ class AgentTable(Static):
         self.afs = afs
 
     def compose(self) -> ComposeResult:
-        yield DataTable(id="agent-table")
+        table = DataTable(id="agent-table", zebra_stripes=True)
+        yield table
 
     def on_mount(self) -> None:
         table = self.query_one("#agent-table", DataTable)
         table.add_columns(
-            "Agent ID", "Name", "Status", "Created", "Heartbeat"
+            "Agent ID", "Name", "Status", "Files", "Tool Calls", "Tokens", "Created",
         )
         self.refresh_data()
         self.set_interval(2.0, self.refresh_data)
@@ -38,31 +66,32 @@ class AgentTable(Static):
         table = self.query_one("#agent-table", DataTable)
         table.clear()
 
-        agents = self.afs.query(
-            "SELECT agent_id, name, status, created_at, last_heartbeat "
-            "FROM agents ORDER BY created_at DESC LIMIT 50"
-        )
+        agents = self.afs.query("""
+            SELECT
+                a.agent_id, a.name, a.status, a.created_at,
+                (SELECT COUNT(*) FROM files f WHERE f.agent_id = a.agent_id AND f.deleted = 0) as file_count,
+                (SELECT COUNT(*) FROM tool_calls tc WHERE tc.agent_id = a.agent_id) as call_count,
+                (SELECT COALESCE(SUM(tc.token_count), 0) FROM tool_calls tc WHERE tc.agent_id = a.agent_id) as token_count
+            FROM agents a
+            ORDER BY a.created_at DESC LIMIT 50
+        """)
 
         for agent in agents:
             status = agent["status"]
-            status_text = Text(status)
-            if status == "running":
-                status_text.stylize("bold green")
-            elif status == "completed":
-                status_text.stylize("green")
-            elif status == "failed":
-                status_text.stylize("bold red")
-            elif status == "killed":
-                status_text.stylize("red")
-            elif status == "paused":
-                status_text.stylize("yellow")
+            style = STATUS_STYLES.get(status, "")
+            status_text = Text(status.upper(), style=style)
+
+            tokens = agent["token_count"] or 0
+            token_str = f"{tokens:,}" if tokens else "-"
 
             table.add_row(
-                agent["agent_id"][:12] + "...",
+                agent["agent_id"][:14] + "...",
                 agent["name"],
                 status_text,
+                str(agent["file_count"]),
+                str(agent["call_count"]),
+                token_str,
                 agent["created_at"][:19] if agent["created_at"] else "",
-                agent["last_heartbeat"][:19] if agent.get("last_heartbeat") else "-",
             )
 
 
@@ -75,7 +104,7 @@ class StatsPanel(Static):
 
     def on_mount(self) -> None:
         self.refresh_stats()
-        self.set_interval(5.0, self.refresh_stats)
+        self.set_interval(3.0, self.refresh_stats)
 
     def refresh_stats(self) -> None:
         try:
@@ -83,85 +112,160 @@ class StatsPanel(Static):
                 "SELECT status, COUNT(*) as cnt FROM agents GROUP BY status"
             )
             agent_stats = {r["status"]: r["cnt"] for r in agents}
+            total_agents = sum(agent_stats.values())
 
             token_row = self.afs.query(
-                "SELECT SUM(token_count) as total, COUNT(*) as calls "
-                "FROM tool_calls WHERE status = 'success'"
+                "SELECT COALESCE(SUM(token_count), 0) as total, COUNT(*) as calls, "
+                "SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as errors "
+                "FROM tool_calls"
             )
-            total_tokens = token_row[0]["total"] or 0 if token_row else 0
-            total_calls = token_row[0]["calls"] or 0 if token_row else 0
+            total_tokens = token_row[0]["total"] if token_row else 0
+            total_calls = token_row[0]["calls"] if token_row else 0
+            total_errors = token_row[0]["errors"] if token_row else 0
 
             blob_stats = self.afs.blobs.stats()
 
+            event_count = self.afs.query("SELECT COUNT(*) as n FROM events")
+            n_events = event_count[0]["n"] if event_count else 0
+
+            running = agent_stats.get("running", 0) + agent_stats.get("initialized", 0)
+            completed = agent_stats.get("completed", 0)
+            failed = agent_stats.get("failed", 0)
+            paused = agent_stats.get("paused", 0)
+            killed = agent_stats.get("killed", 0)
+
+            stored_kb = blob_stats["total_stored_bytes"] / 1024
+
             self.update(
-                f"[bold]Agents[/bold]\n"
-                f"  Running: [green]{agent_stats.get('running', 0)}[/green]  "
-                f"Completed: {agent_stats.get('completed', 0)}  "
-                f"Failed: [red]{agent_stats.get('failed', 0)}[/red]  "
-                f"Total: {sum(agent_stats.values())}\n\n"
-                f"[bold]Tool Calls[/bold]\n"
-                f"  Total: {total_calls}  Tokens: {total_tokens:,}\n\n"
-                f"[bold]Storage[/bold]\n"
-                f"  Blobs: {blob_stats['total_blobs']}  "
-                f"Size: {blob_stats['total_stored_bytes'] / 1024:.1f} KB  "
-                f"Refs: {blob_stats['total_references']}"
+                f"[bold bright_white]AGENTS[/]  "
+                f"[green]{running}[/] running  "
+                f"[bright_green]{completed}[/] completed  "
+                f"[red]{failed}[/] failed  "
+                f"[yellow]{paused}[/] paused  "
+                f"[dim]{killed}[/] killed  "
+                f"[bright_white]{total_agents}[/] total"
+                f"      "
+                f"[bold bright_white]CALLS[/]  "
+                f"{total_calls:,} total  "
+                f"[red]{total_errors}[/] errors  "
+                f"[bright_cyan]{total_tokens:,}[/] tokens"
+                f"      "
+                f"[bold bright_white]STORAGE[/]  "
+                f"{blob_stats['total_blobs']} blobs  "
+                f"{stored_kb:.1f} KB  "
+                f"{n_events:,} events"
             )
         except Exception as e:
-            self.update(f"[red]Error loading stats: {e}[/red]")
+            self.update(f"[red]Error: {e}[/red]")
 
 
-class EventLog(Static):
-    """Widget showing recent events."""
+class EventLog(Widget):
+    """Widget showing recent events as a scrolling log."""
 
     def __init__(self, afs: Kaos, **kwargs):
         super().__init__(**kwargs)
         self.afs = afs
+        self._last_event_id = 0
 
     def compose(self) -> ComposeResult:
-        yield RichLog(id="event-log", max_lines=100, wrap=True)
+        yield RichLog(id="event-log", max_lines=200, wrap=True, markup=True)
 
     def on_mount(self) -> None:
-        self.refresh_events()
-        self.set_interval(3.0, self.refresh_events)
+        self._load_initial()
+        self.set_interval(2.0, self._poll_new)
 
-    def refresh_events(self) -> None:
+    def _load_initial(self) -> None:
         log = self.query_one("#event-log", RichLog)
-        try:
-            events = self.afs.query(
-                "SELECT timestamp, agent_id, event_type, payload "
-                "FROM events ORDER BY event_id DESC LIMIT 20"
-            )
-            log.clear()
-            for event in reversed(events):
-                agent_short = event["agent_id"][:8]
-                log.write(
-                    f"[dim]{event['timestamp'][:19]}[/dim] "
-                    f"[cyan]{agent_short}[/cyan] "
-                    f"[bold]{event['event_type']}[/bold] "
-                    f"{event.get('payload', '')[:60]}"
-                )
-        except Exception:
-            pass
+        events = self.afs.query(
+            "SELECT event_id, timestamp, agent_id, event_type, payload "
+            "FROM events ORDER BY event_id DESC LIMIT 30"
+        )
+        for event in reversed(events):
+            self._write_event(log, event)
+            self._last_event_id = max(self._last_event_id, event["event_id"])
+
+    def _poll_new(self) -> None:
+        events = self.afs.query(
+            "SELECT event_id, timestamp, agent_id, event_type, payload "
+            "FROM events WHERE event_id > ? ORDER BY event_id LIMIT 20",
+            [self._last_event_id],
+        )
+        if events:
+            log = self.query_one("#event-log", RichLog)
+            for event in events:
+                self._write_event(log, event)
+                self._last_event_id = max(self._last_event_id, event["event_id"])
+
+    def _write_event(self, log: RichLog, event: dict) -> None:
+        ts = event["timestamp"][:19] if event.get("timestamp") else "?"
+        agent_short = (event.get("agent_id") or "?")[:10]
+        etype = event.get("event_type", "?")
+        payload = str(event.get("payload") or "")
+        if len(payload) > 80:
+            payload = payload[:77] + "..."
+
+        color = EVENT_COLORS.get(etype, "dim")
+        text = Text()
+        text.append(f" {ts} ", style="dim")
+        text.append(f" {agent_short} ", style="cyan")
+        text.append(f" {etype:22s}", style=color)
+        text.append(f" {payload}", style="dim")
+        log.write(text)
 
 
 class KaosDashboard(App):
     """KAOS TUI Dashboard for real-time agent monitoring."""
 
+    TITLE = "KAOS Dashboard"
+    SUB_TITLE = "Kernel for Agent Orchestration & Sandboxing"
+
     CSS = """
+    Screen {
+        background: #0a0a12;
+    }
+
     #stats-panel {
-        height: 8;
-        border: solid green;
-        padding: 1;
+        height: 3;
+        padding: 0 1;
+        background: #111119;
+        border: tall $accent;
+        color: $text;
     }
 
     #agent-table-container {
         height: 1fr;
-        border: solid cyan;
+        border: tall $success;
+        background: #0d0d16;
+    }
+
+    AgentTable {
+        height: 100%;
+    }
+
+    AgentTable DataTable {
+        height: 100%;
     }
 
     #event-log-container {
-        height: 12;
-        border: solid yellow;
+        height: 14;
+        border: tall $warning;
+        background: #0d0d16;
+    }
+
+    EventLog {
+        height: 100%;
+    }
+
+    EventLog RichLog {
+        height: 100%;
+    }
+
+    Header {
+        background: #1a1a2e;
+    }
+
+    Footer {
+        background: #1a1a2e;
     }
     """
 
@@ -195,5 +299,3 @@ class KaosDashboard(App):
             widget.refresh_data()
         for widget in self.query(StatsPanel):
             widget.refresh_stats()
-        for widget in self.query(EventLog):
-            widget.refresh_events()
