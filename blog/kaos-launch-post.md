@@ -1,6 +1,6 @@
-# Your AI Agents Share a Filesystem. That's the Bug.
+# Resilient AI Agents That Run Locally, Roll Back on Failure, and Cost You Nothing
 
-*LangChain, CrewAI, and AutoGen give you prompt chains. None of them give you isolation, rollback, or an audit trail. I built the missing runtime layer — and it's one SQLite file.*
+*Every agent gets its own isolated filesystem, auto-checkpoints, and a full audit trail — all inside one SQLite file, running on your own GPU. No API keys, no cloud, no bills.*
 
 ---
 
