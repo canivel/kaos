@@ -221,7 +221,7 @@ class LogicalIsolation:
 
 For environments requiring OS-level process isolation, KAOS can mount each agent's VFS as a FUSE filesystem. The `IsolatedAgentProcess` class provides:
 
-1. **FUSE mount**: The agent's virtual filesystem is mounted at `/tmp/agentfs/<agent_id>`. The agent process sees a standard filesystem -- it has no knowledge that reads and writes are backed by SQLite.
+1. **FUSE mount**: The agent's virtual filesystem is mounted at `/tmp/kaos/<agent_id>`. The agent process sees a standard filesystem -- it has no knowledge that reads and writes are backed by SQLite.
 2. **Mount namespace**: Each agent runs in its own Linux mount namespace (via `unshare`), preventing cross-agent filesystem access at the kernel level.
 3. **cgroups v2 resource limits**: Optional memory and CPU limits via cgroups:
    - `memory.max` caps the agent's memory usage.
@@ -235,7 +235,7 @@ Tier 2 Isolation Stack:
   +-------------------+
   | Mount Namespace    |  <-- unshare(CLONE_NEWNS)
   +-------------------+
-  | FUSE Mount         |  <-- /tmp/agentfs/<agent_id>
+  | FUSE Mount         |  <-- /tmp/kaos/<agent_id>
   +-------------------+
   | Kaos VFS Engine |
   +-------------------+

@@ -1,5 +1,5 @@
 database:
-  path: ./agents.db
+  path: ./kaos.db
   wal_mode: true
   busy_timeout_ms: 5000
   max_blob_size_mb: 100
@@ -8,7 +8,7 @@ database:
 
 isolation:
   mode: logical                # logical | fuse | namespace
-  fuse_mount_base: /tmp/agentfs
+  fuse_mount_base: /tmp/kaos
   cgroups:
     enabled: false
     memory_limit_mb: 4096
@@ -49,4 +49,4 @@ mcp:
 
 logging:
   level: INFO
-  file: ./agentfs.log
+  file: ./kaos.log

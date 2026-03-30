@@ -17,7 +17,7 @@ class IsolationConfig:
     """Configuration for agent isolation."""
 
     mode: str = "logical"  # logical | fuse | namespace
-    fuse_mount_base: str = "/tmp/agentfs"
+    fuse_mount_base: str = "/tmp/kaos"
     cgroups_enabled: bool = False
     memory_limit_mb: int = 4096
     cpu_shares: int = 1024
@@ -107,7 +107,7 @@ class IsolatedAgentProcess:
         except ImportError:
             raise RuntimeError(
                 "FUSE isolation requires the 'fusepy' package. "
-                "Install with: uv pip install agentfs[fuse]"
+                "Install with: uv pip install kaos[fuse]"
             )
 
         return self.mount_point
@@ -136,7 +136,7 @@ class IsolatedAgentProcess:
 
     def _setup_cgroups(self) -> None:
         """Set up cgroups v2 resource limits for the agent process."""
-        cgroup_path = f"/sys/fs/cgroup/agentfs/{self.agent_id}"
+        cgroup_path = f"/sys/fs/cgroup/kaos/{self.agent_id}"
         os.makedirs(cgroup_path, exist_ok=True)
 
         # Memory limit

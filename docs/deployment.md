@@ -226,7 +226,7 @@ database:
 # ── Isolation Settings ───────────────────────────────────────
 isolation:
   mode: logical                 # "logical" (default), "fuse", or "namespace"
-  fuse_mount_base: /tmp/agentfs # Base directory for FUSE mounts (Linux only)
+  fuse_mount_base: /tmp/kaos # Base directory for FUSE mounts (Linux only)
   cgroups:
     enabled: false              # Enable cgroups v2 resource limits
     memory_limit_mb: 4096       # Per-agent memory limit
