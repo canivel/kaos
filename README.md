@@ -10,6 +10,7 @@ Named after the enemy spy agency in *Get Smart* (1965). Ironic, because KAOS is 
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
 [![Dependencies](https://img.shields.io/badge/deps-44%20total-lightgrey)]()
+[![Website](https://img.shields.io/badge/website-canivel.github.io%2Fkaos-blueviolet)](https://canivel.github.io/kaos/)
 
 ---
 
