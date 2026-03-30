@@ -1,5 +1,32 @@
 # Resilient AI Agents That Run Locally, Roll Back on Failure, and Cost You Nothing
 
+<!-- HERO IMAGE — Generate with this prompt:
+
+Dark, minimal tech illustration. Wide 16:9 ratio, suitable for blog hero/cover.
+
+Center: a glowing SQLite database cylinder radiating soft light.
+Around it: 5-6 AI agents represented as simple geometric orbs, each
+enclosed in its own translucent protective bubble (representing isolation).
+Thin glowing lines connect each bubble to the central database.
+
+One agent's bubble shows a green checkpoint icon (a small flag or save symbol).
+Another bubble shows a rewind/rollback arrow — the agent is restoring to
+a previous state. A third bubble shows a small timeline of events flowing
+into the database (audit trail).
+
+Below the database, a subtle GPU chip outline glows — representing local
+execution.
+
+Color palette: deep navy background (#0a0a0f), purple accents (#6c5ce7),
+cyan highlights (#18ffff), green for checkpoints (#00e676).
+
+Style: abstract, clean, developer-focused. No robots, no faces, no text
+overlay. Think: infrastructure diagram meets sci-fi UI.
+
+-->
+
+![Hero image](hero.png)
+
 *Every agent gets its own isolated filesystem, auto-checkpoints, and a full audit trail — all inside one SQLite file, running on your own GPU. No API keys, no cloud, no bills.*
 
 ---
