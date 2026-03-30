@@ -27,7 +27,9 @@ overlay. Think: infrastructure diagram meets sci-fi UI.
 
 ![Hero image](hero.png)
 
-*Every agent gets its own isolated filesystem, auto-checkpoints, and a full audit trail — all inside one SQLite file, running on your own GPU. No API keys, no cloud, no bills.*
+*Every agent gets its own isolated filesystem, auto-checkpoints, and a full audit trail — all inside one SQLite file, running on your own GPU. No API keys, no cloud, no bills. Free and open source (Apache 2.0).*
+
+**GitHub:** [github.com/canivel/kaos](https://github.com/canivel/kaos) | **Website:** [canivel.github.io/kaos](https://canivel.github.io/kaos) | **License:** Apache 2.0
 
 ---
 
