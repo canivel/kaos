@@ -1,0 +1,52 @@
+database:
+  path: ./agents.db
+  wal_mode: true
+  busy_timeout_ms: 5000
+  max_blob_size_mb: 100
+  compression: zstd            # zstd | none
+  gc_interval_minutes: 30      # blob garbage collection
+
+isolation:
+  mode: logical                # logical | fuse | namespace
+  fuse_mount_base: /tmp/agentfs
+  cgroups:
+    enabled: false
+    memory_limit_mb: 4096
+    cpu_shares: 1024
+
+models:
+  qwen2.5-coder-7b:
+    vllm_endpoint: http://localhost:8000/v1
+    max_context: 32768
+    use_for: [trivial, code_completion]
+
+  qwen2.5-coder-32b:
+    vllm_endpoint: http://localhost:8001/v1
+    max_context: 131072
+    use_for: [moderate, code_generation]
+
+  deepseek-r1-70b:
+    vllm_endpoint: http://localhost:8002/v1
+    max_context: 131072
+    use_for: [complex, critical, planning]
+
+router:
+  type: gepa
+  classifier_model: qwen2.5-coder-7b    # use small model for LLM-based routing
+  fallback_model: deepseek-r1-70b
+  context_compression: true
+  max_retries: 3
+
+ccr:
+  max_iterations: 100
+  checkpoint_interval: 10
+  timeout_seconds: 3600
+  max_parallel_agents: 8
+
+mcp:
+  port: 3100
+  host: 127.0.0.1
+
+logging:
+  level: INFO
+  file: ./agentfs.log
