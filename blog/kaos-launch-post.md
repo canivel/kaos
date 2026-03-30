@@ -270,6 +270,23 @@ In Claude Code, say:
 
 KAOS spawns 4 isolated agents, routes each to the right model, runs them on your local GPU, and collects results — all with full audit trails, auto-checkpoints, and SQL-queryable history.
 
+<!-- CODE REVIEW SWARM IMAGE — Generate with this prompt:
+
+Top-down diagram on dark background (#0a0a0f). Center: a code file icon
+with a Python logo. Four agents arranged around it in colored boxes:
+"Security" (red border, shield icon), "Performance" (orange border, gauge icon),
+"Style" (blue border, paintbrush icon), "Test Coverage" (green border,
+checkmark icon). Each agent has a dotted arrow FROM the code file (reading)
+and a solid arrow TO their own isolated results file (writing). Below all
+four agents: a single SQLite cylinder collecting everything. Small labels
+on each agent's output: "/review.md", "/perf-report.md", "/style.md",
+"/test-plan.md". Caption at bottom: "4 agents, 4 isolated filesystems,
+1 queryable database". Style: clean, minimal, technical. 16:9 ratio.
+
+-->
+
+![Code Review Swarm — 4 agents reviewing code from different angles, each in its own isolated filesystem](code-review-swarm.png)
+
 > "How many tokens did each agent use?"
 
 ```sql
