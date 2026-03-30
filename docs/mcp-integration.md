@@ -18,7 +18,7 @@
 
 KAOS implements the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), allowing Claude Code and other MCP clients to spawn agents, read/write files, create checkpoints, run SQL queries, and orchestrate parallel agent execution through natural language.
 
-The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `AgentFS` and `ClaudeCodeRunner` instances, exposing 11 tools.
+The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 11 tools.
 
 **Transport modes:**
 - **stdio** -- Process-based transport for direct Claude Code integration. The MCP client spawns `kaos serve` as a child process and communicates via stdin/stdout.

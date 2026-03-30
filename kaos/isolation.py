@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from kaos.core import AgentFS
+    from kaos.core import Kaos
 
 
 @dataclass
@@ -31,7 +31,7 @@ class LogicalIsolation:
     construct a query that crosses agent boundaries.
     """
 
-    def __init__(self, afs: AgentFS, agent_id: str):
+    def __init__(self, afs: Kaos, agent_id: str):
         self.afs = afs
         self.agent_id = agent_id
 
@@ -71,7 +71,7 @@ class IsolatedAgentProcess:
     NOTE: FUSE isolation requires Linux and the fusepy package.
     """
 
-    def __init__(self, afs: AgentFS, agent_id: str, config: IsolationConfig | None = None):
+    def __init__(self, afs: Kaos, agent_id: str, config: IsolationConfig | None = None):
         self.afs = afs
         self.agent_id = agent_id
         self.config = config or IsolationConfig()
@@ -154,7 +154,7 @@ class IsolatedAgentProcess:
 
 
 def create_isolation(
-    afs: AgentFS, agent_id: str, config: IsolationConfig | None = None
+    afs: Kaos, agent_id: str, config: IsolationConfig | None = None
 ) -> LogicalIsolation | IsolatedAgentProcess:
     """Factory to create the appropriate isolation level."""
     config = config or IsolationConfig()

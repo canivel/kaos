@@ -1,4 +1,4 @@
-"""AgentFS VFS Engine — the core of the agentic filesystem framework."""
+"""Kaos VFS Engine — the core of the agentic filesystem framework."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from kaos.events import EventJournal
 from kaos.schema import init_schema
 
 
-class AgentFS:
+class Kaos:
     """
     One instance per .db file. Thread-safe via SQLite WAL mode.
 

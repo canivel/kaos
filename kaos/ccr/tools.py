@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Awaitable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from kaos.core import AgentFS
+    from kaos.core import Kaos
 
 
 @dataclass
@@ -28,7 +28,7 @@ class ToolDefinition:
 class ToolRegistry:
     """Registry of tools available to agents with sandboxed execution."""
 
-    def __init__(self, afs: AgentFS):
+    def __init__(self, afs: Kaos):
         self.afs = afs
         self._tools: dict[str, ToolDefinition] = {}
         self._register_builtins()

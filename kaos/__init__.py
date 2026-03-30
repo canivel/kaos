@@ -2,6 +2,6 @@
 
 __version__ = "0.1.0"
 
-from kaos.core import AgentFS
+from kaos.core import Kaos
 
-__all__ = ["AgentFS"]
+__all__ = ["Kaos"]

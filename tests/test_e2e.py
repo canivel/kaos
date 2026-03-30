@@ -1,4 +1,4 @@
-"""End-to-end tests for AgentFS (no real LLM required)."""
+"""End-to-end tests for Kaos (no real LLM required)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from kaos.core import AgentFS
+from kaos.core import Kaos
 from kaos.ccr.runner import ClaudeCodeRunner, ModelResponse, ToolCall
 from kaos.router.gepa import GEPARouter, ModelConfig
 
@@ -15,7 +15,7 @@ from kaos.router.gepa import GEPARouter, ModelConfig
 @pytest.fixture
 def afs(tmp_path):
     db_path = str(tmp_path / "test_e2e.db")
-    fs = AgentFS(db_path=db_path)
+    fs = Kaos(db_path=db_path)
     yield fs
     fs.close()
 
@@ -30,7 +30,7 @@ def mock_router():
 
 class TestEndToEnd:
     @pytest.mark.asyncio
-    async def test_simple_agent_run(self, afs: AgentFS, mock_router):
+    async def test_simple_agent_run(self, afs: Kaos, mock_router):
         """Agent receives a task and completes with a text response."""
         mock_router.route.return_value = ModelResponse(
             content="Task completed successfully!",
@@ -49,7 +49,7 @@ class TestEndToEnd:
         assert afs.get_state(agent_id, "result") == "Task completed successfully!"
 
     @pytest.mark.asyncio
-    async def test_agent_with_tool_calls(self, afs: AgentFS, mock_router):
+    async def test_agent_with_tool_calls(self, afs: Kaos, mock_router):
         """Agent uses tools and then completes."""
         # First response: tool call
         mock_router.route.side_effect = [
@@ -78,7 +78,7 @@ class TestEndToEnd:
         assert afs.status(agent_id)["status"] == "completed"
 
     @pytest.mark.asyncio
-    async def test_agent_tool_error_handling(self, afs: AgentFS, mock_router):
+    async def test_agent_tool_error_handling(self, afs: Kaos, mock_router):
         """Agent handles tool errors gracefully."""
         mock_router.route.side_effect = [
             ModelResponse(
@@ -106,7 +106,7 @@ class TestEndToEnd:
         assert len(calls) == 1
 
     @pytest.mark.asyncio
-    async def test_parallel_agents(self, afs: AgentFS, mock_router):
+    async def test_parallel_agents(self, afs: Kaos, mock_router):
         """Multiple agents run in parallel."""
         mock_router.route.return_value = ModelResponse(
             content="Done!",
@@ -130,7 +130,7 @@ class TestEndToEnd:
         assert len(agents) == 3
 
     @pytest.mark.asyncio
-    async def test_checkpoint_during_execution(self, afs: AgentFS, mock_router):
+    async def test_checkpoint_during_execution(self, afs: Kaos, mock_router):
         """Agent auto-checkpoints during execution."""
         # Create enough iterations to trigger checkpoint
         responses = []
@@ -159,7 +159,7 @@ class TestEndToEnd:
         assert len(cps) >= 1
 
     @pytest.mark.asyncio
-    async def test_agent_state_persistence(self, afs: AgentFS, mock_router):
+    async def test_agent_state_persistence(self, afs: Kaos, mock_router):
         """Agent state persists across iterations."""
         mock_router.route.side_effect = [
             ModelResponse(
@@ -190,7 +190,7 @@ class TestEndToEnd:
 class TestFullWorkflow:
     """Integration tests that exercise the complete workflow."""
 
-    def test_spawn_checkpoint_restore_cycle(self, afs: AgentFS):
+    def test_spawn_checkpoint_restore_cycle(self, afs: Kaos):
         agent_id = afs.spawn("workflow-test")
 
         # Phase 1: create some files and state
@@ -216,7 +216,7 @@ class TestFullWorkflow:
         assert afs.get_state(agent_id, "phase") == "initial"
         assert not afs.exists(agent_id, "/src/utils.py")
 
-    def test_multi_agent_isolation_and_audit(self, afs: AgentFS):
+    def test_multi_agent_isolation_and_audit(self, afs: Kaos):
         """Multiple agents work in parallel with full audit trail."""
         agents = [
             afs.spawn("agent-alpha"),

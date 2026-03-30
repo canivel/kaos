@@ -42,7 +42,7 @@ KAOS is a runtime framework for managing autonomous AI agents. Each agent receiv
              |
              v
      +------------------------------------------+
-     |            KAOS Core (AgentFS)            |
+     |            KAOS Core (Kaos)            |
      |              (kaos.core)                  |
      |                                           |
      |  +----------+ +--------+ +-------------+ |
@@ -84,13 +84,13 @@ The event journal is append-only. Every file read, write, delete, state change, 
 
 ### Composition over inheritance
 
-KAOS subsystems are composed rather than subclassed. `AgentFS` owns a `BlobStore`, an `EventJournal`, and a `CheckpointManager`. The `ClaudeCodeRunner` delegates inference to the `GEPARouter`. The MCP server delegates to both. Each subsystem can be tested, replaced, or extended independently.
+KAOS subsystems are composed rather than subclassed. `Kaos` owns a `BlobStore`, an `EventJournal`, and a `CheckpointManager`. The `ClaudeCodeRunner` delegates inference to the `GEPARouter`. The MCP server delegates to both. Each subsystem can be tested, replaced, or extended independently.
 
 ---
 
 ## VFS Engine
 
-The VFS Engine is the core of KAOS, implemented in `kaos/core.py` as the `AgentFS` class. It provides a virtual filesystem, state management, tool call tracking, and checkpoint/restore -- all backed by SQLite.
+The VFS Engine is the core of KAOS, implemented in `kaos/core.py` as the `Kaos` class. It provides a virtual filesystem, state management, tool call tracking, and checkpoint/restore -- all backed by SQLite.
 
 ### SQLite Configuration
 
@@ -104,10 +104,10 @@ conn.execute("PRAGMA busy_timeout=5000")    # 5s retry on lock contention
 
 ### Thread Safety
 
-`AgentFS` uses `threading.local()` to maintain one SQLite connection per thread. This avoids the SQLite threading pitfalls while allowing true parallel agent execution in threaded environments.
+`Kaos` uses `threading.local()` to maintain one SQLite connection per thread. This avoids the SQLite threading pitfalls while allowing true parallel agent execution in threaded environments.
 
 ```python
-class AgentFS:
+class Kaos:
     def __init__(self, db_path: str = "agents.db", compression: str = "zstd"):
         self._local = threading.local()
         # Each thread gets its own connection via _get_conn()
@@ -204,7 +204,7 @@ KAOS provides two tiers of agent isolation, implemented in `kaos/isolation.py`.
 
 ### Tier 1 -- Logical Isolation (Default)
 
-Every VFS operation is scoped by `agent_id`. The `LogicalIsolation` class wraps `AgentFS` methods, binding a specific `agent_id` so the caller cannot accidentally (or intentionally) access another agent's data.
+Every VFS operation is scoped by `agent_id`. The `LogicalIsolation` class wraps `Kaos` methods, binding a specific `agent_id` so the caller cannot accidentally (or intentionally) access another agent's data.
 
 ```python
 class LogicalIsolation:
@@ -237,7 +237,7 @@ Tier 2 Isolation Stack:
   +-------------------+
   | FUSE Mount         |  <-- /tmp/agentfs/<agent_id>
   +-------------------+
-  | AgentFS VFS Engine |
+  | Kaos VFS Engine |
   +-------------------+
   | SQLite WAL         |
   +-------------------+
@@ -491,7 +491,7 @@ The MCP server (`kaos/mcp/server.py`) is implemented using the `mcp` Python pack
 - **stdio**: For direct process integration (used by Claude Code).
 - **SSE**: For HTTP-based integration via Server-Sent Events (uses Starlette + uvicorn).
 
-The server exposes 11 tools that map directly to `AgentFS` and `ClaudeCodeRunner` operations. See [mcp-integration.md](mcp-integration.md) for the complete tool reference.
+The server exposes 11 tools that map directly to `Kaos` and `ClaudeCodeRunner` operations. See [mcp-integration.md](mcp-integration.md) for the complete tool reference.
 
 ### Server Initialization
 
@@ -499,11 +499,11 @@ The server exposes 11 tools that map directly to `AgentFS` and `ClaudeCodeRunner
 from kaos.mcp.server import init_server
 
 mcp_server = init_server(afs, ccr)
-# afs: AgentFS instance
+# afs: Kaos instance
 # ccr: ClaudeCodeRunner instance
 ```
 
-The server holds module-level references to `AgentFS` and `ClaudeCodeRunner`, which are set during initialization and used by all tool handlers.
+The server holds module-level references to `Kaos` and `ClaudeCodeRunner`, which are set during initialization and used by all tool handlers.
 
 ---
 

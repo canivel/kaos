@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 AGENT_SYSTEM_PROMPT = """\
-You are an autonomous agent operating within an AgentFS virtual filesystem.
+You are an autonomous agent operating within an Kaos virtual filesystem.
 
 ## Your Environment
 - Agent ID: {agent_id}

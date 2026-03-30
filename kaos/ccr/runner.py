@@ -14,7 +14,7 @@ from kaos.ccr.prompts import build_system_prompt
 from kaos.ccr.tools import ToolRegistry
 
 if TYPE_CHECKING:
-    from kaos.core import AgentFS
+    from kaos.core import Kaos
     from kaos.router.gepa import GEPARouter
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class ClaudeCodeRunner:
 
     def __init__(
         self,
-        afs: AgentFS,
+        afs: Kaos,
         router: GEPARouter,
         max_iterations: int = 100,
         checkpoint_interval: int = 10,

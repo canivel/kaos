@@ -1,4 +1,4 @@
-"""SQLite schema definitions and migrations for AgentFS."""
+"""SQLite schema definitions and migrations for Kaos."""
 
 from __future__ import annotations
 

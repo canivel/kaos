@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from kaos.core import AgentFS
+from kaos.core import Kaos
 
 console = Console()
 
@@ -22,9 +22,9 @@ DEFAULT_DB = os.environ.get("KAOS_DB", "./kaos.db")
 DEFAULT_CONFIG = os.environ.get("KAOS_CONFIG", "./kaos.yaml")
 
 
-def _get_afs(db: str) -> AgentFS:
-    """Get or create an AgentFS instance."""
-    return AgentFS(db_path=db)
+def _get_afs(db: str) -> Kaos:
+    """Get or create an Kaos instance."""
+    return Kaos(db_path=db)
 
 
 @click.group()
@@ -41,7 +41,7 @@ def cli():
 @cli.command()
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 def init(db: str):
-    """Initialize a new AgentFS database."""
+    """Initialize a new Kaos database."""
     if Path(db).exists():
         console.print(f"[yellow]Database already exists:[/yellow] {db}")
         return
@@ -356,7 +356,7 @@ def import_agent(file_path: str, db: str, merge: bool):
 @click.option("--transport", default="stdio", type=click.Choice(["stdio", "sse"]), help="Transport")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
 def serve(db: str, port: int, host: str, transport: str, config_file: str):
-    """Start the AgentFS MCP server."""
+    """Start the Kaos MCP server."""
     from kaos.mcp.server import init_server
     from kaos.router.gepa import GEPARouter
     from kaos.ccr.runner import ClaudeCodeRunner

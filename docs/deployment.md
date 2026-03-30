@@ -92,8 +92,8 @@ uv run pytest
 
 # Quick smoke test
 uv run python -c "
-from kaos import AgentFS
-afs = AgentFS(':memory:')
+from kaos import Kaos
+afs = Kaos(':memory:')
 agent = afs.spawn('smoke-test')
 afs.write(agent, '/hello.txt', b'Hello from KAOS!')
 print(afs.read(agent, '/hello.txt'))
@@ -479,7 +479,7 @@ models:
 
 ### SQLite tuning
 
-The default SQLite PRAGMAs are set in `AgentFS.__init__()`:
+The default SQLite PRAGMAs are set in `Kaos.__init__()`:
 
 ```python
 conn.execute("PRAGMA journal_mode=WAL")     # Concurrent reads
@@ -487,7 +487,7 @@ conn.execute("PRAGMA foreign_keys=ON")       # Referential integrity
 conn.execute("PRAGMA busy_timeout=5000")     # 5s lock retry
 ```
 
-For high-concurrency workloads, consider adding to the connection setup (via a custom `AgentFS` subclass or configuration):
+For high-concurrency workloads, consider adding to the connection setup (via a custom `Kaos` subclass or configuration):
 
 ```sql
 PRAGMA synchronous=NORMAL;       -- Faster writes (slight durability risk)
@@ -520,9 +520,9 @@ PRAGMA temp_store=MEMORY;        -- In-memory temp tables
 Orphaned blobs accumulate when files are overwritten or deleted. Run garbage collection periodically:
 
 ```python
-from kaos import AgentFS
+from kaos import Kaos
 
-afs = AgentFS("kaos.db")
+afs = Kaos("kaos.db")
 removed = afs.blobs.gc()
 print(f"Removed {removed} orphaned blobs")
 afs.close()

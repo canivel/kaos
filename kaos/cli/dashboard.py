@@ -13,13 +13,13 @@ from textual.widgets import DataTable, Footer, Header, Static, RichLog
 from textual.timer import Timer
 
 if TYPE_CHECKING:
-    from kaos.core import AgentFS
+    from kaos.core import Kaos
 
 
 class AgentTable(Static):
     """Widget displaying agent status table."""
 
-    def __init__(self, afs: AgentFS, **kwargs):
+    def __init__(self, afs: Kaos, **kwargs):
         super().__init__(**kwargs)
         self.afs = afs
 
@@ -69,7 +69,7 @@ class AgentTable(Static):
 class StatsPanel(Static):
     """Widget showing aggregate statistics."""
 
-    def __init__(self, afs: AgentFS, **kwargs):
+    def __init__(self, afs: Kaos, **kwargs):
         super().__init__(**kwargs)
         self.afs = afs
 
@@ -113,7 +113,7 @@ class StatsPanel(Static):
 class EventLog(Static):
     """Widget showing recent events."""
 
-    def __init__(self, afs: AgentFS, **kwargs):
+    def __init__(self, afs: Kaos, **kwargs):
         super().__init__(**kwargs)
         self.afs = afs
 
@@ -170,7 +170,7 @@ class KaosDashboard(App):
         ("r", "refresh", "Refresh"),
     ]
 
-    def __init__(self, afs: AgentFS, **kwargs):
+    def __init__(self, afs: Kaos, **kwargs):
         super().__init__(**kwargs)
         self.afs = afs
 

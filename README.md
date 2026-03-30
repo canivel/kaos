@@ -36,8 +36,8 @@ uv sync
 
 # Use as a library
 python -c "
-from kaos import AgentFS
-afs = AgentFS('demo.db')
+from kaos import Kaos
+afs = Kaos('demo.db')
 agent = afs.spawn('hello-agent')
 afs.write(agent, '/hello.txt', b'Hello from KAOS!')
 print(afs.read(agent, '/hello.txt'))
@@ -57,9 +57,9 @@ kaos dashboard
 ### 1. Python Library (no infrastructure needed)
 
 ```python
-from kaos import AgentFS
+from kaos import Kaos
 
-afs = AgentFS("project.db")
+afs = Kaos("project.db")
 
 # Spawn isolated agents
 agent_a = afs.spawn("researcher", config={"team": "backend"})
@@ -124,11 +124,11 @@ kaos diff <agent-id> --from <cp1> --to <cp2>
 
 ```python
 import asyncio
-from kaos import AgentFS
+from kaos import Kaos
 from kaos.ccr import ClaudeCodeRunner
 from kaos.router import GEPARouter
 
-afs = AgentFS("project.db")
+afs = Kaos("project.db")
 router = GEPARouter.from_config("kaos.yaml")
 ccr = ClaudeCodeRunner(afs, router)
 
@@ -281,7 +281,7 @@ SELECT * FROM chain ORDER BY depth;
 kaos/
 ├── kaos/
 │   ├── __init__.py              # Package entry point
-│   ├── core.py                  # AgentFS VFS engine
+│   ├── core.py                  # Kaos VFS engine
 │   ├── schema.py                # SQLite schema + migrations
 │   ├── blobs.py                 # Content-addressable blob store
 │   ├── events.py                # Append-only event journal

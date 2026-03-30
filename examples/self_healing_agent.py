@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import asyncio
 
-from kaos import AgentFS
+from kaos import Kaos
 from kaos.ccr import ClaudeCodeRunner
 from kaos.router import GEPARouter
 
 
 async def main():
-    afs = AgentFS("self-healing.db")
+    afs = Kaos("self-healing.db")
     router = GEPARouter.from_config("kaos.yaml")
     ccr = ClaudeCodeRunner(afs, router, checkpoint_interval=5)
 

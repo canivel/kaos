@@ -1,4 +1,4 @@
-"""Tests for AgentFS core VFS engine."""
+"""Tests for Kaos core VFS engine."""
 
 from __future__ import annotations
 
@@ -7,20 +7,20 @@ import tempfile
 
 import pytest
 
-from kaos.core import AgentFS
+from kaos.core import Kaos
 
 
 @pytest.fixture
 def afs(tmp_path):
-    """Create a temporary AgentFS instance."""
+    """Create a temporary Kaos instance."""
     db_path = str(tmp_path / "test_agents.db")
-    fs = AgentFS(db_path=db_path)
+    fs = Kaos(db_path=db_path)
     yield fs
     fs.close()
 
 
 class TestAgentLifecycle:
-    def test_spawn_agent(self, afs: AgentFS):
+    def test_spawn_agent(self, afs: Kaos):
         agent_id = afs.spawn("test-agent", config={"model": "test"})
         assert agent_id is not None
         status = afs.status(agent_id)
@@ -28,13 +28,13 @@ class TestAgentLifecycle:
         assert status["status"] == "initialized"
         assert status["config"] == {"model": "test"}
 
-    def test_spawn_with_parent(self, afs: AgentFS):
+    def test_spawn_with_parent(self, afs: Kaos):
         parent_id = afs.spawn("parent-agent")
         child_id = afs.spawn("child-agent", parent_id=parent_id)
         child_status = afs.status(child_id)
         assert child_status["parent_id"] == parent_id
 
-    def test_agent_status_transitions(self, afs: AgentFS):
+    def test_agent_status_transitions(self, afs: Kaos):
         agent_id = afs.spawn("lifecycle-test")
 
         afs.set_status(agent_id, "running")
@@ -49,18 +49,18 @@ class TestAgentLifecycle:
         afs.complete(agent_id)
         assert afs.status(agent_id)["status"] == "completed"
 
-    def test_kill_agent(self, afs: AgentFS):
+    def test_kill_agent(self, afs: Kaos):
         agent_id = afs.spawn("kill-test")
         afs.set_status(agent_id, "running")
         afs.kill(agent_id)
         assert afs.status(agent_id)["status"] == "killed"
 
-    def test_fail_agent(self, afs: AgentFS):
+    def test_fail_agent(self, afs: Kaos):
         agent_id = afs.spawn("fail-test")
         afs.fail(agent_id, error="something went wrong")
         assert afs.status(agent_id)["status"] == "failed"
 
-    def test_list_agents(self, afs: AgentFS):
+    def test_list_agents(self, afs: Kaos):
         afs.spawn("agent-1")
         afs.spawn("agent-2")
         agent_id_3 = afs.spawn("agent-3")
@@ -73,11 +73,11 @@ class TestAgentLifecycle:
         assert len(running) == 1
         assert running[0]["name"] == "agent-3"
 
-    def test_nonexistent_agent_raises(self, afs: AgentFS):
+    def test_nonexistent_agent_raises(self, afs: Kaos):
         with pytest.raises(ValueError, match="Agent not found"):
             afs.status("nonexistent-id")
 
-    def test_heartbeat(self, afs: AgentFS):
+    def test_heartbeat(self, afs: Kaos):
         agent_id = afs.spawn("heartbeat-test")
         afs.set_status(agent_id, "running")
         afs.heartbeat(agent_id)
@@ -86,20 +86,20 @@ class TestAgentLifecycle:
 
 
 class TestVirtualFilesystem:
-    def test_write_and_read(self, afs: AgentFS):
+    def test_write_and_read(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         content = b"hello world"
         afs.write(agent_id, "/test.txt", content)
         assert afs.read(agent_id, "/test.txt") == content
 
-    def test_write_creates_parent_dirs(self, afs: AgentFS):
+    def test_write_creates_parent_dirs(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.write(agent_id, "/src/main/app.py", b"print('hello')")
         assert afs.exists(agent_id, "/src")
         assert afs.exists(agent_id, "/src/main")
         assert afs.read(agent_id, "/src/main/app.py") == b"print('hello')"
 
-    def test_overwrite_creates_new_version(self, afs: AgentFS):
+    def test_overwrite_creates_new_version(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.write(agent_id, "/file.txt", b"version 1")
         afs.write(agent_id, "/file.txt", b"version 2")
@@ -110,7 +110,7 @@ class TestVirtualFilesystem:
         assert history[0]["version"] == 1
         assert history[1]["version"] == 2
 
-    def test_delete_file(self, afs: AgentFS):
+    def test_delete_file(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.write(agent_id, "/delete-me.txt", b"temporary")
         assert afs.exists(agent_id, "/delete-me.txt")
@@ -118,17 +118,17 @@ class TestVirtualFilesystem:
         afs.delete(agent_id, "/delete-me.txt")
         assert not afs.exists(agent_id, "/delete-me.txt")
 
-    def test_delete_nonexistent_raises(self, afs: AgentFS):
+    def test_delete_nonexistent_raises(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         with pytest.raises(FileNotFoundError):
             afs.delete(agent_id, "/nonexistent.txt")
 
-    def test_read_nonexistent_raises(self, afs: AgentFS):
+    def test_read_nonexistent_raises(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         with pytest.raises(FileNotFoundError):
             afs.read(agent_id, "/nonexistent.txt")
 
-    def test_ls(self, afs: AgentFS):
+    def test_ls(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.write(agent_id, "/src/a.py", b"a")
         afs.write(agent_id, "/src/b.py", b"b")
@@ -140,7 +140,7 @@ class TestVirtualFilesystem:
         assert "b.py" in names
         assert "sub" in names
 
-    def test_stat(self, afs: AgentFS):
+    def test_stat(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.write(agent_id, "/info.txt", b"some content")
 
@@ -150,7 +150,7 @@ class TestVirtualFilesystem:
         assert st["version"] == 1
         assert st["content_hash"] is not None
 
-    def test_mkdir(self, afs: AgentFS):
+    def test_mkdir(self, afs: Kaos):
         agent_id = afs.spawn("fs-test")
         afs.mkdir(agent_id, "/my-dir")
         assert afs.exists(agent_id, "/my-dir")
@@ -158,7 +158,7 @@ class TestVirtualFilesystem:
         st = afs.stat(agent_id, "/my-dir")
         assert st["is_dir"] is True
 
-    def test_isolation_between_agents(self, afs: AgentFS):
+    def test_isolation_between_agents(self, afs: Kaos):
         """Agents cannot see each other's files."""
         agent_a = afs.spawn("agent-a")
         agent_b = afs.spawn("agent-b")
@@ -169,7 +169,7 @@ class TestVirtualFilesystem:
         assert afs.read(agent_a, "/secret.txt") == b"agent a secret"
         assert afs.read(agent_b, "/secret.txt") == b"agent b secret"
 
-    def test_blob_deduplication(self, afs: AgentFS):
+    def test_blob_deduplication(self, afs: Kaos):
         """Identical content across agents shares the same blob."""
         agent_a = afs.spawn("agent-a")
         agent_b = afs.spawn("agent-b")
@@ -184,27 +184,27 @@ class TestVirtualFilesystem:
 
 
 class TestStateManagement:
-    def test_set_and_get_state(self, afs: AgentFS):
+    def test_set_and_get_state(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         afs.set_state(agent_id, "counter", 42)
         assert afs.get_state(agent_id, "counter") == 42
 
-    def test_state_upsert(self, afs: AgentFS):
+    def test_state_upsert(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         afs.set_state(agent_id, "key", "value1")
         afs.set_state(agent_id, "key", "value2")
         assert afs.get_state(agent_id, "key") == "value2"
 
-    def test_get_state_missing_raises(self, afs: AgentFS):
+    def test_get_state_missing_raises(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         with pytest.raises(KeyError):
             afs.get_state(agent_id, "missing")
 
-    def test_get_state_or_default(self, afs: AgentFS):
+    def test_get_state_or_default(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         assert afs.get_state_or(agent_id, "missing", "default") == "default"
 
-    def test_get_all_state(self, afs: AgentFS):
+    def test_get_all_state(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         afs.set_state(agent_id, "a", 1)
         afs.set_state(agent_id, "b", "two")
@@ -213,13 +213,13 @@ class TestStateManagement:
         all_state = afs.get_all_state(agent_id)
         assert all_state == {"a": 1, "b": "two", "c": [3, 4, 5]}
 
-    def test_delete_state(self, afs: AgentFS):
+    def test_delete_state(self, afs: Kaos):
         agent_id = afs.spawn("state-test")
         afs.set_state(agent_id, "temp", "value")
         afs.delete_state(agent_id, "temp")
         assert afs.get_state_or(agent_id, "temp") is None
 
-    def test_state_isolation(self, afs: AgentFS):
+    def test_state_isolation(self, afs: Kaos):
         agent_a = afs.spawn("agent-a")
         agent_b = afs.spawn("agent-b")
 
@@ -231,7 +231,7 @@ class TestStateManagement:
 
 
 class TestToolCalls:
-    def test_log_and_complete_tool_call(self, afs: AgentFS):
+    def test_log_and_complete_tool_call(self, afs: Kaos):
         agent_id = afs.spawn("tool-test")
         call_id = afs.log_tool_call(agent_id, "fs_read", {"path": "/test.txt"})
         assert call_id is not None
@@ -250,7 +250,7 @@ class TestToolCalls:
         assert calls[0]["status"] == "success"
         assert calls[0]["token_count"] == 100
 
-    def test_tool_call_error(self, afs: AgentFS):
+    def test_tool_call_error(self, afs: Kaos):
         agent_id = afs.spawn("tool-test")
         call_id = afs.log_tool_call(agent_id, "shell_exec", {"command": "fail"})
         afs.complete_tool_call(
@@ -264,7 +264,7 @@ class TestToolCalls:
         assert len(calls) == 1
         assert calls[0]["error_message"] == "command not found"
 
-    def test_filter_tool_calls(self, afs: AgentFS):
+    def test_filter_tool_calls(self, afs: Kaos):
         agent_id = afs.spawn("tool-test")
         afs.log_tool_call(agent_id, "fs_read", {"path": "/a"})
         afs.log_tool_call(agent_id, "fs_write", {"path": "/b"})
@@ -275,7 +275,7 @@ class TestToolCalls:
 
 
 class TestCheckpoints:
-    def test_create_and_list_checkpoint(self, afs: AgentFS):
+    def test_create_and_list_checkpoint(self, afs: Kaos):
         agent_id = afs.spawn("cp-test")
         afs.write(agent_id, "/file.txt", b"content")
         afs.set_state(agent_id, "progress", 50)
@@ -285,7 +285,7 @@ class TestCheckpoints:
         assert len(checkpoints) == 1
         assert checkpoints[0]["label"] == "mid-point"
 
-    def test_restore_checkpoint(self, afs: AgentFS):
+    def test_restore_checkpoint(self, afs: Kaos):
         agent_id = afs.spawn("cp-test")
 
         # Initial state
@@ -309,7 +309,7 @@ class TestCheckpoints:
         assert afs.get_state(agent_id, "step") == 1
         assert not afs.exists(agent_id, "/new-file.txt")
 
-    def test_diff_checkpoints(self, afs: AgentFS):
+    def test_diff_checkpoints(self, afs: Kaos):
         agent_id = afs.spawn("cp-test")
 
         afs.write(agent_id, "/a.txt", b"content-a")
@@ -331,7 +331,7 @@ class TestCheckpoints:
 
 
 class TestQuerying:
-    def test_select_query(self, afs: AgentFS):
+    def test_select_query(self, afs: Kaos):
         afs.spawn("query-test-1")
         afs.spawn("query-test-2")
 
@@ -340,22 +340,22 @@ class TestQuerying:
         assert "query-test-1" in names
         assert "query-test-2" in names
 
-    def test_write_query_rejected(self, afs: AgentFS):
+    def test_write_query_rejected(self, afs: Kaos):
         with pytest.raises(PermissionError):
             afs.query("DELETE FROM agents")
 
-    def test_insert_query_rejected(self, afs: AgentFS):
+    def test_insert_query_rejected(self, afs: Kaos):
         with pytest.raises(PermissionError):
             afs.query("INSERT INTO agents (agent_id, name) VALUES ('x', 'y')")
 
 
 class TestEventJournal:
-    def test_events_logged_on_spawn(self, afs: AgentFS):
+    def test_events_logged_on_spawn(self, afs: Kaos):
         agent_id = afs.spawn("event-test")
         events = afs.events.get_events(agent_id)
         assert any(e["event_type"] == "agent_spawn" for e in events)
 
-    def test_events_logged_on_file_ops(self, afs: AgentFS):
+    def test_events_logged_on_file_ops(self, afs: Kaos):
         agent_id = afs.spawn("event-test")
         afs.write(agent_id, "/test.txt", b"content")
         afs.read(agent_id, "/test.txt")
@@ -365,7 +365,7 @@ class TestEventJournal:
         assert "file_write" in types
         assert "file_read" in types
 
-    def test_event_count(self, afs: AgentFS):
+    def test_event_count(self, afs: Kaos):
         agent_id = afs.spawn("event-test")
         afs.write(agent_id, "/a.txt", b"a")
         afs.write(agent_id, "/b.txt", b"b")

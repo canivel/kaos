@@ -9,21 +9,21 @@ from typing import Any
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
-from kaos.core import AgentFS
+from kaos.core import Kaos
 from kaos.ccr.runner import ClaudeCodeRunner
 from kaos.router.gepa import GEPARouter
 
 logger = logging.getLogger(__name__)
 
 # Module-level references set during server initialization
-_afs: AgentFS | None = None
+_afs: Kaos | None = None
 _ccr: ClaudeCodeRunner | None = None
 
 server = Server("kaos")
 
 
-def init_server(afs: AgentFS, ccr: ClaudeCodeRunner) -> Server:
-    """Initialize the MCP server with AgentFS and CCR instances."""
+def init_server(afs: Kaos, ccr: ClaudeCodeRunner) -> Server:
+    """Initialize the MCP server with Kaos and CCR instances."""
     global _afs, _ccr
     _afs = afs
     _ccr = ccr
@@ -32,7 +32,7 @@ def init_server(afs: AgentFS, ccr: ClaudeCodeRunner) -> Server:
 
 @server.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all available AgentFS tools."""
+    """List all available Kaos tools."""
     return [
         Tool(
             name="agent_spawn",
