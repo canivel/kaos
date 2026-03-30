@@ -121,7 +121,8 @@ nav a:hover{color:var(--fg)}
 /* ── Architecture ─────────────────────────────────── */
 .architecture{background:var(--bg2)}
 .architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
-.arch-diagram{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:2rem;max-width:750px;margin:0 auto;font-family:var(--mono);font-size:.8rem;line-height:1.5;color:var(--fg2);white-space:pre;overflow-x:auto}
+.arch-image{max-width:900px;margin:0 auto}
+.arch-image img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
 
 /* ── Use Cases ────────────────────────────────────── */
 .use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
@@ -153,7 +154,6 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   .pain-grid,.feat-grid,.uc-grid{grid-template-columns:1fr}
   .comp-table{font-size:.8rem}
   .comp-table th,.comp-table td{padding:.5rem .6rem}
-  .arch-diagram{font-size:.65rem;padding:1rem}
   .install-bar{font-size:.8rem;padding:.8rem 1rem}
 }
 </style>
@@ -348,29 +348,9 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="architecture">
 <div class="wrap">
   <h2>Architecture</h2>
-  <div class="arch-diagram">
-<span style="color:var(--accent2)">Claude Code</span> / CLI / Python SDK
-         |
-         | MCP protocol (stdio / SSE)
-         v
-<span style="color:var(--cyan)">+---------------------------+</span>
-<span style="color:var(--cyan)">|    KAOS MCP Server        |</span>  11 tools: spawn, read,
-<span style="color:var(--cyan)">|    + CCR Agent Runner     |</span>  write, checkpoint, query...
-<span style="color:var(--cyan)">+---------------------------+</span>
-         |
-         | GEPA routes to optimal model
-         v
-<span style="color:var(--green)">+---------------------------+</span>
-<span style="color:var(--green)">|    vLLM / Local LLMs      |</span>  Your GPU, your models
-<span style="color:var(--green)">+---------------------------+</span>
-         |
-         | Results stored in
-         v
-<span style="color:var(--orange)">+---------------------------+</span>
-<span style="color:var(--orange)">| SQLite (.db) single file  |</span>  agents | files | blobs
-<span style="color:var(--orange)">|                           |</span>  tool_calls | state
-<span style="color:var(--orange)">|                           |</span>  events | checkpoints
-<span style="color:var(--orange)">+---------------------------+</span></div>
+  <div class="arch-image">
+    <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
+  </div>
 </div>
 </section>
 
