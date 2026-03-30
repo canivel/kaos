@@ -58,17 +58,21 @@ db.query("SELECT event_type, payload FROM events WHERE agent_id = ?", [agent_a])
 
 Those frameworks are great at **prompt chaining and agent communication**. KAOS isn't competing with them — it's solving the problem underneath that none of them address:
 
-| Problem | LangChain / CrewAI / AutoGen | KAOS |
-|---|---|---|
-| Agent isolation | Shared filesystem | Enforced per-agent VFS |
-| Audit trail | DIY logging | Append-only event journal |
-| Roll back one agent | Not possible | `db.restore(agent, checkpoint)` |
-| Debug a failed agent | Read logs, hope | `SELECT * FROM events WHERE agent_id = ?` |
-| Portable runtime | Cloud-dependent / in-memory | Single `.db` file |
-| State persistence | Lost on crash | SQLite — crash-safe by design |
-| Token tracking | Manual | `SELECT SUM(token_count) FROM tool_calls` |
+**Agent isolation?** They share a filesystem. KAOS enforces per-agent VFS — every query is scoped by `WHERE agent_id = ?`.
 
-**KAOS isn't a replacement** — it's the runtime layer they're missing. You can use KAOS underneath LangChain, or use it standalone with local LLMs.
+**Audit trail?** DIY logging, if you remember. KAOS records every operation in an append-only event journal — 14 event types, queryable with SQL.
+
+**Roll back one agent?** Not possible. In KAOS: `db.restore(agent, checkpoint)`. Other agents are untouched.
+
+**Debug a failed agent?** Read logs, hope for the best. In KAOS: `SELECT * FROM events WHERE agent_id = ?`
+
+**Portable runtime?** Cloud-dependent or in-memory. KAOS is a single `.db` file — copy it, send it, query it anywhere.
+
+**State persistence?** Framework-specific, often lost on crash. KAOS uses SQLite — crash-safe by design.
+
+**Token tracking?** Manual. KAOS: `SELECT SUM(token_count) FROM tool_calls`
+
+**KAOS isn't a replacement** — it's the runtime layer they're missing. Use it underneath LangChain, or standalone with local LLMs.
 
 ---
 
@@ -298,19 +302,17 @@ Or use the post-mortem script: `python examples/post_mortem.py kaos.db <agent-id
 
 ## What You Get For Free
 
-| Capability | How |
-|---|---|
-| Multi-agent orchestration | Claude Code + KAOS MCP (11 tools) |
-| Agent isolation | Per-agent VFS, SQL-enforced |
-| Intelligent routing | GEPA: classify task → right model |
-| Parallel execution | Up to 8 concurrent agents |
-| Checkpoint/restore | Snapshot + rollback any agent |
-| Full audit trail | 14 event types, append-only |
-| SQL-queryable everything | Tokens, errors, files, events |
-| Content deduplication | SHA-256 blobs, zstd compressed |
-| Single-file runtime | `cp kaos.db backup.db` |
-| Zero API costs | Everything on your GPU |
-| Data stays local | Nothing leaves your machine |
+- **Multi-agent orchestration** — Claude Code + KAOS MCP (11 tools)
+- **Agent isolation** — Per-agent VFS, enforced at the SQL level
+- **Intelligent routing** — GEPA classifies task complexity → picks the right model
+- **Parallel execution** — Up to 8 concurrent agents with semaphore control
+- **Checkpoint / restore** — Snapshot and rollback any agent independently
+- **Full audit trail** — 14 event types, append-only, SQL-queryable
+- **SQL-queryable everything** — Token usage, errors, files touched, event timeline
+- **Content deduplication** — SHA-256 blobs with zstd compression
+- **Single-file runtime** — `cp kaos.db backup.db` is a full backup
+- **Zero API costs** — Everything runs on your GPU
+- **Data stays local** — Nothing leaves your machine
 
 ---
 
