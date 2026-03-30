@@ -1,30 +1,32 @@
-# I Built a Free, Local Multi-Agent System That Actually Works — Here's How
+# Your AI Agents Share a Filesystem. That's the Bug.
 
-*Your AI agents share filesystems, lose state on crash, and you have no idea what they did. I fixed that.*
-
----
-
-## The Frustration That Started Everything
-
-I was running 4 AI agents in parallel — one refactoring code, one writing tests, one updating docs, one reviewing for security. Sounds productive, right?
-
-Then the refactoring agent wrote to `auth.py`. The test-writing agent also wrote to `auth.py`. One overwrote the other. I didn't find out until everything broke.
-
-I tried to debug what happened. There was no audit trail. No way to see what each agent did, in what order, or why. I tried `git log` — useless, because the agents weren't committing after every step.
-
-I tried to roll back just the refactoring agent. Couldn't. Had to `git reset --hard` and lose everyone's work.
-
-I tried running them again. The test-writer agent crashed mid-task. All its progress was gone. Start over.
-
-**This is the state of multi-agent systems in 2026.** We have incredibly capable models, but the runtime infrastructure underneath them is held together with duct tape and conventions.
-
-So I built KAOS.
+*LangChain, CrewAI, and AutoGen give you prompt chains. None of them give you isolation, rollback, or an audit trail. I built the missing runtime layer — and it's one SQLite file.*
 
 ---
 
-## What Is KAOS?
+## Every Multi-Agent Framework Has the Same Blind Spot
 
-**KAOS** (Kernel for Agent Orchestration & Sandboxing) gives every AI agent an isolated virtual filesystem inside a single SQLite `.db` file — with checkpoint/restore, full audit trail, and SQL-queryable history.
+We've gotten really good at orchestrating AI agents. Route tasks, chain prompts, manage conversations — LangChain, CrewAI, AutoGen, you name it.
+
+But underneath all of that, your agents share a filesystem. And nobody talks about what that actually means.
+
+**It means your refactoring agent and your test-writing agent both write to `auth.py` — and one silently overwrites the other.** You find out when CI breaks.
+
+**It means when an agent goes rogue** — 47 tool calls, 12 files modified, codebase broken — you have no audit trail. You `grep` through logs. Maybe you have logs.
+
+**It means you can't roll back one agent.** The refactorer broke everything? `git reset --hard`. The test-writer's work, the doc-writer's work, the security reviewer's findings — all gone.
+
+**It means state vanishes on crash.** Agent dies mid-task. Progress, findings, intermediate files — start over.
+
+This isn't a model problem. The models are great. **This is an infrastructure problem.** And no agent framework solves it because they all treat the runtime as someone else's job.
+
+So I built the runtime.
+
+---
+
+## KAOS: A Kernel for Your Agents
+
+**KAOS** (Kernel for Agent Orchestration & Sandboxing) is the runtime layer that agent frameworks are missing. Every agent gets an isolated virtual filesystem inside a single SQLite `.db` file — with checkpoint/restore, a full audit trail, and SQL-queryable history of everything.
 
 ```python
 from kaos import Kaos
@@ -52,9 +54,9 @@ db.query("SELECT event_type, payload FROM events WHERE agent_id = ?", [agent_a])
 
 ---
 
-## Why Not LangChain / CrewAI / AutoGen?
+## What LangChain, CrewAI, and AutoGen Don't Give You
 
-Those frameworks are great at **prompt chaining and agent communication**. But they all skip the **runtime infrastructure**:
+Those frameworks are great at **prompt chaining and agent communication**. KAOS isn't competing with them — it's solving the problem underneath that none of them address:
 
 | Problem | LangChain / CrewAI / AutoGen | KAOS |
 |---|---|---|
@@ -85,7 +87,7 @@ The key insight: **everything flows into one SQLite database**. Every file write
 
 ---
 
-## The 6 Things That Make KAOS Different
+## What You Get That No Other Framework Provides
 
 ### 1. Enforced Agent Isolation
 
@@ -149,9 +151,9 @@ The entire runtime — all agents, all files, all events, all checkpoints — is
 
 ---
 
-## Tutorial: Run It All Locally For Free
+## Set It Up in 5 Steps (Free, Local, No API Keys)
 
-Here's how to set up a fully local multi-agent system — Claude Code orchestrating agents running on your own GPU, at zero API cost.
+Here's the full setup — Claude Code orchestrating agents on your own GPU, with everything running locally at zero cost. Your code never leaves your machine.
 
 ### Step 1: Install KAOS
 
