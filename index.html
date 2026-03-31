@@ -543,6 +543,33 @@ dev_agent = db.<span class="fn">spawn</span>(<span class="st">"feature-build"</s
 <span class="cm"># Query across all agents for governance reporting</span>
 db.<span class="fn">query</span>(<span class="st">"SELECT name, status, COUNT(*) FROM agents GROUP BY team"</span>)</pre></div>
     </div>
+    <div class="uc-card">
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(255,82,82,.15);color:var(--red)">Research</span><span class="uc-badge">GPU</span></div>
+      <h3>Autonomous Research Lab</h3>
+      <p>Inspired by <a href="https://github.com/karpathy/autoresearch" style="color:var(--accent2)">Karpathy's autoresearch</a>: run N research agents in parallel, each exploring a different ML hypothesis &mdash; architecture, optimizer, scaling, regularization. Each gets its own isolated train.py. SQL-queryable results across all agents.</p>
+      <div class="uc-result">N agents &bull; N directions &bull; parallel &bull; SQL-queryable experiments</div>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre><span class="cm"># Each agent gets its own isolated copy of train.py</span>
+<span class="kw">for</span> direction <span class="kw">in</span> [<span class="st">"architecture"</span>, <span class="st">"optimizer"</span>, <span class="st">"scaling"</span>]:
+    agent = db.<span class="fn">spawn</span>(f<span class="st">"{direction}-explorer"</span>)
+    db.<span class="fn">write</span>(agent, <span class="st">"/train.py"</span>, BASE_TRAIN_PY)
+    db.<span class="fn">checkpoint</span>(agent, label=<span class="st">"baseline"</span>)
+
+<span class="cm"># Run all in parallel — isolated, auto-checkpointed</span>
+results = <span class="kw">await</span> ccr.<span class="fn">run_parallel</span>(RESEARCH_DIRECTIONS)</pre></div>
+      <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-autoresearch.md" class="uc-link">Full tutorial &rarr;</a>
+    </div>
+    <div class="uc-card">
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(0,230,118,.15);color:var(--green)">Parallel</span><span class="uc-badge">Token Tracking</span></div>
+      <h3>Cost & Token Tracking</h3>
+      <p>Know exactly how much each agent consumed. Query token usage, error rates, and duration across all agents with one SQL query. No more surprise bills or blind spots in your agent fleet.</p>
+      <div class="uc-result">Per-agent &bull; per-tool-call &bull; one SQL query</div>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>db.<span class="fn">query</span>(<span class="st">"""SELECT a.name,
+    SUM(tc.token_count) as tokens,
+    SUM(tc.duration_ms) / 1000.0 as seconds
+  FROM agents a
+  JOIN tool_calls tc ON a.agent_id = tc.agent_id
+  GROUP BY a.agent_id ORDER BY tokens DESC"""</span>)</pre></div>
+    </div>
   </div>
 
   <!-- Meta-Harness: Business -->
