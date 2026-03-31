@@ -151,7 +151,16 @@ nav a:hover{color:var(--fg)}
 .uc-card-mh:hover{border-color:var(--accent2)}
 .uc-card h3{font-size:1.1rem;margin-bottom:.5rem;color:var(--fg)}
 .uc-card p{color:var(--fg2);font-size:.88rem;line-height:1.6;margin-bottom:.8rem}
-.uc-card code{display:block;background:var(--bg2);padding:.8rem 1rem;border-radius:8px;font-size:.76rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre;margin-bottom:.6rem}
+.uc-code{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin-bottom:.6rem}
+.uc-code-head{display:flex;align-items:center;gap:.4rem;padding:.35rem .8rem;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06)}
+.uc-code-head i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.uc-code-head i:nth-child(1){background:var(--red)}.uc-code-head i:nth-child(2){background:var(--orange)}.uc-code-head i:nth-child(3){background:var(--green)}
+.uc-code pre{padding:.7rem .9rem;margin:0;overflow-x:auto;font-size:.76rem;line-height:1.65;color:var(--fg2);white-space:pre}
+.uc-code .cm{color:#636378}
+.uc-code .kw{color:var(--accent2)}
+.uc-code .fn{color:var(--cyan)}
+.uc-code .st{color:var(--green)}
+.uc-code .hl{color:var(--fg);font-weight:500}
 .uc-badges{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap}
 .uc-badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .6rem;border-radius:20px;background:rgba(255,255,255,.06);color:var(--fg2);font-weight:500}
 .uc-badge-mh{background:rgba(108,92,231,.2) !important;color:var(--accent2) !important}
@@ -491,33 +500,33 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <h3>Code Review Swarm</h3>
       <p>4 agents review the same code from different angles &mdash; security, performance, style, and test coverage &mdash; all running in parallel. Each writes to its own isolated VFS. No conflicts. Combine the results or query them with SQL.</p>
       <div class="uc-result">4 reviewers &bull; parallel execution &bull; zero conflicts</div>
-      <code>results = await ccr.run_parallel([
-  {"name": "security",  "prompt": "Find vulns..."},
-  {"name": "perf",      "prompt": "Find perf issues..."},
-  {"name": "style",     "prompt": "Review best practices..."},
-  {"name": "tests",     "prompt": "What's missing?"},
-])</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>results = <span class="kw">await</span> ccr.<span class="fn">run_parallel</span>([
+  {<span class="st">"name"</span>: <span class="st">"security"</span>,  <span class="st">"prompt"</span>: <span class="st">"Find vulns..."</span>},
+  {<span class="st">"name"</span>: <span class="st">"perf"</span>,      <span class="st">"prompt"</span>: <span class="st">"Find perf issues..."</span>},
+  {<span class="st">"name"</span>: <span class="st">"style"</span>,     <span class="st">"prompt"</span>: <span class="st">"Review best practices..."</span>},
+  {<span class="st">"name"</span>: <span class="st">"tests"</span>,     <span class="st">"prompt"</span>: <span class="st">"What's missing?"</span>},
+])</pre></div>
     </div>
     <div class="uc-card">
       <div class="uc-badges"><span class="uc-badge" style="background:rgba(24,255,255,.15);color:var(--cyan)">Checkpoint</span><span class="uc-badge">Rollback</span></div>
       <h3>Safe Refactoring with Rollback</h3>
       <p>Checkpoint before risky operations. If an agent breaks something, restore just that agent &mdash; other agents keep running untouched. Diff two checkpoints to see exactly what changed: files, state, tool calls.</p>
       <div class="uc-result">Instant rollback &bull; per-agent &bull; other agents unaffected</div>
-      <code>cp = db.checkpoint(agent, label="pre-migration")
-try:
-    await ccr.run_agent(agent, "Migrate schema v3")
-except Exception:
-    db.restore(agent, cp)  # only this agent rolls back</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>cp = db.<span class="fn">checkpoint</span>(agent, label=<span class="st">"pre-migration"</span>)
+<span class="kw">try</span>:
+    <span class="kw">await</span> ccr.<span class="fn">run_agent</span>(agent, <span class="st">"Migrate schema v3"</span>)
+<span class="kw">except</span> Exception:
+    <span class="hl">db.restore(agent, cp)</span>  <span class="cm"># only this agent rolls back</span></pre></div>
     </div>
     <div class="uc-card">
       <div class="uc-badges"><span class="uc-badge" style="background:rgba(255,145,0,.15);color:var(--orange)">SQL</span><span class="uc-badge">Audit Trail</span></div>
       <h3>Post-Mortem Debugging</h3>
       <p>An agent went rogue &mdash; 47 tool calls, 12 files modified, codebase broken. Query the complete event timeline, failed tool calls, token usage, and file changes with SQL. No log files to grep.</p>
       <div class="uc-result">14 event types &bull; every operation logged &bull; SQL-queryable</div>
-      <code>db.query("""SELECT tool_name, error, duration_ms
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>db.<span class="fn">query</span>(<span class="st">"""SELECT tool_name, error, duration_ms
   FROM tool_calls
   WHERE agent_id = ? AND status = 'error'
-  ORDER BY timestamp""", [agent_id])</code>
+  ORDER BY timestamp"""</span>, [agent_id])</pre></div>
     </div>
   </div>
 
@@ -529,10 +538,10 @@ except Exception:
       <h3>Customer Lifetime Value (CLV/LTV)</h3>
       <p>Predict customer lifetime value from profile + behavior data. Meta-Harness discovers segment-aware prompting (enterprise vs. startup need different framing) and a two-step approach: predict churn first, then CLV conditional on retention.</p>
       <div class="uc-result" style="color:var(--green)">40% &rarr; 72% predictions within 20% of actual CLV</div>
-      <code>bench = CLVBenchmark()  # your customer data
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(objectives=["+accuracy", "-context_cost"]))
-# Discovered: churn-first reasoning beats single-step by 25pts</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">CLVBenchmark</span>()  <span class="cm"># your customer data</span>
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+accuracy"</span>, <span class="st">"-context_cost"</span>]))
+<span class="cm"># Discovered: churn-first reasoning beats single-step by 25pts</span></pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_clv_prediction.py" class="uc-link">View example &rarr;</a>
     </div>
     <div class="uc-card uc-card-mh">
@@ -540,10 +549,10 @@ search = MetaHarnessSearch(db, router, bench,
       <h3>CRM Campaign Optimization</h3>
       <p>Generate personalized email subjects, push notifications, and SMS per customer segment. Meta-Harness learns that enterprise wants ROI language, consumers want urgency, and referencing the customer's most-used feature boosts engagement.</p>
       <div class="uc-result" style="color:var(--green)">12% &rarr; 24% message relevance score</div>
-      <code>bench = CRMCampaignBenchmark()  # campaign history
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(objectives=["+relevance", "-context_cost"]))
-# Discovered: different harness per segment outperforms generic</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">CRMCampaignBenchmark</span>()  <span class="cm"># campaign history</span>
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+relevance"</span>, <span class="st">"-context_cost"</span>]))
+<span class="cm"># Discovered: different harness per segment outperforms generic</span></pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_crm_campaigns.py" class="uc-link">View example &rarr;</a>
     </div>
     <div class="uc-card uc-card-mh">
@@ -551,10 +560,10 @@ search = MetaHarnessSearch(db, router, bench,
       <h3>Fraud Detection</h3>
       <p>Review flagged transactions for fraud. Meta-Harness finds that pre-computing red flags (amount deviation, unusual country, velocity) and showing contrastive examples (similar fraud vs. legitimate) improves F1 by 20 points over basic prompting.</p>
       <div class="uc-result" style="color:var(--green)">F1: 0.55 &rarr; 0.78 &bull; false positives cut by 40%</div>
-      <code>bench = FraudDetectionBenchmark()  # transaction data
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(objectives=["+f1_score", "-context_cost"]))
-# Pareto: [high recall] ↔ [balanced F1, fewer tokens]</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">FraudDetectionBenchmark</span>()  <span class="cm"># transaction data</span>
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+f1_score"</span>, <span class="st">"-context_cost"</span>]))
+<span class="cm"># Pareto: [high recall] ↔ [balanced F1, fewer tokens]</span></pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_fraud_detection.py" class="uc-link">View example &rarr;</a>
     </div>
     <div class="uc-card uc-card-mh">
@@ -562,10 +571,10 @@ search = MetaHarnessSearch(db, router, bench,
       <h3>Support Ticket Classification</h3>
       <p>Route tickets to the right team (billing, technical, account, general). The proposer agent reads execution traces, discovers that ambiguous tickets need contrastive examples, and that two-stage verification beats single-shot classification.</p>
       <div class="uc-result" style="color:var(--green)">45% &rarr; 87% accuracy &bull; 10 iterations</div>
-      <code>bench = SupportTicketBenchmark()
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(max_iterations=10, candidates_per_iteration=2))
-# Full search stored in one queryable .db file</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">SupportTicketBenchmark</span>()
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(max_iterations=<span class="hl">10</span>, candidates_per_iteration=<span class="hl">2</span>))
+<span class="cm"># Full search stored in one queryable .db file</span></pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_support_tickets.py" class="uc-link">View example &rarr;</a>
     </div>
   </div>
@@ -578,10 +587,10 @@ search = MetaHarnessSearch(db, router, bench,
       <h3>Math Retrieval Optimization</h3>
       <p>Which solved problems should you retrieve from a 500K corpus to help solve an Olympiad problem? Meta-Harness discovers domain-aware routing: different retrieval strategies for geometry, combinatorics, number theory, and algebra.</p>
       <div class="uc-result" style="color:var(--green)">+4.7 points avg across 5 models (paper result)</div>
-      <code>bench = get_benchmark("math_rag",
-  corpus_path="535k_solved_problems.jsonl")
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(max_iterations=15))</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">get_benchmark</span>(<span class="st">"math_rag"</span>,
+  corpus_path=<span class="st">"535k_solved_problems.jsonl"</span>)
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(max_iterations=<span class="hl">15</span>))</pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_math.py" class="uc-link">View example &rarr;</a>
     </div>
     <div class="uc-card uc-card-mh">
@@ -589,10 +598,10 @@ search = MetaHarnessSearch(db, router, bench,
       <h3>Agentic Coding Optimization</h3>
       <p>Optimize a coding agent's harness. The paper's key discovery: gathering an environment snapshot before the agent loop (languages, tools, memory) eliminates 2-4 wasted exploratory turns. Only ~80 lines added, no existing code modified.</p>
       <div class="uc-result" style="color:var(--green)">76.4% on TerminalBench-2 (paper result)</div>
-      <code>bench = get_benchmark("agentic_coding",
-  tasks_path="89_dockerized_tasks.jsonl")
-search = MetaHarnessSearch(db, router, bench,
-  SearchConfig(objectives=["+pass_rate"]))</code>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">get_benchmark</span>(<span class="st">"agentic_coding"</span>,
+  tasks_path=<span class="st">"89_dockerized_tasks.jsonl"</span>)
+search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
+  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+pass_rate"</span>]))</pre></div>
       <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_coding.py" class="uc-link">View example &rarr;</a>
     </div>
   </div>
