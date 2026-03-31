@@ -528,7 +528,7 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 
 ## Architecture
 
-![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](docs/architecture.svg)
+![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
 
 Five layers, one SQLite file:
 - **Interfaces** — CLI (19 commands), MCP Server (17 tools), Python SDK, TUI Dashboard
