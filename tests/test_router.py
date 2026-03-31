@@ -194,4 +194,4 @@ class TestContextCompressor:
     def test_estimate_tokens(self, compressor: ContextCompressor):
         messages = [{"role": "user", "content": "a" * 400}]
         tokens = compressor.estimate_tokens(messages)
-        assert tokens == 100
+        assert tokens == 101  # len/4 + 1 per block (Claude Code pattern)

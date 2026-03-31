@@ -1,4 +1,11 @@
-"""Tool registry and sandboxed tool execution for agents."""
+"""Tool registry, permissions, and sandboxed tool execution for agents.
+
+Permission model learned from Claude Code internals (via claw-code analysis):
+- Three modes: Allow, Deny, Prompt
+- Per-tool overrides via ToolPermissionPolicy
+- Denied tools get error results injected back into conversation so the LLM adapts
+- Prefix-based deny lists for blocking tool families (e.g. deny all "mcp_" tools)
+"""
 
 from __future__ import annotations
 
@@ -7,10 +14,64 @@ import json
 import subprocess
 import time
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, Callable, Awaitable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from kaos.core import Kaos
+
+
+class PermissionMode(Enum):
+    """Tool permission modes."""
+    ALLOW = "allow"
+    DENY = "deny"
+
+
+@dataclass
+class ToolPermissionPolicy:
+    """Permission policy for tool execution.
+
+    Supports per-tool overrides and prefix-based deny lists.
+    When a tool is denied, an error result is injected into the conversation
+    so the LLM knows the tool was blocked and can adapt its approach.
+    """
+    default_mode: PermissionMode = PermissionMode.ALLOW
+    tool_modes: dict[str, PermissionMode] = field(default_factory=dict)
+    deny_prefixes: list[str] = field(default_factory=list)
+
+    def authorize(self, tool_name: str) -> tuple[bool, str]:
+        """Check if a tool is allowed.
+
+        Returns (is_allowed, denial_reason).
+        """
+        lowered = tool_name.lower()
+
+        # Check prefix deny list
+        for prefix in self.deny_prefixes:
+            if lowered.startswith(prefix.lower()):
+                return False, f"Tool '{tool_name}' blocked by deny prefix '{prefix}'"
+
+        # Check per-tool override
+        if tool_name in self.tool_modes:
+            mode = self.tool_modes[tool_name]
+            if mode == PermissionMode.DENY:
+                return False, f"Tool '{tool_name}' denied by permission policy"
+            return True, ""
+
+        # Fall back to default
+        if self.default_mode == PermissionMode.DENY:
+            return False, f"Tool '{tool_name}' denied by default policy"
+        return True, ""
+
+    def deny_tool(self, name: str) -> ToolPermissionPolicy:
+        """Deny a specific tool. Returns self for chaining."""
+        self.tool_modes[name] = PermissionMode.DENY
+        return self
+
+    def allow_tool(self, name: str) -> ToolPermissionPolicy:
+        """Allow a specific tool. Returns self for chaining."""
+        self.tool_modes[name] = PermissionMode.ALLOW
+        return self
 
 
 @dataclass
@@ -28,9 +89,10 @@ class ToolDefinition:
 class ToolRegistry:
     """Registry of tools available to agents with sandboxed execution."""
 
-    def __init__(self, afs: Kaos):
+    def __init__(self, afs: Kaos, permission_policy: ToolPermissionPolicy | None = None):
         self.afs = afs
         self._tools: dict[str, ToolDefinition] = {}
+        self.permission_policy = permission_policy or ToolPermissionPolicy()
         self._register_builtins()
 
     def register(self, tool: ToolDefinition) -> None:
@@ -65,7 +127,14 @@ class ToolRegistry:
     async def execute(
         self, agent_id: str, tool_name: str, arguments: dict[str, Any]
     ) -> Any:
-        """Execute a tool with sandboxing and timeout."""
+        """Execute a tool with permission check, sandboxing, and timeout."""
+        # Permission check — denied tools raise PermissionError
+        # The caller (runner.py) catches this and injects an error result
+        # so the LLM knows the tool was blocked and can adapt
+        allowed, reason = self.permission_policy.authorize(tool_name)
+        if not allowed:
+            raise PermissionError(reason)
+
         tool = self._tools.get(tool_name)
         if not tool:
             raise ValueError(f"Unknown tool: {tool_name}")

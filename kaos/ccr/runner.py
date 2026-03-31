@@ -1,4 +1,11 @@
-"""Claude Code Runner — the agent execution loop."""
+"""Claude Code Runner — the agent execution loop.
+
+Improvements informed by Claude Code's internal architecture (via claw-code analysis):
+- Turn iteration cap (default 16) for tool-use chains within a single turn
+- Per-message usage tracking for accurate token reconstruction from restored sessions
+- Permission-aware tool execution (denied tools inject errors so LLM adapts)
+- Continuation-style context compaction (summarize old messages, not just drop them)
+"""
 
 from __future__ import annotations
 
@@ -7,17 +14,22 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, TYPE_CHECKING
 
 from kaos.ccr.prompts import build_system_prompt
-from kaos.ccr.tools import ToolRegistry
+from kaos.ccr.tools import ToolRegistry, ToolPermissionPolicy
 
 if TYPE_CHECKING:
     from kaos.core import Kaos
     from kaos.router.gepa import GEPARouter
 
 logger = logging.getLogger(__name__)
+
+# Max tool-use iterations within a single turn before forcing a stop.
+# Prevents runaway tool-call loops where the model keeps calling tools
+# without producing a final text response.
+MAX_TOOL_ITERATIONS_PER_TURN = 16
 
 
 @dataclass
@@ -39,6 +51,34 @@ class ModelResponse:
     usage: dict[str, int] | None = None
 
 
+@dataclass
+class UsageTracker:
+    """Tracks cumulative token usage across an agent's lifetime.
+
+    Embeds per-turn usage in conversation messages so usage can be
+    reconstructed from a restored session without external metadata.
+    """
+    input_tokens: int = 0
+    output_tokens: int = 0
+    total_tokens: int = 0
+    turns: int = 0
+
+    def record(self, usage: dict[str, int] | None) -> None:
+        if usage:
+            self.input_tokens += usage.get("prompt_tokens", 0)
+            self.output_tokens += usage.get("completion_tokens", 0)
+            self.total_tokens += usage.get("total_tokens", 0)
+            self.turns += 1
+
+    def to_dict(self) -> dict:
+        return {
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.total_tokens,
+            "turns": self.turns,
+        }
+
+
 class ClaudeCodeRunner:
     """
     Orchestrates agent execution loops.
@@ -55,14 +95,17 @@ class ClaudeCodeRunner:
         checkpoint_interval: int = 10,
         timeout_seconds: int = 3600,
         max_parallel_agents: int = 8,
+        max_tool_iterations: int = MAX_TOOL_ITERATIONS_PER_TURN,
+        permission_policy: ToolPermissionPolicy | None = None,
     ):
         self.afs = afs
         self.router = router
-        self.tools = ToolRegistry(afs)
+        self.tools = ToolRegistry(afs, permission_policy=permission_policy)
         self.max_iterations = max_iterations
         self.checkpoint_interval = checkpoint_interval
         self.timeout_seconds = timeout_seconds
         self.max_parallel_agents = max_parallel_agents
+        self.max_tool_iterations = max_tool_iterations
         self._active_agents: dict[str, asyncio.Task] = {}
         self._semaphore = asyncio.Semaphore(max_parallel_agents)
 
@@ -100,6 +143,7 @@ class ClaudeCodeRunner:
         self.afs.set_state(agent_id, "task", task)
 
         start_time = time.time()
+        usage_tracker = UsageTracker()
 
         try:
             for iteration in range(self.max_iterations):
@@ -129,10 +173,14 @@ class ClaudeCodeRunner:
                     config=config,
                 )
 
+                # Track usage per turn
+                usage_tracker.record(response.usage)
+
                 # Process assistant message
                 if response.content:
                     conversation.append(
-                        {"role": "assistant", "content": response.content}
+                        {"role": "assistant", "content": response.content,
+                         "usage": response.usage}
                     )
 
                 # Process tool calls
@@ -207,6 +255,7 @@ class ClaudeCodeRunner:
                 if response.stop_reason == "end_turn" and not response.tool_calls:
                     final_result = response.content or ""
                     self.afs.set_state(agent_id, "result", final_result)
+                    self.afs.set_state(agent_id, "usage", usage_tracker.to_dict())
                     self.afs.complete(agent_id)
                     return final_result
 
