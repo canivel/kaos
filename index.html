@@ -528,6 +528,21 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   WHERE agent_id = ? AND status = 'error'
   ORDER BY timestamp"""</span>, [agent_id])</pre></div>
     </div>
+    <div class="uc-card">
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(162,155,254,.15);color:var(--accent2)">Enterprise</span><span class="uc-badge">Compliance</span></div>
+      <h3>Multi-Team Agent Governance</h3>
+      <p>Run agents across teams with enforced isolation &mdash; the security team's scanner can't see the product team's code, and vice versa. Export any agent to a standalone file for compliance review. Full audit trail satisfies SOC 2 evidence requirements.</p>
+      <div class="uc-result">SQL audit trail &bull; per-agent export &bull; SOC 2 evidence-ready</div>
+      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre><span class="cm"># Each team gets isolated agents — enforced, not convention</span>
+sec_agent = db.<span class="fn">spawn</span>(<span class="st">"security-scan"</span>, config={<span class="st">"team"</span>: <span class="st">"security"</span>})
+dev_agent = db.<span class="fn">spawn</span>(<span class="st">"feature-build"</span>, config={<span class="st">"team"</span>: <span class="st">"product"</span>})
+
+<span class="cm"># Export for compliance review — one file, complete history</span>
+<span class="cm"># kaos export &lt;agent-id&gt; -o audit-evidence.db</span>
+
+<span class="cm"># Query across all agents for governance reporting</span>
+db.<span class="fn">query</span>(<span class="st">"SELECT name, status, COUNT(*) FROM agents GROUP BY team"</span>)</pre></div>
+    </div>
   </div>
 
   <!-- Meta-Harness: Business -->
