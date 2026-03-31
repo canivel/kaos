@@ -142,13 +142,22 @@ nav a:hover{color:var(--fg)}
 @media(max-width:768px){.mh-grid{grid-template-columns:1fr}.mh-timeline::before{display:none}}
 
 /* ── Use Cases ────────────────────────────────────── */
-.use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
+.use-cases{background:var(--bg2)}
+.uc-group-title{font-size:1.3rem;color:var(--fg);margin-bottom:1.2rem;padding-bottom:.5rem;border-bottom:1px solid rgba(255,255,255,.08)}
 .uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
-.uc-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem;transition:border-color .2s}
-.uc-card:hover{border-color:var(--accent)}
-.uc-card h3{font-size:1.05rem;margin-bottom:.5rem;color:var(--accent2)}
-.uc-card p{color:var(--fg2);font-size:.9rem;line-height:1.6;margin-bottom:.8rem}
-.uc-card code{display:block;background:var(--bg);padding:.8rem 1rem;border-radius:6px;font-size:.78rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre}
+.uc-card{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.8rem;transition:border-color .25s,transform .25s}
+.uc-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.uc-card-mh{border-color:rgba(108,92,231,.2)}
+.uc-card-mh:hover{border-color:var(--accent2)}
+.uc-card h3{font-size:1.1rem;margin-bottom:.5rem;color:var(--fg)}
+.uc-card p{color:var(--fg2);font-size:.88rem;line-height:1.6;margin-bottom:.8rem}
+.uc-card code{display:block;background:var(--bg2);padding:.8rem 1rem;border-radius:8px;font-size:.76rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre;margin-bottom:.6rem}
+.uc-badges{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap}
+.uc-badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .6rem;border-radius:20px;background:rgba(255,255,255,.06);color:var(--fg2);font-weight:500}
+.uc-badge-mh{background:rgba(108,92,231,.2) !important;color:var(--accent2) !important}
+.uc-result{font-family:var(--mono);font-size:.82rem;font-weight:600;padding:.5rem .8rem;border-radius:6px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);margin-bottom:.8rem;color:var(--green)}
+.uc-link{display:inline-block;font-size:.82rem;color:var(--accent2);margin-top:.3rem;font-weight:500}
+.uc-link:hover{color:var(--cyan)}
 
 /* ── CTA ──────────────────────────────────────────── */
 .cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
@@ -471,75 +480,120 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <!-- Use Cases -->
 <section class="use-cases" id="use-cases">
 <div class="wrap">
-  <h2>Use Cases</h2>
+  <h2 style="text-align:center;font-size:clamp(2rem,4vw,2.8rem);margin-bottom:.5rem">Use Cases</h2>
+  <p style="text-align:center;color:var(--fg2);margin-bottom:3rem;font-size:1.05rem">Agent orchestration + automated harness optimization for engineering and business</p>
+
+  <!-- Engineering -->
+  <h3 class="uc-group-title">Engineering</h3>
   <div class="uc-grid">
     <div class="uc-card">
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(0,230,118,.15);color:var(--green)">Multi-Agent</span><span class="uc-badge">Parallel</span></div>
       <h3>Code Review Swarm</h3>
-      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel.</p>
+      <p>4 agents review the same code from different angles &mdash; security, performance, style, and test coverage &mdash; all running in parallel. Each writes to its own isolated VFS. No conflicts. Combine the results or query them with SQL.</p>
+      <div class="uc-result">4 reviewers &bull; parallel execution &bull; zero conflicts</div>
       <code>results = await ccr.run_parallel([
   {"name": "security",  "prompt": "Find vulns..."},
-  {"name": "perf",      "prompt": "Find perf..."},
-  {"name": "style",     "prompt": "Review..."},
+  {"name": "perf",      "prompt": "Find perf issues..."},
+  {"name": "style",     "prompt": "Review best practices..."},
   {"name": "tests",     "prompt": "What's missing?"},
 ])</code>
     </div>
     <div class="uc-card">
-      <h3>Safe Refactoring</h3>
-      <p>Checkpoint before risky work, automatically restore on failure. Other agents keep running.</p>
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(24,255,255,.15);color:var(--cyan)">Checkpoint</span><span class="uc-badge">Rollback</span></div>
+      <h3>Safe Refactoring with Rollback</h3>
+      <p>Checkpoint before risky operations. If an agent breaks something, restore just that agent &mdash; other agents keep running untouched. Diff two checkpoints to see exactly what changed: files, state, tool calls.</p>
+      <div class="uc-result">Instant rollback &bull; per-agent &bull; other agents unaffected</div>
       <code>cp = db.checkpoint(agent, label="pre-migration")
 try:
-    await ccr.run_agent(agent, "Migrate DB")
+    await ccr.run_agent(agent, "Migrate schema v3")
 except Exception:
-    db.restore(agent, cp)  # rollback</code>
+    db.restore(agent, cp)  # only this agent rolls back</code>
     </div>
     <div class="uc-card">
+      <div class="uc-badges"><span class="uc-badge" style="background:rgba(255,145,0,.15);color:var(--orange)">SQL</span><span class="uc-badge">Audit Trail</span></div>
       <h3>Post-Mortem Debugging</h3>
-      <p>An agent broke something. Query the audit trail to find out what, when, and why.</p>
-      <code>db.query("""
-  SELECT tool_name, error, duration_ms
+      <p>An agent went rogue &mdash; 47 tool calls, 12 files modified, codebase broken. Query the complete event timeline, failed tool calls, token usage, and file changes with SQL. No log files to grep.</p>
+      <div class="uc-result">14 event types &bull; every operation logged &bull; SQL-queryable</div>
+      <code>db.query("""SELECT tool_name, error, duration_ms
   FROM tool_calls
   WHERE agent_id = ? AND status = 'error'
-""", [agent_id])</code>
+  ORDER BY timestamp""", [agent_id])</code>
     </div>
-    <div class="uc-card">
-      <h3>Parallel Feature Development</h3>
-      <p>Tests, implementation, and docs agents work simultaneously with zero conflicts.</p>
-      <code>await ccr.run_parallel([
-  {"name": "tests", "prompt": "Write tests"},
-  {"name": "impl",  "prompt": "Implement"},
-  {"name": "docs",  "prompt": "Write docs"},
-])</code>
-    </div>
-    <div class="uc-card">
-      <h3>Cost & Token Tracking</h3>
-      <p>Know exactly how much each agent consumed. No more surprise bills.</p>
-      <code>db.query("""
-  SELECT a.name, SUM(tc.token_count) as tok
-  FROM agents a
-  JOIN tool_calls tc ON a.agent_id = tc.agent_id
-  GROUP BY a.agent_id ORDER BY tok DESC
-""")</code>
-    </div>
-    <div class="uc-card">
-      <h3>Optimize a Classifier (Meta-Harness)</h3>
-      <p>Your ticket classifier gets 45% accuracy. Meta-Harness tries 23 harness variants over 10 iterations and finds one hitting 87%.</p>
-      <code>kaos mh search -b text_classify -n 10 -k 2
-kaos mh frontier &lt;search-id&gt;
-# accuracy: 0.45 → 0.87 in 10 iterations</code>
-    </div>
-    <div class="uc-card">
-      <h3>Find Best Retrieval Strategy (Meta-Harness)</h3>
-      <p>Which solved problems should you retrieve to help your LLM? Meta-Harness discovers domain-aware routing you'd never design by hand.</p>
-      <code>bench = get_benchmark("math_rag",
-    corpus_path="500k_solved.jsonl")
+  </div>
+
+  <!-- Meta-Harness: Business -->
+  <h3 class="uc-group-title" style="margin-top:3rem">Business <span style="font-size:.7em;color:var(--accent2);font-weight:400">&mdash; powered by Meta-Harness</span></h3>
+  <div class="uc-grid">
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Revenue</span></div>
+      <h3>Customer Lifetime Value (CLV/LTV)</h3>
+      <p>Predict customer lifetime value from profile + behavior data. Meta-Harness discovers segment-aware prompting (enterprise vs. startup need different framing) and a two-step approach: predict churn first, then CLV conditional on retention.</p>
+      <div class="uc-result" style="color:var(--green)">40% &rarr; 72% predictions within 20% of actual CLV</div>
+      <code>bench = CLVBenchmark()  # your customer data
 search = MetaHarnessSearch(db, router, bench,
-    SearchConfig(max_iterations=15))</code>
+  SearchConfig(objectives=["+accuracy", "-context_cost"]))
+# Discovered: churn-first reasoning beats single-step by 25pts</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_clv_prediction.py" class="uc-link">View example &rarr;</a>
     </div>
-    <div class="uc-card">
-      <h3>Export & Share</h3>
-      <p>Export an agent or an entire search to a standalone file. Send to a teammate or back up.</p>
-      <code>kaos export &lt;agent-id&gt; -o snapshot.db
-cp kaos.db full-backup.db</code>
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Marketing</span></div>
+      <h3>CRM Campaign Optimization</h3>
+      <p>Generate personalized email subjects, push notifications, and SMS per customer segment. Meta-Harness learns that enterprise wants ROI language, consumers want urgency, and referencing the customer's most-used feature boosts engagement.</p>
+      <div class="uc-result" style="color:var(--green)">12% &rarr; 24% message relevance score</div>
+      <code>bench = CRMCampaignBenchmark()  # campaign history
+search = MetaHarnessSearch(db, router, bench,
+  SearchConfig(objectives=["+relevance", "-context_cost"]))
+# Discovered: different harness per segment outperforms generic</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_crm_campaigns.py" class="uc-link">View example &rarr;</a>
+    </div>
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Compliance</span></div>
+      <h3>Fraud Detection</h3>
+      <p>Review flagged transactions for fraud. Meta-Harness finds that pre-computing red flags (amount deviation, unusual country, velocity) and showing contrastive examples (similar fraud vs. legitimate) improves F1 by 20 points over basic prompting.</p>
+      <div class="uc-result" style="color:var(--green)">F1: 0.55 &rarr; 0.78 &bull; false positives cut by 40%</div>
+      <code>bench = FraudDetectionBenchmark()  # transaction data
+search = MetaHarnessSearch(db, router, bench,
+  SearchConfig(objectives=["+f1_score", "-context_cost"]))
+# Pareto: [high recall] ↔ [balanced F1, fewer tokens]</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_fraud_detection.py" class="uc-link">View example &rarr;</a>
+    </div>
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Support</span></div>
+      <h3>Support Ticket Classification</h3>
+      <p>Route tickets to the right team (billing, technical, account, general). The proposer agent reads execution traces, discovers that ambiguous tickets need contrastive examples, and that two-stage verification beats single-shot classification.</p>
+      <div class="uc-result" style="color:var(--green)">45% &rarr; 87% accuracy &bull; 10 iterations</div>
+      <code>bench = SupportTicketBenchmark()
+search = MetaHarnessSearch(db, router, bench,
+  SearchConfig(max_iterations=10, candidates_per_iteration=2))
+# Full search stored in one queryable .db file</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_support_tickets.py" class="uc-link">View example &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Meta-Harness: Technical -->
+  <h3 class="uc-group-title" style="margin-top:3rem">Technical Research <span style="font-size:.7em;color:var(--accent2);font-weight:400">&mdash; powered by Meta-Harness</span></h3>
+  <div class="uc-grid">
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">RAG</span></div>
+      <h3>Math Retrieval Optimization</h3>
+      <p>Which solved problems should you retrieve from a 500K corpus to help solve an Olympiad problem? Meta-Harness discovers domain-aware routing: different retrieval strategies for geometry, combinatorics, number theory, and algebra.</p>
+      <div class="uc-result" style="color:var(--green)">+4.7 points avg across 5 models (paper result)</div>
+      <code>bench = get_benchmark("math_rag",
+  corpus_path="535k_solved_problems.jsonl")
+search = MetaHarnessSearch(db, router, bench,
+  SearchConfig(max_iterations=15))</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_math.py" class="uc-link">View example &rarr;</a>
+    </div>
+    <div class="uc-card uc-card-mh">
+      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Agents</span></div>
+      <h3>Agentic Coding Optimization</h3>
+      <p>Optimize a coding agent's harness. The paper's key discovery: gathering an environment snapshot before the agent loop (languages, tools, memory) eliminates 2-4 wasted exploratory turns. Only ~80 lines added, no existing code modified.</p>
+      <div class="uc-result" style="color:var(--green)">76.4% on TerminalBench-2 (paper result)</div>
+      <code>bench = get_benchmark("agentic_coding",
+  tasks_path="89_dockerized_tasks.jsonl")
+search = MetaHarnessSearch(db, router, bench,
+  SearchConfig(objectives=["+pass_rate"]))</code>
+      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_coding.py" class="uc-link">View example &rarr;</a>
     </div>
   </div>
 </div>
