@@ -4,9 +4,9 @@
 
 > Your agents share filesystems, lose state on crash, and you have no idea what they did. KAOS fixes that. Every agent gets an isolated virtual filesystem inside a single SQLite file — with full history, checkpoint/restore, and SQL-queryable audit trails.
 
-Named after the enemy spy agency in *Get Smart* (1965). Ironic, because KAOS is how you **control** your agents.
+![alt text](image-2.png)
 
-[![Tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
 [![Dependencies](https://img.shields.io/badge/deps-44%20total-lightgrey)]()
@@ -331,6 +331,127 @@ db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [agent_id
 # cp kaos.db full-backup.db
 ```
 
+### Optimize a Support Ticket Classifier (Meta-Harness)
+
+Your LLM classifies support tickets at 45% accuracy. Meta-Harness automatically searches for a better prompt/retrieval strategy by learning from full execution traces:
+
+```python
+# examples/meta_harness_support_tickets.py
+from kaos import Kaos
+from kaos.metaharness import SearchConfig
+from kaos.metaharness.search import MetaHarnessSearch
+
+db = Kaos("search.db")
+router = GEPARouter.from_config("kaos.yaml")
+
+# Define your benchmark with your data + 3 seed harnesses
+bench = SupportTicketBenchmark()
+
+# Run the search — KAOS stores every harness, score, and trace
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="support_tickets",
+    max_iterations=10,
+    candidates_per_iteration=2,
+))
+result = await search.run()
+
+# result.frontier has the Pareto-optimal harnesses (best accuracy vs. cost)
+# The whole search is one .db file — inspect, query, or share it
+```
+
+What happens inside: seed harnesses are evaluated, then a proposer agent reads ALL prior code + scores + execution traces, identifies failure modes, and proposes better harnesses. After 10 iterations, accuracy goes from 45% to 87%. [Full walkthrough](docs/meta-harness.md)
+
+### Find the Best Math Retrieval Strategy (Meta-Harness)
+
+You have a corpus of 500K solved math problems. Which ones should you retrieve to help solve a new problem? Meta-Harness finds out:
+
+```python
+# examples/meta_harness_math.py
+bench = get_benchmark("math_rag",
+    problems_path="olympiad_problems.jsonl",
+    corpus_path="solved_problems.jsonl",
+)
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="math_rag",
+    max_iterations=15,
+    candidates_per_iteration=2,
+))
+result = await search.run()
+
+# The discovered harness might use domain-aware routing:
+#   geometry → fetch from NuminaMath, combinatorics → fetch from OpenMathReasoning
+# You'd never design this by hand — the proposer found it from the traces
+```
+
+### Optimize an Agentic Coding Harness (Meta-Harness)
+
+Your coding agent solves 60% of tasks. Meta-Harness discovers that gathering an environment snapshot first eliminates 2-4 wasted turns:
+
+```python
+# examples/meta_harness_coding.py
+bench = get_benchmark("agentic_coding",
+    tasks_path="coding_tasks.jsonl",
+)
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="agentic_coding",
+    max_iterations=10,
+    candidates_per_iteration=2,
+    objectives=["+pass_rate"],
+))
+result = await search.run()
+# Inspect what the proposer discovered:
+# kaos mh inspect <search-id> <best-harness> --db search.db
+```
+
+---
+
+## Meta-Harness: How It Works
+
+> Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) — your LLM is only as good as the code wrapping it.
+
+The **harness** is the code wrapping your LLM — the prompt template, example selection, retrieval strategy, memory management. Changing it produces a **6x performance gap** on the same model. But harnesses are designed by hand.
+
+Meta-Harness automates the search. Here's the loop:
+
+```
+ Iteration 0: Evaluate seed harnesses (zero-shot, few-shot, retrieval)
+              Store source + scores + full execution traces in KAOS archive
+                                    │
+ Iteration 1: Proposer agent reads ─┘ ALL prior code, scores, AND traces
+              Notices: "retrieval fails on unusual wording"
+              Proposes: two-stage verification harness
+              Evaluate → accuracy jumps from 70% to 80%
+                                    │
+ Iteration 2: Proposer reads ───────┘ new traces + all prior
+              Notices: "verification fails on ambiguous tickets"
+              Proposes: contrastive examples + cheap variant
+              Pareto frontier: [best accuracy] [cheapest] [balanced]
+                                    │
+ Iterations 3-N: Each iteration ────┘ has full history
+              Proposer learns what works, what regresses, and why
+              Makes targeted fixes, not rewrites
+```
+
+**The critical insight** (from the paper's ablation): giving the proposer access to raw execution traces — not summaries, not just scores — improves the final result by 15+ points. KAOS stores these traces as JSONL files in each harness agent's VFS.
+
+**Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file.
+
+```bash
+# Run a search
+kaos mh search -b text_classify -n 10 -k 2
+
+# View the Pareto frontier
+kaos mh frontier <search-agent-id>
+
+# Inspect the winning harness (source + scores + traces)
+kaos mh inspect <search-agent-id> <harness-id>
+
+# Query the search with SQL
+kaos query "SELECT SUM(token_count) FROM tool_calls"
+```
+
+**[Full docs and walkthrough](docs/meta-harness.md)** | **[Example: Support ticket classifier](examples/meta_harness_support_tickets.py)** | **[Original paper & code](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact)**
+
 ---
 
 ## Architecture
@@ -389,10 +510,17 @@ kaos/
 │   ├── classifier.py        # LLM + heuristic complexity classifier
 │   ├── context.py           # Multi-stage context compression
 │   └── vllm_client.py       # Raw httpx client (no SDK dependency)
+├── metaharness/
+│   ├── search.py            # Meta-Harness search loop (Algorithm 1)
+│   ├── proposer.py          # Proposer agent with archive tools
+│   ├── evaluator.py         # Harness evaluation with trace capture
+│   ├── harness.py           # HarnessCandidate + EvaluationResult
+│   ├── pareto.py            # Pareto frontier computation
+│   └── benchmarks/          # text_classify, math_rag, agentic_coding
 ├── mcp/
 │   └── server.py            # MCP server (11 tools, stdio + SSE)
 └── cli/
-    ├── main.py              # 15 CLI commands
+    ├── main.py              # 19 CLI commands (15 core + 4 meta-harness)
     └── dashboard.py         # Live TUI dashboard (Textual)
 ```
 
@@ -415,6 +543,7 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 ## Tutorials & Docs
 
 - **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
+- **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
 - [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 11 MCP tools.
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.

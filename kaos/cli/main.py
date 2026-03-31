@@ -461,5 +461,188 @@ def status(agent_id: str, db: str):
         afs.close()
 
 
+# ── Meta-Harness Commands ────────────────────────────────────────
+
+
+@cli.group()
+def mh():
+    """Meta-Harness — automated harness optimization."""
+    pass
+
+
+@mh.command("search")
+@click.option("--benchmark", "-b", required=True,
+              type=click.Choice(["text_classify", "math_rag", "agentic_coding"]),
+              help="Benchmark to optimize for")
+@click.option("--iterations", "-n", default=20, help="Number of search iterations")
+@click.option("--candidates", "-k", default=3, help="Candidates per iteration")
+@click.option("--seed", "-s", multiple=True, help="Seed harness file paths")
+@click.option("--proposer-model", help="Force model for proposer agent")
+@click.option("--eval-model", help="Force model for evaluation")
+@click.option("--max-parallel", default=4, help="Max parallel evaluations")
+@click.option("--eval-subset", type=int, help="Subsample problems for faster search")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
+def mh_search(benchmark, iterations, candidates, seed, proposer_model,
+              eval_model, max_parallel, eval_subset, db, config_file):
+    """Run a meta-harness search to optimize a harness for a benchmark."""
+    from kaos.metaharness.search import MetaHarnessSearch
+    from kaos.metaharness.harness import SearchConfig
+    from kaos.metaharness.benchmarks import get_benchmark
+    # Import benchmarks to trigger registration
+    import kaos.metaharness.benchmarks.text_classify  # noqa: F401
+    import kaos.metaharness.benchmarks.math_rag  # noqa: F401
+    import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+    from kaos.router.gepa import GEPARouter
+    from kaos.ccr.runner import ClaudeCodeRunner
+
+    afs = _get_afs(db)
+
+    if not Path(config_file).exists():
+        console.print(f"[red]Config file not found:[/red] {config_file}")
+        return
+
+    router = GEPARouter.from_config(config_file)
+
+    config = SearchConfig(
+        benchmark=benchmark,
+        max_iterations=iterations,
+        candidates_per_iteration=candidates,
+        seed_harnesses=list(seed),
+        proposer_model=proposer_model,
+        evaluator_model=eval_model,
+        max_parallel_evals=max_parallel,
+        eval_subset_size=eval_subset,
+    )
+
+    bench = get_benchmark(benchmark)
+
+    console.print(f"[cyan]Starting meta-harness search[/cyan]")
+    console.print(f"  Benchmark: {benchmark}")
+    console.print(f"  Iterations: {iterations}")
+    console.print(f"  Candidates/iter: {candidates}")
+    console.print(f"  Max parallel: {max_parallel}")
+
+    search = MetaHarnessSearch(afs, router, bench, config)
+    result = asyncio.run(search.run())
+
+    console.print(f"\n[green]{result.summary()}[/green]")
+    afs.close()
+
+
+@mh.command("frontier")
+@click.argument("search_agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+def mh_frontier(search_agent_id, db):
+    """Show the Pareto frontier of a meta-harness search."""
+    afs = _get_afs(db)
+    try:
+        data = afs.read(search_agent_id, "/pareto/frontier.json")
+        frontier = json.loads(data)
+
+        table = Table(title="Pareto Frontier")
+        table.add_column("Harness ID", style="cyan", max_width=16)
+        table.add_column("Iteration", justify="right")
+        for obj in frontier.get("objectives", {}):
+            table.add_column(obj.capitalize(), justify="right")
+
+        for point in frontier.get("points", []):
+            row = [point["harness_id"][:14] + "...", str(point.get("iteration", "?"))]
+            for obj in frontier.get("objectives", {}):
+                val = point.get("scores", {}).get(obj, 0)
+                row.append(f"{val:.4f}")
+            table.add_row(*row)
+
+        console.print(table)
+    except FileNotFoundError:
+        console.print("[red]No frontier found. Is this a valid search agent?[/red]")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
+@mh.command("inspect")
+@click.argument("search_agent_id")
+@click.argument("harness_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+def mh_inspect(search_agent_id, harness_id, db):
+    """Inspect a specific harness — source, scores, and trace summary."""
+    afs = _get_afs(db)
+    try:
+        base = f"/harnesses/{harness_id}"
+
+        # Source
+        source = afs.read(search_agent_id, f"{base}/source.py").decode()
+        console.print("[bold]Source Code:[/bold]")
+        console.print(source)
+
+        # Scores
+        scores = json.loads(afs.read(search_agent_id, f"{base}/scores.json"))
+        console.print(f"\n[bold]Scores:[/bold]")
+        for k, v in scores.items():
+            console.print(f"  {k}: {v:.4f}")
+
+        # Metadata
+        meta = json.loads(afs.read(search_agent_id, f"{base}/metadata.json"))
+        console.print(f"\n[bold]Metadata:[/bold]")
+        console.print(f"  Iteration: {meta.get('iteration', '?')}")
+        console.print(f"  Parents: {meta.get('parent_ids', [])}")
+        console.print(f"  Duration: {meta.get('duration_ms', 0)}ms")
+        if meta.get("metadata", {}).get("rationale"):
+            console.print(f"  Rationale: {meta['metadata']['rationale'][:200]}")
+
+        # Trace summary
+        try:
+            trace_data = afs.read(search_agent_id, f"{base}/trace.jsonl").decode()
+            lines = [l for l in trace_data.split("\n") if l.strip()]
+            console.print(f"\n[bold]Trace:[/bold] {len(lines)} entries")
+            for line in lines[:10]:
+                entry = json.loads(line)
+                console.print(f"  {entry.get('type', '?')}: {str(entry)[:80]}")
+            if len(lines) > 10:
+                console.print(f"  ... and {len(lines) - 10} more")
+        except FileNotFoundError:
+            console.print("\n[dim]No trace available[/dim]")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]Not found: {e}[/red]")
+    finally:
+        afs.close()
+
+
+@mh.command("status")
+@click.argument("search_agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+def mh_status(search_agent_id, db):
+    """Show the status of a meta-harness search."""
+    afs = _get_afs(db)
+    try:
+        info = afs.status(search_agent_id)
+        console.print(f"[bold]Search Agent:[/bold] {search_agent_id[:14]}...")
+        console.print(f"  Status: {info['status']}")
+
+        iteration = afs.get_state(search_agent_id, "current_iteration")
+        console.print(f"  Current iteration: {iteration or 0}")
+
+        # Count harnesses
+        harnesses = afs.ls(search_agent_id, "/harnesses")
+        console.print(f"  Harnesses evaluated: {len(harnesses)}")
+
+        # Frontier size
+        try:
+            frontier = json.loads(
+                afs.read(search_agent_id, "/pareto/frontier.json")
+            )
+            console.print(f"  Frontier size: {len(frontier.get('points', []))}")
+        except FileNotFoundError:
+            console.print("  Frontier: not yet computed")
+
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
 if __name__ == "__main__":
     cli()

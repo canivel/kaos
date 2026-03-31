@@ -1,0 +1,374 @@
+"""Meta-Harness search loop — the core orchestrator.
+
+Implements Algorithm 1 from the Meta-Harness paper (arXiv:2603.28052):
+  1. Initialize seed population and filesystem D
+  2. Evaluate seeds
+  3. For N iterations:
+     a. Proposer inspects D, proposes k new harnesses
+     b. Validate each harness interface (AST check)
+     c. Evaluate valid harnesses (parallel, each gets a KAOS agent)
+     d. Store results (code + scores + traces) in D
+  4. Return Pareto frontier
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import time
+from dataclasses import asdict
+from typing import TYPE_CHECKING
+
+from kaos.metaharness.evaluator import HarnessEvaluator
+from kaos.metaharness.harness import HarnessCandidate, EvaluationResult, SearchConfig
+from kaos.metaharness.pareto import compute_pareto, ParetoFrontier
+from kaos.metaharness.proposer import ProposerAgent
+
+if TYPE_CHECKING:
+    from kaos.core import Kaos
+    from kaos.metaharness.benchmarks.base import Benchmark
+    from kaos.router.gepa import GEPARouter
+
+logger = logging.getLogger(__name__)
+
+
+class MetaHarnessSearch:
+    """Orchestrates the meta-harness search loop.
+
+    Uses KAOS agents for isolation:
+    - A "search" agent owns the shared archive (filesystem D)
+    - Each harness evaluation gets its own agent
+    - The proposer agent reads the archive via cross-agent tools
+    """
+
+    def __init__(
+        self,
+        afs: Kaos,
+        router: GEPARouter,
+        benchmark: Benchmark,
+        config: SearchConfig,
+    ):
+        self.afs = afs
+        self.router = router
+        self.benchmark = benchmark
+        self.config = config
+
+        self.evaluator = HarnessEvaluator(
+            afs, router, benchmark,
+            timeout_seconds=config.harness_timeout_seconds,
+        )
+        self.search_agent_id: str | None = None
+        self._all_results: list[EvaluationResult] = []
+        self._iterations_map: dict[str, int] = {}  # harness_id → iteration
+
+    async def run(self) -> SearchResult:
+        """Execute the full meta-harness search loop.
+
+        Returns a SearchResult with the final Pareto frontier, all evaluated
+        harnesses, and aggregate statistics.
+        """
+        start_time = time.time()
+
+        # Step 1: Initialize the search agent and archive filesystem
+        self.search_agent_id = self._init_archive()
+
+        # Step 2: Evaluate seed harnesses
+        seeds = self._load_seeds()
+        logger.info("Evaluating %d seed harnesses...", len(seeds))
+        seed_results = await self.evaluator.evaluate_parallel(
+            seeds,
+            max_parallel=self.config.max_parallel_evals,
+        )
+        for harness, result in zip(seeds, seed_results):
+            self._store_result(harness, result, iteration=0)
+
+        # Compute initial frontier
+        frontier = self._compute_frontier()
+        self._store_frontier(frontier, iteration=0)
+        logger.info(
+            "Seed evaluation complete. Frontier: %d points",
+            len(frontier.points),
+        )
+
+        # Step 3: Main search loop
+        proposer = ProposerAgent(
+            self.afs, self.router,
+            search_agent_id=self.search_agent_id,
+            proposer_model=self.config.proposer_model,
+        )
+
+        for iteration in range(1, self.config.max_iterations + 1):
+            iter_start = time.time()
+            logger.info("=== Iteration %d / %d ===", iteration, self.config.max_iterations)
+
+            # Checkpoint the search state
+            self.afs.checkpoint(
+                self.search_agent_id,
+                label=f"pre-iter-{iteration}",
+            )
+
+            # 3a. Proposer inspects archive and proposes candidates
+            candidates = await proposer.propose(
+                iteration=iteration,
+                n_candidates=self.config.candidates_per_iteration,
+                benchmark_name=self.benchmark.name,
+                frontier=frontier,
+            )
+
+            if not candidates:
+                logger.warning("Iteration %d: no candidates proposed, skipping", iteration)
+                continue
+
+            # 3b. Interface validation (already done in proposer._submit_harness)
+            valid_candidates = []
+            for c in candidates:
+                ok, err = c.validate_interface()
+                if ok:
+                    valid_candidates.append(c)
+                else:
+                    logger.warning(
+                        "Harness %s failed validation: %s",
+                        c.harness_id[:12], err,
+                    )
+
+            if not valid_candidates:
+                logger.warning("Iteration %d: no valid candidates after validation", iteration)
+                continue
+
+            # 3c. Evaluate valid harnesses in parallel
+            problems = self.benchmark.get_search_set()
+            if self.config.eval_subset_size:
+                problems = self.benchmark.get_subset(problems, self.config.eval_subset_size)
+
+            results = await self.evaluator.evaluate_parallel(
+                valid_candidates,
+                problems=problems,
+                max_parallel=self.config.max_parallel_evals,
+            )
+
+            # 3d. Store results in archive
+            for harness, result in zip(valid_candidates, results):
+                self._store_result(harness, result, iteration=iteration)
+
+            # Update frontier
+            frontier = self._compute_frontier()
+            self._store_frontier(frontier, iteration=iteration)
+
+            # Store iteration metadata
+            self.afs.write(
+                self.search_agent_id,
+                f"/iterations/{iteration}/proposed.json",
+                json.dumps({
+                    "harness_ids": [c.harness_id for c in candidates],
+                    "valid_ids": [c.harness_id for c in valid_candidates],
+                    "results": [
+                        {
+                            "harness_id": r.harness_id,
+                            "scores": r.scores,
+                            "is_success": r.is_success,
+                            "error": r.error,
+                        }
+                        for r in results
+                    ],
+                }, indent=2).encode(),
+            )
+
+            iter_duration = time.time() - iter_start
+            logger.info(
+                "Iteration %d complete: %d evaluated, frontier=%d, %.1fs",
+                iteration, len(results), len(frontier.points), iter_duration,
+            )
+
+            # Update search state
+            self.afs.set_state(self.search_agent_id, "current_iteration", iteration)
+            self.afs.set_state(
+                self.search_agent_id, "frontier",
+                frontier.to_dict(),
+            )
+
+        # Step 4: Final results
+        total_duration = time.time() - start_time
+        self.afs.complete(self.search_agent_id)
+
+        return SearchResult(
+            search_agent_id=self.search_agent_id,
+            frontier=frontier,
+            all_results=self._all_results,
+            total_harnesses_evaluated=len(self._all_results),
+            total_duration_seconds=total_duration,
+            iterations_completed=self.config.max_iterations,
+        )
+
+    def _init_archive(self) -> str:
+        """Create the search agent and initialize the archive filesystem."""
+        agent_id = self.afs.spawn(
+            "meta-harness-search",
+            config={"search_config": self.config.to_dict()},
+        )
+        self.afs.set_status(agent_id, "running")
+
+        # Write config
+        self.afs.write(
+            agent_id,
+            "/config.json",
+            json.dumps(self.config.to_dict(), indent=2).encode(),
+        )
+
+        # Write seed harnesses
+        seed_sources = self.benchmark.get_seed_harnesses()
+        for i, source in enumerate(seed_sources):
+            self.afs.write(
+                agent_id,
+                f"/seeds/seed_{i}.py",
+                source.encode(),
+            )
+
+        # Initialize directories
+        self.afs.mkdir(agent_id, "/harnesses")
+        self.afs.mkdir(agent_id, "/iterations")
+        self.afs.mkdir(agent_id, "/pareto")
+
+        logger.info("Search archive initialized: agent %s", agent_id[:12])
+        return agent_id
+
+    def _load_seeds(self) -> list[HarnessCandidate]:
+        """Load seed harnesses from config or benchmark."""
+        seeds = []
+
+        # From config (file paths)
+        for path in self.config.seed_harnesses:
+            with open(path) as f:
+                source = f.read()
+            seeds.append(HarnessCandidate.create(
+                source_code=source,
+                metadata={"source": "seed_file", "path": path},
+            ))
+
+        # From benchmark defaults
+        for source in self.benchmark.get_seed_harnesses():
+            seeds.append(HarnessCandidate.create(
+                source_code=source,
+                metadata={"source": "benchmark_seed"},
+            ))
+
+        return seeds
+
+    def _store_result(
+        self,
+        harness: HarnessCandidate,
+        result: EvaluationResult,
+        iteration: int,
+    ) -> None:
+        """Store a harness evaluation result in the archive."""
+        self._all_results.append(result)
+        self._iterations_map[harness.harness_id] = iteration
+        harness.iteration = iteration
+
+        hid = harness.harness_id
+        base = f"/harnesses/{hid}"
+
+        self.afs.write(
+            self.search_agent_id,
+            f"{base}/source.py",
+            harness.source_code.encode(),
+        )
+        self.afs.write(
+            self.search_agent_id,
+            f"{base}/scores.json",
+            result.to_scores_json().encode(),
+        )
+        self.afs.write(
+            self.search_agent_id,
+            f"{base}/trace.jsonl",
+            result.to_trace_jsonl().encode(),
+        )
+        self.afs.write(
+            self.search_agent_id,
+            f"{base}/metadata.json",
+            json.dumps({
+                "harness_id": hid,
+                "parent_ids": harness.parent_ids,
+                "iteration": iteration,
+                "metadata": harness.metadata,
+                "is_success": result.is_success,
+                "error": result.error,
+                "duration_ms": result.duration_ms,
+            }, indent=2).encode(),
+        )
+
+    def _compute_frontier(self) -> ParetoFrontier:
+        """Compute the current Pareto frontier from all results."""
+        objectives = self.config.objective_directions()
+        return compute_pareto(
+            self._all_results,
+            objectives,
+            iterations=self._iterations_map,
+        )
+
+    def _store_frontier(self, frontier: ParetoFrontier, iteration: int) -> None:
+        """Store the current frontier in the archive."""
+        self.afs.write(
+            self.search_agent_id,
+            "/pareto/frontier.json",
+            json.dumps(frontier.to_dict(), indent=2).encode(),
+        )
+
+        # Append to history
+        try:
+            history = self.afs.read(self.search_agent_id, "/pareto/history.jsonl")
+            history_text = history.decode() + "\n"
+        except FileNotFoundError:
+            history_text = ""
+
+        history_text += json.dumps({
+            "iteration": iteration,
+            "frontier_size": len(frontier.points),
+            "points": [
+                {"harness_id": p.harness_id[:12], "scores": p.scores}
+                for p in frontier.points
+            ],
+        })
+        self.afs.write(
+            self.search_agent_id,
+            "/pareto/history.jsonl",
+            history_text.encode(),
+        )
+
+
+class SearchResult:
+    """Result of a complete meta-harness search run."""
+
+    def __init__(
+        self,
+        search_agent_id: str,
+        frontier: ParetoFrontier,
+        all_results: list[EvaluationResult],
+        total_harnesses_evaluated: int,
+        total_duration_seconds: float,
+        iterations_completed: int,
+    ):
+        self.search_agent_id = search_agent_id
+        self.frontier = frontier
+        self.all_results = all_results
+        self.total_harnesses_evaluated = total_harnesses_evaluated
+        self.total_duration_seconds = total_duration_seconds
+        self.iterations_completed = iterations_completed
+
+    def summary(self) -> str:
+        """Human-readable summary of the search."""
+        lines = [
+            f"Meta-Harness Search Complete",
+            f"  Search agent: {self.search_agent_id[:14]}...",
+            f"  Iterations: {self.iterations_completed}",
+            f"  Harnesses evaluated: {self.total_harnesses_evaluated}",
+            f"  Duration: {self.total_duration_seconds:.1f}s",
+            f"  Frontier size: {len(self.frontier.points)}",
+        ]
+        if self.frontier.points:
+            best = self.frontier.best_by_objective
+            for obj, point in best.items():
+                lines.append(
+                    f"  Best {obj}: {point.scores.get(obj, 0):.4f} "
+                    f"(harness {point.harness_id[:12]}...)"
+                )
+        return "\n".join(lines)
