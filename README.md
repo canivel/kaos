@@ -290,6 +290,31 @@ except Exception:
     # other agents keep running, unaffected
 ```
 
+### Autonomous Research Lab (autoresearch pattern)
+
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch): run N research agents in parallel, each exploring a different ML hypothesis — architecture, optimizer, scaling, regularization — all isolated and SQL-queryable:
+
+```python
+# examples/autonomous_research_lab.py
+# Each agent gets its own isolated copy of train.py
+for direction in ["architecture", "optimizer", "scaling", "regularization"]:
+    agent = db.spawn(f"{direction}-explorer")
+    db.write(agent, "/train.py", BASE_TRAIN_PY.encode())
+    db.checkpoint(agent, label="baseline")
+
+# Run all 4 in parallel — modify train.py, run experiments, keep/discard
+results = await ccr.run_parallel(RESEARCH_DIRECTIONS)
+
+# Query results across ALL agents with SQL
+db.query("""
+    SELECT a.name, COUNT(tc.call_id) as experiments, SUM(tc.token_count) as tokens
+    FROM agents a JOIN tool_calls tc ON a.agent_id = tc.agent_id
+    GROUP BY a.agent_id ORDER BY tokens DESC
+""")
+```
+
+autoresearch uses git commit/reset — KAOS uses formal checkpoints with diff. autoresearch tracks results in a TSV — KAOS gives you SQL. autoresearch is 1 agent — KAOS runs N in parallel, isolated. [Full tutorial](docs/tutorial-autoresearch.md)
+
 ### Post-Mortem Debugging
 
 An agent broke something. Figure out exactly what happened:
@@ -591,6 +616,7 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 
 - **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
 - **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
+- **[Autonomous Research Lab](docs/tutorial-autoresearch.md)** — Run N research agents in parallel, each exploring a different ML hypothesis. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 - [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 11 MCP tools.
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
