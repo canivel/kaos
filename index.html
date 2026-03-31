@@ -126,14 +126,19 @@ nav a:hover{color:var(--fg)}
 .dashboard-section{background:var(--bg2)}
 .dashboard-img{max-width:960px;margin:0 auto}
 .dashboard-img img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 12px 40px rgba(0,0,0,.5)}
-.metaharness{background:var(--bg)}
-.mh-flow{display:flex;align-items:flex-start;gap:0;justify-content:center;flex-wrap:wrap}
-.mh-step{background:var(--bg2);border:1px solid rgba(108,92,231,.2);border-radius:10px;padding:1.5rem;max-width:220px;text-align:center}
-.mh-step h3{font-size:.95rem;margin-bottom:.4rem}
-.mh-step p{color:var(--fg2);font-size:.82rem;line-height:1.5}
-.mh-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:.9rem;margin-bottom:.8rem}
-.mh-arrow{color:var(--accent2);font-size:1.5rem;padding:.5rem;align-self:center}
-@media(max-width:768px){.mh-arrow{display:none}.mh-step{max-width:100%}}
+.metaharness{background:linear-gradient(180deg,var(--bg) 0%,#0d0d1a 50%,var(--bg) 100%);border-top:1px solid rgba(108,92,231,.15);border-bottom:1px solid rgba(108,92,231,.15)}
+.mh-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+.mh-timeline{display:flex;flex-direction:column;gap:0;position:relative}
+.mh-timeline::before{content:'';position:absolute;left:19px;top:24px;bottom:24px;width:2px;background:linear-gradient(180deg,var(--green),var(--accent2),var(--cyan),var(--orange))}
+.mh-tl-step{display:flex;gap:1.2rem;align-items:flex-start;padding:.8rem 0}
+.mh-tl-marker{width:40px;height:40px;min-width:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;position:relative;z-index:1;box-shadow:0 0 20px rgba(108,92,231,.3)}
+.mh-tl-content h3{font-size:1rem;margin-bottom:.3rem}
+.mh-tl-content p{color:var(--fg2);font-size:.88rem;line-height:1.55}
+.mh-demo{display:flex;flex-direction:column;gap:1rem}
+.mh-result-box{background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(108,92,231,.1));border:1px solid rgba(0,230,118,.25);border-radius:10px;padding:1.2rem 1.5rem;text-align:center}
+.mh-result-label{font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:.3rem}
+.mh-result-sub{color:var(--fg2);font-size:.85rem}
+@media(max-width:768px){.mh-grid{grid-template-columns:1fr}.mh-timeline::before{display:none}}
 
 /* ── Use Cases ────────────────────────────────────── */
 .use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
@@ -190,18 +195,19 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <!-- Hero -->
 <section class="hero">
 <div class="wrap">
-  <h1>Stop letting your agents<br><span class="highlight">run without guardrails</span></h1>
-  <p class="subtitle">KAOS gives every AI agent an isolated, auditable virtual filesystem inside a single SQLite file. Checkpoint, restore, debug &mdash; run multi-agent systems locally with zero API costs.</p>
+  <h1>Isolated agents. Auto-optimized harnesses.<br><span class="highlight">One SQLite file.</span></h1>
+  <p class="subtitle">KAOS gives every AI agent its own virtual filesystem with checkpoints, audit trails, and rollback. Meta-Harness automatically finds the best prompt &amp; retrieval strategy for your LLM. Everything runs locally on your GPU &mdash; zero API costs.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Local Agents Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/meta-harness.md" class="btn btn-secondary">Meta-Harness Docs</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
     <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
   </div>
   <div class="badges">
-    <span class="badge green">84 tests passing</span>
+    <span class="badge green">119 tests passing</span>
     <span class="badge blue">Python 3.11+</span>
     <span class="badge">Apache 2.0</span>
     <span class="badge">44 total deps</span>
@@ -381,51 +387,83 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <!-- Meta-Harness -->
 <section class="metaharness" id="metaharness">
 <div class="wrap">
-  <h2>Meta-Harness: Automated Harness Optimization</h2>
-  <p class="lead" style="text-align:center;color:var(--fg2);margin-bottom:1.5rem;max-width:800px;margin-left:auto;margin-right:auto">Your LLM is only as good as the code wrapping it. Meta-Harness automatically searches for the best prompt template, retrieval strategy, and memory management &mdash; by learning from full execution traces.</p>
-  <p style="text-align:center;color:var(--fg2);font-size:.85rem;margin-bottom:2.5rem">Based on <a href="https://yoonholee.com/meta-harness/">arXiv:2603.28052</a> &mdash; <a href="https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact">Stanford IRIS Lab</a></p>
-  <div class="mh-flow">
-    <div class="mh-step">
-      <div class="mh-num">1</div>
-      <h3>Evaluate Seeds</h3>
-      <p>Start with 3 harness variants (zero-shot, few-shot, retrieval). Each runs in its own isolated KAOS agent. Full execution traces stored.</p>
+  <h2>Meta-Harness: Your LLM Optimizes Its Own Wrapper</h2>
+  <p style="text-align:center;color:var(--fg2);max-width:750px;margin:0 auto 1rem;font-size:1.1rem;line-height:1.65">Changing the code around a fixed LLM produces a <strong style="color:var(--fg)">6x performance gap</strong>. Meta-Harness automatically searches for the best harness &mdash; the prompt template, retrieval strategy, and memory management &mdash; by learning from full execution traces.</p>
+  <p style="text-align:center;color:var(--fg2);font-size:.85rem;margin-bottom:3rem">Based on <a href="https://yoonholee.com/meta-harness/">arXiv:2603.28052</a> (Stanford / KRAFTON / MIT) &mdash; <a href="https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact">Original code</a></p>
+
+  <div class="mh-grid">
+    <!-- Left: the 4 steps -->
+    <div class="mh-timeline">
+      <div class="mh-tl-step">
+        <div class="mh-tl-marker" style="background:var(--green)">1</div>
+        <div class="mh-tl-content">
+          <h3>Evaluate Seed Harnesses</h3>
+          <p>Start with 3 approaches (zero-shot, few-shot, retrieval). Each runs in its own isolated KAOS agent. Full execution traces &mdash; every LLM call, every output, every failure &mdash; are stored in the archive.</p>
+        </div>
+      </div>
+      <div class="mh-tl-step">
+        <div class="mh-tl-marker" style="background:var(--accent2)">2</div>
+        <div class="mh-tl-content">
+          <h3>Proposer Reads Everything</h3>
+          <p>An AI proposer agent reads ALL prior harness code, scores, AND raw execution traces. It identifies specific failure modes from the data &mdash; not guessing, not reading summaries, reading the actual traces. <strong style="color:var(--fg)">Median 82 files read per iteration.</strong></p>
+        </div>
+      </div>
+      <div class="mh-tl-step">
+        <div class="mh-tl-marker" style="background:var(--cyan);color:#000">3</div>
+        <div class="mh-tl-content">
+          <h3>Propose Targeted Fixes</h3>
+          <p>The proposer submits new harness variants targeting the failures it found. Each is AST-validated, evaluated in an isolated KAOS agent, and stored with full traces. The paper shows purely additive changes outperform rewrites.</p>
+        </div>
+      </div>
+      <div class="mh-tl-step">
+        <div class="mh-tl-marker" style="background:var(--orange);color:#000">4</div>
+        <div class="mh-tl-content">
+          <h3>Pareto Frontier</h3>
+          <p>After N iterations, you get the optimal tradeoffs: highest accuracy, lowest token cost, and everything in between. The entire search &mdash; every harness, trace, and proposer conversation &mdash; is <strong style="color:var(--fg)">one queryable .db file</strong>.</p>
+        </div>
+      </div>
     </div>
-    <div class="mh-arrow">&rarr;</div>
-    <div class="mh-step">
-      <div class="mh-num">2</div>
-      <h3>Proposer Reads Traces</h3>
-      <p>An AI proposer reads ALL prior code, scores, AND raw traces. Identifies specific failure modes &mdash; not guessing, reading the data.</p>
-    </div>
-    <div class="mh-arrow">&rarr;</div>
-    <div class="mh-step">
-      <div class="mh-num">3</div>
-      <h3>Propose &amp; Evaluate</h3>
-      <p>Proposer submits better harnesses targeting the failures it found. Each is validated, evaluated, and stored with full traces.</p>
-    </div>
-    <div class="mh-arrow">&rarr;</div>
-    <div class="mh-step">
-      <div class="mh-num">4</div>
-      <h3>Pareto Frontier</h3>
-      <p>After N iterations, you get the best tradeoffs: highest accuracy, lowest cost, and everything in between. All in one .db file.</p>
-    </div>
-  </div>
-  <div class="code-block" style="max-width:700px;margin:2.5rem auto 0">
-    <div class="code-header">
-      <span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>
-      &nbsp;terminal
-    </div>
-    <pre style="color:var(--fg2)"><span class="comment"># Run a meta-harness search on your data</span>
-<span class="prompt" style="color:var(--green)">$</span> kaos mh search -b text_classify -n 10 -k 2
+
+    <!-- Right: code + result -->
+    <div class="mh-demo">
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>
+          &nbsp;terminal
+        </div>
+        <pre><span class="comment"># Optimize a support ticket classifier</span>
+<span style="color:var(--green)">$</span> kaos mh search -b text_classify -n 10 -k 2
+
+<span style="color:var(--fg2)">Evaluating 3 seed harnesses...</span>
+<span style="color:var(--fg2)">Iteration 1: proposer read 82 files, proposed 2</span>
+<span style="color:var(--fg2)">Iteration 2: accuracy 0.63 → 0.80</span>
+<span style="color:var(--fg2)">...</span>
+<span style="color:var(--fg2)">Iteration 10: frontier = 4 harnesses</span>
 
 <span class="comment"># View the Pareto frontier</span>
-<span class="prompt" style="color:var(--green)">$</span> kaos mh frontier 01HXY...
-<span style="color:var(--fg)">  01HXY1F... (iter 7): accuracy=0.8700, context_cost=150</span>
-<span style="color:var(--fg)">  01HXY1G... (iter 4): accuracy=0.7700, context_cost=45</span>
+<span style="color:var(--green)">$</span> kaos mh frontier 01HXY...
+<span style="color:var(--fg)">  Harness  Iter  Accuracy  Cost</span>
+<span style="color:var(--green)">  01HXY1F  7     0.8700    150</span>
+<span style="color:var(--fg)">  01HXY1H  9     0.8300     80</span>
+<span style="color:var(--fg)">  01HXY1G  4     0.7700     45</span>
 
-<span class="comment"># Inspect the winning harness</span>
-<span class="prompt" style="color:var(--green)">$</span> kaos mh inspect 01HXY... 01HXY1F...</pre>
+<span class="comment"># Inspect the winning harness source + traces</span>
+<span style="color:var(--green)">$</span> kaos mh inspect 01HXY... 01HXY1F...
+
+<span class="comment"># Query the entire search with SQL</span>
+<span style="color:var(--green)">$</span> kaos query <span class="string">"SELECT SUM(token_count) FROM tool_calls"</span></pre>
+      </div>
+      <div class="mh-result-box">
+        <div class="mh-result-label">Result: 45% &rarr; 87% accuracy</div>
+        <div class="mh-result-sub">10 iterations &bull; 23 harnesses evaluated &bull; full traces in one .db file</div>
+      </div>
+    </div>
   </div>
-  <p style="text-align:center;margin-top:1.5rem"><a href="https://github.com/canivel/kaos/blob/meta-harness/docs/meta-harness.md" class="btn btn-secondary" style="font-size:.85rem">Read the Full Walkthrough</a></p>
+
+  <div style="text-align:center;margin-top:2.5rem">
+    <a href="https://github.com/canivel/kaos/blob/main/docs/meta-harness.md" class="btn btn-primary">Read the Full Walkthrough</a>
+    <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_support_tickets.py" class="btn btn-secondary" style="margin-left:.5rem">See the Example</a>
+  </div>
 </div>
 </section>
 
@@ -482,13 +520,25 @@ except Exception:
 """)</code>
     </div>
     <div class="uc-card">
+      <h3>Optimize a Classifier (Meta-Harness)</h3>
+      <p>Your ticket classifier gets 45% accuracy. Meta-Harness tries 23 harness variants over 10 iterations and finds one hitting 87%.</p>
+      <code>kaos mh search -b text_classify -n 10 -k 2
+kaos mh frontier &lt;search-id&gt;
+# accuracy: 0.45 → 0.87 in 10 iterations</code>
+    </div>
+    <div class="uc-card">
+      <h3>Find Best Retrieval Strategy (Meta-Harness)</h3>
+      <p>Which solved problems should you retrieve to help your LLM? Meta-Harness discovers domain-aware routing you'd never design by hand.</p>
+      <code>bench = get_benchmark("math_rag",
+    corpus_path="500k_solved.jsonl")
+search = MetaHarnessSearch(db, router, bench,
+    SearchConfig(max_iterations=15))</code>
+    </div>
+    <div class="uc-card">
       <h3>Export & Share</h3>
-      <p>Export an agent's complete state, send to a teammate, or back up before experiments.</p>
-      <code># CLI
-kaos export &lt;agent-id&gt; -o snapshot.db
-
-# Or just copy the whole runtime
-cp kaos.db backup.db</code>
+      <p>Export an agent or an entire search to a standalone file. Send to a teammate or back up.</p>
+      <code>kaos export &lt;agent-id&gt; -o snapshot.db
+cp kaos.db full-backup.db</code>
     </div>
   </div>
 </div>
