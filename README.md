@@ -399,8 +399,55 @@ search = MetaHarnessSearch(db, router, bench, SearchConfig(
     objectives=["+pass_rate"],
 ))
 result = await search.run()
-# Inspect what the proposer discovered:
-# kaos mh inspect <search-id> <best-harness> --db search.db
+```
+
+### Predict Customer Lifetime Value (Meta-Harness)
+
+Your CLV model gets 40% of predictions within 20% of actual value. Meta-Harness finds the best framing: segment-aware prompting, churn-first reasoning, recency-weighted examples:
+
+```python
+# examples/meta_harness_clv_prediction.py
+bench = CLVBenchmark()  # Your customer data
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="clv_prediction",
+    max_iterations=8,
+    candidates_per_iteration=2,
+    objectives=["+accuracy", "-context_cost"],
+))
+result = await search.run()
+# Discovered: two-step harness (predict churn → then CLV) beats single-step by 25 points
+```
+
+### Optimize CRM Campaign Messages (Meta-Harness)
+
+Your email campaigns get 12% open rate. Meta-Harness learns which tone, CTA style, and customer data to include per segment:
+
+```python
+# examples/meta_harness_crm_campaigns.py
+bench = CRMCampaignBenchmark()  # Your campaign history
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="crm_campaigns",
+    max_iterations=8,
+    objectives=["+relevance", "-context_cost"],
+))
+result = await search.run()
+# Discovered: enterprise wants ROI language, consumers want urgency — different harness per segment
+```
+
+### Optimize Fraud Detection (Meta-Harness)
+
+Your fraud classifier has 65% recall with 30% false positives. Meta-Harness finds a red-flag checklist + contrastive examples approach that improves F1 by 20 points:
+
+```python
+# examples/meta_harness_fraud_detection.py
+bench = FraudDetectionBenchmark()  # Your transaction data
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="fraud_detection",
+    max_iterations=8,
+    objectives=["+f1_score", "-context_cost"],
+))
+result = await search.run()
+# Pareto frontier: [high recall, more tokens] ↔ [balanced F1, fewer tokens]
 ```
 
 ---

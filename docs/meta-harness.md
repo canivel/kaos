@@ -304,6 +304,12 @@ for point in result.frontier.points:
 
 ### Examples
 
+**Technical:**
 - [Support ticket classifier](../examples/meta_harness_support_tickets.py) — Full walkthrough with custom dataset and benchmark
 - [Math retrieval optimization](../examples/meta_harness_math.py) — Find the best retrieval strategy for math problem solving
 - [Agentic coding optimization](../examples/meta_harness_coding.py) — Optimize a coding agent harness
+
+**Business:**
+- [Customer Lifetime Value (CLV/LTV)](../examples/meta_harness_clv_prediction.py) — Optimize CLV predictions with segment-aware prompting and churn-first reasoning
+- [CRM Campaign Messages](../examples/meta_harness_crm_campaigns.py) — Find the best tone, CTA, and personalization strategy per customer segment
+- [Fraud Detection](../examples/meta_harness_fraud_detection.py) — Improve fraud recall and precision with red-flag checklists and contrastive examples
