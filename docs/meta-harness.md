@@ -2,7 +2,7 @@
 
 > Your LLM is only as good as the code wrapping it. Meta-Harness automatically searches for the best harness — the prompt template, retrieval strategy, and memory management — by letting an AI proposer learn from full execution traces.
 
-Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) by Lee, Nair, Zhang, Lee, Khattab, and Finn (Stanford/KRAFTON/MIT).
+Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) by Lee, Nair, Zhang, Lee, Khattab, and Finn (Stanford/KRAFTON/MIT). Original code: [stanford-iris-lab/meta-harness-tbench2-artifact](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact).
 
 ---
 
@@ -293,3 +293,17 @@ print(result.summary())
 for point in result.frontier.points:
     print(f"  {point.harness_id}: {point.scores}")
 ```
+
+---
+
+## References
+
+- **Paper:** [Meta-Harness: Optimal LLM Harness Design through Evolutionary Search](https://yoonholee.com/meta-harness/) (arXiv:2603.28052)
+- **Original code:** [stanford-iris-lab/meta-harness-tbench2-artifact](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact)
+- **Authors:** Yoonho Lee, Roshen Nair, Qizheng Zhang, Kangwook Lee, Omar Khattab, Chelsea Finn (Stanford / KRAFTON / MIT)
+
+### Examples
+
+- [Support ticket classifier](../examples/meta_harness_support_tickets.py) — Full walkthrough with custom dataset and benchmark
+- [Math retrieval optimization](../examples/meta_harness_math.py) — Find the best retrieval strategy for math problem solving
+- [Agentic coding optimization](../examples/meta_harness_coding.py) — Optimize a coding agent harness
