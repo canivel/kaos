@@ -39,8 +39,9 @@ Here's the architecture:
           ▼
 ┌──────────────────────────────┐
 │       KAOS MCP Server        │  ← Orchestration layer
-│  11 tools: spawn, read,      │
-│  write, checkpoint, query... │
+│  17 tools: spawn, read,      │
+│  write, checkpoint, query,   │
+│  pause, resume, mh_search... │
 └─────────┬────────────────────┘
           │
           ▼
@@ -302,7 +303,7 @@ Restart Claude Code, then ask:
 
 > "What KAOS tools are available?"
 
-Claude Code should list all 11 tools: `agent_spawn`, `agent_spawn_only`, `agent_read`, `agent_write`, `agent_ls`, `agent_status`, `agent_checkpoint`, `agent_restore`, `agent_diff`, `agent_query`, `agent_kill`, `agent_parallel`.
+Claude Code should list all 17 KAOS tools: `agent_spawn`, `agent_spawn_only`, `agent_read`, `agent_write`, `agent_ls`, `agent_status`, `agent_kill`, `agent_pause`, `agent_resume`, `agent_checkpoint`, `agent_restore`, `agent_diff`, `agent_checkpoints`, `agent_query`, `agent_parallel`, `mh_search`, `mh_frontier`.
 
 If you see them, you're connected.
 

@@ -527,7 +527,15 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 ---
 
 ## Architecture
-![alt text](image.png)
+
+![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](docs/architecture.svg)
+
+Five layers, one SQLite file:
+- **Interfaces** — CLI (19 commands), MCP Server (17 tools), Python SDK, TUI Dashboard
+- **Orchestration** — CCR agent loop, GEPA model router, raw httpx vLLM client
+- **Meta-Harness** — Search loop, proposer agent, evaluator, Pareto frontier
+- **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
+- **Storage** — Single SQLite `.db` file: agents, files, blobs, tool_calls, state, events, checkpoints
 
 
 ## Configuration

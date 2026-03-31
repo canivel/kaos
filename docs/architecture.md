@@ -491,7 +491,7 @@ The MCP server (`kaos/mcp/server.py`) is implemented using the `mcp` Python pack
 - **stdio**: For direct process integration (used by Claude Code).
 - **SSE**: For HTTP-based integration via Server-Sent Events (uses Starlette + uvicorn).
 
-The server exposes 11 tools that map directly to `Kaos` and `ClaudeCodeRunner` operations. See [mcp-integration.md](mcp-integration.md) for the complete tool reference.
+The server exposes 17 tools across 6 categories (Lifecycle, VFS, Checkpoints, Query, Orchestration, Meta-Harness) that map directly to `Kaos`, `ClaudeCodeRunner`, and `MetaHarnessSearch` operations. See [mcp-integration.md](mcp-integration.md) for the complete tool reference.
 
 ### Server Initialization
 

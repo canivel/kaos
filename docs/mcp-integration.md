@@ -18,7 +18,7 @@
 
 KAOS implements the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), allowing Claude Code and other MCP clients to spawn agents, read/write files, create checkpoints, run SQL queries, and orchestrate parallel agent execution through natural language.
 
-The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 11 tools.
+The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 17 tools across 6 categories: Lifecycle, VFS, Checkpoints, Query, Orchestration, and Meta-Harness.
 
 **Transport modes:**
 - **stdio** -- Process-based transport for direct Claude Code integration. The MCP client spawns `kaos serve` as a child process and communicates via stdin/stdout.
@@ -137,7 +137,7 @@ After adding the configuration and restarting Claude Code, you should see the KA
 
 > "What KAOS tools are available?"
 
-Claude Code should list the 11 agent management tools.
+Claude Code should list all 17 KAOS tools.
 
 ---
 
@@ -525,6 +525,97 @@ Spawn and run multiple agents in parallel.
 
 ---
 
+### agent_pause
+
+Pause a running agent. The agent can be resumed later with `agent_resume`.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `agent_id` | string | yes | Agent ID to pause. |
+
+**Returns:** Confirmation.
+
+---
+
+### agent_resume
+
+Resume a paused agent.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `agent_id` | string | yes | Agent ID to resume. |
+
+**Returns:** Confirmation.
+
+---
+
+### agent_checkpoints
+
+List all checkpoints for an agent.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `agent_id` | string | yes | Agent ID. |
+
+**Returns:** JSON array of checkpoints with `checkpoint_id`, `label`, `created_at`, and `event_id`.
+
+**Example:**
+```json
+{"agent_id": "01HXY..."}
+```
+
+**Response:**
+```json
+[
+  {"checkpoint_id": "01HABC...", "label": "pre-refactor", "created_at": "2026-03-31T10:00:00.000", "event_id": 42},
+  {"checkpoint_id": "01HDEF...", "label": "post-refactor", "created_at": "2026-03-31T10:15:00.000", "event_id": 87}
+]
+```
+
+---
+
+### mh_search
+
+Run a Meta-Harness search to automatically optimize a harness for a benchmark. The search evaluates seed harnesses, then iteratively proposes and evaluates improvements using full execution traces.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `benchmark` | string | yes | Benchmark name: `text_classify`, `math_rag`, `agentic_coding`, or a custom registered benchmark. |
+| `max_iterations` | integer | no | Number of search iterations. Default: 10. |
+| `candidates_per_iteration` | integer | no | Candidates proposed per iteration. Default: 2. |
+| `config` | object | no | Additional SearchConfig overrides. |
+
+**Returns:** JSON with `search_agent_id`, `summary`, `frontier`, `total_harnesses`, and `duration_seconds`.
+
+**Example:**
+```json
+{"benchmark": "text_classify", "max_iterations": 10, "candidates_per_iteration": 2}
+```
+
+---
+
+### mh_frontier
+
+Get the Pareto frontier of a completed Meta-Harness search.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `search_agent_id` | string | yes | Search agent ID returned by `mh_search`. |
+
+**Returns:** JSON with the Pareto frontier (harness IDs, scores, iterations).
+
+---
+
 ## Example Conversation Flows
 
 ### Flow 1: Spawn an agent to write tests
@@ -654,3 +745,42 @@ Spawn and run multiple agents in parallel.
 ```
 
 **Claude Code presents a summary table of running agents with their token consumption.**
+
+---
+
+### Flow 7: Pause and resume an agent
+
+**User:** "Pause the refactorer agent, I want to review what it's done so far."
+
+**Claude Code calls:** `agent_pause`
+```json
+{"agent_id": "01HXY..."}
+```
+
+**User:** "OK, looks good. Resume it."
+
+**Claude Code calls:** `agent_resume`
+```json
+{"agent_id": "01HXY..."}
+```
+
+---
+
+### Flow 8: Run a Meta-Harness search
+
+**User:** "Use Meta-Harness to optimize my text classification harness."
+
+**Claude Code calls:** `mh_search`
+```json
+{"benchmark": "text_classify", "max_iterations": 10, "candidates_per_iteration": 2}
+```
+
+**Claude Code receives the Pareto frontier and presents:**
+"Meta-Harness evaluated 23 harnesses over 10 iterations. Best accuracy: 87% (harness 01HXY1F...). Best cost efficiency: 45 tokens/prediction (harness 01HXY1G...)."
+
+**User:** "Show me the full frontier."
+
+**Claude Code calls:** `mh_frontier`
+```json
+{"search_agent_id": "01HXY..."}
+```
