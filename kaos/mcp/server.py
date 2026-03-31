@@ -265,6 +265,18 @@ async def list_tools() -> list[Tool]:
                 "required": ["search_agent_id"],
             },
         ),
+        Tool(
+            name="mh_resume",
+            description="Resume an interrupted Meta-Harness search from its last completed iteration. Restores all prior results and continues the search loop.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string", "description": "Search agent ID to resume"},
+                    "benchmark": {"type": "string", "description": "Benchmark name (must match original search)"},
+                },
+                "required": ["search_agent_id", "benchmark"],
+            },
+        ),
     ]
 
 
@@ -395,6 +407,31 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         search_agent_id = args["search_agent_id"]
         data = _afs.read(search_agent_id, "/pareto/frontier.json")
         return data.decode("utf-8")
+
+    elif name == "mh_resume":
+        from kaos.metaharness.search import MetaHarnessSearch
+        from kaos.metaharness.harness import SearchConfig
+        from kaos.metaharness.benchmarks import get_benchmark
+        import kaos.metaharness.benchmarks.text_classify  # noqa: F401
+        import kaos.metaharness.benchmarks.math_rag  # noqa: F401
+        import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+
+        search_agent_id = args["search_agent_id"]
+        benchmark_name = args["benchmark"]
+        bench = get_benchmark(benchmark_name)
+
+        # Config is restored from the archive inside resume()
+        config = SearchConfig(benchmark=benchmark_name)
+        search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+        result = await search.resume(search_agent_id)
+        return json.dumps({
+            "search_agent_id": result.search_agent_id,
+            "summary": result.summary(),
+            "frontier": result.frontier.to_dict(),
+            "total_harnesses": result.total_harnesses_evaluated,
+            "duration_seconds": round(result.total_duration_seconds, 1),
+            "resumed": True,
+        }, indent=2)
 
     else:
         raise ValueError(f"Unknown tool: {name}")

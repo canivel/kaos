@@ -644,5 +644,41 @@ def mh_status(search_agent_id, db):
         afs.close()
 
 
+@mh.command("resume")
+@click.argument("search_agent_id")
+@click.option("--benchmark", "-b", required=True,
+              help="Benchmark name (must match original search)")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
+def mh_resume(search_agent_id, benchmark, db, config_file):
+    """Resume an interrupted meta-harness search from its last iteration."""
+    from kaos.metaharness.search import MetaHarnessSearch
+    from kaos.metaharness.harness import SearchConfig
+    from kaos.metaharness.benchmarks import get_benchmark
+    import kaos.metaharness.benchmarks.text_classify  # noqa: F401
+    import kaos.metaharness.benchmarks.math_rag  # noqa: F401
+    import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+    import kaos.metaharness.benchmarks.paper_datasets  # noqa: F401
+    from kaos.router.gepa import GEPARouter
+
+    afs = _get_afs(db)
+
+    if not Path(config_file).exists():
+        console.print(f"[red]Config file not found:[/red] {config_file}")
+        return
+
+    router = GEPARouter.from_config(config_file)
+    bench = get_benchmark(benchmark)
+    config = SearchConfig(benchmark=benchmark)
+    search = MetaHarnessSearch(afs, router, bench, config)
+
+    console.print(f"[cyan]Resuming search {search_agent_id[:14]}...[/cyan]")
+
+    result = asyncio.run(search.resume(search_agent_id))
+
+    console.print(f"\n[green]{result.summary()}[/green]")
+    afs.close()
+
+
 if __name__ == "__main__":
     cli()

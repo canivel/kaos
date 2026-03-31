@@ -199,6 +199,123 @@ class MetaHarnessSearch:
             iterations_completed=self.config.max_iterations,
         )
 
+    async def resume(self, search_agent_id: str) -> SearchResult:
+        """Resume an interrupted Meta-Harness search.
+
+        Restores the search state from the archive and continues from
+        the last completed iteration.
+        """
+        self.search_agent_id = search_agent_id
+        start_time = time.time()
+
+        # Restore config from archive
+        config_data = json.loads(
+            self.afs.read(search_agent_id, "/config.json").decode()
+        )
+        self.config = SearchConfig.from_dict(config_data)
+
+        # Restore iteration counter
+        last_iteration = self.afs.get_state(search_agent_id, "current_iteration") or 0
+        logger.info("Resuming search from iteration %d", last_iteration)
+
+        # Restore all prior results from archive
+        self._all_results = []
+        self._iterations_map = {}
+        harness_dirs = self.afs.ls(search_agent_id, "/harnesses")
+        for entry in harness_dirs:
+            hid = entry.get("name", "")
+            if not hid:
+                continue
+            try:
+                scores_data = json.loads(
+                    self.afs.read(search_agent_id, f"/harnesses/{hid}/scores.json").decode()
+                )
+                meta_data = json.loads(
+                    self.afs.read(search_agent_id, f"/harnesses/{hid}/metadata.json").decode()
+                )
+                result = EvaluationResult(
+                    harness_id=hid,
+                    scores=scores_data,
+                    duration_ms=meta_data.get("duration_ms", 0),
+                    error=meta_data.get("error"),
+                )
+                self._all_results.append(result)
+                self._iterations_map[hid] = meta_data.get("iteration", 0)
+            except (FileNotFoundError, json.JSONDecodeError):
+                continue
+
+        frontier = self._compute_frontier()
+        logger.info(
+            "Restored %d prior results, frontier=%d, resuming from iteration %d",
+            len(self._all_results), len(frontier.points), last_iteration + 1,
+        )
+
+        # Set agent back to running
+        self.afs.set_status(search_agent_id, "running")
+
+        # Continue the search loop from last_iteration + 1
+        proposer = ProposerAgent(
+            self.afs, self.router,
+            search_agent_id=self.search_agent_id,
+            proposer_model=self.config.proposer_model,
+        )
+
+        for iteration in range(last_iteration + 1, self.config.max_iterations + 1):
+            iter_start = time.time()
+            logger.info("=== Iteration %d / %d (resumed) ===", iteration, self.config.max_iterations)
+
+            self.afs.checkpoint(search_agent_id, label=f"pre-iter-{iteration}")
+
+            candidates = await proposer.propose(
+                iteration=iteration,
+                n_candidates=self.config.candidates_per_iteration,
+                benchmark_name=self.benchmark.name,
+                frontier=frontier,
+            )
+
+            if not candidates:
+                continue
+
+            valid_candidates = [c for c in candidates if c.validate_interface()[0]]
+            if not valid_candidates:
+                continue
+
+            problems = self.benchmark.get_search_set()
+            if self.config.eval_subset_size:
+                problems = self.benchmark.get_subset(problems, self.config.eval_subset_size)
+
+            results = await self.evaluator.evaluate_parallel(
+                valid_candidates, problems=problems,
+                max_parallel=self.config.max_parallel_evals,
+            )
+
+            for harness, result in zip(valid_candidates, results):
+                self._store_result(harness, result, iteration=iteration)
+
+            frontier = self._compute_frontier()
+            self._store_frontier(frontier, iteration=iteration)
+
+            self.afs.set_state(search_agent_id, "current_iteration", iteration)
+            self.afs.set_state(search_agent_id, "frontier", frontier.to_dict())
+
+            iter_duration = time.time() - iter_start
+            logger.info(
+                "Iteration %d complete: %d evaluated, frontier=%d, %.1fs",
+                iteration, len(results), len(frontier.points), iter_duration,
+            )
+
+        total_duration = time.time() - start_time
+        self.afs.complete(search_agent_id)
+
+        return SearchResult(
+            search_agent_id=search_agent_id,
+            frontier=frontier,
+            all_results=self._all_results,
+            total_harnesses_evaluated=len(self._all_results),
+            total_duration_seconds=total_duration,
+            iterations_completed=self.config.max_iterations,
+        )
+
     def _init_archive(self) -> str:
         """Create the search agent and initialize the archive filesystem."""
         agent_id = self.afs.spawn(

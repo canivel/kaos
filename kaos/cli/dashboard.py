@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from rich.text import Text
@@ -159,6 +160,69 @@ class StatsPanel(Static):
             self.update(f"[red]Error: {e}[/red]")
 
 
+class MetaHarnessPanel(Static):
+    """Widget showing active Meta-Harness search status."""
+
+    def __init__(self, afs: Kaos, **kwargs):
+        super().__init__(**kwargs)
+        self.afs = afs
+
+    def on_mount(self) -> None:
+        self.refresh_mh()
+        self.set_interval(5.0, self.refresh_mh)
+
+    def refresh_mh(self) -> None:
+        try:
+            searches = self.afs.query("""
+                SELECT a.agent_id, a.name, a.status, a.created_at
+                FROM agents a
+                WHERE a.name = 'meta-harness-search'
+                ORDER BY a.created_at DESC LIMIT 3
+            """)
+
+            if not searches:
+                self.update("[dim]No Meta-Harness searches[/dim]")
+                return
+
+            lines = []
+            for s in searches:
+                aid = s["agent_id"]
+                status = s["status"]
+                style = STATUS_STYLES.get(status, "")
+
+                iteration = self.afs.get_state(aid, "current_iteration") or 0
+
+                # Count harnesses
+                try:
+                    harnesses = self.afs.ls(aid, "/harnesses")
+                    n_harnesses = len(harnesses)
+                except Exception:
+                    n_harnesses = 0
+
+                # Frontier size
+                try:
+                    frontier_data = json.loads(
+                        self.afs.read(aid, "/pareto/frontier.json").decode()
+                    )
+                    n_frontier = len(frontier_data.get("points", []))
+                except Exception:
+                    n_frontier = 0
+
+                lines.append(
+                    f"  [{style}]{status.upper()}[/{style}] "
+                    f"iter {iteration}  "
+                    f"{n_harnesses} harnesses  "
+                    f"frontier={n_frontier}  "
+                    f"({aid[:12]}...)"
+                )
+
+            self.update(
+                "[bold bright_white]META-HARNESS[/]\n" + "\n".join(lines)
+            )
+        except Exception as e:
+            self.update(f"[dim]Meta-Harness: {e}[/dim]")
+
+
 class EventLog(Widget):
     """Widget showing recent events as a scrolling log."""
 
@@ -232,6 +296,15 @@ class KaosDashboard(App):
         color: $text;
     }
 
+    #mh-panel {
+        height: auto;
+        max-height: 6;
+        padding: 0 1;
+        background: #110d1a;
+        border: tall #a855f7;
+        color: $text;
+    }
+
     #agent-table-container {
         height: 1fr;
         border: tall $success;
@@ -282,6 +355,7 @@ class KaosDashboard(App):
         yield Header(show_clock=True)
         yield Container(
             StatsPanel(self.afs, id="stats-panel"),
+            MetaHarnessPanel(self.afs, id="mh-panel"),
             Container(
                 AgentTable(self.afs),
                 id="agent-table-container",
