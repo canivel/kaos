@@ -126,6 +126,14 @@ nav a:hover{color:var(--fg)}
 .dashboard-section{background:var(--bg2)}
 .dashboard-img{max-width:960px;margin:0 auto}
 .dashboard-img img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.metaharness{background:var(--bg)}
+.mh-flow{display:flex;align-items:flex-start;gap:0;justify-content:center;flex-wrap:wrap}
+.mh-step{background:var(--bg2);border:1px solid rgba(108,92,231,.2);border-radius:10px;padding:1.5rem;max-width:220px;text-align:center}
+.mh-step h3{font-size:.95rem;margin-bottom:.4rem}
+.mh-step p{color:var(--fg2);font-size:.82rem;line-height:1.5}
+.mh-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:.9rem;margin-bottom:.8rem}
+.mh-arrow{color:var(--accent2);font-size:1.5rem;padding:.5rem;align-self:center}
+@media(max-width:768px){.mh-arrow{display:none}.mh-step{max-width:100%}}
 
 /* ── Use Cases ────────────────────────────────────── */
 .use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
@@ -171,6 +179,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#problem">Problem</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
+    <li><a href="#metaharness">Meta-Harness</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
     <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
@@ -366,6 +375,57 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
     <img src="image-1.png" alt="KAOS Dashboard — real-time TUI showing agent status, token counts, and event log" loading="lazy">
   </div>
   <p style="text-align:center;margin-top:1.5rem;color:var(--fg2);font-family:var(--mono);font-size:.9rem">$ kaos dashboard</p>
+</div>
+</section>
+
+<!-- Meta-Harness -->
+<section class="metaharness" id="metaharness">
+<div class="wrap">
+  <h2>Meta-Harness: Automated Harness Optimization</h2>
+  <p class="lead" style="text-align:center;color:var(--fg2);margin-bottom:1.5rem;max-width:800px;margin-left:auto;margin-right:auto">Your LLM is only as good as the code wrapping it. Meta-Harness automatically searches for the best prompt template, retrieval strategy, and memory management &mdash; by learning from full execution traces.</p>
+  <p style="text-align:center;color:var(--fg2);font-size:.85rem;margin-bottom:2.5rem">Based on <a href="https://yoonholee.com/meta-harness/">arXiv:2603.28052</a> &mdash; <a href="https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact">Stanford IRIS Lab</a></p>
+  <div class="mh-flow">
+    <div class="mh-step">
+      <div class="mh-num">1</div>
+      <h3>Evaluate Seeds</h3>
+      <p>Start with 3 harness variants (zero-shot, few-shot, retrieval). Each runs in its own isolated KAOS agent. Full execution traces stored.</p>
+    </div>
+    <div class="mh-arrow">&rarr;</div>
+    <div class="mh-step">
+      <div class="mh-num">2</div>
+      <h3>Proposer Reads Traces</h3>
+      <p>An AI proposer reads ALL prior code, scores, AND raw traces. Identifies specific failure modes &mdash; not guessing, reading the data.</p>
+    </div>
+    <div class="mh-arrow">&rarr;</div>
+    <div class="mh-step">
+      <div class="mh-num">3</div>
+      <h3>Propose &amp; Evaluate</h3>
+      <p>Proposer submits better harnesses targeting the failures it found. Each is validated, evaluated, and stored with full traces.</p>
+    </div>
+    <div class="mh-arrow">&rarr;</div>
+    <div class="mh-step">
+      <div class="mh-num">4</div>
+      <h3>Pareto Frontier</h3>
+      <p>After N iterations, you get the best tradeoffs: highest accuracy, lowest cost, and everything in between. All in one .db file.</p>
+    </div>
+  </div>
+  <div class="code-block" style="max-width:700px;margin:2.5rem auto 0">
+    <div class="code-header">
+      <span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>
+      &nbsp;terminal
+    </div>
+    <pre style="color:var(--fg2)"><span class="comment"># Run a meta-harness search on your data</span>
+<span class="prompt" style="color:var(--green)">$</span> kaos mh search -b text_classify -n 10 -k 2
+
+<span class="comment"># View the Pareto frontier</span>
+<span class="prompt" style="color:var(--green)">$</span> kaos mh frontier 01HXY...
+<span style="color:var(--fg)">  01HXY1F... (iter 7): accuracy=0.8700, context_cost=150</span>
+<span style="color:var(--fg)">  01HXY1G... (iter 4): accuracy=0.7700, context_cost=45</span>
+
+<span class="comment"># Inspect the winning harness</span>
+<span class="prompt" style="color:var(--green)">$</span> kaos mh inspect 01HXY... 01HXY1F...</pre>
+  </div>
+  <p style="text-align:center;margin-top:1.5rem"><a href="https://github.com/canivel/kaos/blob/meta-harness/docs/meta-harness.md" class="btn btn-secondary" style="font-size:.85rem">Read the Full Walkthrough</a></p>
 </div>
 </section>
 
