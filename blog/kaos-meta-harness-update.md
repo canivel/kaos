@@ -1,5 +1,25 @@
 # KAOS v0.2: Your LLM Now Optimizes Its Own Prompts — While Your Agents Stay Isolated
 
+<!-- HERO IMAGE — Generate with this prompt:
+
+Wide 16:9 dark-themed tech illustration. Split composition:
+LEFT SIDE: A glowing SQLite cylinder with 4-5 translucent protective
+bubbles orbiting it (representing isolated agents). Each bubble has a
+different colored glow (purple, cyan, green, orange).
+RIGHT SIDE: A vertical evolution/iteration flow — 3 stacked code file
+icons connected by arrows pointing downward, each slightly more refined
+than the last (representing harness optimization iterations). A small
+graph next to them shows an accuracy line going up from 45% to 87%.
+Between the two sides: thin glowing connection lines.
+Bottom: subtle GPU chip outline glowing.
+Color palette: deep navy (#0a0a0f), purple (#6c5ce7), cyan (#18ffff),
+green (#00e676), orange (#f97316). No text, no faces, no robots.
+Style: abstract, clean, developer-focused infrastructure diagram.
+
+-->
+
+![Hero image](hero-v2.png)
+
 *We added Meta-Harness (Stanford's automated harness optimization) to KAOS, improved the agent runtime with patterns from Claude Code's internals, and built real-world examples for engineering, business, and autonomous research. Here's what changed and why it matters.*
 
 **GitHub:** [github.com/canivel/kaos](https://github.com/canivel/kaos) | **Website:** [canivel.github.io/kaos](https://canivel.github.io/kaos) | **License:** Apache 2.0 | Free and open source
@@ -23,6 +43,34 @@ Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) 
 The **harness** is the code wrapping your LLM — the prompt template, which examples to retrieve, how to structure the reasoning chain, what context to include. The paper showed that changing the harness around a fixed LLM produces a **6x performance gap**. Yet harnesses are designed by hand.
 
 Meta-Harness automates the search.
+
+<!-- META-HARNESS SEARCH LOOP — Generate with this prompt:
+
+Horizontal flow diagram on dark background (#0a0a0f). 16:9 ratio.
+4 stages connected by glowing arrows left-to-right:
+
+Stage 1 "SEED" (green accent): 3 small code file icons labeled
+"zero-shot", "few-shot", "retrieval" sitting on a platform.
+
+Stage 2 "PROPOSE" (purple accent): A magnifying glass icon over
+a stack of files labeled "traces". An AI brain icon reads from
+the stack and outputs a new code file with a lightbulb icon.
+
+Stage 3 "EVALUATE" (cyan accent): The new code file runs against
+a grid of small test icons (checkmarks and X marks). A score
+badge shows "accuracy: 0.80".
+
+Stage 4 "FRONTIER" (orange accent): A simple 2D scatter plot with
+3-4 dots on a Pareto curve. Axes labeled "Accuracy" (up) and
+"Cost" (right). The top-left dot glows brightest.
+
+Below all 4 stages: a long horizontal bar labeled "SQLite (.db)"
+with small icons for "files", "traces", "scores", "events".
+Style: clean, minimal, technical. Rounded boxes, thin borders.
+
+-->
+
+![Meta-Harness search loop](mh-search-loop.png)
 
 ### How It Works
 
@@ -66,6 +114,31 @@ The paper's reference implementation uses a flat filesystem. KAOS provides the i
 ---
 
 ## Real-World Examples: Engineering
+
+<!-- ENGINEERING EXAMPLES — Generate with this prompt:
+
+Dark background (#0a0a0f), 16:9 ratio. Three panels side by side:
+
+PANEL 1 "Code Review Swarm": 4 small agent icons (colored circles:
+red=security, orange=performance, blue=style, green=tests) all pointing
+at the same code file in the center. Each agent has a dotted line going
+to its own output file below. Label: "4 agents, 0 conflicts".
+
+PANEL 2 "Safe Refactoring": A horizontal timeline with a green flag
+(checkpoint), then a code change icon, then a red X (failure), then
+a curved green arrow going back to the flag (rollback). Below the
+timeline: "Other agents unaffected".
+
+PANEL 3 "Multi-Team Governance": Two separate boxes labeled "Security
+Team" and "Product Team", each containing their own agent bubbles.
+A lock icon between them. Below: a small .db file icon with "SOC 2".
+
+Style: clean icons, thin borders, minimal. Muted colors with accent
+highlights. No text besides labels.
+
+-->
+
+![Engineering use cases](engineering-examples.png)
 
 ### Code Review Swarm
 
@@ -118,6 +191,30 @@ dev_agent = db.spawn("feature-build", config={"team": "product"})
 
 ## Real-World Examples: Business
 
+<!-- BUSINESS EXAMPLES — Generate with this prompt:
+
+Dark background (#0a0a0f), 16:9 ratio. Three panels side by side:
+
+PANEL 1 "CLV Prediction": A customer profile card icon with an arrow
+pointing to a two-step flow: "Predict Churn" (small gauge icon) →
+"Predict CLV" (dollar sign icon). Below: a green badge "40% → 72%".
+
+PANEL 2 "CRM Campaigns": An email envelope icon splitting into 4
+colored arrows going to 4 customer segment icons (enterprise=briefcase,
+smb=store, startup=rocket, consumer=person). Each arrow has a different
+tone label. Below: "12% → 24% relevance".
+
+PANEL 3 "Fraud Detection": A transaction card icon passing through a
+funnel/filter with red flag checkmarks. Two outputs: green checkmark
+"Legitimate" and red X "Fraud". Below: "F1: 0.55 → 0.78".
+
+Style: clean business iconography, dark theme, accent colors matching
+KAOS palette. Subtle gradients.
+
+-->
+
+![Business use cases](business-examples.png)
+
 ### Customer Lifetime Value Prediction
 
 Your CLV model gets 40% of predictions within 20% of actual value. Meta-Harness discovers that predicting churn first, then CLV conditional on retention, beats single-step prediction by 25 points. It also finds that enterprise and startup customers need completely different prompt framing.
@@ -155,6 +252,29 @@ search = MetaHarnessSearch(db, router, bench,
 ---
 
 ## Real-World Examples: Autonomous Research
+
+<!-- AUTORESEARCH — Generate with this prompt:
+
+Dark background (#0a0a0f), 16:9 ratio. Split layout:
+
+LEFT "autoresearch (1 agent)": A single GPU icon with one agent
+circle on top. A looping arrow around it labeled "modify → train →
+eval → keep/discard". Simple, minimal. Label: "1 agent, 1 GPU".
+
+RIGHT "KAOS Research Lab (N agents)": 4 GPU icons in a row, each
+with its own colored agent circle (green=architecture, blue=optimizer,
+orange=scaling, purple=regularization). Each has its own small looping
+arrow. All 4 connect down to a single SQLite cylinder at the bottom.
+Label: "N agents, N directions, 1 queryable database".
+
+Between left and right: a large arrow labeled "scales to →".
+
+Style: clean, technical, dark. Colored outlines, no fills. Thin
+connecting lines. GPU icons as simple rectangles with chip pattern.
+
+-->
+
+![Autonomous Research Lab](autoresearch-comparison.png)
 
 ### The autoresearch Pattern, Scaled
 
@@ -206,6 +326,32 @@ FROM tool_calls;
 
 ## Under-the-Hood Improvements
 
+<!-- RUNTIME IMPROVEMENTS — Generate with this prompt:
+
+Dark background (#0a0a0f), 16:9 ratio. Four quadrant layout:
+
+TOP-LEFT "Context Compaction": A long horizontal message list with
+the middle section fading/compressing into a summary block (accordion
+visual). Arrow pointing to a shorter list. Label: "Summarize, don't drop".
+
+TOP-RIGHT "Tool Permissions": A shield icon with three colored layers
+(green=Allow, red=Deny, yellow=Prompt). A tool icon bouncing off the
+red layer with an error message bubble. Label: "LLM adapts to denials".
+
+BOTTOM-LEFT "Turn Cap": A circular loop arrow with a counter showing
+"16/16" and a stop sign. Prevents infinite tool-call spirals.
+Label: "Max 16 tool iterations".
+
+BOTTOM-RIGHT "Usage Tracking": A conversation bubble chain with small
+token count badges embedded in each message (input: 450, output: 120).
+Label: "Per-message, reconstructable".
+
+Style: clean technical icons, dark theme, thin lines, accent colors.
+
+-->
+
+![Runtime improvements](runtime-improvements.png)
+
 We studied [Claude Code's internal architecture](https://github.com/instructkr/claw-code) (via claw-code's reverse-engineering) and brought four patterns into KAOS:
 
 ### 1. Context Compaction (Claude Code's Real Strategy)
@@ -256,6 +402,28 @@ Token usage is now embedded in each conversation message, so when a session is r
 ---
 
 ## MCP Server: 11 → 17 Tools
+
+<!-- MCP TOOLS — Generate with this prompt:
+
+Dark background (#0a0a0f), 16:9 ratio. A grid of 6 grouped tool
+categories, each in a bordered box with a colored header:
+
+Purple header "Lifecycle" (6 items): spawn, spawn_only, kill, pause, resume, status
+Blue header "VFS" (3 items): read, write, ls
+Green header "Checkpoints" (4 items): checkpoint, restore, diff, checkpoints
+Orange header "Query" (1 item): query (with SQL icon)
+Cyan header "Orchestration" (1 item): parallel (with multi-arrow icon)
+Magenta header "Meta-Harness" (2 items): mh_search, mh_frontier (with Pareto chart icon)
+
+Each tool name in monospace font. New tools (pause, resume, checkpoints,
+mh_search, mh_frontier) have a small "NEW" badge in green.
+
+Style: clean, organized grid. Dark boxes with colored top borders.
+Monospace tool names. Minimal.
+
+-->
+
+![MCP tools: 17 across 6 categories](mcp-tools-grid.png)
 
 The MCP server now exposes 17 tools across 6 categories:
 
