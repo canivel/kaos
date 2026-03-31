@@ -4,7 +4,7 @@
 
 > Your agents share filesystems, lose state on crash, and you have no idea what they did. KAOS fixes that. Every agent gets an isolated virtual filesystem inside a single SQLite file — with full history, checkpoint/restore, and SQL-queryable audit trails.
 
-![alt text](image-2.png)
+![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
 [![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
