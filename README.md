@@ -590,7 +590,7 @@ kaos/
 │   ├── pareto.py            # Pareto frontier computation
 │   └── benchmarks/          # text_classify, math_rag, agentic_coding
 ├── mcp/
-│   └── server.py            # MCP server (11 tools, stdio + SSE)
+│   └── server.py            # MCP server (17 tools, stdio + SSE)
 └── cli/
     ├── main.py              # 19 CLI commands (15 core + 4 meta-harness)
     └── dashboard.py         # Live TUI dashboard (Textual)
@@ -617,7 +617,7 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
 - **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
 - **[Autonomous Research Lab](docs/tutorial-autoresearch.md)** — Run N research agents in parallel, each exploring a different ML hypothesis. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
-- [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 11 MCP tools.
+- [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 17 MCP tools.
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 

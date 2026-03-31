@@ -1,4 +1,13 @@
-"""MCP Server — exposes KAOS as an MCP server for Claude Code integration."""
+"""MCP Server — exposes KAOS as an MCP server for Claude Code integration.
+
+Provides 17 tools covering:
+- Agent lifecycle: spawn, spawn_only, kill, pause, resume, status
+- Agent VFS: read, write, ls
+- Checkpoints: checkpoint, restore, diff, list_checkpoints
+- Query: SQL read-only queries
+- Orchestration: parallel execution
+- Meta-Harness: search, frontier, inspect
+"""
 
 from __future__ import annotations
 
@@ -34,25 +43,16 @@ def init_server(afs: Kaos, ccr: ClaudeCodeRunner) -> Server:
 async def list_tools() -> list[Tool]:
     """List all available Kaos tools."""
     return [
+        # ── Agent Lifecycle ──────────────────────────────────────
         Tool(
             name="agent_spawn",
             description="Spawn a new agent with an isolated virtual filesystem and run a task",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Name for the agent",
-                    },
-                    "task": {
-                        "type": "string",
-                        "description": "Task description for the agent to execute",
-                    },
-                    "config": {
-                        "type": "object",
-                        "description": "Agent configuration (model, temperature, etc.)",
-                        "default": {},
-                    },
+                    "name": {"type": "string", "description": "Name for the agent"},
+                    "task": {"type": "string", "description": "Task description for the agent to execute"},
+                    "config": {"type": "object", "description": "Agent configuration (model, temperature, etc.)", "default": {}},
                 },
                 "required": ["name", "task"],
             },
@@ -63,19 +63,57 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Name for the agent",
-                    },
-                    "config": {
-                        "type": "object",
-                        "description": "Agent configuration",
-                        "default": {},
-                    },
+                    "name": {"type": "string", "description": "Name for the agent"},
+                    "config": {"type": "object", "description": "Agent configuration", "default": {}},
                 },
                 "required": ["name"],
             },
         ),
+        Tool(
+            name="agent_kill",
+            description="Kill a running agent",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent ID to kill"},
+                },
+                "required": ["agent_id"],
+            },
+        ),
+        Tool(
+            name="agent_pause",
+            description="Pause a running agent (can be resumed later)",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent ID to pause"},
+                },
+                "required": ["agent_id"],
+            },
+        ),
+        Tool(
+            name="agent_resume",
+            description="Resume a paused agent",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent ID to resume"},
+                },
+                "required": ["agent_id"],
+            },
+        ),
+        Tool(
+            name="agent_status",
+            description="Get status of one agent or list all agents. Omit agent_id to list all.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent ID (omit for all agents)"},
+                    "status_filter": {"type": "string", "description": "Filter by status (running, completed, failed, paused, killed)"},
+                },
+            },
+        ),
+        # ── Agent VFS ────────────────────────────────────────────
         Tool(
             name="agent_read",
             description="Read a file from an agent's virtual filesystem",
@@ -113,26 +151,10 @@ async def list_tools() -> list[Tool]:
                 "required": ["agent_id"],
             },
         ),
-        Tool(
-            name="agent_status",
-            description="Get status of one or all agents",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "agent_id": {
-                        "type": "string",
-                        "description": "Agent ID (omit for all agents)",
-                    },
-                    "status_filter": {
-                        "type": "string",
-                        "description": "Filter by status (running, completed, failed, etc.)",
-                    },
-                },
-            },
-        ),
+        # ── Checkpoints ──────────────────────────────────────────
         Tool(
             name="agent_checkpoint",
-            description="Create a snapshot of an agent's current state",
+            description="Create a snapshot of an agent's current state (files + KV store)",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -156,7 +178,7 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="agent_diff",
-            description="Compare two checkpoints of an agent",
+            description="Compare two checkpoints — shows file changes, state changes, and tool calls between them",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -168,8 +190,20 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
+            name="agent_checkpoints",
+            description="List all checkpoints for an agent",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent ID"},
+                },
+                "required": ["agent_id"],
+            },
+        ),
+        # ── Query ────────────────────────────────────────────────
+        Tool(
             name="agent_query",
-            description="Run a read-only SQL query against the agent database",
+            description="Run a read-only SQL query against the agent database (SELECT only)",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -178,20 +212,10 @@ async def list_tools() -> list[Tool]:
                 "required": ["sql"],
             },
         ),
-        Tool(
-            name="agent_kill",
-            description="Kill a running agent",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "agent_id": {"type": "string", "description": "Agent ID to kill"},
-                },
-                "required": ["agent_id"],
-            },
-        ),
+        # ── Orchestration ────────────────────────────────────────
         Tool(
             name="agent_parallel",
-            description="Spawn and run multiple agents in parallel",
+            description="Spawn and run multiple agents in parallel, each with its own isolated VFS",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -210,6 +234,35 @@ async def list_tools() -> list[Tool]:
                     },
                 },
                 "required": ["tasks"],
+            },
+        ),
+        # ── Meta-Harness ────────────────────────────────────────
+        Tool(
+            name="mh_search",
+            description="Run a Meta-Harness search to automatically optimize a harness for a benchmark. Returns the Pareto frontier of best harnesses.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "benchmark": {
+                        "type": "string",
+                        "description": "Benchmark name: text_classify, math_rag, agentic_coding, or a custom registered benchmark",
+                    },
+                    "max_iterations": {"type": "integer", "description": "Number of search iterations", "default": 10},
+                    "candidates_per_iteration": {"type": "integer", "description": "Candidates proposed per iteration", "default": 2},
+                    "config": {"type": "object", "description": "Additional SearchConfig overrides", "default": {}},
+                },
+                "required": ["benchmark"],
+            },
+        ),
+        Tool(
+            name="mh_frontier",
+            description="Get the Pareto frontier of a Meta-Harness search — the best harnesses found",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string", "description": "Search agent ID from mh_search"},
+                },
+                "required": ["search_agent_id"],
             },
         ),
     ]
@@ -233,6 +286,7 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
     assert _afs is not None
     assert _ccr is not None
 
+    # ── Agent Lifecycle ──────────────────────────────────────
     if name == "agent_spawn":
         agent_id = _afs.spawn(name=args["name"], config=args.get("config", {}))
         result = await _ccr.run_agent(agent_id, args["task"])
@@ -242,6 +296,26 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         agent_id = _afs.spawn(name=args["name"], config=args.get("config", {}))
         return json.dumps({"agent_id": agent_id, "status": "initialized"}, indent=2)
 
+    elif name == "agent_kill":
+        _afs.kill(args["agent_id"])
+        return f"Agent {args['agent_id']} killed"
+
+    elif name == "agent_pause":
+        _afs.pause(args["agent_id"])
+        return f"Agent {args['agent_id']} paused"
+
+    elif name == "agent_resume":
+        _afs.resume(args["agent_id"])
+        return f"Agent {args['agent_id']} resumed"
+
+    elif name == "agent_status":
+        if args.get("agent_id"):
+            return json.dumps(_afs.status(args["agent_id"]), indent=2)
+        return json.dumps(
+            _afs.list_agents(status_filter=args.get("status_filter")), indent=2
+        )
+
+    # ── Agent VFS ────────────────────────────────────────────
     elif name == "agent_read":
         content = _afs.read(args["agent_id"], args["path"])
         return content.decode("utf-8", errors="replace")
@@ -254,13 +328,7 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         entries = _afs.ls(args["agent_id"], args.get("path", "/"))
         return json.dumps(entries, indent=2)
 
-    elif name == "agent_status":
-        if args.get("agent_id"):
-            return json.dumps(_afs.status(args["agent_id"]), indent=2)
-        return json.dumps(
-            _afs.list_agents(status_filter=args.get("status_filter")), indent=2
-        )
-
+    # ── Checkpoints ──────────────────────────────────────────
     elif name == "agent_checkpoint":
         cp_id = _afs.checkpoint(args["agent_id"], label=args.get("label"))
         return f"Checkpoint {cp_id} created for agent {args['agent_id']}"
@@ -275,20 +343,58 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         )
         return json.dumps(diff, indent=2)
 
+    elif name == "agent_checkpoints":
+        checkpoints = _afs.list_checkpoints(args["agent_id"])
+        return json.dumps(checkpoints, indent=2)
+
+    # ── Query ────────────────────────────────────────────────
     elif name == "agent_query":
         results = _afs.query(args["sql"])
         return json.dumps(results, indent=2)
 
-    elif name == "agent_kill":
-        _afs.kill(args["agent_id"])
-        return f"Agent {args['agent_id']} killed"
-
+    # ── Orchestration ────────────────────────────────────────
     elif name == "agent_parallel":
         results = await _ccr.run_parallel(args["tasks"])
         return json.dumps(
             [{"index": i, "result": r} for i, r in enumerate(results)],
             indent=2,
         )
+
+    # ── Meta-Harness ────────────────────────────────────────
+    elif name == "mh_search":
+        from kaos.metaharness.harness import SearchConfig
+        from kaos.metaharness.search import MetaHarnessSearch
+        from kaos.metaharness.benchmarks import get_benchmark
+        # Trigger benchmark registration
+        import kaos.metaharness.benchmarks.text_classify  # noqa: F401
+        import kaos.metaharness.benchmarks.math_rag  # noqa: F401
+        import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+
+        benchmark_name = args["benchmark"]
+        bench = get_benchmark(benchmark_name)
+
+        extra = args.get("config", {})
+        config = SearchConfig(
+            benchmark=benchmark_name,
+            max_iterations=args.get("max_iterations", 10),
+            candidates_per_iteration=args.get("candidates_per_iteration", 2),
+            **{k: v for k, v in extra.items() if k in SearchConfig.__dataclass_fields__},
+        )
+
+        search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+        result = await search.run()
+        return json.dumps({
+            "search_agent_id": result.search_agent_id,
+            "summary": result.summary(),
+            "frontier": result.frontier.to_dict(),
+            "total_harnesses": result.total_harnesses_evaluated,
+            "duration_seconds": round(result.total_duration_seconds, 1),
+        }, indent=2)
+
+    elif name == "mh_frontier":
+        search_agent_id = args["search_agent_id"]
+        data = _afs.read(search_agent_id, "/pareto/frontier.json")
+        return data.decode("utf-8")
 
     else:
         raise ValueError(f"Unknown tool: {name}")
