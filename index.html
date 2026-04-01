@@ -215,7 +215,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <section class="hero">
 <div class="wrap">
   <h1>Isolated agents. Auto-optimized harnesses.<br><span class="highlight">One SQLite file.</span></h1>
-  <p class="subtitle">KAOS gives every AI agent its own virtual filesystem with checkpoints, audit trails, and rollback. Meta-Harness automatically finds the best prompt &amp; retrieval strategy for your LLM. Everything runs locally on your GPU &mdash; zero API costs.</p>
+  <p class="subtitle">KAOS gives every AI agent its own virtual filesystem with checkpoints, audit trails, and rollback. Meta-Harness automatically finds the best prompt &amp; retrieval strategy for your LLM. Works with any LLM &mdash; local, OpenAI, or Anthropic. Run <code>kaos setup</code> and start in 60 seconds.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Local Agents Tutorial</a>
@@ -223,7 +223,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos setup</span>
   </div>
   <div class="badges">
     <span class="badge green">119 tests passing</span>
@@ -353,6 +353,11 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <p>GEPA router classifies task complexity and picks the right model. Trivial task? 7B. Complex architecture? 70B. Works with any OpenAI-compatible endpoint.</p>
     </div>
     <div class="feat-card">
+      <div class="icon">&#x1f310;</div>
+      <h3>Works with Any LLM</h3>
+      <p>Three providers, all raw httpx: <strong>local</strong> (vLLM, ollama, llama.cpp), <strong>OpenAI</strong>, and <strong>Anthropic</strong>. Mix them in hybrid configs &mdash; route trivial tasks to your GPU and complex tasks to Claude or GPT-4o. Run <code>kaos setup</code> to configure in 60 seconds.</p>
+    </div>
+    <div class="feat-card">
       <div class="icon">&#x1f4e6;</div>
       <h3>Content-Addressable Blobs</h3>
       <p>Files stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with GC.</p>
@@ -391,7 +396,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem;text-align:center">
     <div><strong style="color:var(--accent2)">Interfaces</strong><br><span style="color:var(--fg2);font-size:.85rem">CLI &bull; MCP (18 tools) &bull; SDK &bull; TUI</span></div>
-    <div><strong style="color:var(--cyan)">Orchestration</strong><br><span style="color:var(--fg2);font-size:.85rem">CCR loop &bull; GEPA router &bull; vLLM</span></div>
+    <div><strong style="color:var(--cyan)">Orchestration</strong><br><span style="color:var(--fg2);font-size:.85rem">CCR loop &bull; GEPA router &bull; Local / OpenAI / Anthropic</span></div>
     <div><strong style="color:#d8b4fe">Meta-Harness</strong><br><span style="color:var(--fg2);font-size:.85rem">Search &bull; Proposer &bull; Evaluator</span></div>
     <div><strong style="color:var(--green)">Core</strong><br><span style="color:var(--fg2);font-size:.85rem">VFS &bull; Blobs &bull; Events &bull; Checkpoints</span></div>
   </div>
@@ -660,15 +665,15 @@ search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
 <!-- CTA -->
 <section class="cta">
 <div class="wrap">
-  <h2>Run It All Locally, For Free</h2>
-  <p>Your GPU. Your models. Your data stays on your machine.</p>
+  <h2>Run It Your Way</h2>
+  <p>Local GPU, OpenAI, Anthropic, or all three. One setup wizard, any LLM provider.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Full Tutorial</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos init</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos setup</span>
   </div>
 </div>
 </section>
