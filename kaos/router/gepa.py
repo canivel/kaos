@@ -16,6 +16,7 @@ import yaml
 from kaos.ccr.runner import ModelResponse, ToolCall
 from kaos.router.classifier import HeuristicClassifier, LLMClassifier
 from kaos.router.context import ContextCompressor
+from kaos.router.providers import LLMProvider, create_provider
 from kaos.router.vllm_client import VLLMClient
 
 logger = logging.getLogger(__name__)
@@ -23,12 +24,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelConfig:
-    """Configuration for a model backend."""
+    """Configuration for a model backend.
+
+    Supports three provider types:
+      - local: vLLM/ollama/llama.cpp (default, uses vllm_endpoint)
+      - openai: OpenAI API or any OpenAI-compatible cloud endpoint
+      - anthropic: Anthropic Claude API
+    """
 
     name: str
-    vllm_endpoint: str
+    vllm_endpoint: str = ""
     max_context: int = 32768
     use_for: list[str] = field(default_factory=list)
+    provider: str = "local"  # "local" | "openai" | "anthropic"
+    model_id: str = ""  # API model ID (e.g. "gpt-4o", "claude-sonnet-4-20250514")
+    api_key_env: str = ""  # env var name for API key (e.g. "OPENAI_API_KEY")
 
 
 class GEPARouter:
@@ -60,10 +70,18 @@ class GEPARouter:
         # Routing table: complexity -> model name
         self.routing_table = routing_table or self._build_routing_table()
 
-        # Initialize vLLM clients — one per model endpoint
-        self.clients: dict[str, VLLMClient] = {}
+        # Initialize provider clients — one per model
+        self.clients: dict[str, VLLMClient | LLMProvider] = {}
         for name, cfg in models.items():
-            self.clients[name] = VLLMClient(base_url=cfg.vllm_endpoint)
+            if cfg.provider in ("openai", "anthropic"):
+                self.clients[name] = create_provider(
+                    cfg.provider,
+                    api_key_env=cfg.api_key_env,
+                    endpoint=cfg.vllm_endpoint or None,
+                )
+            else:
+                # Default: local vLLM/ollama endpoint
+                self.clients[name] = VLLMClient(base_url=cfg.vllm_endpoint)
 
         # Initialize classifier: LLM if a classifier model is available, else heuristic
         if classifier_model and classifier_model in models:
@@ -98,11 +116,18 @@ class GEPARouter:
 
         models = {}
         for name, mcfg in config.get("models", {}).items():
+            provider = mcfg.get("provider", "local")
+            endpoint = mcfg.get("vllm_endpoint") or mcfg.get("endpoint", "")
+            if provider == "local" and not endpoint:
+                endpoint = "http://localhost:8000/v1"
             models[name] = ModelConfig(
                 name=name,
-                vllm_endpoint=mcfg["vllm_endpoint"],
+                vllm_endpoint=endpoint,
                 max_context=mcfg.get("max_context", 32768),
                 use_for=mcfg.get("use_for", []),
+                provider=provider,
+                model_id=mcfg.get("model_id", name),
+                api_key_env=mcfg.get("api_key_env", ""),
             )
 
         router_cfg = config.get("router", {})
@@ -178,18 +203,22 @@ class GEPARouter:
 
     async def _call_model(
         self,
-        client: VLLMClient,
+        client: VLLMClient | LLMProvider,
         model_name: str,
         messages: list[dict],
         tools: list[dict],
         config: dict,
     ) -> ModelResponse:
-        """Call a model via vLLM's /v1/chat/completions endpoint."""
+        """Call a model via any provider (local vLLM, OpenAI, or Anthropic)."""
+        # Use model_id for API providers (e.g. "gpt-4o"), model_name for local
+        model_config = self.models.get(model_name)
+        actual_model = model_config.model_id if model_config and model_config.model_id else model_name
+
         last_error = None
         for attempt in range(self.max_retries):
             try:
                 response = await client.chat(
-                    model=model_name,
+                    model=actual_model,
                     messages=messages,
                     temperature=config.get("temperature", 0.1),
                     max_tokens=config.get("max_tokens", 4096),

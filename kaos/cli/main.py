@@ -52,6 +52,14 @@ def init(db: str):
 
 
 @cli.command()
+@click.option("-o", "--output", default="./kaos.yaml", help="Output config file path")
+def setup(output: str):
+    """Interactive setup wizard — configure KAOS for your project."""
+    from kaos.cli.setup import run_setup
+    run_setup(output_path=output)
+
+
+@cli.command()
 @click.argument("task")
 @click.option("--name", "-n", required=True, help="Agent name")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
