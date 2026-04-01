@@ -283,28 +283,77 @@ def run_setup(output_path: str = "./kaos.yaml"):
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
     console.print(f"\n[green]Config written to {output_path}[/]")
+
+    # Auto-init the database
+    from kaos.core import Kaos
+    db_path = config.get("database", {}).get("path", "./kaos.db")
+    if not Path(db_path).exists():
+        Kaos(db_path).close()
+        console.print(f"[green]Database initialized:[/] {db_path}")
+    else:
+        console.print(f"[dim]Database already exists:[/] {db_path}")
+
     console.print()
 
-    # Post-setup instructions
-    if selected == "claude-code":
+    # Resolve project path for MCP config
+    project_path = str(Path.cwd().resolve()).replace("\\", "/")
+    config_path = str(Path(output_path).resolve()).replace("\\", "/")
+
+    # Post-setup instructions — concrete and copy-pasteable
+    if selected in ("local", "local-multi"):
         console.print("[bold]Next steps:[/]")
-        console.print("  1. kaos init")
-        console.print("  2. Add KAOS MCP server to Claude Code settings")
-        console.print("  3. Ask Claude Code to use KAOS tools")
-    elif selected in ("local", "local-multi"):
-        console.print("[bold]Next steps:[/]")
-        console.print("  1. Start your local model: vllm serve <model> --port 8000")
-        console.print("  2. kaos init")
-        console.print("  3. kaos run 'your task' -n my-agent")
+        console.print()
+        console.print("[bold cyan]1. Start your local model:[/]")
+        console.print("   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --port 8000")
+        console.print()
+
     elif selected in ("anthropic", "openai"):
         env_var = "ANTHROPIC_API_KEY" if selected == "anthropic" else "OPENAI_API_KEY"
         console.print("[bold]Next steps:[/]")
-        console.print(f"  1. export {env_var}=your-key-here")
-        console.print("  2. kaos init")
-        console.print("  3. kaos run 'your task' -n my-agent")
+        console.print()
+        console.print(f"[bold cyan]1. Set your API key:[/]")
+        console.print(f"   export {env_var}=your-key-here")
+        console.print()
+
     elif selected == "hybrid":
         console.print("[bold]Next steps:[/]")
-        console.print("  1. Start your local model: vllm serve <model> --port 8000")
-        console.print("  2. Set your cloud API key environment variable")
-        console.print("  3. kaos init")
-        console.print("  4. GEPA auto-routes: trivial → local, complex → cloud")
+        console.print()
+        console.print("[bold cyan]1. Start your local model + set cloud API key:[/]")
+        console.print("   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --port 8000")
+        console.print("   export ANTHROPIC_API_KEY=your-key-here")
+        console.print()
+
+    else:
+        console.print("[bold]Next steps:[/]")
+        console.print()
+
+    # MCP server instructions (for all presets)
+    console.print("[bold cyan]2. Add KAOS to Claude Code:[/]")
+    console.print()
+    console.print(f"   Add this to [cyan]~/.claude/settings.json[/]:")
+    console.print()
+
+    mcp_json = (
+        '   {\n'
+        '     "mcpServers": {\n'
+        '       "kaos": {\n'
+        '         "command": "uv",\n'
+        '         "args": [\n'
+        f'           "run", "--project", "{project_path}",\n'
+        '           "kaos", "serve", "--transport", "stdio",\n'
+        f'           "--config-file", "{config_path}"\n'
+        '         ]\n'
+        '       }\n'
+        '     }\n'
+        '   }'
+    )
+    console.print(mcp_json)
+    console.print()
+    console.print("[bold cyan]3. Try it:[/]")
+    console.print("   Restart Claude Code, then ask:")
+    console.print('   [italic]"Use KAOS to spawn an agent that writes hello world to /src/main.py"[/]')
+    console.print()
+    console.print("[bold cyan]Or use the CLI directly:[/]")
+    console.print(f"   kaos run \"your task here\" -n my-agent --config-file {output_path}")
+    console.print(f"   kaos ls")
+    console.print(f"   kaos dashboard")
