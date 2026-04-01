@@ -79,6 +79,8 @@ KAOS isn't a replacement for those frameworks — it's the **runtime layer they'
 ```bash
 git clone https://github.com/canivel/kaos.git && cd kaos
 uv sync
+kaos setup          # interactive wizard — picks a preset, generates kaos.yaml
+kaos init           # create the database
 ```
 
 ### As a Python library (no infrastructure needed)
@@ -185,6 +187,7 @@ Now Claude Code can spawn agents, read/write to their filesystems, create checkp
 ### Via the CLI
 
 ```bash
+kaos setup                             # Interactive setup wizard (6 presets)
 kaos init                              # Create database
 kaos run "refactor auth module" -n auth # Run a single agent
 kaos parallel \
@@ -251,7 +254,7 @@ Files are stored as SHA-256 blobs with zstd compression. Identical files across 
 
 ### Intelligent Model Routing (GEPA)
 
-The **G**eneralized **E**xecution **P**lanning & **A**llocation router classifies task complexity (via LLM or heuristic fallback) and routes to the optimal model tier. Trivial formatting task? Send it to a 7B. Complex architecture decision? Route to the 70B. Works with any OpenAI-compatible endpoint.
+The **G**eneralized **E**xecution **P**lanning & **A**llocation router classifies task complexity (via LLM or heuristic fallback) and routes to the optimal model tier. Trivial formatting task? Send it to a local 7B. Complex architecture decision? Route to Claude or GPT-4o. Works across all three providers (local, OpenAI, Anthropic) and any OpenAI-compatible endpoint.
 
 ### Single-File Portability
 
@@ -542,17 +545,90 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 ![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
 
 Five layers, one SQLite file:
-- **Interfaces** — CLI (19 commands), MCP Server (18 tools), Python SDK, TUI Dashboard
-- **Orchestration** — CCR agent loop, GEPA model router, raw httpx vLLM client
+- **Interfaces** — CLI (20 commands), MCP Server (18 tools), Python SDK, TUI Dashboard
+- **Orchestration** — CCR agent loop, GEPA model router, multi-provider httpx clients (local/OpenAI/Anthropic)
 - **Meta-Harness** — Search loop, proposer agent, evaluator, Pareto frontier
 - **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
 - **Storage** — Single SQLite `.db` file: agents, files, blobs, tool_calls, state, events, checkpoints
 
 
-## Configuration
+## Setup & Configuration
+
+### `kaos setup` — Interactive Wizard
+
+The fastest way to get started. Run `kaos setup` and answer 3 questions — it generates a `kaos.yaml` tailored to your environment.
+
+```bash
+kaos setup
+```
+
+**6 presets:**
+
+| Preset | What it configures |
+|---|---|
+| `claude-code` | Anthropic Claude via API, optimized for Claude Code MCP integration |
+| `local` | Single local vLLM/ollama/llama.cpp endpoint (default, backward compatible) |
+| `local-multi` | Multiple local models on different ports, GEPA routing by complexity |
+| `anthropic` | Anthropic Claude API only (requires `ANTHROPIC_API_KEY`) |
+| `openai` | OpenAI API only (requires `OPENAI_API_KEY`) |
+| `hybrid` | Mix of local + cloud models, route trivial tasks locally and complex tasks to cloud |
+
+### Multi-Provider Support
+
+KAOS now supports three providers, all using raw httpx (no AI SDKs):
+
+- **`provider: local`** — vLLM, ollama, llama.cpp, or any OpenAI-compatible local endpoint (default, backward compatible)
+- **`provider: openai`** — OpenAI API or any OpenAI-compatible cloud endpoint
+- **`provider: anthropic`** — Anthropic Claude API
+
+API keys are read from environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). Set them in your shell profile or `.env`.
+
+### Configuration
 
 ```yaml
-# kaos.yaml
+# kaos.yaml — multi-provider example (hybrid preset)
+database:
+  path: ./kaos.db
+  wal_mode: true
+  compression: zstd
+
+models:
+  claude-sonnet:
+    provider: anthropic
+    model_id: claude-sonnet-4-20250514
+    api_key_env: ANTHROPIC_API_KEY
+    max_context: 200000
+    use_for: [complex, critical]
+  gpt-4o:
+    provider: openai
+    model_id: gpt-4o
+    api_key_env: OPENAI_API_KEY
+    max_context: 128000
+    use_for: [moderate]
+  local-qwen:
+    provider: local
+    endpoint: http://localhost:8000/v1
+    max_context: 32768
+    use_for: [trivial]
+
+router:
+  classifier_model: local-qwen
+  fallback_model: claude-sonnet
+  context_compression: true
+
+ccr:
+  max_iterations: 100
+  checkpoint_interval: 10
+  max_parallel_agents: 8
+```
+
+The `provider: local` format is backward compatible with the existing `vllm_endpoint` syntax — existing configs continue to work without changes.
+
+<details>
+<summary>Local-only config (same as before)</summary>
+
+```yaml
+# kaos.yaml — local-only (backward compatible)
 database:
   path: ./kaos.db
   wal_mode: true
@@ -583,6 +659,8 @@ ccr:
   max_parallel_agents: 8
 ```
 
+</details>
+
 ## Project Structure
 
 ```
@@ -600,7 +678,9 @@ kaos/
 │   ├── gepa.py              # Intelligent model routing
 │   ├── classifier.py        # LLM + heuristic complexity classifier
 │   ├── context.py           # Multi-stage context compression
-│   └── vllm_client.py       # Raw httpx client (no SDK dependency)
+│   ├── vllm_client.py       # Raw httpx client for local endpoints
+│   ├── openai_client.py     # Raw httpx client for OpenAI API
+│   └── anthropic_client.py  # Raw httpx client for Anthropic API
 ├── metaharness/
 │   ├── search.py            # Meta-Harness search loop (Algorithm 1)
 │   ├── proposer.py          # Proposer agent with archive tools
@@ -611,17 +691,17 @@ kaos/
 ├── mcp/
 │   └── server.py            # MCP server (18 tools, stdio + SSE)
 └── cli/
-    ├── main.py              # 19 CLI commands (15 core + 4 meta-harness)
+    ├── main.py              # 20 CLI commands (16 core + 4 meta-harness)
     └── dashboard.py         # Live TUI dashboard (Textual)
 ```
 
 ## Zero Bloat
 
-KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. Just 44 packages total:
+KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. All three providers (local, OpenAI, Anthropic) use raw httpx. Just 44 packages total:
 
 | Package | Why |
 |---|---|
-| `httpx` | Raw HTTP to any OpenAI-compatible endpoint |
+| `httpx` | Raw HTTP to local, OpenAI, and Anthropic endpoints |
 | `click` | CLI |
 | `rich` + `textual` | Terminal UI + dashboard |
 | `mcp` | MCP server protocol |
@@ -642,6 +722,8 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 
 ## Recent Additions
 
+- **`kaos setup` interactive wizard** — 6 presets (claude-code, local, local-multi, anthropic, openai, hybrid). Asks 3 questions, generates `kaos.yaml`. Run with `kaos setup`.
+- **Multi-provider support** — Three providers via raw httpx: `provider: local` (vLLM/ollama/llama.cpp), `provider: openai` (OpenAI API), `provider: anthropic` (Anthropic Claude API). API keys via environment variables. Backward compatible with existing configs.
 - **Resume interrupted Meta-Harness searches** — `kaos mh resume <search-agent-id>`, MCP tool `mh_resume`, Python API `search.resume(agent_id)`. Picks up from the last completed iteration. (MCP tools now 18 total.)
 - **Dashboard Meta-Harness panel** — New MetaHarnessPanel in the TUI dashboard shows active searches with status, current iteration, harness count, and frontier size. Purple border, auto-refreshes every 5s.
 - **Paper benchmark loaders** — `load_lawbench()`, `load_symptom2disease()`, `load_uspto50k()` in `kaos/metaharness/benchmarks/paper_datasets.py`. Downloads from HuggingFace, caches locally. Run with `kaos mh search -b lawbench -n 20 -k 3`.

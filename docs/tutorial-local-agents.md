@@ -172,6 +172,13 @@ Just point the `vllm_endpoint` in `kaos.yaml` to whatever you're running.
 
 ## 4. Configure KAOS
 
+> **Quick alternative:** Run `kaos setup` and pick the `local` or `local-multi` preset. It asks 3 questions and generates `kaos.yaml` for you — skip straight to [Step 5](#5-connect-kaos-to-claude-code).
+>
+> ```bash
+> uv run kaos setup
+> # Pick "local" for single-model or "local-multi" for multi-model
+> ```
+
 ### Single-model setup (Option A above)
 
 ```bash
@@ -244,6 +251,79 @@ ccr:
 4. If the selected model fails, it falls back to `fallback_model`
 
 This means simple tasks like "rename this variable" go to the fast 7B, while "redesign the authentication architecture" goes to the 70B. You save GPU time and get faster responses on easy tasks.
+
+### Or Use Cloud Models
+
+KAOS also supports cloud providers via raw httpx (no AI SDKs). You can use Anthropic, OpenAI, or mix local + cloud in a hybrid configuration. API keys are read from environment variables.
+
+**Anthropic-only:**
+
+```yaml
+models:
+  claude-sonnet:
+    provider: anthropic
+    model_id: claude-sonnet-4-20250514
+    api_key_env: ANTHROPIC_API_KEY
+    max_context: 200000
+    use_for: [trivial, moderate, complex, critical]
+
+router:
+  fallback_model: claude-sonnet
+```
+
+**OpenAI-only:**
+
+```yaml
+models:
+  gpt-4o:
+    provider: openai
+    model_id: gpt-4o
+    api_key_env: OPENAI_API_KEY
+    max_context: 128000
+    use_for: [trivial, moderate, complex, critical]
+
+router:
+  fallback_model: gpt-4o
+```
+
+**Hybrid (local + cloud):**
+
+Route trivial tasks to your local GPU for free, and complex tasks to a cloud model for quality:
+
+```yaml
+models:
+  claude-sonnet:
+    provider: anthropic
+    model_id: claude-sonnet-4-20250514
+    api_key_env: ANTHROPIC_API_KEY
+    max_context: 200000
+    use_for: [complex, critical]
+  gpt-4o:
+    provider: openai
+    model_id: gpt-4o
+    api_key_env: OPENAI_API_KEY
+    max_context: 128000
+    use_for: [moderate]
+  local-qwen:
+    provider: local
+    endpoint: http://localhost:8000/v1
+    max_context: 32768
+    use_for: [trivial]
+
+router:
+  classifier_model: local-qwen
+  fallback_model: claude-sonnet
+  context_compression: true
+```
+
+Set your API keys:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+export OPENAI_API_KEY="sk-..."
+```
+
+Or run `kaos setup` and pick the `anthropic`, `openai`, or `hybrid` preset.
 
 ### Verify the config
 
@@ -527,7 +607,11 @@ isolation:
 
 models:
   <model-name>:
-    vllm_endpoint: http://localhost:8000/v1   # OpenAI-compatible endpoint
+    provider: local | openai | anthropic       # Provider type (default: local)
+    vllm_endpoint: http://localhost:8000/v1    # For local provider (legacy format)
+    endpoint: http://localhost:8000/v1         # For local provider (new format)
+    model_id: gpt-4o                           # For openai/anthropic providers
+    api_key_env: OPENAI_API_KEY                # Env var containing the API key
     max_context: 32768                         # Max context window (tokens)
     use_for: [trivial, moderate, ...]          # Complexity levels to route here
 
@@ -559,6 +643,8 @@ logging:
 |---|---|---|
 | `KAOS_DB` | `./kaos.db` | Database file path |
 | `KAOS_CONFIG` | `./kaos.yaml` | Config file path |
+| `ANTHROPIC_API_KEY` | — | API key for `provider: anthropic` models |
+| `OPENAI_API_KEY` | — | API key for `provider: openai` models |
 
 ### Claude Code settings.json
 
