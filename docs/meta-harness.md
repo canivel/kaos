@@ -244,6 +244,97 @@ kaos mh search -b agentic_coding -n 10 -k 2 \
 
 ---
 
+## Resume Interrupted Searches
+
+If a Meta-Harness search is interrupted (crash, timeout, manual stop), you can resume it from the last completed iteration. All prior harness evaluations, traces, and Pareto frontier state are preserved in the `.db` file.
+
+### CLI
+
+```bash
+# Resume from last completed iteration
+kaos mh resume <search-agent-id>
+
+# Check where it left off
+kaos mh status <search-agent-id>
+```
+
+### Python API
+
+```python
+from kaos import Kaos
+from kaos.metaharness.search import MetaHarnessSearch
+from kaos.router import GEPARouter
+
+db = Kaos("search.db")
+router = GEPARouter.from_config("kaos.yaml")
+
+search = MetaHarnessSearch(db, router)
+result = await search.resume(agent_id="01HXY...")
+
+print(result.summary())
+```
+
+### MCP Tool
+
+The `mh_resume` tool is available via the MCP server (18 tools total):
+
+```json
+{
+  "search_agent_id": "01HXY..."
+}
+```
+
+Resume reconstructs the search state from the archive stored in the search agent's VFS, determines the last completed iteration, and continues from there with the same configuration (benchmark, candidates per iteration, objectives).
+
+---
+
+## Paper Benchmarks
+
+KAOS includes loaders for three published research benchmarks used in the Meta-Harness paper. These download datasets from HuggingFace and cache them locally for offline use.
+
+| Benchmark | Loader | Task | Source |
+|---|---|---|---|
+| `lawbench` | `load_lawbench()` | Legal text classification | HuggingFace |
+| `symptom2disease` | `load_symptom2disease()` | Medical symptom-to-disease mapping | HuggingFace |
+| `uspto_50k` | `load_uspto50k()` | Chemical reaction classification | HuggingFace |
+
+### CLI
+
+```bash
+# Run a search with a paper benchmark
+kaos mh search -b lawbench -n 20 -k 3
+kaos mh search -b symptom2disease -n 20 -k 3
+kaos mh search -b uspto_50k -n 20 -k 3
+```
+
+### Python API
+
+```python
+from kaos.metaharness.benchmarks.paper_datasets import (
+    load_lawbench,
+    load_symptom2disease,
+    load_uspto50k,
+)
+
+# Each returns a benchmark object ready for MetaHarnessSearch
+bench = load_lawbench()
+# or
+bench = load_symptom2disease()
+# or
+bench = load_uspto50k()
+
+search = MetaHarnessSearch(db, router, bench, SearchConfig(
+    benchmark="lawbench",
+    max_iterations=20,
+    candidates_per_iteration=3,
+))
+result = await search.run()
+```
+
+Datasets are downloaded on first use and cached in `~/.cache/kaos/datasets/`. Subsequent runs use the local cache.
+
+---
+
 ## CLI Reference
 
 ```bash
@@ -253,6 +344,9 @@ kaos mh search -b BENCHMARK -n ITERATIONS -k CANDIDATES
     --eval-model MODEL        # Force model for evaluation
     --max-parallel N          # Parallel evaluations
     --eval-subset N           # Subsample problems for speed
+
+# Resume an interrupted search from last completed iteration
+kaos mh resume SEARCH_AGENT_ID
 
 # Monitor a running search
 kaos mh status SEARCH_AGENT_ID

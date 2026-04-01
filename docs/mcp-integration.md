@@ -18,7 +18,7 @@
 
 KAOS implements the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), allowing Claude Code and other MCP clients to spawn agents, read/write files, create checkpoints, run SQL queries, and orchestrate parallel agent execution through natural language.
 
-The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 17 tools across 6 categories: Lifecycle, VFS, Checkpoints, Query, Orchestration, and Meta-Harness.
+The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 18 tools across 6 categories: Lifecycle, VFS, Checkpoints, Query, Orchestration, and Meta-Harness.
 
 **Transport modes:**
 - **stdio** -- Process-based transport for direct Claude Code integration. The MCP client spawns `kaos serve` as a child process and communicates via stdin/stdout.
@@ -137,7 +137,7 @@ After adding the configuration and restarting Claude Code, you should see the KA
 
 > "What KAOS tools are available?"
 
-Claude Code should list all 17 KAOS tools.
+Claude Code should list all 18 KAOS tools.
 
 ---
 
@@ -616,6 +616,39 @@ Get the Pareto frontier of a completed Meta-Harness search.
 
 ---
 
+### mh_resume
+
+Resume an interrupted Meta-Harness search from its last completed iteration. All prior harness evaluations, traces, and Pareto frontier state are preserved. The search continues with the same configuration (benchmark, candidates per iteration, objectives).
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `search_agent_id` | string | yes | Search agent ID of the interrupted search. |
+
+**Returns:** JSON with `search_agent_id`, `summary`, `frontier`, `total_harnesses`, `resumed_from_iteration`, and `duration_seconds`.
+
+**Example:**
+```json
+{
+  "search_agent_id": "01HXY..."
+}
+```
+
+**Response:**
+```json
+{
+  "search_agent_id": "01HXY...",
+  "resumed_from_iteration": 4,
+  "summary": "Resumed search from iteration 4, completed 10 total iterations",
+  "frontier": [...],
+  "total_harnesses": 23,
+  "duration_seconds": 512.7
+}
+```
+
+---
+
 ## Example Conversation Flows
 
 ### Flow 1: Spawn an agent to write tests
@@ -784,3 +817,17 @@ Get the Pareto frontier of a completed Meta-Harness search.
 ```json
 {"search_agent_id": "01HXY..."}
 ```
+
+---
+
+### Flow 9: Resume an interrupted Meta-Harness search
+
+**User:** "My Meta-Harness search crashed at iteration 4. Can you resume it?"
+
+**Claude Code calls:** `mh_resume`
+```json
+{"search_agent_id": "01HXY..."}
+```
+
+**Claude Code receives the result and responds:**
+"Resumed the search from iteration 4. It completed 10 total iterations and evaluated 23 harnesses. Best accuracy: 87% (harness 01HXY1F...). The full frontier has 4 Pareto-optimal harnesses."

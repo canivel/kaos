@@ -198,12 +198,13 @@ kaos restore <agent-id> --checkpoint X # Roll back
 kaos diff <agent-id> --from X --to Y   # What changed between checkpoints?
 kaos query "SELECT * FROM events"      # SQL queries
 kaos dashboard                         # Live TUI monitor
+kaos mh resume <search-agent-id>       # Resume interrupted MH search
 kaos export <agent-id> -o backup.db    # Export a single agent
 ```
 
 ### Live Dashboard
 
-Monitor all agents in real time — status, files, tool calls, token usage, and a streaming event log.
+Monitor all agents in real time — status, files, tool calls, token usage, and a streaming event log. The dashboard includes a dedicated **Meta-Harness panel** (purple border) showing active searches with status, current iteration, harness count, and frontier size — auto-refreshes every 5 seconds.
 
 ```bash
 kaos dashboard
@@ -313,7 +314,9 @@ db.query("""
 """)
 ```
 
-autoresearch uses git commit/reset — KAOS uses formal checkpoints with diff. autoresearch tracks results in a TSV — KAOS gives you SQL. autoresearch is 1 agent — KAOS runs N in parallel, isolated. [Full tutorial](docs/tutorial-autoresearch.md)
+autoresearch uses git commit/reset — KAOS uses formal checkpoints with diff. autoresearch tracks results in a TSV — KAOS gives you SQL. autoresearch is 1 agent — KAOS runs N in parallel, isolated.
+
+**Multi-GPU orchestration** is also supported: run 6 agents across 3 GPUs, each assigned to a model tier via GEPA `force_model`. For example, GPU 0 runs a 7B for sweeps, GPU 1 a 32B for architecture exploration, and GPU 2 a 70B for novel research. See `examples/multi_gpu_research.py` for the full setup. [Full tutorial](docs/tutorial-autoresearch.md)
 
 ### Post-Mortem Debugging
 
@@ -512,11 +515,19 @@ Meta-Harness automates the search. Here's the loop:
 # Run a search
 kaos mh search -b text_classify -n 10 -k 2
 
+# Run with paper benchmarks (downloaded from HuggingFace, cached locally)
+kaos mh search -b lawbench -n 20 -k 3
+kaos mh search -b symptom2disease -n 20 -k 3
+kaos mh search -b uspto_50k -n 20 -k 3
+
 # View the Pareto frontier
 kaos mh frontier <search-agent-id>
 
 # Inspect the winning harness (source + scores + traces)
 kaos mh inspect <search-agent-id> <harness-id>
+
+# Resume an interrupted search from its last completed iteration
+kaos mh resume <search-agent-id>
 
 # Query the search with SQL
 kaos query "SELECT SUM(token_count) FROM tool_calls"
@@ -531,7 +542,7 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 ![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
 
 Five layers, one SQLite file:
-- **Interfaces** — CLI (19 commands), MCP Server (17 tools), Python SDK, TUI Dashboard
+- **Interfaces** — CLI (19 commands), MCP Server (18 tools), Python SDK, TUI Dashboard
 - **Orchestration** — CCR agent loop, GEPA model router, raw httpx vLLM client
 - **Meta-Harness** — Search loop, proposer agent, evaluator, Pareto frontier
 - **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
@@ -598,7 +609,7 @@ kaos/
 │   ├── pareto.py            # Pareto frontier computation
 │   └── benchmarks/          # text_classify, math_rag, agentic_coding
 ├── mcp/
-│   └── server.py            # MCP server (17 tools, stdio + SSE)
+│   └── server.py            # MCP server (18 tools, stdio + SSE)
 └── cli/
     ├── main.py              # 19 CLI commands (15 core + 4 meta-harness)
     └── dashboard.py         # Live TUI dashboard (Textual)
@@ -625,9 +636,16 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
 - **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
 - **[Autonomous Research Lab](docs/tutorial-autoresearch.md)** — Run N research agents in parallel, each exploring a different ML hypothesis. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
-- [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 17 MCP tools.
+- [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 18 MCP tools.
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
+
+## Recent Additions
+
+- **Resume interrupted Meta-Harness searches** — `kaos mh resume <search-agent-id>`, MCP tool `mh_resume`, Python API `search.resume(agent_id)`. Picks up from the last completed iteration. (MCP tools now 18 total.)
+- **Dashboard Meta-Harness panel** — New MetaHarnessPanel in the TUI dashboard shows active searches with status, current iteration, harness count, and frontier size. Purple border, auto-refreshes every 5s.
+- **Paper benchmark loaders** — `load_lawbench()`, `load_symptom2disease()`, `load_uspto50k()` in `kaos/metaharness/benchmarks/paper_datasets.py`. Downloads from HuggingFace, caches locally. Run with `kaos mh search -b lawbench -n 20 -k 3`.
+- **Multi-GPU autoresearch orchestration** — `examples/multi_gpu_research.py`. 6 agents across 3 GPUs (GPU 0=7B: sweeps, GPU 1=32B: architecture, GPU 2=70B: novel research). GEPA routes by `force_model`.
 
 ## License
 

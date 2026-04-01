@@ -185,6 +185,81 @@ kaos parallel \
     -t reg-explorer "Explore regularization in /train.py"
 ```
 
+## Multi-GPU Orchestration
+
+For larger-scale research, KAOS supports distributing agents across multiple GPUs, each running a different model tier. The GEPA router assigns agents to specific models via `force_model`.
+
+### 3-GPU Setup
+
+```
+GPU 0 — Qwen2.5-Coder-7B   (port 8000) → 2 sweep agents (fast hyperparameter scans)
+GPU 1 — Qwen2.5-Coder-32B  (port 8001) → 2 architecture agents (design exploration)
+GPU 2 — DeepSeek-R1-70B     (port 8002) → 2 novel research agents (creative hypothesis)
+```
+
+### Configuration
+
+```yaml
+# kaos.yaml
+models:
+  qwen2.5-coder-7b:
+    vllm_endpoint: http://localhost:8000/v1
+    max_context: 32768
+    use_for: [trivial, sweep]
+  qwen2.5-coder-32b:
+    vllm_endpoint: http://localhost:8001/v1
+    max_context: 131072
+    use_for: [moderate, architecture]
+  deepseek-r1-70b:
+    vllm_endpoint: http://localhost:8002/v1
+    max_context: 131072
+    use_for: [complex, novel_research]
+```
+
+### Running 6 Agents Across 3 GPUs
+
+```python
+# examples/multi_gpu_research.py
+from kaos import Kaos
+from kaos.ccr import ClaudeCodeRunner
+from kaos.router import GEPARouter
+
+db = Kaos("multi-gpu-research.db")
+router = GEPARouter.from_config("kaos.yaml")
+ccr = ClaudeCodeRunner(db, router, checkpoint_interval=5)
+
+DIRECTIONS = [
+    # GPU 0 — 7B: fast sweeps
+    {"name": "lr-sweep",    "prompt": "Sweep learning rates 1e-5 to 1e-2",
+     "config": {"force_model": "qwen2.5-coder-7b"}},
+    {"name": "batch-sweep", "prompt": "Sweep batch sizes 16 to 256",
+     "config": {"force_model": "qwen2.5-coder-7b"}},
+
+    # GPU 1 — 32B: architecture exploration
+    {"name": "arch-depth",  "prompt": "Explore deeper architectures (12-24 layers)",
+     "config": {"force_model": "qwen2.5-coder-32b"}},
+    {"name": "arch-width",  "prompt": "Explore wider architectures (512-2048 d_model)",
+     "config": {"force_model": "qwen2.5-coder-32b"}},
+
+    # GPU 2 — 70B: novel research ideas
+    {"name": "novel-loss",  "prompt": "Design a novel loss function combining contrastive and generative objectives",
+     "config": {"force_model": "deepseek-r1-70b"}},
+    {"name": "novel-arch",  "prompt": "Propose a novel attention mechanism for long sequences",
+     "config": {"force_model": "deepseek-r1-70b"}},
+]
+
+# Each agent gets its own isolated train.py
+for d in DIRECTIONS:
+    agent_id = db.spawn(d["name"])
+    db.write(agent_id, "/train.py", BASE_TRAIN_PY.encode())
+    db.checkpoint(agent_id, label="baseline")
+
+# Run all 6 in parallel — GEPA routes each to the correct GPU/model
+results = await ccr.run_parallel(DIRECTIONS)
+```
+
+Each agent is fully isolated. The 7B agents on GPU 0 churn through hyperparameter sweeps quickly, while the 70B on GPU 2 takes longer but produces more creative research directions. All results are in one `.db` file, queryable with SQL.
+
 ## Why KAOS for Autonomous Research?
 
 **Isolation that matters.** In autoresearch, there's one `train.py` — the agent modifies it in place. If you want multiple research directions, you need multiple git worktrees or separate directories. KAOS gives each agent its own virtual filesystem with zero setup.
