@@ -399,6 +399,13 @@ class MetaHarnessSearch:
             f"{base}/trace.jsonl",
             result.to_trace_jsonl().encode(),
         )
+        # Per-problem results (separate from trace for easier proposer navigation)
+        if result.per_problem:
+            self.afs.write(
+                self.search_agent_id,
+                f"{base}/per_problem.jsonl",
+                "\n".join(json.dumps(p) for p in result.per_problem).encode(),
+            )
         self.afs.write(
             self.search_agent_id,
             f"{base}/metadata.json",

@@ -18,13 +18,16 @@ The archive is organized as:
     <harness_id>/
         source.py                    -- The harness source code
         scores.json                  -- Evaluation scores (multi-objective)
-        trace.jsonl                  -- Full execution trace
+        trace.jsonl                  -- Full execution trace (CRITICAL — read this)
+        per_problem.jsonl            -- Per-problem scores and outputs
         metadata.json                -- Parent IDs, iteration, rationale
 /iterations/
     <N>/
         proposed.json                -- Harnesses proposed in iteration N
+        proposer_conversation.json   -- Your prior reasoning (if resuming)
 /pareto/
     frontier.json                    -- Current Pareto frontier
+    history.jsonl                    -- Frontier evolution over iterations
 /seeds/
     <name>.py                        -- Original seed harnesses
 ```
@@ -33,59 +36,80 @@ The archive is organized as:
 
 - `mh_ls_archive(path)` -- List files/directories in the archive
 - `mh_read_archive(path)` -- Read a file from the archive
+- `mh_grep_archive(pattern, path)` -- Search file contents across the archive
 - `mh_submit_harness(source_code, rationale)` -- Submit a new harness candidate
 
 ## How to Propose Good Harnesses
 
-1. **Start by reading the Pareto frontier** (`/pareto/frontier.json`) to understand
-   the current best harnesses and their scores.
+You are free to inspect any file in the archive in whatever order makes sense.
+There is no prescribed diagnosis procedure — use your judgment. Read broadly,
+reason carefully, and act on specific evidence from the traces.
 
-2. **Read the source code of top-performing harnesses** and harnesses that recently
-   improved or regressed. Look for patterns in what works.
+### The Critical Insight: Execution Traces
 
-3. **Read execution traces** (`trace.jsonl`) of both successful and failing harnesses.
-   The traces show exactly what the harness did on each problem — this is the most
-   valuable information. Focus on problems where harnesses disagree or fail.
+Raw execution traces (`trace.jsonl` and `per_problem.jsonl`) are the single most
+valuable source of information. The ablation study showed that access to raw
+traces improves results by 15+ points over scores-only or scores+summaries.
 
-4. **Identify specific failure modes** — don't guess, look at the trace data.
-   The difference between a 70% and 90% harness is usually 2-3 specific failure
-   patterns, not a wholesale rewrite.
+For each harness, the trace shows:
+- What prompt was constructed for each problem
+- What the LLM actually output
+- Whether each problem was correct/incorrect and why
+- How many tokens each problem consumed
+- Timing and error information
 
-5. **When proposing changes**, prefer targeted fixes over rewrites. The paper shows
-   that purely additive modifications (adding a new feature without modifying
-   existing code) often outperform large refactors.
+**Read the traces.** Don't guess at failure modes — look at the actual data.
 
-6. **Track which changes caused regressions.** If a modification that seemed good
-   caused a regression, understand why before trying again. Read the traces.
+### Strategy Guidance
 
-7. **Consider multi-objective tradeoffs.** A harness that's slightly less accurate
-   but uses 5x fewer tokens is valuable. Look for the Pareto frontier.
+1. **Start with the Pareto frontier** (`/pareto/frontier.json`) — know what's working.
+
+2. **Read traces of the best AND worst harnesses.** Understand what differentiates them
+   at the per-problem level. Focus on problems where harnesses disagree.
+
+3. **After regressions, prefer purely additive changes.** The TerminalBench-2 search
+   showed that after 6 consecutive regressions, a purely additive modification
+   (adding new capability without modifying existing code) produced the best result.
+   When modifications to core logic keep failing, stop modifying — add instead.
+
+4. **Isolate variables.** If a change bundles multiple modifications and regresses,
+   the regression may come from only one of them. Read the traces to identify which
+   specific change caused the problem. Don't discard the whole bundle.
+
+5. **Cross-reference prior iterations.** You can read proposer conversations from
+   earlier iterations (`/iterations/N/proposer_conversation.json`) and results from
+   any prior harness. Use the full history.
+
+6. **Consider the Pareto tradeoff.** A harness that's slightly less accurate but uses
+   5x fewer tokens is valuable. Explore different points on the frontier.
 
 ## Harness Interface Requirements
 
-Every harness must be a single Python file defining:
+Every harness must be a single Python file (100-1000 lines) defining:
 
 ```python
 def run(problem: dict) -> dict:
     # problem contains task-specific input
     # return must include at least "prediction" or "prompt"
+    # also return "context_tokens" for cost tracking
     ...
 ```
 
 The harness receives a problem dict and returns a result dict. The exact keys
-depend on the benchmark. Read seed harnesses to understand the expected format.
+depend on the benchmark. Read seed harnesses (`/seeds/`) to understand the format.
 
 ## Your Task
 
 {task}
 
-Propose exactly {n_candidates} new harness candidates. For each:
-1. Study the archive thoroughly — read scores, source code, AND execution traces
-2. Identify a specific hypothesis for improvement
-3. Write the harness source code
+Propose exactly {n_candidates} new harness candidate(s). For each:
+1. Study the archive — read scores, source code, AND execution traces
+2. State a specific hypothesis for improvement (cite evidence from traces)
+3. Write the complete harness source code
 4. Submit with `mh_submit_harness(source_code, rationale)`
 
 Make each candidate explore a DIFFERENT strategy or fix a DIFFERENT failure mode.
+Do NOT propose minor variations of the same idea — explore distinct approaches.
 """
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import asyncio
 import json
 from dataclasses import dataclass, field, asdict
 from typing import Any
@@ -50,24 +51,65 @@ class HarnessCandidate:
     def validate_interface(self) -> tuple[bool, str]:
         """Validate that the harness source defines a run(problem) callable.
 
+        Two-stage validation (per paper Appendix D, Tip 5):
+        1. AST check: parse the source and verify run() exists with correct signature
+        2. Smoke test: actually import and call run() on a tiny sample problem
+
         Returns (is_valid, error_message).
         """
+        # Stage 1: AST check
         try:
             tree = ast.parse(self.source_code)
         except SyntaxError as e:
             return False, f"Syntax error: {e}"
 
+        found_run = False
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name == "run":
                     args = node.args
-                    # Must accept at least one argument (problem)
                     total_args = len(args.args) + len(args.posonlyargs)
                     if total_args >= 1:
-                        return True, ""
+                        found_run = True
+                        break
                     return False, "run() must accept at least one argument (problem)"
 
-        return False, "No run() function found in harness source"
+        if not found_run:
+            return False, "No run() function found in harness source"
+
+        # Stage 2: Smoke test — try to import the module and locate run()
+        # This catches import-time crashes (bad dependencies, top-level errors)
+        # but is lenient about runtime failures (async, class methods, etc.)
+        try:
+            import importlib.util
+            module_name = f"_validate_{self.harness_id[:8]}"
+            spec = importlib.util.spec_from_loader(module_name, loader=None)
+            module = importlib.util.module_from_spec(spec)
+            exec(compile(self.source_code, f"<validate:{self.harness_id[:8]}>", "exec"), module.__dict__)
+
+            run_fn = getattr(module, "run", None)
+            if run_fn is None:
+                return False, "run() function not found after import"
+
+            # Try calling with a minimal sample — but don't fail hard if the
+            # function can't handle it (async, class method, domain-specific input)
+            if callable(run_fn) and not asyncio.iscoroutinefunction(run_fn):
+                try:
+                    sample = {"text": "test", "labels": ["a", "b"], "labeled_examples": []}
+                    result = run_fn(sample)
+                    if result is not None and not isinstance(result, dict):
+                        return False, f"run() must return a dict, got {type(result).__name__}"
+                except TypeError:
+                    pass  # Class method needs self, or different signature — OK if AST passed
+                except Exception:
+                    pass  # Domain-specific error — let full evaluation catch it
+
+        except SyntaxError as e:
+            return False, f"Import failed: {e}"
+        except Exception as e:
+            return False, f"Import failed: {type(e).__name__}: {e}"
+
+        return True, ""
 
 
 @dataclass
@@ -105,7 +147,7 @@ class SearchConfig:
 
     benchmark: str  # "text_classify" | "math_rag" | "agentic_coding"
     max_iterations: int = 20
-    candidates_per_iteration: int = 3
+    candidates_per_iteration: int = 2  # Paper uses k=2 for text classification
     seed_harnesses: list[str] = field(default_factory=list)
     proposer_model: str | None = None
     evaluator_model: str | None = None

@@ -87,17 +87,26 @@ class HarnessEvaluator:
                         timeout=self.timeout_seconds / max(len(problems), 1),
                     )
                     scores = self.benchmark.score(problem, output)
+                    is_correct = scores.get("accuracy", scores.get("pass_rate", scores.get("f1_score", 0))) > 0.5
                     per_problem.append({
                         "problem_id": problem.problem_id,
-                        "correct": scores.get("accuracy", 0) == 1.0,
+                        "correct": is_correct,
                         "scores": scores,
                         "output": _truncate(output, 2000),
                     })
+                    # Rich trace entry — the paper's ablation shows raw traces
+                    # are the critical ingredient (15+ points over scores-only)
                     trace.append({
                         "type": "problem_eval",
                         "problem_id": problem.problem_id,
-                        "output": _truncate(output, 1000),
+                        "input_preview": _truncate(str(problem.input.get("text", problem.input)), 300),
+                        "expected": str(problem.expected)[:200],
+                        "harness_output": _truncate(output, 1500),
+                        "prompt_preview": _truncate(output.get("prompt", ""), 500) if isinstance(output, dict) else "",
+                        "prediction": str(output.get("prediction", output.get("prompt", "")))[:200] if isinstance(output, dict) else "",
+                        "correct": is_correct,
                         "scores": scores,
+                        "context_tokens": output.get("context_tokens", 0) if isinstance(output, dict) else 0,
                         "duration_ms": int((time.time() - problem_start) * 1000),
                     })
                 except asyncio.TimeoutError:

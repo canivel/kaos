@@ -97,6 +97,37 @@ class ProposerAgent:
         ))
 
         self.ccr.register_tool(ToolDefinition(
+            name="mh_grep_archive",
+            description=(
+                "Search file contents across the archive. Returns matching lines "
+                "with file paths. Use this to find patterns across harnesses, "
+                "search for specific failure modes in traces, or find which "
+                "harnesses use a particular technique."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "pattern": {
+                        "type": "string",
+                        "description": "Text pattern to search for (case-insensitive substring match)",
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Directory to search in (e.g. '/harnesses' or '/harnesses/<id>')",
+                        "default": "/harnesses",
+                    },
+                    "file_glob": {
+                        "type": "string",
+                        "description": "File name filter (e.g. 'scores.json', 'trace.jsonl', 'source.py')",
+                        "default": "",
+                    },
+                },
+                "required": ["pattern"],
+            },
+            handler=self._grep_archive,
+        ))
+
+        self.ccr.register_tool(ToolDefinition(
             name="mh_submit_harness",
             description=(
                 "Submit a new harness candidate. The source code must define a "
@@ -195,6 +226,52 @@ class ProposerAgent:
             return json.dumps(entries, indent=2)
         except Exception as e:
             return f"Error listing {path}: {e}"
+
+    def _grep_archive(self, pattern: str, path: str = "/harnesses", file_glob: str = "", **kwargs) -> str:
+        """Search file contents across the search agent's VFS."""
+        try:
+            entries = self.afs.ls(self.search_agent_id, path)
+            matches = []
+            pattern_lower = pattern.lower()
+
+            for entry in entries:
+                entry_path = entry.get("path", "")
+                if entry.get("is_dir"):
+                    # Recurse into subdirectories (one level)
+                    try:
+                        sub_entries = self.afs.ls(self.search_agent_id, entry_path)
+                        for sub in sub_entries:
+                            if sub.get("is_dir"):
+                                continue
+                            sub_path = sub.get("path", "")
+                            if file_glob and not sub_path.endswith(file_glob):
+                                continue
+                            self._grep_file(sub_path, pattern_lower, matches)
+                    except Exception:
+                        continue
+                else:
+                    if file_glob and not entry_path.endswith(file_glob):
+                        continue
+                    self._grep_file(entry_path, pattern_lower, matches)
+
+            if not matches:
+                return f"No matches for '{pattern}' in {path}"
+            # Cap output to avoid flooding context
+            if len(matches) > 50:
+                return "\n".join(matches[:50]) + f"\n... ({len(matches) - 50} more matches)"
+            return "\n".join(matches)
+        except Exception as e:
+            return f"Error searching {path}: {e}"
+
+    def _grep_file(self, path: str, pattern: str, matches: list) -> None:
+        """Search a single file for a pattern."""
+        try:
+            content = self.afs.read(self.search_agent_id, path).decode("utf-8", errors="replace")
+            for i, line in enumerate(content.split("\n"), 1):
+                if pattern in line.lower():
+                    matches.append(f"{path}:{i}: {line.strip()[:120]}")
+        except Exception:
+            pass
 
     def _read_archive(self, path: str, **kwargs) -> str:
         """Read a file from the search agent's VFS."""

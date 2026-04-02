@@ -82,15 +82,17 @@ class TestHarnessCandidate:
         assert "Syntax error" in err
 
     def test_validate_interface_run_in_class(self):
+        # The paper requires a top-level run() function, not a class method.
+        # A class with run() passes AST check but fails smoke test (no top-level run).
         code = """
 class Harness:
     def run(self, problem):
         return {}
 """
         h = HarnessCandidate.create(source_code=code)
-        valid, _ = h.validate_interface()
-        # run() inside a class still counts — self + problem = 2 args
-        assert valid
+        valid, err = h.validate_interface()
+        assert not valid
+        assert "not found after import" in err
 
     def test_validate_interface_complex_harness(self):
         code = """
@@ -177,7 +179,7 @@ class TestSearchConfig:
     def test_defaults(self):
         c = SearchConfig(benchmark="text_classify")
         assert c.max_iterations == 20
-        assert c.candidates_per_iteration == 3
+        assert c.candidates_per_iteration == 2  # Paper uses k=2
         assert c.objectives == ["+accuracy", "-context_cost"]
 
     def test_objective_directions(self):
