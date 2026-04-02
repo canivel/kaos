@@ -231,6 +231,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <span class="badge">Apache 2.0</span>
     <span class="badge">44 total deps</span>
     <span class="badge">Zero AI SDK deps</span>
+    <span class="badge" style="color:var(--accent2);border-color:rgba(108,92,231,.3)">Paper-aligned Meta-Harness</span>
   </div>
 </div>
 </section>
@@ -436,14 +437,14 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
         <div class="mh-tl-marker" style="background:var(--accent2)">2</div>
         <div class="mh-tl-content">
           <h3>Proposer Reads Everything</h3>
-          <p>An AI proposer agent reads ALL prior harness code, scores, AND raw execution traces. It identifies specific failure modes from the data &mdash; not guessing, not reading summaries, reading the actual traces. <strong style="color:var(--fg)">Median 82 files read per iteration.</strong></p>
+          <p>A paper-aligned proposer agent reads ALL prior harness code, scores, AND raw execution traces. It enforces additive changes after regressions, isolates variables, and cross-references iterations. <strong style="color:var(--fg)">Median 82 files read per iteration.</strong></p>
         </div>
       </div>
       <div class="mh-tl-step">
         <div class="mh-tl-marker" style="background:var(--cyan);color:#000">3</div>
         <div class="mh-tl-content">
           <h3>Propose Targeted Fixes</h3>
-          <p>The proposer submits new harness variants targeting the failures it found. Each is AST-validated, evaluated in an isolated KAOS agent, and stored with full traces. The paper shows purely additive changes outperform rewrites.</p>
+          <p>The proposer submits new harness variants targeting the failures it found. Each goes through <strong style="color:var(--fg)">two-stage validation</strong> (AST check + smoke test), then evaluation in an isolated KAOS agent with richer traces (input preview, expected, prediction, correct). The proposer can also use <code>mh_grep_archive</code> to search across all prior harnesses and traces.</p>
         </div>
       </div>
       <div class="mh-tl-step">
@@ -480,6 +481,11 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 
 <span class="comment"># Inspect the winning harness source + traces</span>
 <span style="color:var(--green)">$</span> kaos mh inspect 01HXY... 01HXY1F...
+
+<span class="comment"># Run with paper benchmarks (HuggingFace, cached locally)</span>
+<span style="color:var(--green)">$</span> kaos mh search -b lawbench -n 20 -k 3
+<span style="color:var(--green)">$</span> kaos mh search -b symptom2disease -n 20 -k 3
+<span style="color:var(--green)">$</span> kaos mh search -b uspto_50k -n 20 -k 3
 
 <span class="comment"># Query the entire search with SQL</span>
 <span style="color:var(--green)">$</span> kaos query <span class="string">"SELECT SUM(token_count) FROM tool_calls"</span></pre>
