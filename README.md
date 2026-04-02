@@ -79,8 +79,8 @@ KAOS isn't a replacement for those frameworks — it's the **runtime layer they'
 ```bash
 git clone https://github.com/canivel/kaos.git && cd kaos
 uv sync
-kaos setup          # interactive wizard — picks a preset, generates kaos.yaml
-kaos init           # create the database
+kaos setup          # interactive wizard — picks a preset, generates kaos.yaml,
+                    # auto-installs MCP server into Claude Code, auto-inits DB
 ```
 
 ### As a Python library (no infrastructure needed)
@@ -510,7 +510,9 @@ Meta-Harness automates the search. Here's the loop:
               Makes targeted fixes, not rewrites
 ```
 
-**The critical insight** (from the paper's ablation): giving the proposer access to raw execution traces — not summaries, not just scores — improves the final result by 15+ points. KAOS stores these traces as JSONL files in each harness agent's VFS.
+**The critical insight** (from the paper's ablation): giving the proposer access to raw execution traces — not summaries, not just scores — improves the final result by 15+ points. KAOS stores these traces as JSONL files in each harness agent's VFS, with richer fields than vanilla Meta-Harness: input preview, expected answer, prompt preview, prediction, correct boolean, and context token count per problem. Per-problem results are also stored separately in `per_problem.jsonl` for detailed analysis.
+
+**Paper-aligned improvements:** The proposer prompt enforces additive changes after regressions, isolates variables (one change per harness), and cross-references iterations. Harness candidates go through **two-stage validation** (AST check for a top-level `run()` function + smoke test) before evaluation. The proposer also has a `mh_grep_archive` tool to search across all files in the archive, making it easy to find which harnesses use a specific technique or which traces contain a failure mode.
 
 **Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file.
 
@@ -556,7 +558,7 @@ Five layers, one SQLite file:
 
 ### `kaos setup` — Interactive Wizard
 
-The fastest way to get started. Run `kaos setup` and answer 3 questions — it generates a `kaos.yaml` tailored to your environment.
+The fastest way to get started. Run `kaos setup` and answer 3 questions — it generates a `kaos.yaml` tailored to your environment, auto-installs the MCP server into Claude Code settings (project or global), and auto-initializes the database.
 
 ```bash
 kaos setup
@@ -683,11 +685,11 @@ kaos/
 │   └── anthropic_client.py  # Raw httpx client for Anthropic API
 ├── metaharness/
 │   ├── search.py            # Meta-Harness search loop (Algorithm 1)
-│   ├── proposer.py          # Proposer agent with archive tools
+│   ├── proposer.py          # Proposer agent with archive tools (incl. mh_grep_archive)
 │   ├── evaluator.py         # Harness evaluation with trace capture
 │   ├── harness.py           # HarnessCandidate + EvaluationResult
 │   ├── pareto.py            # Pareto frontier computation
-│   └── benchmarks/          # text_classify, math_rag, agentic_coding
+│   └── benchmarks/          # text_classify, math_rag, agentic_coding, paper_datasets
 ├── mcp/
 │   └── server.py            # MCP server (18 tools, stdio + SSE)
 └── cli/
@@ -722,9 +724,11 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 
 ## Recent Additions
 
-- **`kaos setup` interactive wizard** — 6 presets (claude-code, local, local-multi, anthropic, openai, hybrid). Asks 3 questions, generates `kaos.yaml`. Run with `kaos setup`.
-- **Multi-provider support** — Three providers via raw httpx: `provider: local` (vLLM/ollama/llama.cpp), `provider: openai` (OpenAI API), `provider: anthropic` (Anthropic Claude API). API keys via environment variables. Backward compatible with existing configs.
-- **Resume interrupted Meta-Harness searches** — `kaos mh resume <search-agent-id>`, MCP tool `mh_resume`, Python API `search.resume(agent_id)`. Picks up from the last completed iteration. (MCP tools now 18 total.)
+- **Paper-aligned Meta-Harness (7 improvements)** — Proposer prompt rewritten for additive changes after regressions, variable isolation, and cross-referencing iterations. New `mh_grep_archive` tool for proposers to search across all files in the archive. Two-stage validation (AST check + smoke test) before evaluation. Richer trace format with input preview, expected answer, prompt preview, prediction, correct boolean, and context tokens. `per_problem.jsonl` stored separately. Default `candidates_per_iteration` changed from 3 to 2. Class-method harnesses rejected (top-level `run()` required).
+- **`kaos setup` interactive wizard** — 6 presets (claude-code, local, local-multi, anthropic, openai, hybrid). Asks 3 questions, generates `kaos.yaml`, auto-installs MCP server into Claude Code settings, and auto-initializes the database. Run with `kaos setup`.
+- **Multi-provider support** — Three providers via raw httpx: `provider: local` (vLLM/ollama/llama.cpp), `provider: openai` (OpenAI API), `provider: anthropic` (Anthropic Claude API). API keys via environment variables. GEPA routes across local + cloud models. Backward compatible with existing configs.
+- **18 MCP tools** — Added: `agent_pause`, `agent_resume`, `agent_checkpoints`, `mh_search`, `mh_frontier`, `mh_resume`.
+- **Resume interrupted Meta-Harness searches** — `kaos mh resume <search-agent-id>`, MCP tool `mh_resume`, Python API `search.resume(agent_id)`. Picks up from the last completed iteration.
 - **Dashboard Meta-Harness panel** — New MetaHarnessPanel in the TUI dashboard shows active searches with status, current iteration, harness count, and frontier size. Purple border, auto-refreshes every 5s.
 - **Paper benchmark loaders** — `load_lawbench()`, `load_symptom2disease()`, `load_uspto50k()` in `kaos/metaharness/benchmarks/paper_datasets.py`. Downloads from HuggingFace, caches locally. Run with `kaos mh search -b lawbench -n 20 -k 3`.
 - **Multi-GPU autoresearch orchestration** — `examples/multi_gpu_research.py`. 6 agents across 3 GPUs (GPU 0=7B: sweeps, GPU 1=32B: architecture, GPU 2=70B: novel research). GEPA routes by `force_model`.

@@ -588,7 +588,7 @@ Run a Meta-Harness search to automatically optimize a harness for a benchmark. T
 
 | Name | Type | Required | Description |
 |---|---|---|---|
-| `benchmark` | string | yes | Benchmark name: `text_classify`, `math_rag`, `agentic_coding`, or a custom registered benchmark. |
+| `benchmark` | string | yes | Benchmark name: `text_classify`, `math_rag`, `agentic_coding`, `lawbench`, `symptom2disease`, `uspto_50k`, or a custom registered benchmark. |
 | `max_iterations` | integer | no | Number of search iterations. Default: 10. |
 | `candidates_per_iteration` | integer | no | Candidates proposed per iteration. Default: 2. |
 | `config` | object | no | Additional SearchConfig overrides. |

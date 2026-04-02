@@ -39,7 +39,7 @@ Here's the architecture:
           ▼
 ┌──────────────────────────────┐
 │       KAOS MCP Server        │  ← Orchestration layer
-│  17 tools: spawn, read,      │
+│  18 tools: spawn, read,      │
 │  write, checkpoint, query,   │
 │  pause, resume, mh_search... │
 └─────────┬────────────────────┘
@@ -91,9 +91,11 @@ uv run kaos --version
 # kaos, version 0.1.0
 ```
 
-Initialize the database:
+Initialize the database (or use `kaos setup` to run the interactive wizard that generates `kaos.yaml` and initializes the database in one step):
 
 ```bash
+uv run kaos setup   # interactive wizard — picks a preset, generates kaos.yaml, inits DB
+# OR manually:
 uv run kaos init
 # Initialized KAOS database: ./kaos.db
 ```
@@ -340,7 +342,7 @@ You should see the agent spawn, run on your local vLLM, and produce output. If t
 
 ## 5. Connect KAOS to Claude Code
 
-This is where it gets powerful. We'll register KAOS as an MCP server so Claude Code can use all 11 KAOS tools natively.
+This is where it gets powerful. We'll register KAOS as an MCP server so Claude Code can use all 18 KAOS tools natively.
 
 ### Add to Claude Code settings
 
@@ -383,7 +385,7 @@ Restart Claude Code, then ask:
 
 > "What KAOS tools are available?"
 
-Claude Code should list all 17 KAOS tools: `agent_spawn`, `agent_spawn_only`, `agent_read`, `agent_write`, `agent_ls`, `agent_status`, `agent_kill`, `agent_pause`, `agent_resume`, `agent_checkpoint`, `agent_restore`, `agent_diff`, `agent_checkpoints`, `agent_query`, `agent_parallel`, `mh_search`, `mh_frontier`.
+Claude Code should list all 18 KAOS tools: `agent_spawn`, `agent_spawn_only`, `agent_read`, `agent_write`, `agent_ls`, `agent_status`, `agent_kill`, `agent_pause`, `agent_resume`, `agent_checkpoint`, `agent_restore`, `agent_diff`, `agent_checkpoints`, `agent_query`, `agent_parallel`, `mh_search`, `mh_frontier`, `mh_resume`.
 
 If you see them, you're connected.
 

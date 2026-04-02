@@ -99,13 +99,20 @@ Search Agent VFS:
   /config.json
   /seeds/seed_0.py, seed_1.py, seed_2.py
   /harnesses/
-    01HXY1A.../source.py, scores.json, trace.jsonl, metadata.json
-    01HXY1B.../source.py, scores.json, trace.jsonl, metadata.json
-    01HXY1C.../source.py, scores.json, trace.jsonl, metadata.json
+    01HXY1A.../source.py, scores.json, trace.jsonl, per_problem.jsonl, metadata.json
+    01HXY1B.../source.py, scores.json, trace.jsonl, per_problem.jsonl, metadata.json
+    01HXY1C.../source.py, scores.json, trace.jsonl, per_problem.jsonl, metadata.json
   /pareto/frontier.json     ← retrieval seed is best so far
 ```
 
-The **trace.jsonl** files contain the full execution trace for every problem — what the harness produced, what score it got, how long it took. This is the critical ingredient: the paper's ablation shows that giving the proposer access to raw traces (vs. just scores or summaries) improves accuracy by 15+ points.
+Each harness directory contains:
+- **source.py** — the harness source code
+- **scores.json** — aggregate scores (accuracy, context_cost, etc.)
+- **trace.jsonl** — the full execution trace with richer fields: input preview, expected answer, prompt preview, prediction, correct boolean, and context token count per problem
+- **per_problem.jsonl** — per-problem results stored separately for detailed analysis
+- **metadata.json** — iteration, parent harness, rationale
+
+The **trace.jsonl** files are the critical ingredient: the paper's ablation shows that giving the proposer access to raw traces (vs. just scores or summaries) improves accuracy by 15+ points.
 
 #### Iteration 1 — Proposer Studies the Archive
 
@@ -115,6 +122,7 @@ KAOS spawns a **proposer agent** — an LLM that can read the entire search arch
 - `mh_read_archive("/pareto/frontier.json")` → sees retrieval is winning
 - `mh_read_archive("/harnesses/01HXY1C.../trace.jsonl")` → reads every problem attempt
 - `mh_read_archive("/harnesses/01HXY1A.../trace.jsonl")` → reads zero-shot failures
+- `mh_grep_archive("word overlap")` → searches across ALL files in the archive for a pattern
 
 The proposer notices: *"The retrieval harness gets 70% accuracy but fails on tickets where the wording is unusual — 'mysterious charge on my statement' doesn't match 'charged twice' by word overlap. The few-shot harness fails when recent examples don't include the right category."*
 
@@ -123,7 +131,12 @@ It proposes 2 new harnesses:
 **Candidate 1** — Semantic grouping: cluster examples by label, include one from each.
 **Candidate 2** — Two-stage: make a draft classification, then retrieve examples for the draft label to verify.
 
-Both are submitted via `mh_submit_harness(source_code, rationale)`, validated (AST check for `run()` function), and evaluated.
+Both are submitted via `mh_submit_harness(source_code, rationale)` and go through **two-stage validation** before evaluation:
+
+1. **AST check** — verifies the harness has a top-level `run()` function (class-method harnesses are rejected; the function must be a module-level `def run(problem)`)
+2. **Smoke test** — imports the module and calls `run()` with a sample problem to catch runtime errors early
+
+Only harnesses that pass both stages proceed to full evaluation.
 
 ```
 Search Archive after iteration 1:
@@ -160,7 +173,12 @@ Each iteration, the proposer has access to ALL prior harnesses and traces. It ca
 - Combine ideas from different successful harnesses
 - Make targeted fixes for specific failure modes (not rewrites)
 
-The paper found that after ~6 iterations of consecutive regressions, the proposer learned to make **purely additive changes** (add new capability without modifying existing code) — which is less risky.
+The proposer prompt is paper-aligned with key strategies:
+- **Additive changes after regressions** — after consecutive regressions, the proposer switches to purely additive changes (add new capability without modifying existing code), which is less risky
+- **Isolate variables** — each proposed harness changes one thing at a time so the proposer can attribute improvements correctly
+- **Cross-reference iterations** — the proposer explicitly compares results across iterations to identify which changes helped and which hurt
+
+The default `candidates_per_iteration` is **2** (not 3), matching the paper's finding that fewer, more focused candidates per iteration produce better results than many unfocused ones.
 
 ### Step 4: You Get the Results
 
@@ -211,6 +229,21 @@ The paper's reference implementation uses a flat filesystem. KAOS provides:
 **SQL queries**: Instead of grepping through files, query the entire search with SQL. "Which harnesses used retrieval?" "How many tokens per iteration?" "What was the accuracy trajectory?"
 
 **Portability**: The entire search — every harness, every trace, every proposer conversation — is one `.db` file. Send it to a teammate.
+
+---
+
+## Proposer Tools
+
+The proposer agent has access to four archive tools for reading the search history:
+
+| Tool | Description |
+|---|---|
+| `mh_ls_archive(path)` | List files and directories in the search archive |
+| `mh_read_archive(path)` | Read a specific file from the archive (source code, traces, scores) |
+| `mh_grep_archive(pattern)` | Search across ALL files in the archive for a regex pattern — useful for finding which harnesses use a specific technique or which traces contain a failure mode |
+| `mh_submit_harness(source, rationale)` | Submit a new harness candidate (goes through two-stage validation) |
+
+The `mh_grep_archive` tool is especially valuable in later iterations when the archive contains many harnesses. Instead of reading every trace file, the proposer can search for specific patterns (e.g., `"word overlap"`, `"KeyError"`, `"timeout"`) to quickly identify relevant failure modes across the entire search history.
 
 ---
 
