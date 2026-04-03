@@ -113,7 +113,7 @@ class HarnessEvaluator:
                     per_problem.append({
                         "problem_id": problem.problem_id,
                         "correct": False,
-                        "scores": {k: 0.0 for k in self.benchmark.objectives},
+                        "scores": {k.lstrip("+-"): 0.0 for k in self.benchmark.objectives},
                         "error": "timeout",
                     })
                     trace.append({
@@ -124,7 +124,7 @@ class HarnessEvaluator:
                     per_problem.append({
                         "problem_id": problem.problem_id,
                         "correct": False,
-                        "scores": {k: 0.0 for k in self.benchmark.objectives},
+                        "scores": {k.lstrip("+-"): 0.0 for k in self.benchmark.objectives},
                         "error": str(e),
                     })
                     trace.append({
@@ -242,6 +242,8 @@ def _truncate(obj: Any, max_chars: int) -> Any:
     if isinstance(obj, dict):
         s = json.dumps(obj)
         if len(s) > max_chars:
-            return json.loads(s[:max_chars - 20] + '..."truncated": true}')
+            # Return a safe summary — never try to parse a mid-string truncation
+            return {"__truncated__": True, "original_size": len(s),
+                    "preview": s[:max_chars - 50] + "..."}
         return obj
     return obj
