@@ -371,17 +371,31 @@ def serve(db: str, port: int, host: str, transport: str, config_file: str):
 
     afs = _get_afs(db)
 
-    if Path(config_file).exists():
-        router = GEPARouter.from_config(config_file)
-    else:
-        console.print(f"[yellow]Config not found, using defaults[/yellow]")
+    # Try config file first, then fall back to claude_code provider (no API key needed)
+    _cfg_paths = [config_file, os.environ.get("KAOS_CONFIG", ""), "./kaos.yaml"]
+    _loaded = False
+    for _cfg in _cfg_paths:
+        if _cfg and Path(_cfg).exists():
+            router = GEPARouter.from_config(_cfg)
+            _loaded = True
+            break
+
+    if not _loaded:
+        # Default: use claude_code provider (Claude Code subscription, no API key)
         from kaos.router.gepa import ModelConfig
-        router = GEPARouter(
-            models={"default": ModelConfig(
-                name="default",
-                vllm_endpoint="http://localhost:8000/v1",
+        from kaos.router.providers import ClaudeCodeProvider
+        _provider = ClaudeCodeProvider(model_id="claude-sonnet-4-6")
+        from kaos.router.gepa import GEPARouter as _GR
+        router = _GR(
+            models={"claude-sonnet": ModelConfig(
+                name="claude-sonnet",
+                provider="claude_code",
+                model_id="claude-sonnet-4-6",
+                use_for=["trivial", "moderate", "complex", "critical"],
             )},
         )
+        # Inject the provider directly since GEPARouter.__init__ creates it from config
+        router.clients["claude-sonnet"] = _provider
 
     ccr = ClaudeCodeRunner(afs, router)
     mcp_server = init_server(afs, ccr)

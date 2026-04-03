@@ -79,6 +79,11 @@ class GEPARouter:
                     api_key_env=cfg.api_key_env,
                     endpoint=cfg.vllm_endpoint or None,
                 )
+            elif cfg.provider == "claude_code":
+                self.clients[name] = create_provider(
+                    "claude_code",
+                    model_id=cfg.model_id,
+                )
             else:
                 # Default: local vLLM/ollama endpoint
                 self.clients[name] = VLLMClient(base_url=cfg.vllm_endpoint)
@@ -270,10 +275,15 @@ class GEPARouter:
 
         usage = None
         if response.usage:
+            u = response.usage
+            # VLLMClient uses prompt_tokens/completion_tokens; LLMProvider uses input_tokens/output_tokens
+            inp = getattr(u, "prompt_tokens", None) or getattr(u, "input_tokens", 0)
+            out = getattr(u, "completion_tokens", None) or getattr(u, "output_tokens", 0)
+            tot = getattr(u, "total_tokens", None) or (inp + out)
             usage = {
-                "prompt_tokens": response.usage.prompt_tokens,
-                "completion_tokens": response.usage.completion_tokens,
-                "total_tokens": response.usage.total_tokens,
+                "prompt_tokens": inp,
+                "completion_tokens": out,
+                "total_tokens": tot,
             }
 
         return ModelResponse(

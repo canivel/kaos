@@ -32,9 +32,11 @@ Usage in kaos.yaml:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -317,6 +319,294 @@ class LocalProvider(OpenAIProvider):
         super().__init__(base_url=endpoint, api_key="", timeout=timeout)
 
 
+# ── Claude Code subprocess provider ──────────────────────────────
+
+class ClaudeCodeProvider(LLMProvider):
+    """Uses the Claude Code CLI subprocess (claude --print).
+
+    No API key needed — uses Claude Code subscription auth automatically.
+    Serializes the full conversation history into each call.
+
+    Usage in kaos.yaml:
+        models:
+          claude-sonnet:
+            provider: claude_code
+            model_id: claude-sonnet-4-6   # optional, uses CC default if omitted
+            max_context: 200000
+            use_for: [trivial, moderate, complex, critical, code_completion, code_generation, planning]
+    """
+
+    _TOOL_CALL_RE = re.compile(
+        r'<tool_call\s+id="([^"]+)"\s+name="([^"]+)">\s*(.*?)\s*</tool_call>',
+        re.DOTALL,
+    )
+
+    # Fallback paths to try when 'claude' is not in PATH
+    _FALLBACK_PATHS = [
+        os.environ.get("CLAUDE_EXECUTABLE", ""),
+        os.path.expanduser("~/.nvm/versions/node/v23.6.1/bin/claude"),
+        os.path.expanduser("~/AppData/Roaming/npm/claude"),
+        "/usr/local/bin/claude",
+        "/opt/homebrew/bin/claude",
+    ]
+
+    def __init__(self, model_id: str = "", timeout: float = 300.0):
+        self.model_id = model_id
+        self.timeout = timeout
+        # Resolve claude executable at init time
+        self._claude_exe = self._find_claude()
+
+    def _find_claude(self) -> str:
+        """Find the claude executable, trying PATH and known fallback locations.
+
+        On Windows, nvm installs both a local claude.CMD (inside the nvm bin dir)
+        and a shim in the global npm bin.  The nvm-local one is preferred because
+        its cli.js and node.exe are co-located and guaranteed compatible.
+        """
+        # 1. CLAUDE_EXECUTABLE env var (highest priority — explicit config)
+        ce = os.environ.get("CLAUDE_EXECUTABLE", "")
+        if ce:
+            # Env var may omit the .CMD extension on Windows
+            for candidate in (ce, ce + ".CMD", ce + ".cmd"):
+                if os.path.isfile(candidate):
+                    return candidate
+
+        # 2. nvm-local claude.CMD (preferred over system shim)
+        for nvm_path in (
+            os.path.expanduser("~/.nvm/versions/node/v23.6.1/bin/claude.CMD"),
+            os.path.expanduser("~/.nvm/versions/node/v23.6.1/bin/claude.cmd"),
+        ):
+            if os.path.isfile(nvm_path):
+                return nvm_path
+
+        # 3. PATH (may find npm global shim — less reliable on Windows)
+        import shutil
+        found = shutil.which("claude")
+        if found:
+            return found
+
+        # 4. Remaining fallback paths
+        for path in self._FALLBACK_PATHS:
+            if path and os.path.isfile(path):
+                return path
+
+        return "claude"
+
+    def _resolve_cmd(self) -> list[str]:
+        """Return [executable, ...] resolving .CMD wrappers on Windows.
+
+        On Windows, npm installs claude as a .CMD batch script that wraps
+        the real Node.js call.  subprocess.run(input=...) doesn't forward
+        piped stdin through CMD's & chain reliably, so we read the CMD file
+        and call node + cli.js directly instead.
+        """
+        exe = self._claude_exe
+        if not exe.upper().endswith(".CMD"):
+            return [exe]
+        # Parse the CMD wrapper to find node + cli.js
+        try:
+            cmd_dir = os.path.dirname(os.path.abspath(exe))
+            with open(exe, encoding="utf-8", errors="replace") as f:
+                content = f.read()
+            import re as _re
+            # Typical npm wrapper:  "%_prog%"  "%dp0%\node_modules\...\cli.js" %*
+            # Find all quoted paths ending in .js, then resolve %dp0%
+            js_paths = _re.findall(r'"([^"]+\.js)"', content)
+            for js_raw in js_paths:
+                # Resolve %dp0% → cmd_dir using plain string replace
+                # (regex replace fails on Windows paths with backslash sequences)
+                cli_js = js_raw.replace("%dp0%\\", cmd_dir + os.sep)
+                cli_js = cli_js.replace("%DP0%\\", cmd_dir + os.sep)
+                cli_js = cli_js.replace("%dp0%", cmd_dir)
+                cli_js = os.path.normpath(cli_js)
+                if os.path.isfile(cli_js):
+                    # Find node executable — prefer the node that ships with the
+                    # same nvm/claude installation, not the system Node.js.
+                    import shutil as _shutil
+                    # 1. node beside the cmd file itself
+                    node_beside_cmd = os.path.join(cmd_dir, "node.exe")
+                    # 2. node beside CLAUDE_EXECUTABLE (nvm bin dir)
+                    _claude_env = os.environ.get("CLAUDE_EXECUTABLE", "")
+                    node_beside_ce = (
+                        os.path.join(os.path.dirname(_claude_env), "node.exe")
+                        if _claude_env else ""
+                    )
+                    # 3. nvm hardcoded fallback (node lives in bin/ subdir on nvm)
+                    node_nvm = os.path.expanduser(
+                        "~/.nvm/versions/node/v23.6.1/bin/node.exe"
+                    )
+                    # 4. shutil.which (may be system Node — use last)
+                    node_which = _shutil.which("node") or ""
+                    node_exe = next(
+                        (p for p in (node_beside_cmd, node_beside_ce, node_nvm, node_which)
+                         if p and os.path.isfile(p)),
+                        "node",
+                    )
+                    return [node_exe, cli_js]
+        except Exception:
+            pass
+        # Fallback: run via cmd /c (less reliable but a last resort)
+        return ["cmd", "/c", exe]
+
+    def _serialize_conversation(self, messages: list[dict], tools: list[dict] | None) -> str:
+        """Flatten full conversation + tool defs into a single prompt string."""
+        parts: list[str] = []
+
+        # Preamble: tell Claude this is a structured conversation replay
+        parts.append(
+            "You are an autonomous research agent. The following is a structured conversation "
+            "you must continue. Follow the instructions precisely.\n"
+        )
+
+        for msg in messages:
+            role = msg.get("role", "")
+            content = msg.get("content") or ""
+
+            if role == "system":
+                parts.append(f"[SYSTEM INSTRUCTIONS]\n{content}\n[/SYSTEM INSTRUCTIONS]\n")
+            elif role == "user":
+                parts.append(f"[USER]\n{content}\n[/USER]\n")
+            elif role == "assistant":
+                tool_calls = msg.get("tool_calls") or []
+                if tool_calls:
+                    for tc in tool_calls:
+                        fn = tc.get("function", {})
+                        parts.append(
+                            f'[ASSISTANT TOOL CALL]\n'
+                            f'<tool_call id="{tc["id"]}" name="{fn["name"]}">\n'
+                            f'{fn.get("arguments", "{}")}\n'
+                            f'</tool_call>\n'
+                            f'[/ASSISTANT TOOL CALL]\n'
+                        )
+                if content:
+                    parts.append(f"[ASSISTANT]\n{content}\n[/ASSISTANT]\n")
+            elif role == "tool":
+                tool_id = msg.get("tool_call_id", "")
+                parts.append(f"[TOOL RESULT id={tool_id}]\n{content}\n[/TOOL RESULT]\n")
+
+        # Append tool definitions + format instructions
+        if tools:
+            tool_lines = []
+            for t in tools:
+                fn = t.get("function", {})
+                tool_lines.append(
+                    f'  - {fn.get("name", "")}: {fn.get("description", "")}\n'
+                    f'    parameters: {json.dumps(fn.get("parameters", {}))}'
+                )
+            parts.append(
+                "\n[AVAILABLE TOOLS]\n"
+                + "\n".join(tool_lines)
+                + "\n[/AVAILABLE TOOLS]\n"
+                + "\nTo call a tool, output EXACTLY this format (preserve XML tags):\n"
+                + '<tool_call id="tc_1" name="tool_name">\n'
+                + '{"param": "value"}\n'
+                + '</tool_call>\n'
+                + "\nYou may chain multiple tool calls. Each <tool_call> block will be executed "
+                + "and you will receive [TOOL RESULT] blocks in return.\n"
+                + "When all tools are done and you have a final answer, output plain text with no XML tags.\n"
+            )
+
+        parts.append("\n[CONTINUE THE CONVERSATION — your response:]")
+        return "\n".join(parts)
+
+    def _parse(self, output: str) -> LLMResponse:
+        """Parse claude stdout: extract tool_call blocks and plain text."""
+        tool_calls: list[dict] = []
+        text_segments: list[str] = []
+        last_end = 0
+
+        for m in self._TOOL_CALL_RE.finditer(output):
+            pre = output[last_end : m.start()].strip()
+            if pre:
+                text_segments.append(pre)
+            tc_id, tc_name, tc_args_raw = m.group(1), m.group(2), m.group(3).strip()
+            try:
+                args_str = json.dumps(json.loads(tc_args_raw))
+            except json.JSONDecodeError:
+                args_str = json.dumps({"raw": tc_args_raw})
+            tool_calls.append({
+                "id": tc_id,
+                "type": "function",
+                "function": {"name": tc_name, "arguments": args_str},
+            })
+            last_end = m.end()
+
+        tail = output[last_end:].strip()
+        if tail:
+            text_segments.append(tail)
+
+        final_text = "\n".join(text_segments) or None
+        stop_reason = "tool_calls" if tool_calls else "end_turn"
+
+        return LLMResponse(
+            choices=[LLMChoice(
+                message=LLMMessage(
+                    role="assistant",
+                    content=final_text,
+                    tool_calls=tool_calls or None,
+                ),
+                finish_reason=stop_reason,
+            )],
+        )
+
+    async def chat(
+        self,
+        model: str,
+        messages: list[dict],
+        temperature: float = 0.1,
+        max_tokens: int = 4096,
+        tools: list[dict] | None = None,
+        tool_choice: str | None = None,
+    ) -> LLMResponse:
+        import subprocess
+        import functools
+
+        prompt = self._serialize_conversation(messages, tools)
+        prompt_bytes = prompt.encode("utf-8")
+
+        cmd = self._resolve_cmd() + ["--print"]
+        effective_model = model or self.model_id
+        if effective_model:
+            cmd += ["--model", effective_model]
+
+        # Strip CLAUDECODE so nested claude --print doesn't refuse to start.
+        # Use subprocess.run in a thread executor — asyncio.create_subprocess_exec
+        # is unreliable on Windows ProactorEventLoop when parent stdio is already
+        # in use by MCP protocol.
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        timeout = self.timeout
+
+        def _run_sync() -> subprocess.CompletedProcess:
+            return subprocess.run(
+                cmd,
+                input=prompt_bytes,
+                capture_output=True,
+                env=env,
+                timeout=timeout,
+            )
+
+        loop = asyncio.get_running_loop()
+        try:
+            proc_result = await loop.run_in_executor(None, _run_sync)
+        except subprocess.TimeoutExpired:
+            raise TimeoutError(f"claude subprocess timed out after {timeout}s")
+
+        if proc_result.returncode != 0:
+            err = proc_result.stderr.decode("utf-8", errors="replace").strip()
+            raise RuntimeError(f"claude --print failed (rc={proc_result.returncode}): {err}")
+
+        stdout_text = proc_result.stdout.decode("utf-8", errors="replace")
+        stderr_text = proc_result.stderr.decode("utf-8", errors="replace").strip()
+
+        if not stdout_text.strip():
+            logger.warning("claude --print returned empty stdout. stderr: %r", stderr_text)
+
+        return self._parse(stdout_text)
+
+    async def close(self) -> None:
+        pass  # No persistent connections
+
+
 # ── Factory ──────────────────────────────────────────────────────
 
 def create_provider(provider_type: str, **kwargs) -> LLMProvider:
@@ -349,5 +639,13 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
         endpoint = kwargs.get("endpoint", "http://localhost:8000/v1")
         return LocalProvider(endpoint=endpoint, timeout=kwargs.get("timeout", 120.0))
 
+    elif provider_type == "claude_code":
+        model_id = kwargs.get("model_id", "")
+        timeout = kwargs.get("timeout", 300.0)
+        return ClaudeCodeProvider(model_id=model_id, timeout=timeout)
+
     else:
-        raise ValueError(f"Unknown provider: {provider_type}. Use 'openai', 'anthropic', or 'local'.")
+        raise ValueError(
+            f"Unknown provider: {provider_type}. "
+            "Use 'openai', 'anthropic', 'local', or 'claude_code'."
+        )

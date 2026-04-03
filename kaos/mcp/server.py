@@ -381,6 +381,10 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         import kaos.metaharness.benchmarks.text_classify  # noqa: F401
         import kaos.metaharness.benchmarks.math_rag  # noqa: F401
         import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+        try:
+            import kaos.metaharness.benchmarks.arc_agi3  # noqa: F401
+        except ImportError:
+            pass  # arc-agi not installed — skip
 
         benchmark_name = args["benchmark"]
         bench = get_benchmark(benchmark_name)
@@ -394,14 +398,29 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         )
 
         search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
-        result = await search.run()
-        return json.dumps({
-            "search_agent_id": result.search_agent_id,
-            "summary": result.summary(),
-            "frontier": result.frontier.to_dict(),
-            "total_harnesses": result.total_harnesses_evaluated,
-            "duration_seconds": round(result.total_duration_seconds, 1),
-        }, indent=2)
+
+        if args.get("background", True):
+            # Non-blocking: init archive, start search as background task, return immediately.
+            # Poll progress with mh_frontier(search_agent_id=...).
+            import asyncio as _asyncio
+            search.search_agent_id = search._init_archive()
+            _orig_init = search._init_archive
+            search._init_archive = lambda: search.search_agent_id  # skip re-init in run()
+            _asyncio.create_task(search.run())
+            return json.dumps({
+                "search_agent_id": search.search_agent_id,
+                "status": "running",
+                "message": f"Search started in background. Poll with mh_frontier(search_agent_id='{search.search_agent_id}')",
+            }, indent=2)
+        else:
+            result = await search.run()
+            return json.dumps({
+                "search_agent_id": result.search_agent_id,
+                "summary": result.summary(),
+                "frontier": result.frontier.to_dict(),
+                "total_harnesses": result.total_harnesses_evaluated,
+                "duration_seconds": round(result.total_duration_seconds, 1),
+            }, indent=2)
 
     elif name == "mh_frontier":
         search_agent_id = args["search_agent_id"]
@@ -415,6 +434,10 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         import kaos.metaharness.benchmarks.text_classify  # noqa: F401
         import kaos.metaharness.benchmarks.math_rag  # noqa: F401
         import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
+        try:
+            import kaos.metaharness.benchmarks.arc_agi3  # noqa: F401
+        except ImportError:
+            pass
 
         search_agent_id = args["search_agent_id"]
         benchmark_name = args["benchmark"]
@@ -423,6 +446,14 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         # Config is restored from the archive inside resume()
         config = SearchConfig(benchmark=benchmark_name)
         search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+        if args.get("background", True):
+            import asyncio as _asyncio
+            _asyncio.create_task(search.resume(search_agent_id))
+            return json.dumps({
+                "search_agent_id": search_agent_id,
+                "status": "resuming",
+                "message": f"Search resuming in background. Poll with mh_frontier(search_agent_id='{search_agent_id}')",
+            }, indent=2)
         result = await search.resume(search_agent_id)
         return json.dumps({
             "search_agent_id": result.search_agent_id,

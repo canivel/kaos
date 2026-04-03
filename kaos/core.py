@@ -43,9 +43,17 @@ class Kaos:
             conn = sqlite3.connect(self.db_path, check_same_thread=False)
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
-            conn.execute("PRAGMA busy_timeout=5000")
+            conn.execute("PRAGMA busy_timeout=30000")
             self._local.conn = conn
         return self._local.conn
+
+    def _open_fresh_conn(self, timeout: float = 30.0) -> sqlite3.Connection:
+        """Open a brand-new connection (not thread-local) for recovery operations."""
+        conn = sqlite3.connect(self.db_path, timeout=timeout, check_same_thread=False)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA foreign_keys=ON")
+        conn.execute(f"PRAGMA busy_timeout={int(timeout * 1000)}")
+        return conn
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -123,10 +131,32 @@ class Kaos:
         self.conn.commit()
 
     def kill(self, agent_id: str) -> None:
-        """Kill an agent."""
-        self.set_status(agent_id, "killed")
-        self.events.log(agent_id, EventJournal.AGENT_KILL)
-        self.conn.commit()
+        """Kill an agent. Falls back to a fresh connection if the DB is locked."""
+        try:
+            self.set_status(agent_id, "killed")
+            self.events.log(agent_id, EventJournal.AGENT_KILL)
+            self.conn.commit()
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower():
+                raise
+            # Thread-local connection is blocked — try a fresh one
+            self._force_kill(agent_id)
+
+    def _force_kill(self, agent_id: str) -> None:
+        """Kill via a fresh connection after a WAL checkpoint attempt."""
+        conn = self._open_fresh_conn(timeout=30.0)
+        try:
+            conn.execute("PRAGMA wal_checkpoint(PASSIVE)")
+            conn.execute(
+                "UPDATE agents SET status='killed' WHERE agent_id=?", (agent_id,)
+            )
+            conn.execute(
+                "INSERT INTO events (agent_id, event_type, payload) VALUES (?, 'agent_kill', '{}')",
+                (agent_id,),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     def complete(self, agent_id: str) -> None:
         """Mark an agent as completed."""
