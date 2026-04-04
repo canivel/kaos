@@ -155,6 +155,7 @@ class SearchConfig:
     max_parallel_evals: int = 4
     eval_subset_size: int | None = None  # Subsample problems for faster search
     harness_timeout_seconds: int = 300
+    proposer_timeout_seconds: int = 900  # 15 min max per proposer iteration
 
     def to_dict(self) -> dict:
         return asdict(self)

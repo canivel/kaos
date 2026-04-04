@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import sys
 from typing import Any
 
 from mcp.server import Server
@@ -385,52 +387,49 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
 
     # ── Meta-Harness ────────────────────────────────────────
     elif name == "mh_search":
-        from kaos.metaharness.harness import SearchConfig
-        from kaos.metaharness.search import MetaHarnessSearch
-        from kaos.metaharness.benchmarks import get_benchmark
-        _import_benchmarks()
+        import subprocess as _sp
 
         benchmark_name = args["benchmark"]
-        bench = get_benchmark(benchmark_name)
+        config_file = args.get("config_file", "") or os.environ.get("KAOS_CONFIG", "./kaos.yaml")
 
-        extra = args.get("config", {})
-        config = SearchConfig(
-            benchmark=benchmark_name,
-            max_iterations=args.get("max_iterations", 10),
-            candidates_per_iteration=args.get("candidates_per_iteration", 2),
-            **{k: v for k, v in extra.items() if k in SearchConfig.__dataclass_fields__},
-        )
+        # Launch as a detached worker process — completely decoupled from
+        # the MCP event loop. If the MCP connection drops, the worker continues.
+        cmd = [
+            sys.executable, "-m", "kaos.metaharness.worker",
+            "--db", _afs.db_path,
+            "--config-file", config_file,
+            "--benchmark", benchmark_name,
+            "--iterations", str(args.get("max_iterations", 10)),
+            "--candidates", str(args.get("candidates_per_iteration", 2)),
+            "--max-parallel", str(args.get("config", {}).get("max_parallel_evals", 4)),
+        ]
+        eval_subset = args.get("config", {}).get("eval_subset_size")
+        if eval_subset:
+            cmd += ["--eval-subset", str(eval_subset)]
+        proposer_model = args.get("config", {}).get("proposer_model")
+        if proposer_model:
+            cmd += ["--proposer-model", proposer_model]
 
-        search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+        # Strip CLAUDECODE so nested claude subprocess works
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
 
-        # Always run in background — search takes minutes to hours.
-        # Returns the search_agent_id immediately; poll with mh_frontier.
-        import asyncio as _asyncio
-        search_agent_id = search._init_archive()
+        kwargs: dict[str, Any] = {"env": env}
+        if sys.platform == "win32":
+            kwargs["creationflags"] = (
+                _sp.CREATE_NEW_PROCESS_GROUP | _sp.DETACHED_PROCESS
+            )
+        else:
+            kwargs["start_new_session"] = True
 
-        async def _bg_search():
-            try:
-                # Point search at the pre-created archive agent and run the
-                # full loop (seeds → proposer → eval → Pareto, with
-                # checkpointing, eval_subset, error handling — all in search.run)
-                search.search_agent_id = search_agent_id
-                search._init_archive = lambda: search_agent_id
-                await search.run()
-            except Exception as exc:
-                logger.exception("Background mh_search failed: %s", exc)
-                try:
-                    _afs.fail(search_agent_id, error=str(exc))
-                except Exception:
-                    pass
+        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
+        logger.info("MH search worker launched: PID %d, benchmark=%s", proc.pid, benchmark_name)
 
-        _asyncio.create_task(_bg_search())
         return json.dumps({
-            "search_agent_id": search_agent_id,
             "status": "running",
+            "pid": proc.pid,
             "message": (
-                "Search started in background. "
-                f"Poll with agent_status(agent_id='{search_agent_id}') or "
-                f"mh_frontier(search_agent_id='{search_agent_id}')."
+                f"Search worker launched (PID {proc.pid}). "
+                "Poll with mh_frontier or agent_status once the search agent appears in agent_ls."
             ),
         }, indent=2)
 
@@ -463,38 +462,37 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         return json.dumps(result, indent=2)
 
     elif name == "mh_resume":
-        from kaos.metaharness.search import MetaHarnessSearch
-        from kaos.metaharness.harness import SearchConfig
-        from kaos.metaharness.benchmarks import get_benchmark
-        _import_benchmarks()
+        import subprocess as _sp
 
         search_agent_id = args["search_agent_id"]
         benchmark_name = args["benchmark"]
-        bench = get_benchmark(benchmark_name)
+        config_file = os.environ.get("KAOS_CONFIG", "./kaos.yaml")
 
-        config = SearchConfig(benchmark=benchmark_name)
-        search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+        cmd = [
+            sys.executable, "-m", "kaos.metaharness.worker",
+            "--db", _afs.db_path,
+            "--config-file", config_file,
+            "--benchmark", benchmark_name,
+            "--search-agent-id", search_agent_id,
+        ]
 
-        import asyncio as _asyncio
+        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+        kwargs: dict[str, Any] = {"env": env}
+        if sys.platform == "win32":
+            kwargs["creationflags"] = (
+                _sp.CREATE_NEW_PROCESS_GROUP | _sp.DETACHED_PROCESS
+            )
+        else:
+            kwargs["start_new_session"] = True
 
-        async def _bg_resume():
-            try:
-                await search.resume(search_agent_id)
-            except Exception as exc:
-                logger.exception("Background mh_resume failed: %s", exc)
-                try:
-                    _afs.fail(search_agent_id, error=str(exc))
-                except Exception:
-                    pass
+        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
+        logger.info("MH resume worker launched: PID %d, agent=%s", proc.pid, search_agent_id)
 
-        _asyncio.create_task(_bg_resume())
         return json.dumps({
             "search_agent_id": search_agent_id,
             "status": "resuming",
-            "message": (
-                "Search resuming in background. "
-                f"Poll with mh_frontier(search_agent_id='{search_agent_id}')."
-            ),
+            "pid": proc.pid,
+            "message": f"Resume worker launched (PID {proc.pid}). Poll with mh_frontier.",
         }, indent=2)
 
     else:

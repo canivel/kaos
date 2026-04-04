@@ -60,7 +60,7 @@ class GEPARouter:
         classifier_model: str | None = None,
         fallback_model: str | None = None,
         context_compression: bool = True,
-        max_retries: int = 3,
+        max_retries: int = 1,
     ):
         self.models = models
         self.fallback_model = fallback_model or next(iter(models))
@@ -144,7 +144,7 @@ class GEPARouter:
             classifier_model=router_cfg.get("classifier_model"),
             fallback_model=router_cfg.get("fallback_model"),
             context_compression=router_cfg.get("context_compression", True),
-            max_retries=router_cfg.get("max_retries", 3),
+            max_retries=router_cfg.get("max_retries", 1),
         )
 
     async def route(

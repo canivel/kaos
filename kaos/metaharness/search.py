@@ -13,6 +13,7 @@ Implements Algorithm 1 from the Meta-Harness paper (arXiv:2603.28052):
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import time
@@ -108,12 +109,30 @@ class MetaHarnessSearch:
             )
 
             # 3a. Proposer inspects archive and proposes candidates
-            candidates = await proposer.propose(
-                iteration=iteration,
-                n_candidates=self.config.candidates_per_iteration,
-                benchmark_name=self.benchmark.name,
-                frontier=frontier,
-            )
+            try:
+                candidates = await asyncio.wait_for(
+                    proposer.propose(
+                        iteration=iteration,
+                        n_candidates=self.config.candidates_per_iteration,
+                        benchmark_name=self.benchmark.name,
+                        frontier=frontier,
+                    ),
+                    timeout=self.config.proposer_timeout_seconds,
+                )
+            except asyncio.TimeoutError:
+                logger.error(
+                    "Iteration %d: proposer timed out after %ds, skipping",
+                    iteration, self.config.proposer_timeout_seconds,
+                )
+                self._store_iteration_error(iteration, "proposer_timeout")
+                continue
+            except Exception as e:
+                logger.error(
+                    "Iteration %d: proposer failed: %s, skipping",
+                    iteration, e,
+                )
+                self._store_iteration_error(iteration, str(e))
+                continue
 
             if not candidates:
                 logger.warning("Iteration %d: no candidates proposed, skipping", iteration)
@@ -140,11 +159,16 @@ class MetaHarnessSearch:
             if self.config.eval_subset_size:
                 problems = self.benchmark.get_subset(problems, self.config.eval_subset_size)
 
-            results = await self.evaluator.evaluate_parallel(
-                valid_candidates,
-                problems=problems,
-                max_parallel=self.config.max_parallel_evals,
-            )
+            try:
+                results = await self.evaluator.evaluate_parallel(
+                    valid_candidates,
+                    problems=problems,
+                    max_parallel=self.config.max_parallel_evals,
+                )
+            except Exception as e:
+                logger.error("Iteration %d: evaluation failed: %s", iteration, e)
+                self._store_iteration_error(iteration, f"eval_error: {e}")
+                continue
 
             # 3d. Store results in archive
             for harness, result in zip(valid_candidates, results):
@@ -266,12 +290,20 @@ class MetaHarnessSearch:
 
             self.afs.checkpoint(search_agent_id, label=f"pre-iter-{iteration}")
 
-            candidates = await proposer.propose(
-                iteration=iteration,
-                n_candidates=self.config.candidates_per_iteration,
-                benchmark_name=self.benchmark.name,
-                frontier=frontier,
-            )
+            try:
+                candidates = await asyncio.wait_for(
+                    proposer.propose(
+                        iteration=iteration,
+                        n_candidates=self.config.candidates_per_iteration,
+                        benchmark_name=self.benchmark.name,
+                        frontier=frontier,
+                    ),
+                    timeout=self.config.proposer_timeout_seconds,
+                )
+            except (asyncio.TimeoutError, Exception) as e:
+                logger.error("Iteration %d: proposer failed: %s, skipping", iteration, e)
+                self._store_iteration_error(iteration, str(e))
+                continue
 
             if not candidates:
                 continue
@@ -284,10 +316,15 @@ class MetaHarnessSearch:
             if self.config.eval_subset_size:
                 problems = self.benchmark.get_subset(problems, self.config.eval_subset_size)
 
-            results = await self.evaluator.evaluate_parallel(
-                valid_candidates, problems=problems,
-                max_parallel=self.config.max_parallel_evals,
-            )
+            try:
+                results = await self.evaluator.evaluate_parallel(
+                    valid_candidates, problems=problems,
+                    max_parallel=self.config.max_parallel_evals,
+                )
+            except Exception as e:
+                logger.error("Iteration %d: evaluation failed: %s", iteration, e)
+                self._store_iteration_error(iteration, f"eval_error: {e}")
+                continue
 
             for harness, result in zip(valid_candidates, results):
                 self._store_result(harness, result, iteration=iteration)
@@ -347,6 +384,15 @@ class MetaHarnessSearch:
 
         logger.info("Search archive initialized: agent %s", agent_id[:12])
         return agent_id
+
+    def _store_iteration_error(self, iteration: int, error: str) -> None:
+        """Record that an iteration failed so it's visible in the archive."""
+        self.afs.write(
+            self.search_agent_id,
+            f"/iterations/{iteration}/error.json",
+            json.dumps({"iteration": iteration, "error": error}).encode(),
+        )
+        self.afs.set_state(self.search_agent_id, "current_iteration", iteration)
 
     def _load_seeds(self) -> list[HarnessCandidate]:
         """Load seed harnesses from config or benchmark."""

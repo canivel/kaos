@@ -27,15 +27,36 @@ def _get_afs(db: str) -> Kaos:
     return Kaos(db_path=db)
 
 
+def _json_out(ctx, data):
+    """Output data as JSON if --json is set, otherwise return False."""
+    if ctx.obj.get("json"):
+        click.echo(json.dumps(data, indent=2, default=str))
+        return True
+    return False
+
+
+def _json_err(ctx, msg: str):
+    """Output error as JSON if --json is set, otherwise return False."""
+    if ctx.obj.get("json"):
+        click.echo(json.dumps({"error": msg}))
+        ctx.exit(1)
+        return True
+    return False
+
+
 @click.group()
 @click.version_option(version="0.1.0", prog_name="kaos")
-def cli():
+@click.option("--json", "json_output", is_flag=True, default=False,
+              help="Output structured JSON (auto-enabled when piped)")
+@click.pass_context
+def cli(ctx, json_output):
     """KAOS — Kernel for Agent Orchestration & Sandboxing.
 
     Every agent gets an isolated, auditable, portable virtual
     filesystem backed by SQLite. Embrace the KAOS.
     """
-    pass
+    ctx.ensure_object(dict)
+    ctx.obj["json"] = json_output or not sys.stdout.isatty()
 
 
 @cli.command()
@@ -134,10 +155,15 @@ def parallel(db: str, config_file: str, task: tuple):
 @cli.command("ls")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.option("--status", "-s", help="Filter by status")
-def list_agents(db: str, status: str):
+@click.pass_context
+def list_agents(ctx, db: str, status: str):
     """List all agents."""
     afs = _get_afs(db)
     agents = afs.list_agents(status_filter=status)
+
+    if _json_out(ctx, agents):
+        afs.close()
+        return
 
     if not agents:
         console.print("[dim]No agents found[/dim]")
@@ -172,13 +198,15 @@ def list_agents(db: str, status: str):
 @cli.command()
 @click.argument("sql")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def query(sql: str, db: str):
+@click.pass_context
+def query(ctx, sql: str, db: str):
     """Run a read-only SQL query against the agent database."""
     afs = _get_afs(db)
     try:
         results = afs.query(sql)
+        if _json_out(ctx, results):
+            return
         if results:
-            # Auto-format as table
             table = Table()
             for col in results[0].keys():
                 table.add_column(col)
@@ -188,9 +216,11 @@ def query(sql: str, db: str):
         else:
             console.print("[dim]No results[/dim]")
     except PermissionError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     except Exception as e:
-        console.print(f"[red]Query error: {e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]Query error: {e}[/red]")
     finally:
         afs.close()
 
@@ -199,16 +229,20 @@ def query(sql: str, db: str):
 @click.argument("agent_id")
 @click.option("--label", "-l", help="Optional checkpoint label")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def checkpoint(agent_id: str, label: str, db: str):
+@click.pass_context
+def checkpoint(ctx, agent_id: str, label: str, db: str):
     """Create a checkpoint for an agent."""
     afs = _get_afs(db)
     try:
         cp_id = afs.checkpoint(agent_id, label=label)
+        if _json_out(ctx, {"checkpoint_id": cp_id, "agent_id": agent_id, "label": label}):
+            return
         console.print(f"[green]Checkpoint created:[/green] {cp_id}")
         if label:
             console.print(f"  Label: {label}")
     except ValueError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     finally:
         afs.close()
 
@@ -251,10 +285,15 @@ def diff(agent_id: str, from_cp: str, to_cp: str, db: str):
 @cli.command()
 @click.argument("agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def checkpoints(agent_id: str, db: str):
+@click.pass_context
+def checkpoints(ctx, agent_id: str, db: str):
     """List all checkpoints for an agent."""
     afs = _get_afs(db)
     cps = afs.list_checkpoints(agent_id)
+
+    if _json_out(ctx, cps):
+        afs.close()
+        return
 
     if not cps:
         console.print("[dim]No checkpoints found[/dim]")
@@ -456,14 +495,18 @@ def dashboard(db: str):
 @cli.command()
 @click.argument("agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def kill(agent_id: str, db: str):
+@click.pass_context
+def kill(ctx, agent_id: str, db: str):
     """Kill a running agent."""
     afs = _get_afs(db)
     try:
         afs.kill(agent_id)
+        if _json_out(ctx, {"agent_id": agent_id, "status": "killed"}):
+            return
         console.print(f"[red]Agent {agent_id[:12]}... killed[/red]")
     except ValueError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     finally:
         afs.close()
 
@@ -471,14 +514,18 @@ def kill(agent_id: str, db: str):
 @cli.command()
 @click.argument("agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def status(agent_id: str, db: str):
+@click.pass_context
+def status(ctx, agent_id: str, db: str):
     """Get detailed status of an agent."""
     afs = _get_afs(db)
     try:
         info = afs.status(agent_id)
+        if _json_out(ctx, info):
+            return
         console.print_json(json.dumps(info, indent=2))
     except ValueError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     finally:
         afs.close()
 
@@ -505,25 +552,67 @@ def mh():
 @click.option("--eval-subset", type=int, help="Subsample problems for faster search")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
-def mh_search(benchmark, iterations, candidates, seed, proposer_model,
-              eval_model, max_parallel, eval_subset, db, config_file):
+@click.option("--background/--foreground", default=False, help="Run as detached background process")
+@click.pass_context
+def mh_search(ctx, benchmark, iterations, candidates, seed, proposer_model,
+              eval_model, max_parallel, eval_subset, db, config_file, background):
     """Run a meta-harness search to optimize a harness for a benchmark."""
+    import subprocess as _sp
+
+    if not Path(config_file).exists():
+        if not _json_err(ctx, f"Config file not found: {config_file}"):
+            console.print(f"[red]Config file not found:[/red] {config_file}")
+        return
+
+    if background:
+        # Launch as detached worker process
+        cmd = [
+            sys.executable, "-m", "kaos.metaharness.worker",
+            "--db", db,
+            "--config-file", config_file,
+            "--benchmark", benchmark,
+            "--iterations", str(iterations),
+            "--candidates", str(candidates),
+            "--max-parallel", str(max_parallel),
+        ]
+        if eval_subset:
+            cmd += ["--eval-subset", str(eval_subset)]
+        if proposer_model:
+            cmd += ["--proposer-model", proposer_model]
+        for s in seed:
+            cmd += ["--seed", s]
+
+        kwargs: dict = {}
+        if sys.platform == "win32":
+            kwargs["creationflags"] = (
+                _sp.CREATE_NEW_PROCESS_GROUP | _sp.DETACHED_PROCESS
+            )
+        else:
+            kwargs["start_new_session"] = True
+
+        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
+
+        result = {
+            "status": "running",
+            "pid": proc.pid,
+            "message": f"Worker launched (PID {proc.pid}). Poll with: kaos mh status <search_agent_id>",
+        }
+        if _json_out(ctx, result):
+            return
+        console.print(f"[green]Worker launched[/green] (PID {proc.pid})")
+        console.print(f"  Poll with: kaos mh status <search_agent_id>")
+        return
+
+    # Foreground mode — run in-process
     from kaos.metaharness.search import MetaHarnessSearch
     from kaos.metaharness.harness import SearchConfig
     from kaos.metaharness.benchmarks import get_benchmark
-    # Import benchmarks to trigger registration
     import kaos.metaharness.benchmarks.text_classify  # noqa: F401
     import kaos.metaharness.benchmarks.math_rag  # noqa: F401
     import kaos.metaharness.benchmarks.agentic_coding  # noqa: F401
     from kaos.router.gepa import GEPARouter
-    from kaos.ccr.runner import ClaudeCodeRunner
 
     afs = _get_afs(db)
-
-    if not Path(config_file).exists():
-        console.print(f"[red]Config file not found:[/red] {config_file}")
-        return
-
     router = GEPARouter.from_config(config_file)
 
     config = SearchConfig(
@@ -539,28 +628,42 @@ def mh_search(benchmark, iterations, candidates, seed, proposer_model,
 
     bench = get_benchmark(benchmark)
 
-    console.print(f"[cyan]Starting meta-harness search[/cyan]")
-    console.print(f"  Benchmark: {benchmark}")
-    console.print(f"  Iterations: {iterations}")
-    console.print(f"  Candidates/iter: {candidates}")
-    console.print(f"  Max parallel: {max_parallel}")
+    if not ctx.obj.get("json"):
+        console.print(f"[cyan]Starting meta-harness search[/cyan]")
+        console.print(f"  Benchmark: {benchmark}")
+        console.print(f"  Iterations: {iterations}")
+        console.print(f"  Candidates/iter: {candidates}")
+        console.print(f"  Max parallel: {max_parallel}")
 
     search = MetaHarnessSearch(afs, router, bench, config)
     result = asyncio.run(search.run())
 
-    console.print(f"\n[green]{result.summary()}[/green]")
+    result_data = {
+        "search_agent_id": result.search_agent_id,
+        "status": "completed",
+        "summary": result.summary(),
+        "total_harnesses": result.total_harnesses_evaluated,
+        "duration_seconds": round(result.total_duration_seconds, 1),
+        "frontier_size": len(result.frontier.points),
+    }
+    if not _json_out(ctx, result_data):
+        console.print(f"\n[green]{result.summary()}[/green]")
     afs.close()
 
 
 @mh.command("frontier")
 @click.argument("search_agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def mh_frontier(search_agent_id, db):
+@click.pass_context
+def mh_frontier(ctx, search_agent_id, db):
     """Show the Pareto frontier of a meta-harness search."""
     afs = _get_afs(db)
     try:
         data = afs.read(search_agent_id, "/pareto/frontier.json")
         frontier = json.loads(data)
+
+        if _json_out(ctx, frontier):
+            return
 
         table = Table(title="Pareto Frontier")
         table.add_column("Harness ID", style="cyan", max_width=16)
@@ -577,9 +680,11 @@ def mh_frontier(search_agent_id, db):
 
         console.print(table)
     except FileNotFoundError:
-        console.print("[red]No frontier found. Is this a valid search agent?[/red]")
+        if not _json_err(ctx, "No frontier found"):
+            console.print("[red]No frontier found. Is this a valid search agent?[/red]")
     except ValueError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     finally:
         afs.close()
 
@@ -636,32 +741,43 @@ def mh_inspect(search_agent_id, harness_id, db):
 @mh.command("status")
 @click.argument("search_agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
-def mh_status(search_agent_id, db):
+@click.pass_context
+def mh_status(ctx, search_agent_id, db):
     """Show the status of a meta-harness search."""
     afs = _get_afs(db)
     try:
         info = afs.status(search_agent_id)
-        console.print(f"[bold]Search Agent:[/bold] {search_agent_id[:14]}...")
-        console.print(f"  Status: {info['status']}")
-
-        iteration = afs.get_state(search_agent_id, "current_iteration")
-        console.print(f"  Current iteration: {iteration or 0}")
-
-        # Count harnesses
+        iteration = afs.get_state_or(search_agent_id, "current_iteration", 0)
         harnesses = afs.ls(search_agent_id, "/harnesses")
-        console.print(f"  Harnesses evaluated: {len(harnesses)}")
 
-        # Frontier size
+        result = {
+            "search_agent_id": search_agent_id,
+            "status": info["status"],
+            "pid": info.get("pid"),
+            "current_iteration": iteration,
+            "harnesses_evaluated": len(harnesses),
+        }
+
         try:
             frontier = json.loads(
                 afs.read(search_agent_id, "/pareto/frontier.json")
             )
-            console.print(f"  Frontier size: {len(frontier.get('points', []))}")
+            result["frontier_size"] = len(frontier.get("points", []))
         except FileNotFoundError:
-            console.print("  Frontier: not yet computed")
+            result["frontier_size"] = 0
+
+        if _json_out(ctx, result):
+            return
+
+        console.print(f"[bold]Search Agent:[/bold] {search_agent_id[:14]}...")
+        console.print(f"  Status: {info['status']}")
+        console.print(f"  Current iteration: {iteration}")
+        console.print(f"  Harnesses evaluated: {len(harnesses)}")
+        console.print(f"  Frontier size: {result['frontier_size']}")
 
     except ValueError as e:
-        console.print(f"[red]{e}[/red]")
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
     finally:
         afs.close()
 
