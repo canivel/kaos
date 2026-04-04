@@ -2,15 +2,18 @@
 
 > How to expose KAOS as an MCP server for Claude Code and other MCP-compatible clients.
 
+> **v0.3.0 note:** KAOS now supports a **CLI-first architecture** with `--json` output on all commands. For many use cases, agents can shell out to `kaos --json ls` instead of using MCP — 10-32x cheaper on tokens. MCP remains available for tight IDE integration. The `mh_search` and `mh_resume` MCP tools now spawn detached worker processes that survive MCP disconnection.
+
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Starting the MCP Server](#starting-the-mcp-server)
-3. [Claude Code Integration](#claude-code-integration)
-4. [Available Tools](#available-tools)
-5. [Example Conversation Flows](#example-conversation-flows)
+2. [CLI Alternative (v0.3.0)](#cli-alternative)
+3. [Starting the MCP Server](#starting-the-mcp-server)
+4. [Claude Code Integration](#claude-code-integration)
+5. [Available Tools](#available-tools)
+6. [Example Conversation Flows](#example-conversation-flows)
 
 ---
 
@@ -19,6 +22,28 @@
 KAOS implements the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), allowing Claude Code and other MCP clients to spawn agents, read/write files, create checkpoints, run SQL queries, and orchestrate parallel agent execution through natural language.
 
 The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python package. It wraps the `Kaos` and `ClaudeCodeRunner` instances, exposing 18 tools across 6 categories: Lifecycle, VFS, Checkpoints, Query, Orchestration, and Meta-Harness.
+
+---
+
+## CLI Alternative
+
+As of v0.3.0, every CLI command supports `--json` output, making KAOS composable with any agent via shell commands:
+
+```bash
+# Structured JSON output — any agent can parse this
+kaos --json ls
+kaos --json status <agent-id>
+kaos --json query "SELECT * FROM agents WHERE status='running'"
+kaos --json mh status <search-agent-id>
+
+# Background worker — survives parent exit
+kaos mh search -b text_classify -n 10 --background
+```
+
+This is the recommended approach when:
+- You want minimal token overhead (no MCP schema injection)
+- You need the search to survive process restarts
+- You're integrating with non-MCP agent frameworks
 
 **Transport modes:**
 - **stdio** -- Process-based transport for direct Claude Code integration. The MCP client spawns `kaos serve` as a child process and communicates via stdin/stdout.

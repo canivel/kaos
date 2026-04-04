@@ -189,10 +189,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
   </div>
   <div class="badges">
-    <span class="badge green">84 tests passing</span>
+    <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.3.0</span>
+    <span class="badge green">119 tests passing</span>
     <span class="badge blue">Python 3.11+</span>
     <span class="badge">Apache 2.0</span>
-    <span class="badge">44 total deps</span>
+    <span class="badge">CLI-first + MCP</span>
     <span class="badge">Zero AI SDK deps</span>
   </div>
 </div>
@@ -336,9 +337,19 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <p>No <code>openai</code>, no <code>litellm</code>, no <code>langchain</code>. Just httpx, click, rich, textual, mcp, pyyaml, zstandard, ulid-py. 44 packages total.</p>
     </div>
     <div class="feat-card">
+      <div class="icon">&#x1f4bb;</div>
+      <h3>CLI-First + JSON Output</h3>
+      <p><code>kaos --json ls</code> gives structured JSON on every command. Pipe to <code>jq</code>, compose with any agent framework. 10-32x cheaper than MCP on tokens.</p>
+    </div>
+    <div class="feat-card">
       <div class="icon">&#x1f50c;</div>
       <h3>MCP Server + Claude Code</h3>
-      <p>11 MCP tools let Claude Code spawn agents, read/write files, checkpoint, restore, diff, and run SQL queries &mdash; all as native tool calls.</p>
+      <p>18 MCP tools for tight IDE integration. <code>mh_search</code> spawns a detached worker process that survives MCP disconnection.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x2699;</div>
+      <h3>Background Worker Process</h3>
+      <p>Long-running searches run as detached subprocesses. Parent dies? Search continues. Poll progress via <code>kaos mh status</code> or SQL.</p>
     </div>
   </div>
 </div>

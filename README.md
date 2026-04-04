@@ -6,6 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
+[![Version](https://img.shields.io/badge/version-0.3.0-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -201,8 +202,15 @@ kaos restore <agent-id> --checkpoint X # Roll back
 kaos diff <agent-id> --from X --to Y   # What changed between checkpoints?
 kaos query "SELECT * FROM events"      # SQL queries
 kaos dashboard                         # Live TUI monitor
-kaos mh resume <search-agent-id>       # Resume interrupted MH search
+kaos mh search -b text_classify -n 10 --background  # Background worker
+kaos mh status <search-agent-id>       # Poll search progress
+kaos mh resume <search-agent-id>       # Resume interrupted search
 kaos export <agent-id> -o backup.db    # Export a single agent
+
+# JSON output — composable with any agent framework
+kaos --json ls                         # Structured JSON to stdout
+kaos --json ls | jq '.[] | select(.status == "running")'
+kaos --json mh status <id> | jq .frontier_size
 ```
 
 ### Live Dashboard
@@ -547,9 +555,9 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 ![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
 
 Five layers, one SQLite file:
-- **Interfaces** — CLI (20 commands), MCP Server (18 tools), Python SDK, TUI Dashboard
-- **Orchestration** — CCR agent loop, GEPA model router, multi-provider httpx clients (local/OpenAI/Anthropic)
-- **Meta-Harness** — Search loop, proposer agent, evaluator, Pareto frontier
+- **Interfaces** — CLI (20+ commands, `--json` output), MCP Server (18 tools), Python SDK, TUI Dashboard
+- **Orchestration** — CCR agent loop, GEPA model router, 4 providers (local/OpenAI/Anthropic/Claude Code)
+- **Meta-Harness** — Search loop, detached worker process, proposer agent, evaluator, Pareto frontier
 - **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
 - **Storage** — Single SQLite `.db` file: agents, files, blobs, tool_calls, state, events, checkpoints
 
@@ -577,13 +585,14 @@ kaos setup
 
 ### Multi-Provider Support
 
-KAOS now supports three providers, all using raw httpx (no AI SDKs):
+KAOS supports four providers (no AI SDKs — raw httpx or subprocess):
 
-- **`provider: local`** — vLLM, ollama, llama.cpp, or any OpenAI-compatible local endpoint (default, backward compatible)
+- **`provider: local`** — vLLM, ollama, llama.cpp, or any OpenAI-compatible local endpoint (default)
 - **`provider: openai`** — OpenAI API or any OpenAI-compatible cloud endpoint
 - **`provider: anthropic`** — Anthropic Claude API
+- **`provider: claude_code`** — Claude Code CLI subprocess (`claude --print`). No API key needed — uses your Claude Code subscription. Best for getting started fast.
 
-API keys are read from environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). Set them in your shell profile or `.env`.
+API keys are read from environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). `claude_code` needs no key.
 
 ### Configuration
 
@@ -685,6 +694,7 @@ kaos/
 │   └── anthropic_client.py  # Raw httpx client for Anthropic API
 ├── metaharness/
 │   ├── search.py            # Meta-Harness search loop (Algorithm 1)
+│   ├── worker.py            # Detached worker subprocess for background search
 │   ├── proposer.py          # Proposer agent with archive tools (incl. mh_grep_archive)
 │   ├── evaluator.py         # Harness evaluation with trace capture
 │   ├── harness.py           # HarnessCandidate + EvaluationResult
@@ -722,16 +732,38 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## Recent Additions
+## What's New in v0.3.0
 
-- **Paper-aligned Meta-Harness (7 improvements)** — Proposer prompt rewritten for additive changes after regressions, variable isolation, and cross-referencing iterations. New `mh_grep_archive` tool for proposers to search across all files in the archive. Two-stage validation (AST check + smoke test) before evaluation. Richer trace format with input preview, expected answer, prompt preview, prediction, correct boolean, and context tokens. `per_problem.jsonl` stored separately. Default `candidates_per_iteration` changed from 3 to 2. Class-method harnesses rejected (top-level `run()` required).
-- **`kaos setup` interactive wizard** — 6 presets (claude-code, local, local-multi, anthropic, openai, hybrid). Asks 3 questions, generates `kaos.yaml`, auto-installs MCP server into Claude Code settings, and auto-initializes the database. Run with `kaos setup`.
-- **Multi-provider support** — Three providers via raw httpx: `provider: local` (vLLM/ollama/llama.cpp), `provider: openai` (OpenAI API), `provider: anthropic` (Anthropic Claude API). API keys via environment variables. GEPA routes across local + cloud models. Backward compatible with existing configs.
-- **18 MCP tools** — Added: `agent_pause`, `agent_resume`, `agent_checkpoints`, `mh_search`, `mh_frontier`, `mh_resume`.
-- **Resume interrupted Meta-Harness searches** — `kaos mh resume <search-agent-id>`, MCP tool `mh_resume`, Python API `search.resume(agent_id)`. Picks up from the last completed iteration.
-- **Dashboard Meta-Harness panel** — New MetaHarnessPanel in the TUI dashboard shows active searches with status, current iteration, harness count, and frontier size. Purple border, auto-refreshes every 5s.
-- **Paper benchmark loaders** — `load_lawbench()`, `load_symptom2disease()`, `load_uspto50k()` in `kaos/metaharness/benchmarks/paper_datasets.py`. Downloads from HuggingFace, caches locally. Run with `kaos mh search -b lawbench -n 20 -k 3`.
-- **Multi-GPU autoresearch orchestration** — `examples/multi_gpu_research.py`. 6 agents across 3 GPUs (GPU 0=7B: sweeps, GPU 1=32B: architecture, GPU 2=70B: novel research). GEPA routes by `force_model`.
+### CLI-First Architecture
+- **`--json` on all commands** — `kaos --json ls`, `kaos --json mh status <id>`, etc. Auto-enabled when piped. Makes KAOS composable with any agent framework via shell — 10-32x cheaper than MCP on tokens.
+- **Worker subprocess for `mh search`** — `kaos mh search --background` runs the search as a detached process. Survives parent exit, MCP disconnection, or terminal close. Poll with `kaos mh status`.
+- **`provider: claude_code`** — No API key needed. Uses Claude Code subscription auth via `claude --print`. Just works.
+
+### Reliability
+- **Fail-fast retries** — `max_retries` default 3 to 1. Failed proposer iterations skip instead of crashing the search.
+- **DB locking fix** — `kill()` falls back to a fresh connection when the DB is locked. `busy_timeout` raised to 30s.
+- **Evaluator bug fixes** — `_truncate()` and score key prefix bugs that caused all harnesses to score 0% are fixed.
+
+### Upgrading
+
+```bash
+git pull origin main
+uv sync
+kaos --version  # 0.3.0
+```
+
+Existing configs work unchanged. See [CHANGELOG.md](CHANGELOG.md) for full details.
+
+<details>
+<summary>v0.2.0 changes (Meta-Harness & Multi-Provider)</summary>
+
+- Paper-aligned Meta-Harness (arXiv:2603.28052) with 7 improvements
+- `kaos setup` interactive wizard (6 presets)
+- Multi-provider support: `local`, `openai`, `anthropic` (all raw httpx)
+- 18 MCP tools, resume interrupted searches, dashboard Meta-Harness panel
+- Paper benchmark loaders (LawBench, Symptom2Disease, USPTO-50k)
+- Multi-GPU autoresearch orchestration
+</details>
 
 ## License
 
