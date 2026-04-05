@@ -388,8 +388,24 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <h2>Use Cases</h2>
   <div class="uc-grid">
     <div class="uc-card">
+      <h3>Meta-Harness: Auto-Optimize Your LLM</h3>
+      <p>Your classifier gets 45% accuracy. Meta-Harness automatically searches for a better prompt/retrieval strategy by learning from execution traces. 0% &rarr; 100% in 2 iterations on our benchmark.</p>
+      <code>kaos mh search -b text_classify -n 10
+kaos mh frontier &lt;search-id&gt;
+# Pareto frontier: best accuracy vs. cost</code>
+    </div>
+    <div class="uc-card">
+      <h3>Autonomous Research Lab</h3>
+      <p>Run N research agents in parallel, each exploring a different hypothesis &mdash; architecture, optimizer, scaling. All isolated, all SQL-queryable. Inspired by <a href="https://github.com/karpathy/autoresearch">Karpathy's autoresearch</a>.</p>
+      <code>results = await ccr.run_parallel([
+  {"name": "arch",  "prompt": "Try LoRA..."},
+  {"name": "optim", "prompt": "Try AdamW..."},
+  {"name": "scale", "prompt": "Try 2x batch..."},
+])</code>
+    </div>
+    <div class="uc-card">
       <h3>Code Review Swarm</h3>
-      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel.</p>
+      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel with full isolation.</p>
       <code>results = await ccr.run_parallel([
   {"name": "security",  "prompt": "Find vulns..."},
   {"name": "perf",      "prompt": "Find perf..."},
@@ -398,50 +414,52 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 ])</code>
     </div>
     <div class="uc-card">
-      <h3>Safe Refactoring</h3>
-      <p>Checkpoint before risky work, automatically restore on failure. Other agents keep running.</p>
+      <h3>Self-Healing Agent</h3>
+      <p>Checkpoint before risky operations, automatically restore on failure. Other agents keep running, unaffected.</p>
       <code>cp = db.checkpoint(agent, label="pre-migration")
 try:
     await ccr.run_agent(agent, "Migrate DB")
 except Exception:
-    db.restore(agent, cp)  # rollback</code>
+    db.restore(agent, cp)  # rollback this one</code>
+    </div>
+    <div class="uc-card">
+      <h3>Fraud Detection Optimization</h3>
+      <p>Your fraud classifier has 65% recall with 30% false positives. Meta-Harness finds a red-flag checklist + contrastive examples approach that improves F1 by 20 points.</p>
+      <code>kaos mh search -b fraud_detection -n 8
+# Pareto: [high recall] vs [balanced F1]</code>
     </div>
     <div class="uc-card">
       <h3>Post-Mortem Debugging</h3>
-      <p>An agent broke something. Query the audit trail to find out what, when, and why.</p>
-      <code>db.query("""
-  SELECT tool_name, error, duration_ms
+      <p>An agent broke something. Query the complete audit trail &mdash; every file, tool call, and state change.</p>
+      <code>kaos logs &lt;agent-id&gt;
+kaos --json query "SELECT tool_name, error
   FROM tool_calls
-  WHERE agent_id = ? AND status = 'error'
-""", [agent_id])</code>
+  WHERE agent_id = ? AND status = 'error'"</code>
     </div>
     <div class="uc-card">
-      <h3>Parallel Feature Development</h3>
-      <p>Tests, implementation, and docs agents work simultaneously with zero conflicts.</p>
-      <code>await ccr.run_parallel([
-  {"name": "tests", "prompt": "Write tests"},
-  {"name": "impl",  "prompt": "Implement"},
-  {"name": "docs",  "prompt": "Write docs"},
-])</code>
+      <h3>CLI-Composable Pipelines</h3>
+      <p>Chain KAOS with any tool via JSON output. 10-32x cheaper than MCP on tokens. Works with jq, scripts, other agents.</p>
+      <code># Find running agents, kill them
+kaos --json ls \
+  | jq '.[] | select(.status=="running")' \
+  | jq -r .agent_id \
+  | xargs -I{} kaos kill {}</code>
     </div>
     <div class="uc-card">
       <h3>Cost & Token Tracking</h3>
-      <p>Know exactly how much each agent consumed. No more surprise bills.</p>
-      <code>db.query("""
-  SELECT a.name, SUM(tc.token_count) as tok
+      <p>Know exactly how much each agent consumed. Query across all agents with SQL. No more surprise bills.</p>
+      <code>kaos --json query "
+  SELECT a.name, SUM(tc.token_count) as tokens
   FROM agents a
   JOIN tool_calls tc ON a.agent_id = tc.agent_id
-  GROUP BY a.agent_id ORDER BY tok DESC
-""")</code>
+  GROUP BY a.agent_id ORDER BY tokens DESC"</code>
     </div>
     <div class="uc-card">
-      <h3>Export & Share</h3>
-      <p>Export an agent's complete state, send to a teammate, or back up before experiments.</p>
-      <code># CLI
-kaos export &lt;agent-id&gt; -o snapshot.db
-
-# Or just copy the whole runtime
-cp kaos.db backup.db</code>
+      <h3>Export & Share Agent State</h3>
+      <p>Export an agent's complete state to a standalone .db file. Send to a teammate, import on another machine.</p>
+      <code>kaos export &lt;agent-id&gt; -o snapshot.db
+kaos import snapshot.db
+# Or just: cp kaos.db backup.db</code>
     </div>
   </div>
 </div>

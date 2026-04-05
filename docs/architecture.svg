@@ -8,16 +8,19 @@
   <!-- Background -->
   <rect width="900" height="680" rx="12" fill="#0a0a12"/>
 
+  <!-- Version -->
+  <text x="860" y="24" text-anchor="end" fill="#4b5563" font-size="10" font-family="monospace">v0.3.1</text>
+
   <!-- ═══ INTERFACES ═══ -->
   <text x="40" y="36" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">INTERFACES</text>
 
   <rect x="40" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
   <text x="130" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">CLI</text>
-  <text x="130" y="90" text-anchor="middle" fill="#6b7280" font-size="10">19 commands</text>
+  <text x="130" y="90" text-anchor="middle" fill="#6b7280" font-size="10">25+ commands &#x00B7; --json</text>
 
   <rect x="250" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
   <text x="340" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">MCP Server</text>
-  <text x="340" y="90" text-anchor="middle" fill="#6b7280" font-size="10">17 tools &#x00B7;stdio / SSE</text>
+  <text x="340" y="90" text-anchor="middle" fill="#6b7280" font-size="10">18 tools &#x00B7; stdio / SSE</text>
 
   <rect x="460" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
   <text x="550" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">Python SDK</text>
@@ -36,15 +39,16 @@
 
   <rect x="40" y="170" width="240" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
   <text x="160" y="194" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">Claude Code Runner (CCR)</text>
-  <text x="160" y="212" text-anchor="middle" fill="#6b7280" font-size="10">plan → act → observe loop</text>
+  <text x="160" y="212" text-anchor="middle" fill="#6b7280" font-size="10">plan &#x2192; act &#x2192; observe loop</text>
 
   <rect x="310" y="170" width="240" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
   <text x="430" y="194" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">GEPA Router</text>
-  <text x="430" y="212" text-anchor="middle" fill="#6b7280" font-size="10">classify complexity → route model</text>
+  <text x="430" y="212" text-anchor="middle" fill="#6b7280" font-size="10">classify complexity &#x2192; route model</text>
 
   <rect x="580" y="170" width="280" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="720" y="194" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">vLLM Client (raw httpx)</text>
-  <text x="720" y="212" text-anchor="middle" fill="#6b7280" font-size="10">any OpenAI-compatible endpoint</text>
+  <text x="720" y="190" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">4 Providers (raw httpx)</text>
+  <text x="720" y="208" text-anchor="middle" fill="#6b7280" font-size="10">local &#x00B7; openai &#x00B7; anthropic</text>
+  <text x="720" y="222" text-anchor="middle" fill="#6b7280" font-size="10">claude_code (subprocess)</text>
 
   <path d="M280,198 L308,198" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
   <path d="M550,198 L578,198" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
@@ -54,26 +58,31 @@
   <line x1="40" y1="248" x2="860" y2="248" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
   <text x="40" y="276" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">META-HARNESS</text>
 
-  <rect x="40" y="288" width="200" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="140" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Search Loop</text>
-  <text x="140" y="330" text-anchor="middle" fill="#6b7280" font-size="10">Algorithm 1 orchestrator</text>
+  <rect x="40" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="122" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Search Loop</text>
+  <text x="122" y="330" text-anchor="middle" fill="#6b7280" font-size="10">Algorithm 1 orchestrator</text>
 
-  <rect x="260" y="288" width="200" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="360" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Proposer Agent</text>
-  <text x="360" y="330" text-anchor="middle" fill="#6b7280" font-size="10">reads archive &#x00B7;proposes harnesses</text>
+  <rect x="215" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="297" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Worker</text>
+  <text x="297" y="330" text-anchor="middle" fill="#6b7280" font-size="10">detached subprocess</text>
 
-  <rect x="480" y="288" width="200" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="580" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Evaluator</text>
-  <text x="580" y="330" text-anchor="middle" fill="#6b7280" font-size="10">runs harnesses &#x00B7;captures traces</text>
+  <rect x="390" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="472" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Proposer Agent</text>
+  <text x="472" y="330" text-anchor="middle" fill="#6b7280" font-size="10">reads archive &#x00B7; proposes</text>
 
-  <rect x="700" y="288" width="160" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="780" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Pareto</text>
-  <text x="780" y="330" text-anchor="middle" fill="#6b7280" font-size="10">multi-objective frontier</text>
+  <rect x="565" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="647" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Evaluator</text>
+  <text x="647" y="330" text-anchor="middle" fill="#6b7280" font-size="10">llm() injectable &#x00B7; traces</text>
 
-  <path d="M240,316 L258,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M460,316 L478,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M680,316 L698,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M360,344 L360,382" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <rect x="740" y="288" width="120" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="800" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Pareto</text>
+  <text x="800" y="330" text-anchor="middle" fill="#6b7280" font-size="10">multi-obj frontier</text>
+
+  <path d="M205,316 L213,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M380,316 L388,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M555,316 L563,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M730,316 L738,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M472,344 L472,382" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
 
   <!-- ═══ KAOS CORE ═══ -->
   <line x1="40" y1="370" x2="860" y2="370" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
@@ -85,7 +94,7 @@
 
   <rect x="215" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="295" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Blob Store</text>
-  <text x="295" y="452" text-anchor="middle" fill="#6b7280" font-size="10">SHA-256 &#x00B7;zstd</text>
+  <text x="295" y="452" text-anchor="middle" fill="#6b7280" font-size="10">SHA-256 &#x00B7; zstd</text>
 
   <rect x="390" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="470" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Event Journal</text>
@@ -93,7 +102,7 @@
 
   <rect x="565" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="645" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Checkpoints</text>
-  <text x="645" y="452" text-anchor="middle" fill="#6b7280" font-size="10">snapshot &#x00B7;restore &#x00B7;diff</text>
+  <text x="645" y="452" text-anchor="middle" fill="#6b7280" font-size="10">snapshot &#x00B7; restore &#x00B7; diff</text>
 
   <rect x="40" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="120" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">State KV Store</text>
@@ -101,15 +110,15 @@
 
   <rect x="215" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="295" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Tool Registry</text>
-  <text x="295" y="522" text-anchor="middle" fill="#6b7280" font-size="10">8 built-in &#x00B7;permissions</text>
+  <text x="295" y="522" text-anchor="middle" fill="#6b7280" font-size="10">8 built-in &#x00B7; permissions</text>
 
   <rect x="390" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="470" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Context Compactor</text>
-  <text x="470" y="522" text-anchor="middle" fill="#6b7280" font-size="10">summarize &#x00B7;truncate</text>
+  <text x="470" y="522" text-anchor="middle" fill="#6b7280" font-size="10">summarize &#x00B7; truncate</text>
 
   <rect x="565" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
   <text x="645" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">FUSE Isolation</text>
-  <text x="645" y="522" text-anchor="middle" fill="#6b7280" font-size="10">Linux &#x00B7;optional</text>
+  <text x="645" y="522" text-anchor="middle" fill="#6b7280" font-size="10">Linux &#x00B7; optional</text>
 
   <path d="M450,536 L450,580" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
 
@@ -119,5 +128,5 @@
 
   <rect x="40" y="605" width="820" height="56" rx="8" fill="#1f140d" stroke="#f97316" stroke-width="1.5"/>
   <text x="450" y="629" text-anchor="middle" fill="#fb923c" font-size="13" font-weight="600">SQLite (.db) — portable, queryable, crash-safe</text>
-  <text x="450" y="647" text-anchor="middle" fill="#6b7280" font-size="10">agents &#x00B7;files &#x00B7;blobs &#x00B7;tool_calls &#x00B7;state &#x00B7;events &#x00B7;checkpoints &#x00B7;schema_version</text>
+  <text x="450" y="647" text-anchor="middle" fill="#6b7280" font-size="10">agents &#x00B7; files &#x00B7; blobs &#x00B7; tool_calls &#x00B7; state &#x00B7; events &#x00B7; checkpoints &#x00B7; schema_version</text>
 </svg>
