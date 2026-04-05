@@ -123,50 +123,31 @@ nav a:hover{color:var(--fg)}
 .architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
 .arch-image{max-width:900px;margin:0 auto}
 .arch-image img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
-.dashboard-section{background:var(--bg2)}
-.dashboard-img{max-width:960px;margin:0 auto}
-.dashboard-img img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.1);box-shadow:0 12px 40px rgba(0,0,0,.5)}
-.metaharness{background:linear-gradient(180deg,var(--bg) 0%,#0d0d1a 50%,var(--bg) 100%);border-top:1px solid rgba(108,92,231,.15);border-bottom:1px solid rgba(108,92,231,.15)}
-.metaharness h2{text-align:center;font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.5px;margin-bottom:1.2rem}
-.mh-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
-.mh-timeline{display:flex;flex-direction:column;gap:0;position:relative}
-.mh-timeline::before{content:'';position:absolute;left:19px;top:24px;bottom:24px;width:2px;background:linear-gradient(180deg,var(--green),var(--accent2),var(--cyan),var(--orange))}
-.mh-tl-step{display:flex;gap:1.2rem;align-items:flex-start;padding:.8rem 0}
-.mh-tl-marker{width:40px;height:40px;min-width:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;position:relative;z-index:1;box-shadow:0 0 20px rgba(108,92,231,.3)}
-.mh-tl-content h3{font-size:1rem;margin-bottom:.3rem}
-.mh-tl-content p{color:var(--fg2);font-size:.88rem;line-height:1.55}
-.mh-demo{display:flex;flex-direction:column;gap:1rem}
-.mh-result-box{background:linear-gradient(135deg,rgba(0,230,118,.1),rgba(108,92,231,.1));border:1px solid rgba(0,230,118,.25);border-radius:10px;padding:1.2rem 1.5rem;text-align:center}
-.mh-result-label{font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:.3rem}
-.mh-result-sub{color:var(--fg2);font-size:.85rem}
-@media(max-width:768px){.mh-grid{grid-template-columns:1fr}.mh-timeline::before{display:none}}
 
 /* ── Use Cases ────────────────────────────────────── */
-.use-cases{background:var(--bg2)}
-.uc-group-title{font-size:1.3rem;color:var(--fg);margin-bottom:1.2rem;padding-bottom:.5rem;border-bottom:1px solid rgba(255,255,255,.08)}
-.uc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
-.uc-card{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.8rem;transition:border-color .25s,transform .25s}
-.uc-card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.uc-card-mh{border-color:rgba(108,92,231,.2)}
-.uc-card-mh:hover{border-color:var(--accent2)}
-.uc-card h3{font-size:1.1rem;margin-bottom:.5rem;color:var(--fg)}
-.uc-card p{color:var(--fg2);font-size:.88rem;line-height:1.6;margin-bottom:.8rem}
-.uc-code{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin-bottom:.6rem}
-.uc-code-head{display:flex;align-items:center;gap:.4rem;padding:.35rem .8rem;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06)}
-.uc-code-head i{width:8px;height:8px;border-radius:50%;display:inline-block}
-.uc-code-head i:nth-child(1){background:var(--red)}.uc-code-head i:nth-child(2){background:var(--orange)}.uc-code-head i:nth-child(3){background:var(--green)}
-.uc-code pre{padding:.7rem .9rem;margin:0;overflow-x:auto;font-size:.76rem;line-height:1.65;color:var(--fg2);white-space:pre}
-.uc-code .cm{color:#636378}
-.uc-code .kw{color:var(--accent2)}
-.uc-code .fn{color:var(--cyan)}
-.uc-code .st{color:var(--green)}
-.uc-code .hl{color:var(--fg);font-weight:500}
-.uc-badges{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap}
-.uc-badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .6rem;border-radius:20px;background:rgba(255,255,255,.06);color:var(--fg2);font-weight:500}
-.uc-badge-mh{background:rgba(108,92,231,.2) !important;color:var(--accent2) !important}
-.uc-result{font-family:var(--mono);font-size:.82rem;font-weight:600;padding:.5rem .8rem;border-radius:6px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);margin-bottom:.8rem;color:var(--green)}
-.uc-link{display:inline-block;font-size:.82rem;color:var(--accent2);margin-top:.3rem;font-weight:500}
-.uc-link:hover{color:var(--cyan)}
+.use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
+.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
+.uc-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem;transition:border-color .2s}
+.uc-card:hover{border-color:var(--accent)}
+.uc-card h3{font-size:1.05rem;margin-bottom:.5rem;color:var(--accent2)}
+.uc-card p{color:var(--fg2);font-size:.9rem;line-height:1.6;margin-bottom:.8rem}
+.uc-card code{display:block;background:var(--bg);padding:.8rem 1rem;border-radius:6px;font-size:.78rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre}
+
+/* ── Changelog ───────────────────────────────────── */
+.changelog{background:var(--bg2)}
+.changelog h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
+.changelog-releases{max-width:800px;margin:0 auto}
+.release{margin-bottom:2.5rem}
+.release-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1rem}
+.release-version{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--accent2)}
+.release-date{color:var(--fg2);font-size:.9rem}
+.release-tag{font-family:var(--mono);font-size:.75rem;padding:.2rem .5rem;border-radius:12px;background:rgba(108,92,231,.15);color:var(--accent2);border:1px solid rgba(108,92,231,.2)}
+.release ul{list-style:none;padding:0}
+.release li{padding:.35rem 0 .35rem 1.2rem;color:var(--fg2);font-size:.9rem;line-height:1.5;position:relative}
+.release li::before{content:'';position:absolute;left:0;top:.65rem;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.release li strong{color:var(--fg);font-weight:600}
+.release li code{background:var(--bg);padding:.1rem .35rem;border-radius:3px;font-size:.8rem;color:var(--accent2)}
+.release-category{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-top:1rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:1px}
 
 /* ── CTA ──────────────────────────────────────────── */
 .cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
@@ -203,8 +184,8 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#problem">Problem</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
-    <li><a href="#metaharness">Meta-Harness</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
+    <li><a href="#changelog">Changelog</a></li>
     <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
   </ul>
@@ -214,24 +195,23 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <!-- Hero -->
 <section class="hero">
 <div class="wrap">
-  <h1>Isolated agents. Auto-optimized harnesses.<br><span class="highlight">One SQLite file.</span></h1>
-  <p class="subtitle">KAOS gives every AI agent its own virtual filesystem with checkpoints, audit trails, and rollback. Meta-Harness automatically finds the best prompt &amp; retrieval strategy for your LLM. Works with any LLM &mdash; local, OpenAI, or Anthropic. Run <code>kaos setup</code> and start in 60 seconds.</p>
+  <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
+  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. CLI-first with <code>--json</code> output for any agent framework.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Local Agents Tutorial</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/meta-harness.md" class="btn btn-secondary">Meta-Harness Docs</a>
+    <a href="#changelog" class="btn btn-secondary">What's New in v0.3.1</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos setup</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
   </div>
   <div class="badges">
+    <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.3.1</span>
     <span class="badge green">119 tests passing</span>
     <span class="badge blue">Python 3.11+</span>
     <span class="badge">Apache 2.0</span>
-    <span class="badge">44 total deps</span>
+    <span class="badge">CLI-first + MCP</span>
     <span class="badge">Zero AI SDK deps</span>
-    <span class="badge" style="color:var(--accent2);border-color:rgba(108,92,231,.3)">Paper-aligned Meta-Harness</span>
   </div>
 </div>
 </section>
@@ -354,11 +334,6 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <p>GEPA router classifies task complexity and picks the right model. Trivial task? 7B. Complex architecture? 70B. Works with any OpenAI-compatible endpoint.</p>
     </div>
     <div class="feat-card">
-      <div class="icon">&#x1f310;</div>
-      <h3>Works with Any LLM</h3>
-      <p>Three providers, all raw httpx: <strong>local</strong> (vLLM, ollama, llama.cpp), <strong>OpenAI</strong>, and <strong>Anthropic</strong>. Mix them in hybrid configs &mdash; route trivial tasks to your GPU and complex tasks to Claude or GPT-4o. Run <code>kaos setup</code> to configure in 60 seconds.</p>
-    </div>
-    <div class="feat-card">
       <div class="icon">&#x1f4e6;</div>
       <h3>Content-Addressable Blobs</h3>
       <p>Files stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with GC.</p>
@@ -379,9 +354,19 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <p>No <code>openai</code>, no <code>litellm</code>, no <code>langchain</code>. Just httpx, click, rich, textual, mcp, pyyaml, zstandard, ulid-py. 44 packages total.</p>
     </div>
     <div class="feat-card">
+      <div class="icon">&#x1f4bb;</div>
+      <h3>CLI-First + JSON Output</h3>
+      <p><code>kaos --json ls</code> gives structured JSON on every command. Pipe to <code>jq</code>, compose with any agent framework. 10-32x cheaper than MCP on tokens.</p>
+    </div>
+    <div class="feat-card">
       <div class="icon">&#x1f50c;</div>
       <h3>MCP Server + Claude Code</h3>
-      <p>18 MCP tools let Claude Code spawn, pause, resume, and kill agents, read/write files, checkpoint/restore, run SQL queries, launch Meta-Harness searches, and resume interrupted searches &mdash; all as native tool calls.</p>
+      <p>18 MCP tools for tight IDE integration. <code>mh_search</code> spawns a detached worker process that survives MCP disconnection.</p>
+    </div>
+    <div class="feat-card">
+      <div class="icon">&#x2699;</div>
+      <h3>Background Worker Process</h3>
+      <p>Long-running searches run as detached subprocesses. Parent dies? Search continues. Poll progress via <code>kaos mh status</code> or SQL.</p>
     </div>
   </div>
 </div>
@@ -391,115 +376,8 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="architecture">
 <div class="wrap">
   <h2>Architecture</h2>
-  <p style="text-align:center;color:var(--fg2);margin-bottom:2rem">Five layers, one SQLite file. No AI SDK dependencies.</p>
   <div class="arch-image">
-    <img src="architecture.svg" alt="KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage" loading="lazy">
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:2rem;text-align:center">
-    <div><strong style="color:var(--accent2)">Interfaces</strong><br><span style="color:var(--fg2);font-size:.85rem">CLI &bull; MCP (18 tools) &bull; SDK &bull; TUI</span></div>
-    <div><strong style="color:var(--cyan)">Orchestration</strong><br><span style="color:var(--fg2);font-size:.85rem">CCR loop &bull; GEPA router &bull; Local / OpenAI / Anthropic</span></div>
-    <div><strong style="color:#d8b4fe">Meta-Harness</strong><br><span style="color:var(--fg2);font-size:.85rem">Search &bull; Proposer &bull; Evaluator</span></div>
-    <div><strong style="color:var(--green)">Core</strong><br><span style="color:var(--fg2);font-size:.85rem">VFS &bull; Blobs &bull; Events &bull; Checkpoints</span></div>
-  </div>
-</div>
-</section>
-
-<!-- Dashboard -->
-<section class="dashboard-section">
-<div class="wrap">
-  <h2>Live Dashboard</h2>
-  <p class="lead" style="text-align:center;color:var(--fg2);margin-bottom:2rem">Monitor all agents in real time &mdash; status, files, tool calls, token usage, and a streaming event log.</p>
-  <div class="dashboard-img">
-    <img src="image-1.png" alt="KAOS Dashboard — real-time TUI showing agent status, token counts, and event log" loading="lazy">
-  </div>
-  <p style="text-align:center;margin-top:1.5rem;color:var(--fg2);font-family:var(--mono);font-size:.9rem">$ kaos dashboard</p>
-</div>
-</section>
-
-<!-- Meta-Harness -->
-<section class="metaharness" id="metaharness">
-<div class="wrap">
-  <h2 style="text-align:center;font-size:clamp(2.2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.5px;margin-bottom:1.2rem">Meta-Harness:<br><span class="highlight">Your LLM Optimizes Its Own Wrapper</span></h2>
-  <p style="text-align:center;color:var(--fg2);max-width:750px;margin:0 auto 1rem;font-size:1.1rem;line-height:1.65">Changing the code around a fixed LLM produces a <strong style="color:var(--fg)">6x performance gap</strong>. Meta-Harness automatically searches for the best harness &mdash; the prompt template, retrieval strategy, and memory management &mdash; by learning from full execution traces.</p>
-  <p style="text-align:center;color:var(--fg2);font-size:.85rem;margin-bottom:3rem">Based on <a href="https://yoonholee.com/meta-harness/">arXiv:2603.28052</a> (Stanford / KRAFTON / MIT) &mdash; <a href="https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact">Original code</a></p>
-
-  <div class="mh-grid">
-    <!-- Left: the 4 steps -->
-    <div class="mh-timeline">
-      <div class="mh-tl-step">
-        <div class="mh-tl-marker" style="background:var(--green)">1</div>
-        <div class="mh-tl-content">
-          <h3>Evaluate Seed Harnesses</h3>
-          <p>Start with 3 approaches (zero-shot, few-shot, retrieval). Each runs in its own isolated KAOS agent. Full execution traces &mdash; every LLM call, every output, every failure &mdash; are stored in the archive.</p>
-        </div>
-      </div>
-      <div class="mh-tl-step">
-        <div class="mh-tl-marker" style="background:var(--accent2)">2</div>
-        <div class="mh-tl-content">
-          <h3>Proposer Reads Everything</h3>
-          <p>A paper-aligned proposer agent reads ALL prior harness code, scores, AND raw execution traces. It enforces additive changes after regressions, isolates variables, and cross-references iterations. <strong style="color:var(--fg)">Median 82 files read per iteration.</strong></p>
-        </div>
-      </div>
-      <div class="mh-tl-step">
-        <div class="mh-tl-marker" style="background:var(--cyan);color:#000">3</div>
-        <div class="mh-tl-content">
-          <h3>Propose Targeted Fixes</h3>
-          <p>The proposer submits new harness variants targeting the failures it found. Each goes through <strong style="color:var(--fg)">two-stage validation</strong> (AST check + smoke test), then evaluation in an isolated KAOS agent with richer traces (input preview, expected, prediction, correct). The proposer can also use <code>mh_grep_archive</code> to search across all prior harnesses and traces.</p>
-        </div>
-      </div>
-      <div class="mh-tl-step">
-        <div class="mh-tl-marker" style="background:var(--orange);color:#000">4</div>
-        <div class="mh-tl-content">
-          <h3>Pareto Frontier</h3>
-          <p>After N iterations, you get the optimal tradeoffs: highest accuracy, lowest token cost, and everything in between. The entire search &mdash; every harness, trace, and proposer conversation &mdash; is <strong style="color:var(--fg)">one queryable .db file</strong>.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: code + result -->
-    <div class="mh-demo">
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>
-          &nbsp;terminal
-        </div>
-        <pre><span class="comment"># Optimize a support ticket classifier</span>
-<span style="color:var(--green)">$</span> kaos mh search -b text_classify -n 10 -k 2
-
-<span style="color:var(--fg2)">Evaluating 3 seed harnesses...</span>
-<span style="color:var(--fg2)">Iteration 1: proposer read 82 files, proposed 2</span>
-<span style="color:var(--fg2)">Iteration 2: accuracy 0.63 → 0.80</span>
-<span style="color:var(--fg2)">...</span>
-<span style="color:var(--fg2)">Iteration 10: frontier = 4 harnesses</span>
-
-<span class="comment"># View the Pareto frontier</span>
-<span style="color:var(--green)">$</span> kaos mh frontier 01HXY...
-<span style="color:var(--fg)">  Harness  Iter  Accuracy  Cost</span>
-<span style="color:var(--green)">  01HXY1F  7     0.8700    150</span>
-<span style="color:var(--fg)">  01HXY1H  9     0.8300     80</span>
-<span style="color:var(--fg)">  01HXY1G  4     0.7700     45</span>
-
-<span class="comment"># Inspect the winning harness source + traces</span>
-<span style="color:var(--green)">$</span> kaos mh inspect 01HXY... 01HXY1F...
-
-<span class="comment"># Run with paper benchmarks (HuggingFace, cached locally)</span>
-<span style="color:var(--green)">$</span> kaos mh search -b lawbench -n 20 -k 3
-<span style="color:var(--green)">$</span> kaos mh search -b symptom2disease -n 20 -k 3
-<span style="color:var(--green)">$</span> kaos mh search -b uspto_50k -n 20 -k 3
-
-<span class="comment"># Query the entire search with SQL</span>
-<span style="color:var(--green)">$</span> kaos query <span class="string">"SELECT SUM(token_count) FROM tool_calls"</span></pre>
-      </div>
-      <div class="mh-result-box">
-        <div class="mh-result-label">Result: 45% &rarr; 87% accuracy</div>
-        <div class="mh-result-sub">10 iterations &bull; 23 harnesses evaluated &bull; full traces in one .db file</div>
-      </div>
-    </div>
-  </div>
-
-  <div style="text-align:center;margin-top:2.5rem">
-    <a href="https://github.com/canivel/kaos/blob/main/docs/meta-harness.md" class="btn btn-primary">Read the Full Walkthrough</a>
-    <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_support_tickets.py" class="btn btn-secondary" style="margin-left:.5rem">See the Example</a>
+    <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
   </div>
 </div>
 </section>
@@ -507,163 +385,141 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <!-- Use Cases -->
 <section class="use-cases" id="use-cases">
 <div class="wrap">
-  <h2 style="text-align:center;font-size:clamp(2rem,4vw,2.8rem);margin-bottom:.5rem">Use Cases</h2>
-  <p style="text-align:center;color:var(--fg2);margin-bottom:3rem;font-size:1.05rem">Agent orchestration + automated harness optimization for engineering and business</p>
-
-  <!-- Engineering -->
-  <h3 class="uc-group-title">Engineering</h3>
+  <h2>Use Cases</h2>
   <div class="uc-grid">
     <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(0,230,118,.15);color:var(--green)">Multi-Agent</span><span class="uc-badge">Parallel</span></div>
       <h3>Code Review Swarm</h3>
-      <p>4 agents review the same code from different angles &mdash; security, performance, style, and test coverage &mdash; all running in parallel. Each writes to its own isolated VFS. No conflicts. Combine the results or query them with SQL.</p>
-      <div class="uc-result">4 reviewers &bull; parallel execution &bull; zero conflicts</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>results = <span class="kw">await</span> ccr.<span class="fn">run_parallel</span>([
-  {<span class="st">"name"</span>: <span class="st">"security"</span>,  <span class="st">"prompt"</span>: <span class="st">"Find vulns..."</span>},
-  {<span class="st">"name"</span>: <span class="st">"perf"</span>,      <span class="st">"prompt"</span>: <span class="st">"Find perf issues..."</span>},
-  {<span class="st">"name"</span>: <span class="st">"style"</span>,     <span class="st">"prompt"</span>: <span class="st">"Review best practices..."</span>},
-  {<span class="st">"name"</span>: <span class="st">"tests"</span>,     <span class="st">"prompt"</span>: <span class="st">"What's missing?"</span>},
-])</pre></div>
+      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel.</p>
+      <code>results = await ccr.run_parallel([
+  {"name": "security",  "prompt": "Find vulns..."},
+  {"name": "perf",      "prompt": "Find perf..."},
+  {"name": "style",     "prompt": "Review..."},
+  {"name": "tests",     "prompt": "What's missing?"},
+])</code>
     </div>
     <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(24,255,255,.15);color:var(--cyan)">Checkpoint</span><span class="uc-badge">Rollback</span></div>
-      <h3>Safe Refactoring with Rollback</h3>
-      <p>Checkpoint before risky operations. If an agent breaks something, restore just that agent &mdash; other agents keep running untouched. Diff two checkpoints to see exactly what changed: files, state, tool calls.</p>
-      <div class="uc-result">Instant rollback &bull; per-agent &bull; other agents unaffected</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>cp = db.<span class="fn">checkpoint</span>(agent, label=<span class="st">"pre-migration"</span>)
-<span class="kw">try</span>:
-    <span class="kw">await</span> ccr.<span class="fn">run_agent</span>(agent, <span class="st">"Migrate schema v3"</span>)
-<span class="kw">except</span> Exception:
-    <span class="hl">db.restore(agent, cp)</span>  <span class="cm"># only this agent rolls back</span></pre></div>
+      <h3>Safe Refactoring</h3>
+      <p>Checkpoint before risky work, automatically restore on failure. Other agents keep running.</p>
+      <code>cp = db.checkpoint(agent, label="pre-migration")
+try:
+    await ccr.run_agent(agent, "Migrate DB")
+except Exception:
+    db.restore(agent, cp)  # rollback</code>
     </div>
     <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(255,145,0,.15);color:var(--orange)">SQL</span><span class="uc-badge">Audit Trail</span></div>
       <h3>Post-Mortem Debugging</h3>
-      <p>An agent went rogue &mdash; 47 tool calls, 12 files modified, codebase broken. Query the complete event timeline, failed tool calls, token usage, and file changes with SQL. No log files to grep.</p>
-      <div class="uc-result">14 event types &bull; every operation logged &bull; SQL-queryable</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>db.<span class="fn">query</span>(<span class="st">"""SELECT tool_name, error, duration_ms
+      <p>An agent broke something. Query the audit trail to find out what, when, and why.</p>
+      <code>db.query("""
+  SELECT tool_name, error, duration_ms
   FROM tool_calls
   WHERE agent_id = ? AND status = 'error'
-  ORDER BY timestamp"""</span>, [agent_id])</pre></div>
+""", [agent_id])</code>
     </div>
     <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(162,155,254,.15);color:var(--accent2)">Enterprise</span><span class="uc-badge">Compliance</span></div>
-      <h3>Multi-Team Agent Governance</h3>
-      <p>Run agents across teams with enforced isolation &mdash; the security team's scanner can't see the product team's code, and vice versa. Export any agent to a standalone file for compliance review. Full audit trail satisfies SOC 2 evidence requirements.</p>
-      <div class="uc-result">SQL audit trail &bull; per-agent export &bull; SOC 2 evidence-ready</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre><span class="cm"># Each team gets isolated agents — enforced, not convention</span>
-sec_agent = db.<span class="fn">spawn</span>(<span class="st">"security-scan"</span>, config={<span class="st">"team"</span>: <span class="st">"security"</span>})
-dev_agent = db.<span class="fn">spawn</span>(<span class="st">"feature-build"</span>, config={<span class="st">"team"</span>: <span class="st">"product"</span>})
-
-<span class="cm"># Export for compliance review — one file, complete history</span>
-<span class="cm"># kaos export &lt;agent-id&gt; -o audit-evidence.db</span>
-
-<span class="cm"># Query across all agents for governance reporting</span>
-db.<span class="fn">query</span>(<span class="st">"SELECT name, status, COUNT(*) FROM agents GROUP BY team"</span>)</pre></div>
+      <h3>Parallel Feature Development</h3>
+      <p>Tests, implementation, and docs agents work simultaneously with zero conflicts.</p>
+      <code>await ccr.run_parallel([
+  {"name": "tests", "prompt": "Write tests"},
+  {"name": "impl",  "prompt": "Implement"},
+  {"name": "docs",  "prompt": "Write docs"},
+])</code>
     </div>
     <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(255,82,82,.15);color:var(--red)">Research</span><span class="uc-badge">GPU</span></div>
-      <h3>Autonomous Research Lab</h3>
-      <p>Inspired by <a href="https://github.com/karpathy/autoresearch" style="color:var(--accent2)">Karpathy's autoresearch</a>: run N research agents in parallel, each exploring a different ML hypothesis &mdash; architecture, optimizer, scaling, regularization. Each gets its own isolated train.py. SQL-queryable results across all agents.</p>
-      <div class="uc-result">N agents &bull; N directions &bull; parallel &bull; SQL-queryable experiments</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre><span class="cm"># Each agent gets its own isolated copy of train.py</span>
-<span class="kw">for</span> direction <span class="kw">in</span> [<span class="st">"architecture"</span>, <span class="st">"optimizer"</span>, <span class="st">"scaling"</span>]:
-    agent = db.<span class="fn">spawn</span>(f<span class="st">"{direction}-explorer"</span>)
-    db.<span class="fn">write</span>(agent, <span class="st">"/train.py"</span>, BASE_TRAIN_PY)
-    db.<span class="fn">checkpoint</span>(agent, label=<span class="st">"baseline"</span>)
-
-<span class="cm"># Run all in parallel — isolated, auto-checkpointed</span>
-results = <span class="kw">await</span> ccr.<span class="fn">run_parallel</span>(RESEARCH_DIRECTIONS)</pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-autoresearch.md" class="uc-link">Full tutorial &rarr;</a>
-    </div>
-    <div class="uc-card">
-      <div class="uc-badges"><span class="uc-badge" style="background:rgba(0,230,118,.15);color:var(--green)">Parallel</span><span class="uc-badge">Token Tracking</span></div>
       <h3>Cost & Token Tracking</h3>
-      <p>Know exactly how much each agent consumed. Query token usage, error rates, and duration across all agents with one SQL query. No more surprise bills or blind spots in your agent fleet.</p>
-      <div class="uc-result">Per-agent &bull; per-tool-call &bull; one SQL query</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>db.<span class="fn">query</span>(<span class="st">"""SELECT a.name,
-    SUM(tc.token_count) as tokens,
-    SUM(tc.duration_ms) / 1000.0 as seconds
+      <p>Know exactly how much each agent consumed. No more surprise bills.</p>
+      <code>db.query("""
+  SELECT a.name, SUM(tc.token_count) as tok
   FROM agents a
   JOIN tool_calls tc ON a.agent_id = tc.agent_id
-  GROUP BY a.agent_id ORDER BY tokens DESC"""</span>)</pre></div>
+  GROUP BY a.agent_id ORDER BY tok DESC
+""")</code>
+    </div>
+    <div class="uc-card">
+      <h3>Export & Share</h3>
+      <p>Export an agent's complete state, send to a teammate, or back up before experiments.</p>
+      <code># CLI
+kaos export &lt;agent-id&gt; -o snapshot.db
+
+# Or just copy the whole runtime
+cp kaos.db backup.db</code>
     </div>
   </div>
+</div>
+</section>
 
-  <!-- Meta-Harness: Business -->
-  <h3 class="uc-group-title" style="margin-top:3rem">Business <span style="font-size:.7em;color:var(--accent2);font-weight:400">&mdash; powered by Meta-Harness</span></h3>
-  <div class="uc-grid">
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Revenue</span></div>
-      <h3>Customer Lifetime Value (CLV/LTV)</h3>
-      <p>Predict customer lifetime value from profile + behavior data. Meta-Harness discovers segment-aware prompting (enterprise vs. startup need different framing) and a two-step approach: predict churn first, then CLV conditional on retention.</p>
-      <div class="uc-result" style="color:var(--green)">40% &rarr; 72% predictions within 20% of actual CLV</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">CLVBenchmark</span>()  <span class="cm"># your customer data</span>
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+accuracy"</span>, <span class="st">"-context_cost"</span>]))
-<span class="cm"># Discovered: churn-first reasoning beats single-step by 25pts</span></pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_clv_prediction.py" class="uc-link">View example &rarr;</a>
-    </div>
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Marketing</span></div>
-      <h3>CRM Campaign Optimization</h3>
-      <p>Generate personalized email subjects, push notifications, and SMS per customer segment. Meta-Harness learns that enterprise wants ROI language, consumers want urgency, and referencing the customer's most-used feature boosts engagement.</p>
-      <div class="uc-result" style="color:var(--green)">12% &rarr; 24% message relevance score</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">CRMCampaignBenchmark</span>()  <span class="cm"># campaign history</span>
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+relevance"</span>, <span class="st">"-context_cost"</span>]))
-<span class="cm"># Discovered: different harness per segment outperforms generic</span></pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_crm_campaigns.py" class="uc-link">View example &rarr;</a>
-    </div>
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Compliance</span></div>
-      <h3>Fraud Detection</h3>
-      <p>Review flagged transactions for fraud. Meta-Harness finds that pre-computing red flags (amount deviation, unusual country, velocity) and showing contrastive examples (similar fraud vs. legitimate) improves F1 by 20 points over basic prompting.</p>
-      <div class="uc-result" style="color:var(--green)">F1: 0.55 &rarr; 0.78 &bull; false positives cut by 40%</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">FraudDetectionBenchmark</span>()  <span class="cm"># transaction data</span>
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+f1_score"</span>, <span class="st">"-context_cost"</span>]))
-<span class="cm"># Pareto: [high recall] ↔ [balanced F1, fewer tokens]</span></pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_fraud_detection.py" class="uc-link">View example &rarr;</a>
-    </div>
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Support</span></div>
-      <h3>Support Ticket Classification</h3>
-      <p>Route tickets to the right team (billing, technical, account, general). The proposer agent reads execution traces, discovers that ambiguous tickets need contrastive examples, and that two-stage verification beats single-shot classification.</p>
-      <div class="uc-result" style="color:var(--green)">45% &rarr; 87% accuracy &bull; 10 iterations</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">SupportTicketBenchmark</span>()
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(max_iterations=<span class="hl">10</span>, candidates_per_iteration=<span class="hl">2</span>))
-<span class="cm"># Full search stored in one queryable .db file</span></pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_support_tickets.py" class="uc-link">View example &rarr;</a>
-    </div>
-  </div>
+<!-- Changelog -->
+<section class="changelog" id="changelog">
+<div class="wrap">
+  <h2>Changelog</h2>
+  <div class="changelog-releases">
 
-  <!-- Meta-Harness: Technical -->
-  <h3 class="uc-group-title" style="margin-top:3rem">Technical Research <span style="font-size:.7em;color:var(--accent2);font-weight:400">&mdash; powered by Meta-Harness</span></h3>
-  <div class="uc-grid">
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">RAG</span></div>
-      <h3>Math Retrieval Optimization</h3>
-      <p>Which solved problems should you retrieve from a 500K corpus to help solve an Olympiad problem? Meta-Harness discovers domain-aware routing: different retrieval strategies for geometry, combinatorics, number theory, and algebra.</p>
-      <div class="uc-result" style="color:var(--green)">+4.7 points avg across 5 models (paper result)</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">get_benchmark</span>(<span class="st">"math_rag"</span>,
-  corpus_path=<span class="st">"535k_solved_problems.jsonl"</span>)
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(max_iterations=<span class="hl">15</span>))</pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_math.py" class="uc-link">View example &rarr;</a>
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.3.1</span>
+        <span class="release-date">April 5, 2026</span>
+        <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">Bug Fixes</p>
+      <ul>
+        <li><strong>#1</strong> CLI Unicode crash on Windows &mdash; stdout reconfigured to UTF-8</li>
+        <li><strong>#2</strong> Parallel spawn WAL contention &mdash; retry with backoff + <code>wal_autocheckpoint</code></li>
+        <li><strong>#7</strong> Large output truncation &mdash; results &gt;4KB stored in VFS, MCP returns preview</li>
+        <li><strong>#16</strong> Background search write lock &mdash; frequent WAL checkpointing</li>
+      </ul>
+      <p class="release-category">New Commands</p>
+      <ul>
+        <li><code>kaos read &lt;agent-id&gt; &lt;path&gt;</code> &mdash; read files from agent VFS</li>
+        <li><code>kaos logs &lt;agent-id&gt;</code> &mdash; view conversation history + event log</li>
+        <li><code>kaos mh search --dry-run</code> &mdash; evaluate seeds only, report baseline</li>
+      </ul>
     </div>
-    <div class="uc-card uc-card-mh">
-      <div class="uc-badges"><span class="uc-badge uc-badge-mh">Meta-Harness</span><span class="uc-badge">Agents</span></div>
-      <h3>Agentic Coding Optimization</h3>
-      <p>Optimize a coding agent's harness. The paper's key discovery: gathering an environment snapshot before the agent loop (languages, tools, memory) eliminates 2-4 wasted exploratory turns. Only ~80 lines added, no existing code modified.</p>
-      <div class="uc-result" style="color:var(--green)">76.4% on TerminalBench-2 (paper result)</div>
-      <div class="uc-code"><div class="uc-code-head"><i></i><i></i><i></i></div><pre>bench = <span class="fn">get_benchmark</span>(<span class="st">"agentic_coding"</span>,
-  tasks_path=<span class="st">"89_dockerized_tasks.jsonl"</span>)
-search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
-  <span class="fn">SearchConfig</span>(objectives=[<span class="st">"+pass_rate"</span>]))</pre></div>
-      <a href="https://github.com/canivel/kaos/blob/main/examples/meta_harness_coding.py" class="uc-link">View example &rarr;</a>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.3.0</span>
+        <span class="release-date">April 4, 2026</span>
+      </div>
+      <p class="release-category">CLI-First Architecture</p>
+      <ul>
+        <li><code>--json</code> flag on all commands &mdash; composable with any agent framework, 10-32x cheaper than MCP</li>
+        <li>Background worker subprocess for <code>mh search</code> &mdash; survives parent exit</li>
+        <li><code>provider: claude_code</code> &mdash; no API key needed, uses CC subscription</li>
+        <li>Pluggable <code>llm()</code> callable injected into harnesses &mdash; any provider works</li>
+      </ul>
+      <p class="release-category">Reliability</p>
+      <ul>
+        <li>Fail-fast retries (default 3 &rarr; 1), proposer timeout + error handling</li>
+        <li>DB locking fix &mdash; <code>_force_kill()</code> with fresh connection fallback</li>
+        <li>Evaluator bugs fixed &mdash; <code>_truncate()</code> and score key prefix issues</li>
+        <li>Objectives inherit from benchmark when not explicitly set</li>
+      </ul>
     </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.2.0</span>
+        <span class="release-date">April 2, 2026</span>
+      </div>
+      <ul>
+        <li>Paper-aligned Meta-Harness (arXiv:2603.28052) &mdash; automated harness optimization</li>
+        <li>Multi-provider support: local, OpenAI, Anthropic (all raw httpx)</li>
+        <li><code>kaos setup</code> interactive wizard with 6 presets</li>
+        <li>18 MCP tools, resume interrupted searches, dashboard Meta-Harness panel</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.1.0</span>
+        <span class="release-date">March 30, 2026</span>
+      </div>
+      <ul>
+        <li>Initial release &mdash; VFS engine, checkpoint/restore, event journal, GEPA router</li>
+        <li>CLI (15 commands), MCP server, TUI dashboard, FUSE isolation</li>
+      </ul>
+    </div>
+
+    <p style="text-align:center;margin-top:1rem"><a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md" style="font-size:.9rem">Full changelog on GitHub &rarr;</a></p>
   </div>
 </div>
 </section>
@@ -671,15 +527,15 @@ search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
 <!-- CTA -->
 <section class="cta">
 <div class="wrap">
-  <h2>Run It Your Way</h2>
-  <p>Local GPU, OpenAI, Anthropic, or all three. One setup wizard, any LLM provider.</p>
+  <h2>Run It All Locally, For Free</h2>
+  <p>Your GPU. Your models. Your data stays on your machine. Zero API costs with local LLMs &mdash; or connect to Claude, OpenAI, or Claude Code when you want to.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Full Tutorial</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos setup</span>
+    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos init</span>
   </div>
 </div>
 </section>
@@ -691,6 +547,7 @@ search = <span class="fn">MetaHarnessSearch</span>(db, router, bench,
     <a href="https://github.com/canivel/kaos">GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/mcp-integration.md">MCP Docs</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
     <a href="https://github.com/canivel/kaos/blob/main/LICENSE">Apache 2.0</a>
   </div>
   <p>KAOS &mdash; Kernel for Agent Orchestration & Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
