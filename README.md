@@ -764,7 +764,19 @@ uv sync
 kaos --version  # 0.3.1
 ```
 
-Existing configs work unchanged. See [CHANGELOG.md](CHANGELOG.md) for full details.
+If you have the MCP server running (via Claude Code or `kaos serve`), restart it so it picks up the new code:
+
+```bash
+# Option 1: Claude Code restarts the MCP server automatically on next tool call
+# after you close and reopen the session.
+
+# Option 2: If running standalone, kill and restart:
+kaos serve --transport stdio
+```
+
+Any running background workers (`kaos mh search --background`) will continue using the old version until they finish. New workers will use the updated code.
+
+Existing `kaos.yaml` configs and `kaos.db` databases work unchanged across versions. See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 <details>
 <summary>v0.2.0 changes (Meta-Harness & Multi-Provider)</summary>

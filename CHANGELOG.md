@@ -53,14 +53,17 @@ All notable changes to KAOS are documented here.
 ```bash
 git pull origin main
 uv sync
-kaos --version  # should show 0.3.0
+kaos --version  # should show 0.3.1
 ```
 
+If you have the MCP server running, restart it so it picks up the new code. Claude Code restarts the MCP server automatically when you start a new session. Any running background workers will continue on the old version until they finish.
+
 If upgrading from v0.1.0/v0.2.0:
-- Existing `kaos.yaml` configs continue to work unchanged.
+- Existing `kaos.yaml` configs and `kaos.db` databases work unchanged across versions.
 - New `provider: claude_code` option available -- run `kaos setup` to reconfigure.
 - CLI commands now output JSON when piped. Use `--json` flag explicitly in scripts.
 - `kaos mh search --background` is the recommended way to run searches.
+- New commands: `kaos read`, `kaos logs`, `kaos mh search --dry-run`.
 
 ## [0.2.0] - 2026-04-02
 
