@@ -421,15 +421,21 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         else:
             kwargs["start_new_session"] = True
 
-        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
-        logger.info("MH search worker launched: PID %d, benchmark=%s", proc.pid, benchmark_name)
+        import time as _time
+        log_dir = os.path.dirname(os.path.abspath(_afs.db_path))
+        log_path = os.path.join(log_dir, f"kaos-worker-{int(_time.time())}.log")
+        log_file = open(log_path, "w")
+        proc = _sp.Popen(cmd, stdout=log_file, stderr=log_file, **kwargs)
+        logger.info("MH search worker launched: PID %d, log=%s", proc.pid, log_path)
 
         return json.dumps({
             "status": "running",
             "pid": proc.pid,
+            "log_path": log_path,
             "message": (
                 f"Search worker launched (PID {proc.pid}). "
-                "Poll with mh_frontier or agent_status once the search agent appears in agent_ls."
+                f"Log: {log_path}. "
+                "Poll with mh_frontier or agent_status."
             ),
         }, indent=2)
 
@@ -485,14 +491,19 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         else:
             kwargs["start_new_session"] = True
 
-        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
-        logger.info("MH resume worker launched: PID %d, agent=%s", proc.pid, search_agent_id)
+        import time as _time
+        log_dir = os.path.dirname(os.path.abspath(_afs.db_path))
+        log_path = os.path.join(log_dir, f"kaos-worker-{int(_time.time())}.log")
+        log_file = open(log_path, "w")
+        proc = _sp.Popen(cmd, stdout=log_file, stderr=log_file, **kwargs)
+        logger.info("MH resume worker launched: PID %d, log=%s", proc.pid, log_path)
 
         return json.dumps({
             "search_agent_id": search_agent_id,
             "status": "resuming",
             "pid": proc.pid,
-            "message": f"Resume worker launched (PID {proc.pid}). Poll with mh_frontier.",
+            "log_path": log_path,
+            "message": f"Resume worker launched (PID {proc.pid}). Log: {log_path}.",
         }, indent=2)
 
     else:

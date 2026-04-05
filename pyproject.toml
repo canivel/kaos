@@ -29,6 +29,9 @@ dev = [
 fuse = [
     "fusepy>=3.0",
 ]
+benchmarks = [
+    "numpy>=1.24",
+]
 
 [project.scripts]
 kaos = "kaos.cli.main:cli"

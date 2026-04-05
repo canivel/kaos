@@ -442,6 +442,11 @@ def serve(db: str, port: int, host: str, transport: str, config_file: str):
     console.print(f"[green]Starting KAOS MCP server ({transport})...[/green]")
 
     if transport == "stdio":
+        # Redirect stdout → stderr so any library logging to stdout
+        # (e.g., benchmark modules, print statements) doesn't corrupt
+        # the MCP JSON-RPC stdio protocol. The MCP library uses its own
+        # write stream from stdio_server(), not sys.stdout.
+        sys.stdout = sys.stderr
         from mcp.server.stdio import stdio_server
         asyncio.run(_run_stdio(mcp_server))
     else:
@@ -553,9 +558,10 @@ def mh():
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
 @click.option("--background/--foreground", default=False, help="Run as detached background process")
+@click.option("--dry-run", is_flag=True, default=False, help="Evaluate seeds only, report baseline scores")
 @click.pass_context
 def mh_search(ctx, benchmark, iterations, candidates, seed, proposer_model,
-              eval_model, max_parallel, eval_subset, db, config_file, background):
+              eval_model, max_parallel, eval_subset, db, config_file, background, dry_run):
     """Run a meta-harness search to optimize a harness for a benchmark."""
     import subprocess as _sp
 
@@ -590,16 +596,21 @@ def mh_search(ctx, benchmark, iterations, candidates, seed, proposer_model,
         else:
             kwargs["start_new_session"] = True
 
-        proc = _sp.Popen(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL, **kwargs)
+        import time as _time
+        log_path = os.path.join(os.path.dirname(os.path.abspath(db)), f"kaos-worker-{int(_time.time())}.log")
+        log_file = open(log_path, "w")
+        proc = _sp.Popen(cmd, stdout=log_file, stderr=log_file, **kwargs)
 
         result = {
             "status": "running",
             "pid": proc.pid,
-            "message": f"Worker launched (PID {proc.pid}). Poll with: kaos mh status <search_agent_id>",
+            "log_path": log_path,
+            "message": f"Worker launched (PID {proc.pid}). Log: {log_path}",
         }
         if _json_out(ctx, result):
             return
         console.print(f"[green]Worker launched[/green] (PID {proc.pid})")
+        console.print(f"  Log: {log_path}")
         console.print(f"  Poll with: kaos mh status <search_agent_id>")
         return
 
@@ -636,7 +647,12 @@ def mh_search(ctx, benchmark, iterations, candidates, seed, proposer_model,
         console.print(f"  Max parallel: {max_parallel}")
 
     search = MetaHarnessSearch(afs, router, bench, config)
-    result = asyncio.run(search.run())
+    if ctx.params.get("dry_run"):
+        if not ctx.obj.get("json"):
+            console.print("[cyan]Dry-run: evaluating seeds only[/cyan]")
+        result = asyncio.run(search.run_seeds_only())
+    else:
+        result = asyncio.run(search.run())
 
     result_data = {
         "search_agent_id": result.search_agent_id,

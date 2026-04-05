@@ -54,6 +54,10 @@ class MetaHarnessSearch:
         self.benchmark = benchmark
         self.config = config
 
+        # Inherit objectives from benchmark if not explicitly set
+        if config.objectives is None:
+            config.objectives = benchmark.objectives
+
         self.evaluator = HarnessEvaluator(
             afs, router, benchmark,
             timeout_seconds=config.harness_timeout_seconds,
@@ -221,6 +225,40 @@ class MetaHarnessSearch:
             total_harnesses_evaluated=len(self._all_results),
             total_duration_seconds=total_duration,
             iterations_completed=self.config.max_iterations,
+        )
+
+    async def run_seeds_only(self) -> SearchResult:
+        """Evaluate seed harnesses only — no proposer iterations (dry-run mode)."""
+        start_time = time.time()
+        self.search_agent_id = self._init_archive()
+
+        seeds = self._load_seeds()
+        logger.info("Dry-run: evaluating %d seed harnesses...", len(seeds))
+
+        problems = self.benchmark.get_search_set()
+        if self.config.eval_subset_size:
+            problems = self.benchmark.get_subset(problems, self.config.eval_subset_size)
+
+        seed_results = await self.evaluator.evaluate_parallel(
+            seeds, problems=problems,
+            max_parallel=self.config.max_parallel_evals,
+        )
+        for harness, result in zip(seeds, seed_results):
+            self._store_result(harness, result, iteration=0)
+
+        frontier = self._compute_frontier()
+        self._store_frontier(frontier, iteration=0)
+
+        total_duration = time.time() - start_time
+        self.afs.complete(self.search_agent_id)
+
+        return SearchResult(
+            search_agent_id=self.search_agent_id,
+            frontier=frontier,
+            all_results=self._all_results,
+            total_harnesses_evaluated=len(self._all_results),
+            total_duration_seconds=total_duration,
+            iterations_completed=0,
         )
 
     async def resume(self, search_agent_id: str) -> SearchResult:

@@ -151,7 +151,7 @@ class SearchConfig:
     seed_harnesses: list[str] = field(default_factory=list)
     proposer_model: str | None = None
     evaluator_model: str | None = None
-    objectives: list[str] = field(default_factory=lambda: ["+accuracy", "-context_cost"])
+    objectives: list[str] | None = None  # None = inherit from benchmark
     max_parallel_evals: int = 4
     eval_subset_size: int | None = None  # Subsample problems for faster search
     harness_timeout_seconds: int = 300
@@ -166,8 +166,9 @@ class SearchConfig:
 
     def objective_directions(self) -> dict[str, str]:
         """Parse objectives into {name: 'maximize'|'minimize'}."""
+        objectives = self.objectives or ["+accuracy", "-context_cost"]
         directions = {}
-        for obj in self.objectives:
+        for obj in objectives:
             if obj.startswith("-"):
                 directions[obj[1:]] = "minimize"
             elif obj.startswith("+"):

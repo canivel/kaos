@@ -180,7 +180,7 @@ class TestSearchConfig:
         c = SearchConfig(benchmark="text_classify")
         assert c.max_iterations == 20
         assert c.candidates_per_iteration == 2  # Paper uses k=2
-        assert c.objectives == ["+accuracy", "-context_cost"]
+        assert c.objectives is None  # None = inherit from benchmark
 
     def test_objective_directions(self):
         c = SearchConfig(

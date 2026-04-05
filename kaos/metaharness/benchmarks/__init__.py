@@ -19,7 +19,14 @@ def get_benchmark(name: str, **kwargs) -> Benchmark:
         raise ValueError(
             f"Unknown benchmark: {name}. Available: {list(_registry.keys())}"
         )
-    return _registry[name](**kwargs)
+    try:
+        return _registry[name](**kwargs)
+    except ImportError as e:
+        raise ImportError(
+            f"Benchmark '{name}' requires optional dependencies. "
+            f"Install with: uv pip install kaos[benchmarks]\n"
+            f"Original error: {e}"
+        ) from e
 
 
 def list_benchmarks() -> list[str]:
