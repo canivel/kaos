@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.3.1-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -197,12 +197,16 @@ kaos parallel \
     -t docs "update docs"              # Run agents in parallel
 kaos ls                                # List agents
 kaos status <agent-id>                 # Agent details
+kaos read <agent-id> /path/to/file     # Read VFS files
+kaos logs <agent-id>                   # View conversation + event log
+kaos logs <agent-id> --tail 20         # Last 20 events
 kaos checkpoint <agent-id> -l "safe"   # Snapshot agent state
 kaos restore <agent-id> --checkpoint X # Roll back
 kaos diff <agent-id> --from X --to Y   # What changed between checkpoints?
 kaos query "SELECT * FROM events"      # SQL queries
 kaos dashboard                         # Live TUI monitor
 kaos mh search -b text_classify -n 10 --background  # Background worker
+kaos mh search -b text_classify --dry-run            # Seeds only, no proposer
 kaos mh status <search-agent-id>       # Poll search progress
 kaos mh resume <search-agent-id>       # Resume interrupted search
 kaos export <agent-id> -o backup.db    # Export a single agent
@@ -555,7 +559,7 @@ kaos query "SELECT SUM(token_count) FROM tool_calls"
 ![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
 
 Five layers, one SQLite file:
-- **Interfaces** — CLI (20+ commands, `--json` output), MCP Server (18 tools), Python SDK, TUI Dashboard
+- **Interfaces** — CLI (25+ commands, `--json` output), MCP Server (18 tools), Python SDK, TUI Dashboard
 - **Orchestration** — CCR agent loop, GEPA model router, 4 providers (local/OpenAI/Anthropic/Claude Code)
 - **Meta-Harness** — Search loop, detached worker process, proposer agent, evaluator, Pareto frontier
 - **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
@@ -703,7 +707,7 @@ kaos/
 ├── mcp/
 │   └── server.py            # MCP server (18 tools, stdio + SSE)
 └── cli/
-    ├── main.py              # 20 CLI commands (16 core + 4 meta-harness)
+    ├── main.py              # 25+ CLI commands (read, logs, --json, --dry-run)
     └── dashboard.py         # Live TUI dashboard (Textual)
 ```
 
@@ -732,24 +736,32 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.3.0
+## What's New in v0.3.1
 
-### CLI-First Architecture
-- **`--json` on all commands** — `kaos --json ls`, `kaos --json mh status <id>`, etc. Auto-enabled when piped. Makes KAOS composable with any agent framework via shell — 10-32x cheaper than MCP on tokens.
-- **Worker subprocess for `mh search`** — `kaos mh search --background` runs the search as a detached process. Survives parent exit, MCP disconnection, or terminal close. Poll with `kaos mh status`.
-- **`provider: claude_code`** — No API key needed. Uses Claude Code subscription auth via `claude --print`. Just works.
+### Bug Fixes
+- **Windows Unicode crash** (#1) — CLI no longer crashes on non-ASCII output (cp1252 encoding)
+- **Parallel spawn contention** (#2) — `spawn()` retries on WAL lock, `wal_autocheckpoint=100`
+- **Large output truncation** (#7) — Results >4KB stored in VFS `/result.txt`, MCP returns preview + pointer
+- **Background search lock** (#16) — Frequent WAL checkpointing reduces lock hold time
 
-### Reliability
-- **Fail-fast retries** — `max_retries` default 3 to 1. Failed proposer iterations skip instead of crashing the search.
-- **DB locking fix** — `kill()` falls back to a fresh connection when the DB is locked. `busy_timeout` raised to 30s.
-- **Evaluator bug fixes** — `_truncate()` and score key prefix bugs that caused all harnesses to score 0% are fixed.
+### New CLI Commands
+- **`kaos read <agent-id> <path>`** (#4) — Read files from agent VFS directly
+- **`kaos logs <agent-id>`** (#6) — View conversation history + event log with `--tail N`
+- **`kaos mh search --dry-run`** (#17) — Evaluate seeds only, report baseline scores
+
+### v0.3.0 Highlights
+- `--json` on all commands (composable with any agent, 10-32x cheaper than MCP)
+- Worker subprocess for `mh search` (survives parent exit)
+- `provider: claude_code` (no API key needed)
+- Pluggable `llm()` callable injected into harnesses
+- Fail-fast retries, proposer timeout handling, objectives inherit from benchmark
 
 ### Upgrading
 
 ```bash
 git pull origin main
 uv sync
-kaos --version  # 0.3.0
+kaos --version  # 0.3.1
 ```
 
 Existing configs work unchanged. See [CHANGELOG.md](CHANGELOG.md) for full details.
