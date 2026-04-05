@@ -249,8 +249,17 @@ class GEPARouter:
                         client = self.clients[self.fallback_model]
                         model_name = self.fallback_model
 
+        # Build an actionable error message
+        err_str = str(last_error)
+        hint = ""
+        if "Connection" in err_str or "refused" in err_str.lower():
+            model_cfg = self.models.get(model_name)
+            endpoint = model_cfg.vllm_endpoint if model_cfg else "unknown"
+            hint = f" Is the model server running at {endpoint}?"
+        elif "timeout" in err_str.lower():
+            hint = " Try increasing the timeout in kaos.yaml."
         raise RuntimeError(
-            f"All {self.max_retries} model call attempts failed. Last error: {last_error}"
+            f"Model call failed for '{model_name}': {last_error}.{hint}"
         )
 
     @staticmethod

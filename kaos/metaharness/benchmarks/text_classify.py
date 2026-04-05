@@ -31,15 +31,30 @@ def run(problem):
     label_str = ", ".join(labels) if labels else "the correct category"
 
     prompt = (
-        f"Classify the following text into one of these categories: {label_str}\\n\\n"
+        f"Classify the following text into exactly one of these categories: {label_str}\\n"
+        f"Output ONLY the category name, nothing else.\\n\\n"
         f"Text: {text}\\n\\n"
         f"Category:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    # Call LLM if available, otherwise return prompt for scoring
+    try:
+        response = llm(prompt, max_tokens=32)
+        # Extract label from response
+        r = response.strip().lower()
+        prediction = ""
+        for label in labels:
+            if label.lower() in r:
+                prediction = label
+                break
+        return {
+            "prediction": prediction or response.strip(),
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        # llm() not available — return prompt only
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 SEED_FEW_SHOT = '''\
@@ -51,7 +66,6 @@ def run(problem):
     labels = problem.get("labels", [])
     labeled_examples = problem.get("labeled_examples", [])
 
-    # Use up to 8 most recent labeled examples
     examples = labeled_examples[-8:] if labeled_examples else []
 
     example_block = ""
@@ -61,16 +75,28 @@ def run(problem):
     label_str = ", ".join(labels) if labels else "the correct category"
 
     prompt = (
-        f"Classify the following text into one of these categories: {label_str}\\n\\n"
+        f"Classify the following text into exactly one of these categories: {label_str}\\n"
+        f"Output ONLY the category name, nothing else.\\n\\n"
         f"{example_block}"
         f"Text: {text}\\n\\n"
         f"Category:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    try:
+        response = llm(prompt, max_tokens=32)
+        r = response.strip().lower()
+        prediction = ""
+        for label in labels:
+            if label.lower() in r:
+                prediction = label
+                break
+        return {
+            "prediction": prediction or response.strip(),
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 SEED_RETRIEVAL = '''\
@@ -82,7 +108,6 @@ def run(problem):
     labels = problem.get("labels", [])
     labeled_examples = problem.get("labeled_examples", [])
 
-    # Simple TF-IDF-like retrieval: score by word overlap
     query_words = set(text.lower().split())
 
     scored = []
@@ -101,16 +126,28 @@ def run(problem):
     label_str = ", ".join(labels) if labels else "the correct category"
 
     prompt = (
-        f"Classify the following text into one of these categories: {label_str}\\n\\n"
+        f"Classify the following text into exactly one of these categories: {label_str}\\n"
+        f"Output ONLY the category name, nothing else.\\n\\n"
         f"Examples:\\n{example_block}"
         f"Text: {text}\\n\\n"
         f"Category:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    try:
+        response = llm(prompt, max_tokens=32)
+        r = response.strip().lower()
+        prediction = ""
+        for label in labels:
+            if label.lower() in r:
+                prediction = label
+                break
+        return {
+            "prediction": prediction or response.strip(),
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 

@@ -23,15 +23,24 @@ def run(problem):
     question = problem["question"]
 
     prompt = (
-        f"Solve the following math problem. Show your work step by step.\\n\\n"
+        f"Solve the following math problem. Give ONLY the final numeric answer, nothing else.\\n\\n"
         f"Problem: {question}\\n\\n"
-        f"Solution:"
+        f"Answer:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    try:
+        response = llm(prompt, max_tokens=64)
+        # Extract numeric answer
+        import re
+        numbers = re.findall(r'-?\\d+\\.?\\d*', response)
+        prediction = numbers[0] if numbers else response.strip()
+        return {
+            "prediction": prediction,
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 SEED_BM25_RETRIEVAL = '''\
@@ -42,7 +51,6 @@ def run(problem):
     question = problem["question"]
     corpus = problem.get("corpus", [])
 
-    # Simple BM25-like scoring: word overlap
     query_words = set(question.lower().split())
 
     scored = []
@@ -67,15 +75,23 @@ def run(problem):
     prompt = (
         f"Here are some similar solved problems for reference:\\n\\n"
         f"{examples_block}"
-        f"Now solve this problem. Show your work step by step.\\n\\n"
+        f"Now solve this problem. Give ONLY the final numeric answer.\\n\\n"
         f"Problem: {question}\\n\\n"
-        f"Solution:"
+        f"Answer:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    try:
+        response = llm(prompt, max_tokens=64)
+        import re
+        numbers = re.findall(r'-?\\d+\\.?\\d*', response)
+        prediction = numbers[0] if numbers else response.strip()
+        return {
+            "prediction": prediction,
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 SEED_CATEGORIZED_RETRIEVAL = '''\
@@ -139,15 +155,23 @@ def run(problem):
         f"Domain: {domain}\\n\\n"
         f"Reference problems from the same domain:\\n\\n"
         f"{examples_block}"
-        f"Now solve this problem step by step.\\n\\n"
+        f"Now solve this problem. Give ONLY the final numeric answer.\\n\\n"
         f"Problem: {question}\\n\\n"
-        f"Solution:"
+        f"Answer:"
     )
 
-    return {
-        "prompt": prompt,
-        "context_tokens": len(prompt.split()),
-    }
+    try:
+        response = llm(prompt, max_tokens=64)
+        import re
+        numbers = re.findall(r'-?\\d+\\.?\\d*', response)
+        prediction = numbers[0] if numbers else response.strip()
+        return {
+            "prediction": prediction,
+            "prompt": prompt,
+            "context_tokens": len(prompt.split()),
+        }
+    except NameError:
+        return {"prompt": prompt, "context_tokens": len(prompt.split())}
 '''
 
 

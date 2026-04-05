@@ -221,18 +221,70 @@ class HarnessEvaluator:
 
         return result
 
-    @staticmethod
-    def _load_harness(harness: HarnessCandidate) -> Any:
-        """Load a harness's run() function from its source code."""
+    def _load_harness(self, harness: HarnessCandidate) -> Any:
+        """Load a harness's run() function from its source code.
+
+        Injects an `llm(prompt, **kwargs)` callable into the harness module
+        so harnesses can call the configured LLM without importing anything.
+        """
         module_name = f"_harness_{harness.harness_id[:12]}"
         spec = importlib.util.spec_from_loader(module_name, loader=None)
         module = importlib.util.module_from_spec(spec)
+
+        # Inject llm() callable — harnesses can call llm("prompt") to get a response
+        module.llm = self._make_llm_callable()
+
         exec(compile(harness.source_code, f"<harness:{harness.harness_id[:12]}>", "exec"), module.__dict__)
 
         if not hasattr(module, "run"):
             raise ValueError("Harness source does not define a run() function")
 
         return module.run
+
+    def _make_llm_callable(self):
+        """Create a sync llm(prompt) callable that uses the configured router.
+
+        Harnesses call: response = llm("classify this text", max_tokens=64)
+        Returns the text response as a string.
+        """
+        router = self.router
+
+        def llm(prompt: str, *, model: str = "", max_tokens: int = 256,
+                temperature: float = 0.1) -> str:
+            """Call the configured LLM. Returns the response text."""
+            import asyncio as _aio
+
+            messages = [{"role": "user", "content": prompt}]
+            fallback_model = router.fallback_model
+            actual_model = model or fallback_model
+
+            client = router.clients.get(actual_model) or next(iter(router.clients.values()))
+            model_cfg = router.models.get(actual_model)
+            model_id = model_cfg.model_id if model_cfg else actual_model
+
+            async def _call():
+                resp = await client.chat(
+                    model=model_id,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                if resp.choices:
+                    return resp.choices[0].message.content or ""
+                return ""
+
+            # Run in the current event loop if possible, else create one
+            try:
+                loop = _aio.get_running_loop()
+                # We're in an async context — run in executor to avoid blocking
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(_aio.run, _call())
+                    return future.result(timeout=router.models.get(actual_model, type("", (), {"timeout": 600})).timeout)
+            except RuntimeError:
+                return _aio.run(_call())
+
+        return llm
 
 
 def _truncate(obj: Any, max_chars: int) -> Any:

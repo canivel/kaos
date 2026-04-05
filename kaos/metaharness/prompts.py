@@ -98,6 +98,19 @@ def run(problem: dict) -> dict:
 The harness receives a problem dict and returns a result dict. The exact keys
 depend on the benchmark. Read seed harnesses (`/seeds/`) to understand the format.
 
+### Calling the LLM from a harness
+
+A pre-injected `llm()` function is available in the harness module scope.
+Use it to call the configured LLM (vLLM, Claude, OpenAI, etc.):
+
+```python
+# llm(prompt, max_tokens=256, temperature=0.1) -> str
+response = llm("Classify this text: " + text)
+```
+
+Do NOT import httpx, anthropic, openai, or make HTTP calls directly.
+Always use `llm()` — it routes through the configured KAOS provider.
+
 ## Your Task
 
 {task}

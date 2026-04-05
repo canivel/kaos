@@ -119,6 +119,16 @@ class ClaudeCodeRunner:
 
         Returns the agent's final output.
         """
+        # Validate that at least one provider is configured
+        clients = getattr(self.router, "clients", None)
+        if clients is not None and not clients:
+            self.afs.fail(agent_id, error="No LLM provider configured. Run 'kaos setup' or add models to kaos.yaml.")
+            raise RuntimeError(
+                "No LLM provider configured. "
+                "Add models to kaos.yaml or run 'kaos setup'. "
+                "See: https://github.com/canivel/kaos#configuration"
+            )
+
         agent_info = self.afs.status(agent_id)
         config = agent_info["config"]
 
