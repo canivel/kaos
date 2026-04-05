@@ -133,6 +133,22 @@ nav a:hover{color:var(--fg)}
 .uc-card p{color:var(--fg2);font-size:.9rem;line-height:1.6;margin-bottom:.8rem}
 .uc-card code{display:block;background:var(--bg);padding:.8rem 1rem;border-radius:6px;font-size:.78rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre}
 
+/* ── Changelog ───────────────────────────────────── */
+.changelog{background:var(--bg2)}
+.changelog h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
+.changelog-releases{max-width:800px;margin:0 auto}
+.release{margin-bottom:2.5rem}
+.release-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1rem}
+.release-version{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--accent2)}
+.release-date{color:var(--fg2);font-size:.9rem}
+.release-tag{font-family:var(--mono);font-size:.75rem;padding:.2rem .5rem;border-radius:12px;background:rgba(108,92,231,.15);color:var(--accent2);border:1px solid rgba(108,92,231,.2)}
+.release ul{list-style:none;padding:0}
+.release li{padding:.35rem 0 .35rem 1.2rem;color:var(--fg2);font-size:.9rem;line-height:1.5;position:relative}
+.release li::before{content:'';position:absolute;left:0;top:.65rem;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.release li strong{color:var(--fg);font-weight:600}
+.release li code{background:var(--bg);padding:.1rem .35rem;border-radius:3px;font-size:.8rem;color:var(--accent2)}
+.release-category{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-top:1rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:1px}
+
 /* ── CTA ──────────────────────────────────────────── */
 .cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
 .cta h2{font-size:2rem;margin-bottom:1rem}
@@ -169,6 +185,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
+    <li><a href="#changelog">Changelog</a></li>
     <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
   </ul>
@@ -178,11 +195,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <!-- Hero -->
 <section class="hero">
 <div class="wrap">
-  <h1>Stop letting your agents<br><span class="highlight">run without guardrails</span></h1>
-  <p class="subtitle">KAOS gives every AI agent an isolated, auditable virtual filesystem inside a single SQLite file. Checkpoint, restore, debug &mdash; run multi-agent systems locally with zero API costs.</p>
+  <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
+  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. CLI-first with <code>--json</code> output for any agent framework.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Tutorial</a>
+    <a href="#changelog" class="btn btn-secondary">What's New in v0.3.1</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
@@ -430,11 +447,88 @@ cp kaos.db backup.db</code>
 </div>
 </section>
 
+<!-- Changelog -->
+<section class="changelog" id="changelog">
+<div class="wrap">
+  <h2>Changelog</h2>
+  <div class="changelog-releases">
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.3.1</span>
+        <span class="release-date">April 5, 2026</span>
+        <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">Bug Fixes</p>
+      <ul>
+        <li><strong>#1</strong> CLI Unicode crash on Windows &mdash; stdout reconfigured to UTF-8</li>
+        <li><strong>#2</strong> Parallel spawn WAL contention &mdash; retry with backoff + <code>wal_autocheckpoint</code></li>
+        <li><strong>#7</strong> Large output truncation &mdash; results &gt;4KB stored in VFS, MCP returns preview</li>
+        <li><strong>#16</strong> Background search write lock &mdash; frequent WAL checkpointing</li>
+      </ul>
+      <p class="release-category">New Commands</p>
+      <ul>
+        <li><code>kaos read &lt;agent-id&gt; &lt;path&gt;</code> &mdash; read files from agent VFS</li>
+        <li><code>kaos logs &lt;agent-id&gt;</code> &mdash; view conversation history + event log</li>
+        <li><code>kaos mh search --dry-run</code> &mdash; evaluate seeds only, report baseline</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.3.0</span>
+        <span class="release-date">April 4, 2026</span>
+      </div>
+      <p class="release-category">CLI-First Architecture</p>
+      <ul>
+        <li><code>--json</code> flag on all commands &mdash; composable with any agent framework, 10-32x cheaper than MCP</li>
+        <li>Background worker subprocess for <code>mh search</code> &mdash; survives parent exit</li>
+        <li><code>provider: claude_code</code> &mdash; no API key needed, uses CC subscription</li>
+        <li>Pluggable <code>llm()</code> callable injected into harnesses &mdash; any provider works</li>
+      </ul>
+      <p class="release-category">Reliability</p>
+      <ul>
+        <li>Fail-fast retries (default 3 &rarr; 1), proposer timeout + error handling</li>
+        <li>DB locking fix &mdash; <code>_force_kill()</code> with fresh connection fallback</li>
+        <li>Evaluator bugs fixed &mdash; <code>_truncate()</code> and score key prefix issues</li>
+        <li>Objectives inherit from benchmark when not explicitly set</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.2.0</span>
+        <span class="release-date">April 2, 2026</span>
+      </div>
+      <ul>
+        <li>Paper-aligned Meta-Harness (arXiv:2603.28052) &mdash; automated harness optimization</li>
+        <li>Multi-provider support: local, OpenAI, Anthropic (all raw httpx)</li>
+        <li><code>kaos setup</code> interactive wizard with 6 presets</li>
+        <li>18 MCP tools, resume interrupted searches, dashboard Meta-Harness panel</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.1.0</span>
+        <span class="release-date">March 30, 2026</span>
+      </div>
+      <ul>
+        <li>Initial release &mdash; VFS engine, checkpoint/restore, event journal, GEPA router</li>
+        <li>CLI (15 commands), MCP server, TUI dashboard, FUSE isolation</li>
+      </ul>
+    </div>
+
+    <p style="text-align:center;margin-top:1rem"><a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md" style="font-size:.9rem">Full changelog on GitHub &rarr;</a></p>
+  </div>
+</div>
+</section>
+
 <!-- CTA -->
 <section class="cta">
 <div class="wrap">
-  <h2>Run It All Locally, For Free</h2>
-  <p>Your GPU. Your models. Your data stays on your machine.</p>
+  <h2>Get Started in 30 Seconds</h2>
+  <p>Local-first, CLI-composable, zero lock-in. Works with local models, Claude, OpenAI, or Claude Code.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Full Tutorial</a>
@@ -453,6 +547,7 @@ cp kaos.db backup.db</code>
     <a href="https://github.com/canivel/kaos">GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/mcp-integration.md">MCP Docs</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
     <a href="https://github.com/canivel/kaos/blob/main/LICENSE">Apache 2.0</a>
   </div>
   <p>KAOS &mdash; Kernel for Agent Orchestration & Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
