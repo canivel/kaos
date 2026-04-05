@@ -9,6 +9,11 @@ import os
 import sys
 from pathlib import Path
 
+# Fix Windows cp1252 encoding crash — force UTF-8 for stdout/stderr
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import click
 from rich.console import Console
 from rich.table import Table
@@ -45,7 +50,7 @@ def _json_err(ctx, msg: str):
 
 
 @click.group()
-@click.version_option(version="0.3.0", prog_name="kaos")
+@click.version_option(version="0.3.1", prog_name="kaos")
 @click.option("--json", "json_output", is_flag=True, default=False,
               help="Output structured JSON (auto-enabled when piped)")
 @click.pass_context
@@ -528,6 +533,82 @@ def status(ctx, agent_id: str, db: str):
         if _json_out(ctx, info):
             return
         console.print_json(json.dumps(info, indent=2))
+    except ValueError as e:
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
+@cli.command("read")
+@click.argument("agent_id")
+@click.argument("path")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def read_file(ctx, agent_id: str, path: str, db: str):
+    """Read a file from an agent's virtual filesystem."""
+    afs = _get_afs(db)
+    try:
+        content = afs.read(agent_id, path)
+        text = content.decode("utf-8", errors="replace")
+        if ctx.obj.get("json"):
+            click.echo(json.dumps({"agent_id": agent_id, "path": path, "content": text}))
+        else:
+            click.echo(text)
+    except FileNotFoundError:
+        if not _json_err(ctx, f"File not found: {agent_id}:{path}"):
+            console.print(f"[red]File not found: {agent_id}:{path}[/red]")
+    except ValueError as e:
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
+@cli.command("logs")
+@click.argument("agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--tail", "-n", type=int, help="Show last N events")
+@click.pass_context
+def logs(ctx, agent_id: str, db: str, tail: int):
+    """View an agent's conversation history and event log."""
+    afs = _get_afs(db)
+    try:
+        # Try conversation first
+        conversation = afs.get_state_or(agent_id, "conversation")
+        events = afs.query(
+            "SELECT timestamp, event_type, payload FROM events "
+            "WHERE agent_id = ? ORDER BY timestamp",
+            (agent_id,),
+        )
+        if tail:
+            events = events[-tail:]
+
+        result = {
+            "agent_id": agent_id,
+            "conversation_turns": len(conversation) if conversation else 0,
+            "events": events,
+        }
+        if conversation:
+            result["conversation"] = conversation
+
+        if _json_out(ctx, result):
+            return
+
+        # Pretty print
+        info = afs.status(agent_id)
+        console.print(f"[bold]{info['name']}[/bold] [{info['status']}]")
+        if conversation:
+            console.print(f"\n[cyan]Conversation ({len(conversation)} turns):[/cyan]")
+            for msg in conversation:
+                role = msg.get("role", "?")
+                content = str(msg.get("content", ""))[:200]
+                console.print(f"  [{role}] {content}")
+        console.print(f"\n[cyan]Events ({len(events)}):[/cyan]")
+        for evt in events[-20:]:
+            console.print(f"  {evt['timestamp'][:19]} {evt['event_type']}")
+        if len(events) > 20:
+            console.print(f"  ... ({len(events) - 20} more, use --json for all)")
     except ValueError as e:
         if not _json_err(ctx, str(e)):
             console.print(f"[red]{e}[/red]")

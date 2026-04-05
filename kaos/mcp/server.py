@@ -315,6 +315,15 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
     if name == "agent_spawn":
         agent_id = _afs.spawn(name=args["name"], config=args.get("config", {}))
         result = await _ccr.run_agent(agent_id, args["task"])
+        # Store full result in VFS for large outputs; return truncated preview
+        if len(result) > 4000:
+            _afs.write(agent_id, "/result.txt", result.encode("utf-8", errors="replace"))
+            return json.dumps({
+                "agent_id": agent_id,
+                "result_preview": result[:3500] + "\n\n... [truncated — full result in agent VFS /result.txt]",
+                "result_size": len(result),
+                "full_result_path": f"Use agent_read(agent_id='{agent_id}', path='/result.txt') for the full output",
+            }, indent=2)
         return json.dumps({"agent_id": agent_id, "result": result}, indent=2)
 
     elif name == "agent_spawn_only":

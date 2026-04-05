@@ -44,6 +44,7 @@ class Kaos:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("PRAGMA wal_autocheckpoint=100")
             self._local.conn = conn
         return self._local.conn
 
@@ -68,32 +69,41 @@ class Kaos:
         parent_id: str | None = None,
         metadata: dict | None = None,
     ) -> str:
-        """Create a new agent with an isolated virtual filesystem. Returns agent_id."""
+        """Create a new agent with an isolated virtual filesystem. Returns agent_id.
+
+        Retries on OperationalError (database locked) to handle concurrent spawns.
+        """
         agent_id = str(ulid.new())
-        self.conn.execute(
-            "INSERT INTO agents (agent_id, name, parent_id, config, metadata) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (
-                agent_id,
-                name,
-                parent_id,
-                json.dumps(config or {}),
-                json.dumps(metadata or {}),
-            ),
-        )
-
-        # Create root directory for the agent
-        self.conn.execute(
-            "INSERT INTO files (agent_id, path, is_dir) VALUES (?, '/', 1)",
-            (agent_id,),
-        )
-
-        self.events.log(
-            agent_id,
-            EventJournal.AGENT_SPAWN,
-            {"name": name, "parent_id": parent_id, "config": config or {}},
-        )
-        self.conn.commit()
+        for attempt in range(3):
+            try:
+                self.conn.execute(
+                    "INSERT INTO agents (agent_id, name, parent_id, config, metadata) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (
+                        agent_id,
+                        name,
+                        parent_id,
+                        json.dumps(config or {}),
+                        json.dumps(metadata or {}),
+                    ),
+                )
+                self.conn.execute(
+                    "INSERT INTO files (agent_id, path, is_dir) VALUES (?, '/', 1)",
+                    (agent_id,),
+                )
+                self.events.log(
+                    agent_id,
+                    EventJournal.AGENT_SPAWN,
+                    {"name": name, "parent_id": parent_id, "config": config or {}},
+                )
+                self.conn.commit()
+                break
+            except sqlite3.OperationalError as exc:
+                if "locked" in str(exc).lower() and attempt < 2:
+                    import time
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                raise
         return agent_id
 
     def set_status(self, agent_id: str, status: str, pid: int | None = None) -> None:
