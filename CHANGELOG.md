@@ -2,6 +2,18 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.4.1] - 2026-04-06
+
+### Bug Fixes
+
+- **#27 Proposer text extraction fallback** -- `claude --print` doesn't support tool-use, so the proposer couldn't call `mh_submit_harness`. Now extracts ```python blocks from plain text responses as a fallback. Works with any provider.
+
+### Compaction Eval
+
+- Expanded to 5 domains: classification (52% saved), code generation (31%), research/RAG (28%), tool calling (30%), ML training (28%)
+- 100% quality retained at default level across all domains
+- Aggregate: 34% savings at default, 88% quality at max
+
 ## [0.4.0] - 2026-04-06
 
 ### Knowledge Compounding (Karpathy LLM Wiki pattern)

@@ -50,7 +50,7 @@ def _json_err(ctx, msg: str):
 
 
 @click.group()
-@click.version_option(version="0.4.0", prog_name="kaos")
+@click.version_option(version="0.4.1", prog_name="kaos")
 @click.option("--json", "json_output", is_flag=True, default=False,
               help="Output structured JSON (auto-enabled when piped)")
 @click.pass_context
