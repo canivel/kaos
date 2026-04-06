@@ -756,17 +756,23 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.4.0
+## What's New in v0.4.1
 
-### Knowledge Compounding
-Inspired by [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): knowledge now **compounds across searches** instead of resetting.
+### Proposer Text Extraction (#27)
+`claude --print` doesn't support tool calling — the proposer couldn't invoke `mh_submit_harness`. Now extracts ```python blocks from plain text responses as a fallback. Works with any provider (text-only or tool-capable).
 
-- **Cross-search memory** (#22) — Persistent "kaos-knowledge" agent stores winning harnesses and frontiers. New searches load prior discoveries as seeds.
-- **Full-text search** (#25) — `kaos search "TF-IDF"` searches across all agent VFS contents
-- **VFS auto-index** (#23) — `kaos index <agent-id>` builds a navigable `/index.md`
-- **Lint** (#24) — `kaos mh lint <id>` health-checks for contradictions, failures, gaps
-- **Persistent skills** (#26) — `kaos mh knowledge` shows all discoveries by benchmark
-- **Smart compaction** (#11) — Tunable context compression (level 0-10). Pre-built archive digest reduces proposer turns from ~10 to 1-2, fixing the main cause of timeouts
+### Smart Compaction — Multi-Domain Results
+Tested across 5 domains at the default compaction level (5):
+
+- **Classification** — 52% saved, 100% quality
+- **Code Generation** — 31% saved, 100% quality
+- **Research / RAG** — 28% saved, 100% quality
+- **Tool Calling** — 30% saved, 100% quality
+- **ML Training** — 28% saved, 100% quality
+
+### v0.4.0 Highlights
+- Cross-search memory, full-text search, VFS index, lint, persistent skills
+- Tunable compaction (0-10), archive digest, conversation compaction
 
 ### v0.3.x Highlights
 - `--json` on all commands, worker subprocess, `provider: claude_code`
@@ -778,7 +784,7 @@ Inspired by [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6
 ```bash
 git pull origin main
 uv sync
-kaos --version  # 0.4.0
+kaos --version  # 0.4.1
 ```
 
 If you have the MCP server running (via Claude Code or `kaos serve`), restart it so it picks up the new code:

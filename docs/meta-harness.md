@@ -420,6 +420,30 @@ kaos index <agent-id>   # build navigable /index.md
 
 ---
 
+## Text Extraction Fallback (v0.4.1)
+
+Some providers (like `claude --print`) don't support structured tool calling. The proposer can't invoke `mh_submit_harness` via tool-use — it just writes plain text.
+
+KAOS handles this automatically: after the proposer runs, if no tool-call submissions were made, it scans the response for ```python blocks containing `def run()`. Valid blocks are extracted as harness candidates with full validation.
+
+This means the proposer works with any provider — text-only or tool-capable. No configuration needed.
+
+---
+
+## Multi-Domain Compaction Results (v0.4.1)
+
+Compaction quality tested across 5 domains at the default level (5):
+
+- **Classification** — 52% context saved, 100% quality retained
+- **Code Generation** — 31% saved, 100% quality
+- **Research / RAG** — 28% saved, 100% quality
+- **Tool Calling** — 30% saved, 100% quality
+- **ML Training** — 28% saved, 100% quality
+
+At maximum compaction (level 10): code generation drops to 70% quality (specific error messages lost), research/RAG to 78%. Classification, tool calling, and ML hold at 100%.
+
+---
+
 ## CLI Reference
 
 ```bash

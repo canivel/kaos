@@ -1,7 +1,7 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.4.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
+KAOS is a local-first multi-agent orchestration framework (v0.4.1). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
 
 ## Package & CLI
 - Package: `kaos` (import with `from kaos import Kaos`)

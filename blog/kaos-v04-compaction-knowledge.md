@@ -309,6 +309,16 @@ ORDER BY score DESC
 
 ---
 
+## the proposer that couldnt submit
+
+this one was fun hahaha. we got feedback from another project using KAOS: "proposer completes, responds with a perfectly good harness, submits 0 candidates." turns out `claude --print` is text-in, text-out — no tool-use protocol. the proposer needs to call `mh_submit_harness(source_code=...)` but the CLI subprocess cant do that. it just writes plain text back.
+
+the fix: after the proposer runs, if no tool-call submissions were made, we scan the response for ```python blocks containing `def run()` and extract them as candidates. same pattern that external scripts like `evolve_claude.py` use — and it works with any provider, not just claude_code.
+
+this is the kind of bug you dont catch in unit tests because the mock router supports tool-use just fine. it only shows up when a real user runs with a real text-only provider. the AI that reported it also suggested the fix — gotta love that.
+
+---
+
 ## bug fixes worth mentioning
 
 **windows unicode crash** — `sys.stdout.reconfigure(encoding="utf-8")` at CLI startup. no more `UnicodeEncodeError` on non-ASCII output.
@@ -349,12 +359,15 @@ existing configs and databases work unchanged. MCP server needs a restart.
 
 ## full changelog
 
+**v0.4.1** (April 6, 2026)
+- proposer text extraction fallback for text-only providers (#27)
+- multi-domain compaction eval: classification, code gen, research, tool calling, ML
+
 **v0.4.0** (April 6, 2026)
 - cross-search memory via persistent knowledge agent
-- smart context compaction (0-10, 46-63% savings, 0% quality loss)
+- smart context compaction (0-10), archive digest, conversation compaction
 - full-text search across VFS contents
 - VFS auto-index, lint, persistent skills
-- 157 tests (38 new compaction tests)
 
 **v0.3.1** (April 5, 2026)
 - bug fixes: Unicode crash, WAL contention, output truncation, stdout corruption
