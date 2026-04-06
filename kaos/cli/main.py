@@ -445,21 +445,33 @@ def serve(db: str, port: int, host: str, transport: str, config_file: str):
     mcp_server = init_server(afs, ccr)
 
     if transport == "stdio":
-        # Redirect stdout → stderr BEFORE any output.
-        # Any text on stdout corrupts the MCP JSON-RPC protocol.
+        # The MCP protocol uses stdout for JSON-RPC responses.
+        # But stray print() calls and library logging also go to stdout,
+        # corrupting the protocol. Fix: redirect sys.stdout to stderr
+        # for all Python code, but pass the ORIGINAL stdout to
+        # stdio_server so MCP responses go to the right place.
+        import io
+        _original_stdout = sys.stdout
         sys.stdout = sys.stderr
         logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
         from mcp.server.stdio import stdio_server
-        asyncio.run(_run_stdio(mcp_server))
+        asyncio.run(_run_stdio(mcp_server, _original_stdout))
     else:
         console.print(f"[cyan]Listening on {host}:{port}[/cyan]")
         from mcp.server.sse import SseServerTransport
         asyncio.run(_run_sse(mcp_server, host, port))
 
 
-async def _run_stdio(mcp_server):
+async def _run_stdio(mcp_server, original_stdout=None):
     from mcp.server.stdio import stdio_server
+    # If we redirected sys.stdout, temporarily restore it so
+    # stdio_server() binds to the real stdout file descriptor.
+    if original_stdout:
+        saved = sys.stdout
+        sys.stdout = original_stdout
     async with stdio_server() as (read, write):
+        if original_stdout:
+            sys.stdout = saved  # re-redirect after binding
         await mcp_server.run(read, write, mcp_server.create_initialization_options())
 
 
