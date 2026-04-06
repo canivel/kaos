@@ -1,21 +1,7 @@
 # KAOS v0.4: your agents remember now, and they use 78% less context doing it
 
-<!-- HERO IMAGE — Generate with this prompt:
-
-Wide 16:9 dark-themed tech illustration. Center composition:
-A glowing SQLite cylinder with a brain-like neural pattern overlaid,
-connected by luminous threads to 3-4 translucent agent bubbles orbiting it.
-Each bubble has a different colored glow (purple, cyan, green, orange).
-From the brain pattern, arrows flow downward into a funnel/compressor
-that outputs a smaller, brighter, concentrated dot — representing
-compressed context. Next to the funnel: a small "46% smaller" label
-in monospace font. Below: a timeline showing 3 search iterations
-with a knowledge line connecting them (not resetting to zero).
-Color palette: deep navy (#0a0a0f), purple (#6c5ce7), cyan (#18ffff),
-green (#00e676), orange (#f97316). No text except the label, no faces,
-no robots. Style: abstract, clean, developer-focused infrastructure.
-
--->
+> **IMAGE: hero-v04.png**
+> Wide 16:9 dark-themed tech illustration. Center composition: A glowing SQLite cylinder with a brain-like neural pattern overlaid, connected by luminous threads to 3-4 translucent agent bubbles orbiting it. Each bubble has a different colored glow (purple, cyan, green, orange). From the brain pattern, arrows flow downward into a funnel/compressor that outputs a smaller, brighter, concentrated dot — representing compressed context. Next to the funnel: a small "78% smaller" label in monospace font. Below: a timeline showing 3 search iterations with a knowledge line connecting them (not resetting to zero). Color palette: deep navy (#0a0a0f), purple (#6c5ce7), cyan (#18ffff), green (#00e676), orange (#f97316). No text except the label, no faces, no robots. Style: abstract, clean, developer-focused infrastructure.
 
 
 *we fixed the proposer timeout problem, made knowledge compound across searches, and built a compactor that cuts agent context by 78% with zero quality loss. here's what happened and why it matters.*
@@ -42,24 +28,8 @@ instead of letting the proposer explore the archive with tool calls, we pre-dige
 
 but "pre-digest" doesnt mean "truncate." truncation is lossy in an uncontrolled way — you drop the tail and have no idea if the tail was the most important part. we built a structured compactor with three strategies:
 
-<!-- COMPACTION DIAGRAM — Generate with this prompt:
-
-Horizontal flow diagram on dark background (#0a0a0f). 16:9 ratio.
-LEFT: A tall stack of document icons labeled "Raw Archive" with sizes
-"30KB traces, 7KB source, 10KB per-problem" in small monospace text.
-An arrow flows right through a diamond-shaped "Compactor" node glowing
-purple (#6c5ce7).
-The compactor has 3 small labels branching from it:
-  - "Lossless" (green, pointing to scores/source icons)
-  - "Extract" (cyan, pointing to an error-pattern summary icon)
-  - "Filter" (orange, pointing to a filtered/smaller trace icon)
-RIGHT: A compact document icon labeled "Archive Digest" that's visually
-~half the size of the left stack. A badge reads "46% smaller, 0% loss".
-Below the flow: a bar chart showing 5 levels (0,3,5,7,10) with
-decreasing bar heights for size and all bars at the same height for
-quality (100%). Style: clean, minimal, rounded boxes.
-
--->
+> **IMAGE: compaction-flow.png**
+> Horizontal flow diagram on dark background (#0a0a0f). 16:9 ratio. LEFT: A tall stack of document icons labeled "Raw Archive" with sizes "30KB traces, 7KB source, 10KB per-problem" in small monospace text. An arrow flows right through a diamond-shaped "Compactor" node glowing purple (#6c5ce7). The compactor has 3 small labels branching from it: "Lossless" (green, pointing to scores/source icons), "Extract" (cyan, pointing to an error-pattern summary icon), "Filter" (orange, pointing to a filtered/smaller trace icon). RIGHT: A compact document icon labeled "Archive Digest" that's visually ~half the size of the left stack. A badge reads "78% smaller, 0% loss". Below the flow: a bar chart showing 5 levels (0,3,5,7,10) with decreasing bar heights for size and all bars at the same height for quality (100%). Style: clean, minimal, rounded boxes.
 
 
 **lossless** — scores and source code stay exactly as-is. small data, 100% signal. the proposer needs exact numbers and full code.
@@ -147,19 +117,10 @@ at the default level, every domain retains 100% quality. no exceptions. the 12% 
 
 ### the real savings: 78% fewer tokens
 
-<!-- TOKEN SAVINGS CHART — Generate with this prompt:
+> **IMAGE: compaction-chart.png**
+> Horizontal bar chart on dark background (#0a0a0f). 16:9 ratio. 5 domain rows (Classification, Code Generation, Research/RAG, Tool Calling, ML Training), each with a gradient bar (purple→cyan) showing % tokens saved and a thin green bar below showing quality retention %. Domain labels on the left. Percentages on the right of each bar: Classification 84%, Code Gen 77%, Research 76%, Tool Calling 77%, ML 76%. Bottom: aggregate box with "78% reduction, 100% quality retained" in a highlighted panel. Style: clean, minimal, dark theme.
 
-Horizontal bar chart on dark background (#0a0a0f). 16:9 ratio.
-5 domain rows, each with a gradient bar (purple→cyan) showing %
-tokens saved and a thin green bar below showing quality retention %.
-Domain labels on the left. Percentages on the right of each bar.
-Bottom: aggregate box with "78% reduction, 100% quality retained"
-in a highlighted panel.
-Style: clean, minimal, dark theme matching the other diagrams.
-
--->
-
-![Token savings by domain](compaction-chart.svg)
+![Token savings by domain](compaction-chart.png)
 
 heres where it gets real. without compaction, the proposer makes ~3 archive reads per iteration (ls, read scores, read source/traces). with compaction, its 1 digest read. the reduction per domain:
 
@@ -175,9 +136,7 @@ Aggregate:        78% fewer tokens — 100% quality at default
 
 this matters a LOT right now because claude is limiting context heavily. every token you waste on verbose traces is a token you cant use for actual reasoning. with compaction, the proposer gets a dense, organized digest instead of raw JSON noise — and it uses 78% fewer tokens to get there.
 
-at scale the absolute numbers add up too. a 10-iteration search across these domains saves roughly 120K tokens. at sonnet pricing ($3/M input), thats ~$0.36 per search. running 10 searches a day during a research sprint, thats ~$108/month. but honestly the real value isnt the money — its that searches that used to timeout now complete because the context actually fits.
-
-at $3/M input tokens (sonnet pricing), thats about $0.36 saved per search. if youre running 10 searches a day during an active research sprint, thats ~$108/month. not life-changing money, but the real value is that searches that used to timeout now complete because the context fits.
+at scale the absolute numbers add up too. at sonnet pricing ($3/M input), each search saves ~$0.36. running 10 searches a day during a research sprint, thats ~$108/month. but honestly the real value isnt the money — its that searches that used to timeout now complete because the context actually fits.
 
 you can tune it in `kaos.yaml`:
 
@@ -196,30 +155,8 @@ this was the other big gap. every `mh search` started from scratch. the proposer
 
 i was reading [karpathy's LLM wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) and it clicked — "the tedious part of maintaining a knowledge base is not the reading or the thinking — its the bookkeeping." LLMs dont get bored maintaining cross-references.
 
-<!-- KNOWLEDGE COMPOUNDING — Generate with this prompt:
-
-Vertical flow diagram on dark background (#0a0a0f). 16:9 ratio.
-3 horizontal "search" lanes stacked vertically, connected by a
-vertical glowing line on the left (the knowledge thread).
-
-Lane 1 "Search 1": starts with 3 grey seed icons → arrow → proposer
-icon → arrow → green star icon labeled "keyword classifier 100%".
-Arrow goes down to the knowledge line.
-
-Lane 2 "Search 2": starts with the green star icon (loaded from
-knowledge line!) → arrow → proposer → arrow → cyan star "TF-IDF
-variant, 30% faster". Arrow goes down to knowledge line.
-
-Lane 3 "Search 3": starts with BOTH green and cyan stars (loaded
-from knowledge) → arrow → proposer → arrow → orange star "edge
-case specialist".
-
-On the left, the vertical knowledge line is labeled "kaos-knowledge
-agent" with a SQLite icon at the bottom.
-
-Style: clean timeline, thin glowing connections, dark background.
-
--->
+> **IMAGE: knowledge-compound.png**
+> Vertical flow diagram on dark background (#0a0a0f). 16:9 ratio. 3 horizontal "search" lanes stacked vertically, connected by a vertical glowing line on the left (the knowledge thread). Lane 1 "Search 1": starts with 3 grey seed icons, arrow, proposer icon, arrow, green star icon labeled "keyword classifier 100%". Arrow goes down to the knowledge line. Lane 2 "Search 2": starts with the green star icon (loaded from knowledge line!), arrow, proposer, arrow, cyan star "TF-IDF variant, 30% faster". Arrow goes down to knowledge line. Lane 3 "Search 3": starts with BOTH green and cyan stars (loaded from knowledge), arrow, proposer, arrow, orange star "edge case specialist". On the left, the vertical knowledge line is labeled "kaos-knowledge agent" with a SQLite icon at the bottom. Style: clean timeline, thin glowing connections, dark background.
 
 
 ### how it works
@@ -288,23 +225,8 @@ survives parent exit, MCP disconnection, terminal close. logs to a file (not /de
 
 ## KAOS eating its own dogfood
 
-<!-- SELF-TRIAGE — Generate with this prompt:
-
-Square illustration on dark background (#0a0a0f).
-Center: a circular Ouroboros-like shape made of code/terminal text,
-representing KAOS evaluating itself. Inside the circle: a small
-SQLite cylinder with a magnifying glass over it.
-Around the outside: 14 small issue/ticket icons, 6 of them with
-green checkmarks, 8 with grey dots. A scoreboard/leaderboard
-floating next to the circle shows:
-  "#15 score=6.0 ✓"
-  "#13 score=4.5 ✓"
-  "#12 score=4.5 ✓"
-The overall feeling: self-referential, recursive, meta.
-Color palette: dark navy background, purple accents, green checkmarks.
-Style: minimal, abstract, no faces.
-
--->
+> **IMAGE: self-triage.png**
+> Square illustration on dark background (#0a0a0f). Center: a circular Ouroboros-like shape made of code/terminal text, representing KAOS evaluating itself. Inside the circle: a small SQLite cylinder with a magnifying glass over it. Around the outside: 14 small issue/ticket icons, 6 of them with green checkmarks, 8 with grey dots. A scoreboard/leaderboard floating next to the circle shows "#15 score=6.0", "#13 score=4.5", "#12 score=4.5" with checkmarks. The overall feeling: self-referential, recursive, meta. Color palette: dark navy background, purple accents, green checkmarks. Style: minimal, abstract, no faces.
 
 
 we used KAOS to evaluate its own issues. spawned a `self-triage-v030` agent, ingested all 14 GitHub issues into its VFS, scored each on impact/effort/feasibility, and implemented the top 6 in priority order.
