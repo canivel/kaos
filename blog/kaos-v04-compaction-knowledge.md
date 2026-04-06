@@ -147,7 +147,37 @@ Level 10 │  53% saved │  88% quality
 
 at the default level, every domain retains 100% quality. no exceptions. the 12% quality drop at max level comes from code generation and RAG — domains where specific error messages and routing decisions matter most.
 
-the key insight: structured extraction is actually BETTER than raw data for the proposer. it surfaces patterns that would take the LLM several reads to figure out from raw JSON. a proposer reading "3/8 wrong: science→technology (2x), timeout (1x)" makes a better decision than one reading 8 verbose trace entries.
+### the real savings: ~120K tokens per search
+
+<!-- TOKEN SAVINGS CHART — Generate with this prompt:
+
+Horizontal bar chart on dark background (#0a0a0f). 16:9 ratio.
+5 domain rows, each with a gradient bar (purple→cyan) showing tokens
+saved and a thin green bar below showing quality retention %.
+Domain labels on the left. Token counts on the right of each bar.
+Bottom: aggregate box with "~120K tokens saved, 78% reduction,
+~$108/month at 10 searches/day" in a highlighted panel.
+Style: clean, minimal, dark theme matching the other diagrams.
+
+-->
+
+![Token savings by domain](compaction-chart.svg)
+
+heres where it gets real. without compaction, the proposer makes ~3 archive reads per iteration (ls, read scores, read source/traces). with compaction, its 1 digest read. over a 10-iteration search:
+
+```
+Classification:   ~33K tokens saved (84% reduction)
+Code Generation:  ~21K tokens saved (77% reduction)
+Research / RAG:   ~24K tokens saved (76% reduction)
+Tool Calling:     ~21K tokens saved (77% reduction)
+ML Training:      ~21K tokens saved (76% reduction)
+
+Total:            ~120K tokens saved per search (78% reduction)
+```
+
+this matters a LOT right now because claude is limiting context heavily. every token you waste on verbose traces is a token you cant use for actual reasoning. with compaction, the proposer gets a dense, organized digest instead of raw JSON noise — and it uses 78% fewer tokens to get there.
+
+at $3/M input tokens (sonnet pricing), thats about $0.36 saved per search. if youre running 10 searches a day during an active research sprint, thats ~$108/month. not life-changing money, but the real value is that searches that used to timeout now complete because the context fits.
 
 you can tune it in `kaos.yaml`:
 
