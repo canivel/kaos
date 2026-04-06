@@ -350,7 +350,7 @@ class ClaudeCodeProvider(LLMProvider):
         "/opt/homebrew/bin/claude",
     ]
 
-    def __init__(self, model_id: str = "", timeout: float = 300.0):
+    def __init__(self, model_id: str = "", timeout: float = 120.0):
         self.model_id = model_id
         self.timeout = timeout
         # Resolve claude executable at init time
@@ -641,7 +641,7 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
 
     elif provider_type == "claude_code":
         model_id = kwargs.get("model_id", "")
-        timeout = kwargs.get("timeout", 600.0)  # 600s — proposer turns are long
+        timeout = kwargs.get("timeout", 120.0)  # 120s — single-shot, no multi-turn
         return ClaudeCodeProvider(model_id=model_id, timeout=timeout)
 
     else:

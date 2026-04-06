@@ -39,7 +39,7 @@ class ModelConfig:
     provider: str = "local"  # "local" | "openai" | "anthropic"
     model_id: str = ""  # API model ID (e.g. "gpt-4o", "claude-sonnet-4-20250514")
     api_key_env: str = ""  # env var name for API key (e.g. "OPENAI_API_KEY")
-    timeout: float = 600.0  # per-call timeout seconds
+    timeout: float = 120.0  # per-call timeout seconds
 
 
 class GEPARouter:
@@ -135,7 +135,7 @@ class GEPARouter:
                 provider=provider,
                 model_id=mcfg.get("model_id", name),
                 api_key_env=mcfg.get("api_key_env", ""),
-                timeout=float(mcfg.get("timeout", 600.0)),
+                timeout=float(mcfg.get("timeout", 120.0)),
             )
 
         router_cfg = config.get("router", {})

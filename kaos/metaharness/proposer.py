@@ -198,7 +198,9 @@ class ProposerAgent:
                 + archive_digest
             )
 
-        # Spawn and run the proposer agent
+        # Single-shot mode: send the full prompt once, extract python blocks.
+        # This avoids the multi-turn CCR loop where each turn replays the
+        # entire conversation via claude --print (causing timeouts on Opus/Sonnet).
         config = {}
         if self.proposer_model:
             config["force_model"] = self.proposer_model
@@ -208,10 +210,37 @@ class ProposerAgent:
             config=config,
         )
 
+        # Tell the model to write the code directly — no tool calls needed
+        single_shot_prompt = (
+            prompt + "\n\n"
+            "IMPORTANT: Write your proposed harness(es) as complete ```python code blocks "
+            "in your response. Each block must define a `def run(problem)` function. "
+            "Do NOT try to call tools — just write the code directly."
+        )
+
         try:
-            await self.ccr.run_agent(agent_id, prompt)
+            # Single LLM call — no CCR loop, no conversation replay
+            model_name = config.get("force_model") or self.router.fallback_model
+            response = await self.router.route(
+                agent_id=agent_id,
+                messages=[
+                    {"role": "system", "content": "You are a Meta-Harness proposer. Write Python harness code."},
+                    {"role": "user", "content": single_shot_prompt},
+                ],
+                tools=[],  # no tools — single-shot
+                config=config,
+            )
+            # Store the response as conversation for debugging/extraction
+            conversation = [
+                {"role": "system", "content": "proposer"},
+                {"role": "user", "content": single_shot_prompt},
+                {"role": "assistant", "content": response.content},
+            ]
+            self.afs.set_state(agent_id, "conversation", conversation)
+            self.afs.complete(agent_id)
         except Exception as e:
             logger.error("Proposer agent failed at iteration %d: %s", iteration, e)
+            self.afs.fail(agent_id, error=str(e))
 
         # Log the proposer conversation for debugging
         conversation = self.afs.get_state_or(agent_id, "conversation")
