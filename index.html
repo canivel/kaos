@@ -199,14 +199,14 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. CLI-first with <code>--json</code> output for any agent framework.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="#changelog" class="btn btn-secondary">What's New in v0.3.1</a>
+    <a href="#changelog" class="btn btn-secondary">What's New in v0.4.0</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
     <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
   </div>
   <div class="badges">
-    <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.3.1</span>
+    <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.4.0</span>
     <span class="badge green">119 tests passing</span>
     <span class="badge blue">Python 3.11+</span>
     <span class="badge">Apache 2.0</span>
@@ -473,22 +473,28 @@ kaos import snapshot.db
 
     <div class="release">
       <div class="release-header">
-        <span class="release-version">v0.3.1</span>
-        <span class="release-date">April 5, 2026</span>
+        <span class="release-version">v0.4.0</span>
+        <span class="release-date">April 6, 2026</span>
         <span class="release-tag">latest</span>
       </div>
-      <p class="release-category">Bug Fixes</p>
+      <p class="release-category">Knowledge Compounding</p>
       <ul>
-        <li><strong>#1</strong> CLI Unicode crash on Windows &mdash; stdout reconfigured to UTF-8</li>
-        <li><strong>#2</strong> Parallel spawn WAL contention &mdash; retry with backoff + <code>wal_autocheckpoint</code></li>
-        <li><strong>#7</strong> Large output truncation &mdash; results &gt;4KB stored in VFS, MCP returns preview</li>
-        <li><strong>#16</strong> Background search write lock &mdash; frequent WAL checkpointing</li>
+        <li><strong>Cross-search memory</strong> &mdash; persistent knowledge agent stores winning harnesses. New searches build on prior discoveries.</li>
+        <li><code>kaos search "query"</code> &mdash; full-text search across all agent VFS contents</li>
+        <li><code>kaos index &lt;agent-id&gt;</code> &mdash; build navigable /index.md</li>
+        <li><code>kaos mh lint &lt;id&gt;</code> &mdash; health-check search archives</li>
+        <li><code>kaos mh knowledge</code> &mdash; view persistent discoveries by benchmark</li>
       </ul>
-      <p class="release-category">New Commands</p>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.3.1</span>
+        <span class="release-date">April 5, 2026</span>
+      </div>
       <ul>
-        <li><code>kaos read &lt;agent-id&gt; &lt;path&gt;</code> &mdash; read files from agent VFS</li>
-        <li><code>kaos logs &lt;agent-id&gt;</code> &mdash; view conversation history + event log</li>
-        <li><code>kaos mh search --dry-run</code> &mdash; evaluate seeds only, report baseline</li>
+        <li>Bug fixes: #1 Unicode, #2 WAL contention, #7 truncation, #16 write lock</li>
+        <li>New: <code>kaos read</code>, <code>kaos logs</code>, <code>mh search --dry-run</code></li>
       </ul>
     </div>
 
