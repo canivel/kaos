@@ -17,7 +17,6 @@ no robots. Style: abstract, clean, developer-focused infrastructure.
 
 -->
 
-![Hero image](hero-v04.png)
 
 *we fixed the proposer timeout problem, made knowledge compound across searches, and built a compactor that cuts agent context by 78% with zero quality loss. here's what happened and why it matters.*
 
@@ -62,7 +61,6 @@ quality (100%). Style: clean, minimal, rounded boxes.
 
 -->
 
-![Compaction flow](compaction-flow.png)
 
 **lossless** — scores and source code stay exactly as-is. small data, 100% signal. the proposer needs exact numbers and full code.
 
@@ -223,7 +221,6 @@ Style: clean timeline, thin glowing connections, dark background.
 
 -->
 
-![Knowledge compounding](knowledge-compound.png)
 
 ### how it works
 
@@ -309,7 +306,6 @@ Style: minimal, abstract, no faces.
 
 -->
 
-![Self-triage](self-triage.png)
 
 we used KAOS to evaluate its own issues. spawned a `self-triage-v030` agent, ingested all 14 GitHub issues into its VFS, scored each on impact/effort/feasibility, and implemented the top 6 in priority order.
 
