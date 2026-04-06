@@ -279,6 +279,60 @@ async def list_tools() -> list[Tool]:
                 "required": ["search_agent_id", "benchmark"],
             },
         ),
+        # ── Collaborative Meta-Harness ──────────────────────────
+        Tool(
+            name="mh_start_search",
+            description=(
+                "Start a collaborative Meta-Harness search. Evaluates seed harnesses "
+                "and returns an archive digest. YOU (Claude Code) read the digest, "
+                "write improved harness code, and submit it via mh_submit_candidate. "
+                "Then call mh_next_iteration to evaluate and get the next digest. "
+                "This avoids all subprocess/timeout issues — inference happens in "
+                "YOUR session, zero extra cost."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "benchmark": {"type": "string", "description": "Benchmark name"},
+                    "eval_subset": {"type": "integer", "description": "Subsample problems for faster eval"},
+                    "compaction_level": {"type": "integer", "description": "Digest compaction 0-10", "default": 5},
+                },
+                "required": ["benchmark"],
+            },
+        ),
+        Tool(
+            name="mh_submit_candidate",
+            description=(
+                "Submit a harness candidate to a collaborative search. "
+                "The source_code must define a def run(problem) function. "
+                "Call mh_next_iteration after submitting to evaluate it."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string", "description": "Search agent ID from mh_start_search"},
+                    "source_code": {"type": "string", "description": "Complete Python source code with def run(problem)"},
+                    "rationale": {"type": "string", "description": "Why this harness should improve on prior candidates"},
+                },
+                "required": ["search_agent_id", "source_code"],
+            },
+        ),
+        Tool(
+            name="mh_next_iteration",
+            description=(
+                "Evaluate all pending candidates submitted via mh_submit_candidate, "
+                "update the Pareto frontier, and return the updated archive digest. "
+                "Read the digest, propose new harnesses, submit via mh_submit_candidate, repeat."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string", "description": "Search agent ID"},
+                    "compaction_level": {"type": "integer", "description": "Digest compaction 0-10", "default": 5},
+                },
+                "required": ["search_agent_id"],
+            },
+        ),
     ]
 
 
@@ -513,6 +567,251 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             "pid": proc.pid,
             "log_path": log_path,
             "message": f"Resume worker launched (PID {proc.pid}). Log: {log_path}.",
+        }, indent=2)
+
+    # ── Collaborative Meta-Harness ────────────────────────────
+    elif name == "mh_start_search":
+        from kaos.metaharness.harness import SearchConfig, HarnessCandidate
+        from kaos.metaharness.search import MetaHarnessSearch
+        from kaos.metaharness.benchmarks import get_benchmark
+        from kaos.metaharness.compactor import Compactor
+        _import_benchmarks()
+
+        benchmark_name = args["benchmark"]
+        bench = get_benchmark(benchmark_name)
+        eval_subset = args.get("eval_subset")
+        compaction_level = args.get("compaction_level", 5)
+
+        config = SearchConfig(
+            benchmark=benchmark_name,
+            eval_subset_size=eval_subset,
+            compaction_level=compaction_level,
+        )
+
+        search = MetaHarnessSearch(_afs, _ccr.router, bench, config)
+
+        # Step 1: init archive + evaluate seeds
+        import asyncio as _asyncio
+        search.search_agent_id = search._init_archive()
+        seeds = search._load_seeds()
+
+        problems = bench.get_search_set()
+        if eval_subset:
+            problems = bench.get_subset(problems, eval_subset)
+
+        seed_results = await search.evaluator.evaluate_parallel(
+            seeds, problems=problems,
+            max_parallel=config.max_parallel_evals,
+        )
+        for harness, result in zip(seeds, seed_results):
+            search._store_result(harness, result, iteration=0)
+
+        frontier = search._compute_frontier()
+        search._store_frontier(frontier, iteration=0)
+        _afs.set_state(search.search_agent_id, "current_iteration", 0)
+        _afs.set_state(search.search_agent_id, "pending_candidates", [])
+        _afs.set_state(search.search_agent_id, "collaborative", True)
+        _afs.set_state(search.search_agent_id, "benchmark", benchmark_name)
+
+        # Build digest for Claude Code to read
+        compactor = Compactor(level=compaction_level)
+        harness_data = []
+        for harness, result in zip(seeds, seed_results):
+            harness_data.append({
+                "harness_id": harness.harness_id,
+                "iteration": 0,
+                "scores": result.scores,
+                "source": harness.source_code,
+                "per_problem": result.per_problem,
+                "error": result.error,
+            })
+        digest, metrics = compactor.build_digest(harness_data, frontier.to_dict())
+
+        return json.dumps({
+            "search_agent_id": search.search_agent_id,
+            "status": "seeds_evaluated",
+            "seeds_evaluated": len(seeds),
+            "frontier_size": len(frontier.points),
+            "digest_chars": metrics.compacted_chars,
+            "compaction_savings": f"{metrics.savings_pct:.0f}%",
+            "digest": digest,
+            "instructions": (
+                "Read the digest above. Write an improved harness as a Python function "
+                "def run(problem) that fixes the failure modes you see. "
+                "Submit it with mh_submit_candidate(search_agent_id, source_code, rationale). "
+                "Then call mh_next_iteration(search_agent_id) to evaluate and get the next digest."
+            ),
+        }, indent=2)
+
+    elif name == "mh_submit_candidate":
+        from kaos.metaharness.harness import HarnessCandidate
+
+        search_agent_id = args["search_agent_id"]
+        source_code = args["source_code"]
+        rationale = args.get("rationale", "")
+
+        candidate = HarnessCandidate.create(
+            source_code=source_code,
+            metadata={"rationale": rationale, "source": "collaborative"},
+        )
+
+        valid, err = candidate.validate_interface()
+        if not valid:
+            return json.dumps({"error": f"Invalid harness: {err}. Fix and resubmit."})
+
+        # Store in pending list
+        pending = _afs.get_state_or(search_agent_id, "pending_candidates", [])
+        pending.append(candidate.to_dict())
+        _afs.set_state(search_agent_id, "pending_candidates", pending)
+
+        return json.dumps({
+            "status": "accepted",
+            "harness_id": candidate.harness_id,
+            "pending_count": len(pending),
+            "message": f"Harness accepted ({len(pending)} pending). Call mh_next_iteration to evaluate.",
+        }, indent=2)
+
+    elif name == "mh_next_iteration":
+        from kaos.metaharness.harness import HarnessCandidate, SearchConfig
+        from kaos.metaharness.evaluator import HarnessEvaluator
+        from kaos.metaharness.benchmarks import get_benchmark
+        from kaos.metaharness.compactor import Compactor
+        from kaos.metaharness.pareto import compute_pareto
+        _import_benchmarks()
+
+        search_agent_id = args["search_agent_id"]
+        compaction_level = args.get("compaction_level", 5)
+
+        # Load pending candidates
+        pending_dicts = _afs.get_state_or(search_agent_id, "pending_candidates", [])
+        if not pending_dicts:
+            return json.dumps({"error": "No pending candidates. Submit harnesses with mh_submit_candidate first."})
+
+        candidates = [HarnessCandidate.from_dict(d) for d in pending_dicts]
+        iteration = (_afs.get_state_or(search_agent_id, "current_iteration", 0) or 0) + 1
+
+        # Get benchmark
+        benchmark_name = _afs.get_state_or(search_agent_id, "benchmark", "text_classify")
+        bench = get_benchmark(benchmark_name)
+
+        # Read config
+        try:
+            config_data = json.loads(_afs.read(search_agent_id, "/config.json").decode())
+            config = SearchConfig.from_dict(config_data)
+        except FileNotFoundError:
+            config = SearchConfig(benchmark=benchmark_name)
+        if config.objectives is None:
+            config.objectives = bench.objectives
+
+        # Evaluate
+        evaluator = HarnessEvaluator(
+            _afs, _ccr.router, bench,
+            timeout_seconds=config.harness_timeout_seconds,
+        )
+        problems = bench.get_search_set()
+        if config.eval_subset_size:
+            problems = bench.get_subset(problems, config.eval_subset_size)
+
+        results = await evaluator.evaluate_parallel(
+            candidates, problems=problems,
+            max_parallel=config.max_parallel_evals,
+        )
+
+        # Store results in archive
+        for harness, result in zip(candidates, results):
+            harness.iteration = iteration
+            hid = harness.harness_id
+            base = f"/harnesses/{hid}"
+            _afs.write(search_agent_id, f"{base}/source.py", harness.source_code.encode())
+            _afs.write(search_agent_id, f"{base}/scores.json", result.to_scores_json().encode())
+            if result.per_problem:
+                _afs.write(search_agent_id, f"{base}/per_problem.jsonl",
+                           "\n".join(json.dumps(p) for p in result.per_problem).encode())
+            _afs.write(search_agent_id, f"{base}/metadata.json", json.dumps({
+                "harness_id": hid, "iteration": iteration,
+                "metadata": harness.metadata,
+                "is_success": result.is_success, "error": result.error,
+                "duration_ms": result.duration_ms,
+            }, indent=2).encode())
+
+        # Recompute frontier from ALL harnesses
+        all_scores_files = [
+            f["path"] for f in _afs.query(
+                f"SELECT path FROM files WHERE agent_id='{search_agent_id}' "
+                f"AND path LIKE '/harnesses/%/scores.json' AND deleted=0"
+            )
+        ]
+        all_results_for_pareto = []
+        from kaos.metaharness.harness import EvaluationResult
+        for path in all_scores_files:
+            hid = path.split("/")[2]
+            try:
+                scores = json.loads(_afs.read(search_agent_id, path).decode())
+                if scores:
+                    all_results_for_pareto.append(EvaluationResult(harness_id=hid, scores=scores))
+            except Exception:
+                pass
+
+        objectives = config.objective_directions()
+        frontier = compute_pareto(all_results_for_pareto, objectives)
+
+        # Store frontier
+        _afs.write(search_agent_id, "/pareto/frontier.json",
+                   json.dumps(frontier.to_dict(), indent=2).encode())
+        _afs.set_state(search_agent_id, "current_iteration", iteration)
+        _afs.set_state(search_agent_id, "pending_candidates", [])  # clear pending
+
+        # Build updated digest
+        harness_data = []
+        for path in all_scores_files:
+            hid = path.split("/")[2]
+            h: dict[str, Any] = {"harness_id": hid}
+            try:
+                h["scores"] = json.loads(_afs.read(search_agent_id, path).decode())
+            except Exception:
+                h["scores"] = {}
+            try:
+                meta = json.loads(_afs.read(search_agent_id, f"/harnesses/{hid}/metadata.json").decode())
+                h["iteration"] = meta.get("iteration", 0)
+                h["error"] = meta.get("error")
+            except FileNotFoundError:
+                h["iteration"] = 0
+            try:
+                h["source"] = _afs.read(search_agent_id, f"/harnesses/{hid}/source.py").decode()
+            except FileNotFoundError:
+                h["source"] = ""
+            try:
+                pp = _afs.read(search_agent_id, f"/harnesses/{hid}/per_problem.jsonl").decode()
+                h["per_problem"] = [json.loads(l) for l in pp.strip().split("\n") if l.strip()]
+            except FileNotFoundError:
+                h["per_problem"] = []
+            harness_data.append(h)
+
+        compactor = Compactor(level=compaction_level)
+        digest, metrics = compactor.build_digest(harness_data, frontier.to_dict())
+
+        # Results for this iteration
+        iter_results = []
+        for harness, result in zip(candidates, results):
+            iter_results.append({
+                "harness_id": harness.harness_id,
+                "scores": result.scores,
+                "is_success": result.is_success,
+                "error": result.error,
+            })
+
+        return json.dumps({
+            "search_agent_id": search_agent_id,
+            "iteration": iteration,
+            "evaluated": len(candidates),
+            "results": iter_results,
+            "frontier_size": len(frontier.points),
+            "total_harnesses": len(all_scores_files),
+            "digest": digest,
+            "instructions": (
+                "Read the updated digest. Propose improved harnesses and submit "
+                "with mh_submit_candidate. Then call mh_next_iteration again."
+            ),
         }, indent=2)
 
     else:

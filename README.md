@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.4.2-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.5.0-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -757,10 +757,22 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.4.2
+## What's New in v0.5.0
 
-### Claude Agent SDK Provider
-New `provider: agent_sdk` uses the Claude Agent SDK directly — no subprocess, no conversation replay, no rate limit competition with active Claude Code sessions. Seeds scored **90.6% accuracy** vs 0% with the `claude_code` provider in the same session.
+### Collaborative Meta-Harness — Claude Code IS the proposer
+
+Three new MCP tools eliminate the subprocess bottleneck entirely. Claude Code drives the search loop — no extra process, no API key, no extra cost:
+
+```
+1. mh_start_search(benchmark="text_classify")  → seeds evaluated, digest returned
+2. YOU read the digest, write a better harness
+3. mh_submit_candidate(search_agent_id, source_code)  → validated, queued
+4. mh_next_iteration(search_agent_id)  → evaluated, frontier updated, new digest
+5. Repeat from step 2
+```
+
+### v0.4.2: Agent SDK Provider
+`provider: agent_sdk` uses the Claude Agent SDK directly — no subprocess, no rate limit competition. Seeds scored **90.6% accuracy** vs 0% with `claude_code`.
 
 ```yaml
 models:

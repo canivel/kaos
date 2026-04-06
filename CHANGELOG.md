@@ -2,6 +2,20 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.5.0] - 2026-04-06
+
+### Collaborative Meta-Harness — Claude Code IS the proposer
+
+Three new MCP tools that let Claude Code drive the search loop directly. No subprocess, no API key, no extra cost — inference happens in your current session.
+
+- **`mh_start_search`** — evaluates seeds, returns archive digest. YOU read it and write a better harness.
+- **`mh_submit_candidate`** — submit your harness code for evaluation.
+- **`mh_next_iteration`** — evaluates pending candidates, updates frontier, returns updated digest.
+
+The loop: `mh_start_search` → read digest → write harness → `mh_submit_candidate` → `mh_next_iteration` → read updated digest → repeat.
+
+Why this works: the CLI subprocess bottleneck (354s for 60K chars) is eliminated entirely. Claude Code already has an active API connection — no subprocess, no process startup, no stdin/stdout serialization. The digest goes into the conversation context and the response comes back as part of the normal tool flow.
+
 ## [0.4.2] - 2026-04-06
 
 ### New Provider: Claude Agent SDK
