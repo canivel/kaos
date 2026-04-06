@@ -207,7 +207,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   </div>
   <div class="badges">
     <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.4.0</span>
-    <span class="badge green">119 tests passing</span>
+    <span class="badge green">157 tests passing</span>
     <span class="badge blue">Python 3.11+</span>
     <span class="badge">Apache 2.0</span>
     <span class="badge">CLI-first + MCP</span>
@@ -484,6 +484,12 @@ kaos import snapshot.db
         <li><code>kaos index &lt;agent-id&gt;</code> &mdash; build navigable /index.md</li>
         <li><code>kaos mh lint &lt;id&gt;</code> &mdash; health-check search archives</li>
         <li><code>kaos mh knowledge</code> &mdash; view persistent discoveries by benchmark</li>
+      </ul>
+      <p class="release-category">Smart Compaction</p>
+      <ul>
+        <li>Tunable context compression (level 0-10) &mdash; reduces proposer turns from ~10 to 1-2</li>
+        <li>Pre-built archive digest injected into proposer prompt</li>
+        <li>Conversation auto-compaction for long tool-use chains</li>
       </ul>
     </div>
 
