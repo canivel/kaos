@@ -74,26 +74,80 @@ quality (100%). Style: clean, minimal, rounded boxes.
 
 ### the results
 
-we tested with 6 diagnostic questions — the specific facts a proposer needs to make good decisions:
+we didnt just test on one benchmark. we built archives for 5 different domains — each with its own harnesses, failure modes, and diagnostic questions. the questions cover 4 tiers: direct facts ("whats the best score?"), comparison ("which approach is better?"), causal reasoning ("why did it fail?"), and synthesis ("what should the proposer do next?").
 
-- Q1: which harness scored best?
-- Q2: what approach works?
-- Q3: why did the seeds fail?
-- Q4: why did the LLM caller fail?
-- Q5: whats the best cost?
-- Q6: is the winning source code readable?
+### classification
+
+text classification with keyword matching, zero-shot, and a failed API caller. questions like "why did all seeds score 0%?" and "is the keyword list visible so a proposer could extend it?"
 
 ```
-Level  0 │ 5292 chars ( 22% saved) │ 6/6 answerable │ 100% quality
-Level  3 │ 3672 chars ( 46% saved) │ 6/6 answerable │ 100% quality
-Level  5 │ 3672 chars ( 46% saved) │ 6/6 answerable │ 100% quality  ← default
-Level  7 │ 3024 chars ( 56% saved) │ 6/6 answerable │ 100% quality
-Level 10 │ 2512 chars ( 63% saved) │ 6/6 answerable │ 100% quality
+Level  0 │  29% saved │ 100% quality
+Level  5 │  52% saved │ 100% quality  ← default
+Level 10 │  68% saved │ 100% quality
 ```
 
-zero quality loss at any compaction level. the proposer can answer all 6 diagnostic questions whether you compress 22% or 63%. the savings come from dropping data that has no diagnostic value — correct-problem traces, verbose per-problem output, duplicate formatting.
+this domain compacts the most because keyword classifiers are self-contained — the source code IS the approach, no external dependencies to track.
 
-the key insight: structured extraction is actually BETTER than raw data for the proposer. it surfaces patterns that would take the LLM several reads to figure out from raw JSON.
+### code generation
+
+harnesses for fizzbuzz through parser combinators and graph algorithms. the winning approach gathers environment context (language, deps, test framework) before generating. questions like "what caused the async_retry failure?" and "what edge case broke dijkstra?"
+
+```
+Level  0 │  31% saved │ 100% quality
+Level  5 │  31% saved │ 100% quality  ← default
+Level 10 │  56% saved │  70% quality
+```
+
+code generation needs more context — the specific error messages ("TestFailed: 0/12 tests passed", "edge case with negative weights") are critical for the proposer. at max level some of those get dropped.
+
+### research / RAG
+
+math problem solving with domain-aware retrieval (geometry, algebra, combinatorics, number theory). BM25 scoring within domains. questions like "was the domain routing correct when retrieval missed?" and "which math domains are represented?"
+
+```
+Level  0 │  24% saved │ 100% quality
+Level  5 │  28% saved │ 100% quality  ← default
+Level 10 │  44% saved │  78% quality
+```
+
+RAG has the most complex per-problem metadata (domain labels, retrieval scores, routing decisions). compaction at high levels drops some of the retrieval miss analysis.
+
+### tool calling / agentic
+
+single-step vs plan-then-act for multi-step tool chains. questions like "why did the API chain hallucinate step 3?" and "is the decomposition strategy visible?"
+
+```
+Level  0 │  30% saved │ 100% quality
+Level  5 │  30% saved │ 100% quality  ← default
+Level 10 │  53% saved │ 100% quality
+```
+
+tool calling compacts well because the key signal is the approach (plan-then-act vs single-step) and the failure mode (hallucinated execution), not the verbose tool call traces.
+
+### ML training / optimization
+
+hyperparameter optimization with dataset-aware configs. questions like "why did the learning rate diverge?" and "is the weight_decay recommendation visible?"
+
+```
+Level  0 │  28% saved │ 100% quality
+Level  5 │  28% saved │ 100% quality  ← default
+Level 10 │  45% saved │ 100% quality
+```
+
+ML compacts well because the insights are in the error messages ("lr too high, diverged after epoch 5") and the config differences, not in the raw training logs.
+
+### aggregate across all domains
+
+```
+Level  0 │  28% saved │ 100% quality
+Level  5 │  34% saved │ 100% quality  ← default
+Level  7 │  41% saved │  98% quality
+Level 10 │  53% saved │  88% quality
+```
+
+at the default level, every domain retains 100% quality. no exceptions. the 12% quality drop at max level comes from code generation and RAG — domains where specific error messages and routing decisions matter most.
+
+the key insight: structured extraction is actually BETTER than raw data for the proposer. it surfaces patterns that would take the LLM several reads to figure out from raw JSON. a proposer reading "3/8 wrong: science→technology (2x), timeout (1x)" makes a better decision than one reading 8 verbose trace entries.
 
 you can tune it in `kaos.yaml`:
 
@@ -102,7 +156,7 @@ search:
   compaction_level: 5  # 0 (no compaction) to 10 (maximum)
 ```
 
-level 0 if you want the proposer to see everything. level 10 if youre running on a model with a small context window.
+level 0 if you want the proposer to see everything. level 10 if youre running on a model with a small context window and you accept some quality tradeoff in code/RAG domains.
 
 ---
 

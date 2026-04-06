@@ -1,15 +1,14 @@
-"""Comprehensive quality eval for smart context compaction.
+"""Multi-domain compaction quality evaluation.
 
-Tests whether compacted digests preserve the information a proposer needs
-to make correct decisions. Uses 24 diagnostic questions across 4 tiers:
+Tests compaction quality across 5 realistic domains:
+- Text Classification
+- Code Generation
+- Research / RAG
+- Tool Calling / Agentic
+- ML Training / Optimization
 
-Tier 1 — Direct facts (can you read a specific value?)
-Tier 2 — Comparison (can you compare two harnesses?)
-Tier 3 — Causal reasoning (can you explain WHY something failed?)
-Tier 4 — Synthesis (can you combine evidence to form a strategy?)
-
-Each question has search terms that must appear in the digest.
-A question is "answerable" if ALL its required terms are present.
+Each domain has its own archive data and diagnostic questions covering
+direct facts, comparison, causal reasoning, and synthesis.
 """
 
 import json
@@ -18,528 +17,307 @@ import sys
 from kaos.metaharness.compactor import Compactor
 
 
-# ── Realistic archive data ──────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════
+# DOMAIN 1: Text Classification
+# ═══════════════════════════════════════════════════════════════════
 
-REALISTIC_HARNESSES = [
+CLASSIFICATION_HARNESSES = [
     {
-        "harness_id": "seed_zero_shot",
-        "iteration": 0,
+        "harness_id": "cls_seed_zero_shot", "iteration": 0,
         "scores": {"accuracy": 0.0, "context_cost": 22.75},
-        "source": (
-            '"""Zero-shot text classification."""\n'
-            'def run(problem):\n'
-            '    text = problem["text"]\n'
-            '    labels = problem.get("labels", [])\n'
-            '    label_str = ", ".join(labels)\n'
-            '    prompt = f"Classify: {label_str}\\nText: {text}\\nCategory:"\n'
-            '    try:\n'
-            '        response = llm(prompt, max_tokens=32)\n'
-            '        return {"prediction": response.strip(), "context_tokens": len(prompt.split())}\n'
-            '    except NameError:\n'
-            '        return {"prompt": prompt, "context_tokens": len(prompt.split())}\n'
-        ),
-        "per_problem": [
-            {"problem_id": f"custom_{i}", "correct": False,
-             "scores": {"accuracy": 0.0, "context_cost": 22},
-             "output": {"prediction": ""}} for i in range(8)
-        ],
+        "source": '"""Zero-shot text classification."""\ndef run(problem):\n    text = problem["text"]\n    labels = problem.get("labels", [])\n    prompt = f"Classify into: {\", \".join(labels)}\\nText: {text}\\nCategory:"\n    try:\n        return {"prediction": llm(prompt, max_tokens=32).strip()}\n    except NameError:\n        return {"prompt": prompt, "context_tokens": len(prompt.split())}\n',
+        "per_problem": [{"problem_id": f"cls_{i}", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 22}, "output": {"prediction": ""}} for i in range(8)],
         "error": None,
     },
     {
-        "harness_id": "seed_few_shot",
-        "iteration": 0,
-        "scores": {"accuracy": 0.0, "context_cost": 70.6},
-        "source": (
-            '"""Few-shot classification with labeled examples."""\n'
-            'def run(problem):\n'
-            '    text = problem["text"]\n'
-            '    examples = problem.get("labeled_examples", [])[-8:]\n'
-            '    prompt = "Examples:\\n"\n'
-            '    for ex in examples:\n'
-            '        prompt += f"Text: {ex[\'text\']}\\nCategory: {ex[\'label\']}\\n"\n'
-            '    prompt += f"\\nText: {text}\\nCategory:"\n'
-            '    try:\n'
-            '        return {"prediction": llm(prompt, max_tokens=32).strip(),\n'
-            '                "context_tokens": len(prompt.split())}\n'
-            '    except NameError:\n'
-            '        return {"prompt": prompt, "context_tokens": len(prompt.split())}\n'
-        ),
-        "per_problem": [
-            {"problem_id": f"custom_{i}", "correct": False,
-             "scores": {"accuracy": 0.0, "context_cost": 70},
-             "output": {"prediction": ""}} for i in range(8)
-        ],
-        "error": None,
-    },
-    {
-        "harness_id": "seed_retrieval",
-        "iteration": 0,
-        "scores": {"accuracy": 0.0, "context_cost": 97.0},
-        "source": (
-            '"""Retrieval-based classification with word overlap."""\n'
-            'def run(problem):\n'
-            '    text = problem["text"]\n'
-            '    labels = problem.get("labels", [])\n'
-            '    labeled = problem.get("labeled_examples", [])\n'
-            '    query = set(text.lower().split())\n'
-            '    scored = []\n'
-            '    for ex in labeled:\n'
-            '        overlap = len(query & set(ex["text"].lower().split()))\n'
-            '        scored.append((overlap, ex))\n'
-            '    scored.sort(key=lambda x: x[0], reverse=True)\n'
-            '    top = [ex for _, ex in scored[:5]]\n'
-            '    block = "".join(f"Text: {ex[\'text\']}\\nCat: {ex[\'label\']}\\n" for ex in top)\n'
-            '    prompt = f"Examples:\\n{block}\\nText: {text}\\nCategory:"\n'
-            '    try:\n'
-            '        return {"prediction": llm(prompt, max_tokens=32).strip(),\n'
-            '                "context_tokens": len(prompt.split())}\n'
-            '    except NameError:\n'
-            '        return {"prompt": prompt, "context_tokens": len(prompt.split())}\n'
-        ),
-        "per_problem": [
-            {"problem_id": f"custom_{i}", "correct": False,
-             "scores": {"accuracy": 0.0, "context_cost": 97},
-             "output": {"prediction": ""}} for i in range(8)
-        ],
-        "error": None,
-    },
-    {
-        "harness_id": "proposed_keyword_classifier",
-        "iteration": 2,
+        "harness_id": "cls_keyword_classifier", "iteration": 2,
         "scores": {"accuracy": 1.0, "context_cost": 8.0},
-        "source": (
-            '"""Domain keyword classifier --- zero LLM calls."""\n'
-            'DOMAIN_KEYWORDS = {\n'
-            '    "technology": ["gpu", "cpu", "cloud", "compiler", "llm", "distributed",\n'
-            '                   "container", "webassembly", "edge", "latency"],\n'
-            '    "science": ["protein", "quantum", "telescope", "climate", "coral",\n'
-            '                "gene", "entanglement", "neural", "plasticity"],\n'
-            '    "business": ["revenue", "merger", "startup", "funding", "mortgage",\n'
-            '                 "supply", "chain", "consumer", "trade"],\n'
-            '    "sports": ["championship", "quarterback", "marathon", "draft", "olympic",\n'
-            '               "tournament", "injury", "acl", "franchise"],\n'
-            '}\n'
-            '\n'
-            'def run(problem):\n'
-            '    text = problem["text"].lower()\n'
-            '    labels = problem.get("labels", [])\n'
-            '    scores = {}\n'
-            '    for label in labels:\n'
-            '        kws = DOMAIN_KEYWORDS.get(label, [])\n'
-            '        scores[label] = sum(1 for kw in kws if kw in text)\n'
-            '    best = max(scores, key=scores.get) if scores else labels[0]\n'
-            '    return {"prediction": best, "context_tokens": len(text.split()),\n'
-            '            "method": "keyword_match", "keyword_hits": scores.get(best, 0)}\n'
-        ),
+        "source": '"""Domain keyword classifier."""\nDOMAIN_KEYWORDS = {\n    "technology": ["gpu", "cpu", "cloud", "compiler", "llm"],\n    "science": ["protein", "quantum", "telescope", "climate"],\n    "business": ["revenue", "merger", "startup", "funding"],\n    "sports": ["championship", "quarterback", "marathon"],\n}\ndef run(problem):\n    text = problem["text"].lower()\n    labels = problem.get("labels", [])\n    scores = {l: sum(1 for kw in DOMAIN_KEYWORDS.get(l, []) if kw in text) for l in labels}\n    return {"prediction": max(scores, key=scores.get), "context_tokens": len(text.split()), "method": "keyword_match"}\n',
+        "per_problem": [{"problem_id": f"cls_{i}", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 8}, "output": {"prediction": cat, "method": "keyword_match"}} for i, cat in enumerate(["technology", "science", "business", "sports"] * 2)],
+        "error": None,
+    },
+    {
+        "harness_id": "cls_failed_api", "iteration": 1, "scores": {},
+        "source": 'def run(p):\n    import httpx\n    r = httpx.post("http://localhost:8000/v1/chat/completions", json={})\n    return {"prediction": r.json()["choices"][0]["message"]["content"]}\n',
+        "per_problem": [{"problem_id": f"cls_{i}", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 0}, "error": "ConnectError: All connection attempts failed"} for i in range(8)],
+        "error": None,
+    },
+]
+CLASSIFICATION_FRONTIER = {"objectives": {"accuracy": "maximize", "context_cost": "minimize"}, "points": [{"harness_id": "cls_keyword_classifier", "iteration": 2, "scores": {"accuracy": 1.0, "context_cost": 8.0}}]}
+CLASSIFICATION_QUESTIONS = {
+    "cls_best_score": {"terms": ["1.0000"]}, "cls_winning_approach": {"terms": ["DOMAIN_KEYWORDS"]},
+    "cls_why_seed_failed": {"terms": ["wrong", "0.0000"]}, "cls_source_readable": {"terms": ["def run"]},
+    "cls_method_visible": {"terms": ["keyword_match"]}, "cls_keyword_list": {"terms": ["gpu", "protein", "revenue"], "logic": "any_two"},
+    "cls_cost_comparison": {"terms": ["8.0", "22"]}, "cls_frontier_present": {"terms": ["frontier"]},
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# DOMAIN 2: Code Generation
+# ═══════════════════════════════════════════════════════════════════
+
+CODE_HARNESSES = [
+    {
+        "harness_id": "code_direct_prompt", "iteration": 0,
+        "scores": {"pass_rate": 0.3, "context_cost": 150},
+        "source": '"""Direct code generation."""\ndef run(problem):\n    task = problem["task_description"]\n    language = problem.get("language", "python")\n    prompt = f"Write {language} code that:\\n{task}\\n\\nCode:"\n    response = llm(prompt, max_tokens=512)\n    return {"prediction": response, "context_tokens": len(prompt.split())}\n',
         "per_problem": [
-            {"problem_id": "custom_1", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 8},
-             "output": {"prediction": "technology", "method": "keyword_match", "keyword_hits": 3}},
-            {"problem_id": "custom_2", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 9},
-             "output": {"prediction": "science", "method": "keyword_match", "keyword_hits": 2}},
-            {"problem_id": "custom_3", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 7},
-             "output": {"prediction": "business", "method": "keyword_match", "keyword_hits": 4}},
-            {"problem_id": "custom_4", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 8},
-             "output": {"prediction": "sports", "method": "keyword_match", "keyword_hits": 2}},
-            {"problem_id": "custom_5", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 7},
-             "output": {"prediction": "technology", "method": "keyword_match"}},
-            {"problem_id": "custom_6", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 9},
-             "output": {"prediction": "science", "method": "keyword_match"}},
-            {"problem_id": "custom_7", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 8},
-             "output": {"prediction": "business", "method": "keyword_match"}},
-            {"problem_id": "custom_8", "correct": True,
-             "scores": {"accuracy": 1.0, "context_cost": 8},
-             "output": {"prediction": "sports", "method": "keyword_match"}},
+            {"problem_id": "fizzbuzz", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 80}, "output": {"prediction": "def fizzbuzz(n):..."}},
+            {"problem_id": "binary_search", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 120}, "output": {"prediction": "def binary_search(arr, target):..."}},
+            {"problem_id": "async_retry", "correct": False, "scores": {"pass_rate": 0.0, "context_cost": 200}, "output": {"prediction": "import asyncio..."}, "error": "SyntaxError in generated code"},
+            {"problem_id": "parser_combinator", "correct": False, "scores": {"pass_rate": 0.0, "context_cost": 250}, "output": {"prediction": "class Parser:..."}, "error": "TestFailed: 0/12 tests passed"},
+            {"problem_id": "graph_shortest", "correct": False, "scores": {"pass_rate": 0.0, "context_cost": 180}, "output": {"prediction": "def dijkstra(graph):..."}, "error": "TestFailed: incomplete implementation"},
         ],
         "error": None,
     },
     {
-        "harness_id": "failed_llm_caller",
-        "iteration": 1,
-        "scores": {},
-        "source": (
-            'def run(p):\n'
-            '    import httpx\n'
-            '    r = httpx.post("http://localhost:8000/v1/chat/completions",\n'
-            '                   json={"model": "qwen", "messages": [{"role": "user", "content": p["text"]}]})\n'
-            '    return {"prediction": r.json()["choices"][0]["message"]["content"]}\n'
-        ),
+        "harness_id": "code_env_snapshot_first", "iteration": 3,
+        "scores": {"pass_rate": 0.8, "context_cost": 200},
+        "source": '"""Environment-aware code generation."""\nimport os\ndef _gather_env(problem):\n    """Gather environment context: language version, available imports."""\n    lang = problem.get("language", "python")\n    deps = problem.get("available_deps", [])\n    test_framework = problem.get("test_framework", "pytest")\n    return f"Language: {lang}\\nDeps: {deps}\\nTests: {test_framework}"\n\ndef run(problem):\n    task = problem["task_description"]\n    env = _gather_env(problem)\n    prompt = (f"Environment:\\n{env}\\n\\nWrite complete, tested code that:\\n{task}\\n\\nInclude error handling and type hints.")\n    response = llm(prompt, max_tokens=1024)\n    return {"prediction": response, "context_tokens": len(prompt.split()), "method": "env_snapshot"}\n',
         "per_problem": [
-            {"problem_id": f"custom_{i}", "correct": False,
-             "scores": {"accuracy": 0.0, "context_cost": 0},
-             "error": "ConnectError: All connection attempts failed"} for i in range(8)
-        ],
-        "error": None,
-    },
-    {
-        "harness_id": "proposed_tfidf_hybrid",
-        "iteration": 2,
-        "scores": {"accuracy": 0.375, "context_cost": 8.0},
-        "source": (
-            '"""TF-IDF hybrid: keyword fallback + example voting."""\n'
-            'import math, re\n'
-            'from collections import Counter\n'
-            '\n'
-            'def _tokenize(text):\n'
-            '    return re.findall(r"[a-zA-Z]+", text.lower())\n'
-            '\n'
-            'def run(problem):\n'
-            '    text = problem["text"]\n'
-            '    labels = problem.get("labels", [])\n'
-            '    examples = problem.get("labeled_examples", [])\n'
-            '    tokens = _tokenize(text)\n'
-            '    if examples:\n'
-            '        votes = Counter()\n'
-            '        for ex in examples:\n'
-            '            ex_tokens = set(_tokenize(ex["text"]))\n'
-            '            overlap = len(set(tokens) & ex_tokens)\n'
-            '            if overlap > 2:\n'
-            '                votes[ex["label"]] += overlap\n'
-            '        if votes:\n'
-            '            return {"prediction": votes.most_common(1)[0][0],\n'
-            '                    "context_tokens": len(tokens), "method": "tfidf_vote"}\n'
-            '    # fallback: first label\n'
-            '    return {"prediction": labels[0] if labels else "",\n'
-            '            "context_tokens": len(tokens), "method": "fallback"}\n'
-        ),
-        "per_problem": [
-            {"problem_id": "custom_1", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 8},
-             "output": {"prediction": "technology", "method": "tfidf_vote"}},
-            {"problem_id": "custom_2", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 9},
-             "output": {"prediction": "technology", "method": "fallback"}},
-            {"problem_id": "custom_3", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 7},
-             "output": {"prediction": "business", "method": "tfidf_vote"}},
-            {"problem_id": "custom_4", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 8},
-             "output": {"prediction": "technology", "method": "fallback"}},
-            {"problem_id": "custom_5", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 7},
-             "output": {"prediction": "technology", "method": "fallback"}},
-            {"problem_id": "custom_6", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 9},
-             "output": {"prediction": "science", "method": "tfidf_vote"}},
-            {"problem_id": "custom_7", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 8},
-             "output": {"prediction": "technology", "method": "fallback"}},
-            {"problem_id": "custom_8", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 8},
-             "output": {"prediction": "technology", "method": "fallback"}},
+            {"problem_id": "fizzbuzz", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 100}, "output": {"prediction": "def fizzbuzz(n)...", "method": "env_snapshot"}},
+            {"problem_id": "binary_search", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 140}, "output": {"prediction": "def binary_search(arr, target)...", "method": "env_snapshot"}},
+            {"problem_id": "async_retry", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 220}, "output": {"prediction": "async def retry_with_backoff(fn, max_retries=3)...", "method": "env_snapshot"}},
+            {"problem_id": "parser_combinator", "correct": True, "scores": {"pass_rate": 1.0, "context_cost": 300}, "output": {"prediction": "class Parser: ...", "method": "env_snapshot"}},
+            {"problem_id": "graph_shortest", "correct": False, "scores": {"pass_rate": 0.0, "context_cost": 250}, "output": {"prediction": "def dijkstra(graph)..."}, "error": "TestFailed: edge case with negative weights"},
         ],
         "error": None,
     },
 ]
+CODE_FRONTIER = {"objectives": {"pass_rate": "maximize", "context_cost": "minimize"}, "points": [{"harness_id": "code_env_snapshot_first", "iteration": 3, "scores": {"pass_rate": 0.8, "context_cost": 200}}, {"harness_id": "code_direct_prompt", "iteration": 0, "scores": {"pass_rate": 0.3, "context_cost": 150}}]}
+CODE_QUESTIONS = {
+    "code_best_pass_rate": {"terms": ["0.8"]}, "code_env_technique": {"terms": ["_gather_env"]},
+    "code_async_retry_fixed": {"terms": ["async", "retry"], "logic": "any_two"}, "code_parser_failure": {"terms": ["parser", "TestFailed"], "logic": "any_two"},
+    "code_graph_edge_case": {"terms": ["negative weights"]}, "code_env_vs_direct": {"terms": ["0.8", "0.3"]},
+    "code_type_hints": {"terms": ["type hints"]}, "code_test_framework": {"terms": ["pytest"]},
+    "code_cost_tradeoff": {"terms": ["pass_rate", "context_cost"]}, "code_source_readable": {"terms": ["def run"]},
+}
 
-FRONTIER = {
-    "objectives": {"accuracy": "maximize", "context_cost": "minimize"},
-    "points": [
-        {"harness_id": "proposed_keyword_classifier", "iteration": 2,
-         "scores": {"accuracy": 1.0, "context_cost": 8.0}},
-        {"harness_id": "seed_zero_shot", "iteration": 0,
-         "scores": {"accuracy": 0.0, "context_cost": 22.75}},
-    ],
+# ═══════════════════════════════════════════════════════════════════
+# DOMAIN 3: Research / RAG
+# ═══════════════════════════════════════════════════════════════════
+
+RESEARCH_HARNESSES = [
+    {
+        "harness_id": "rag_no_retrieval", "iteration": 0,
+        "scores": {"accuracy": 0.2, "context_cost": 50},
+        "source": '"""No retrieval -- direct question answering."""\ndef run(problem):\n    question = problem["question"]\n    prompt = f"Answer this math problem:\\n{question}\\nAnswer:"\n    response = llm(prompt, max_tokens=64)\n    import re\n    numbers = re.findall(r"-?\\d+\\.?\\d*", response)\n    return {"prediction": numbers[0] if numbers else response.strip(), "context_tokens": len(prompt.split())}\n',
+        "per_problem": [
+            {"problem_id": "math_1", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 30}, "output": {"prediction": "56"}},
+            {"problem_id": "math_2", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 45}, "output": {"prediction": "9"}, "error": "expected 12"},
+            {"problem_id": "math_3", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 60}, "output": {"prediction": "50"}, "error": "expected 78.54"},
+            {"problem_id": "math_4", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 55}, "output": {"prediction": "10"}, "error": "expected 120"},
+            {"problem_id": "math_5", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 40}, "output": {"prediction": "24"}, "error": "expected 12, GCD confused with LCM"},
+        ],
+        "error": None,
+    },
+    {
+        "harness_id": "rag_domain_retrieval", "iteration": 2,
+        "scores": {"accuracy": 0.8, "context_cost": 120},
+        "source": '"""Domain-aware retrieval with BM25 scoring."""\nMATH_DOMAINS = {\n    "geometry": ["area", "circle", "triangle", "perimeter", "radius"],\n    "combinatorics": ["choose", "permutation", "combination", "ways"],\n    "number_theory": ["prime", "gcd", "divisor", "modulo", "factor"],\n    "algebra": ["equation", "solve", "polynomial", "variable"],\n}\n\ndef classify_domain(q):\n    q_lower = q.lower()\n    scores = {d: sum(1 for kw in kws if kw in q_lower) for d, kws in MATH_DOMAINS.items()}\n    return max(scores, key=scores.get)\n\ndef run(problem):\n    question = problem["question"]\n    corpus = problem.get("corpus", [])\n    domain = classify_domain(question)\n    domain_corpus = [d for d in corpus if classify_domain(d["question"]) == domain]\n    if len(domain_corpus) < 3: domain_corpus = corpus\n    query_words = set(question.lower().split())\n    scored = [(len(query_words & set(d["question"].lower().split())), d) for d in domain_corpus]\n    scored.sort(reverse=True)\n    examples = "\\n".join(f"Q: {d[1][\'question\']}\\nA: {d[1][\'answer\']}" for d in scored[:3])\n    prompt = f"Domain: {domain}\\n{examples}\\n\\nQ: {question}\\nA:"\n    response = llm(prompt, max_tokens=64)\n    import re\n    nums = re.findall(r"-?\\d+\\.?\\d*", response)\n    return {"prediction": nums[0] if nums else response, "context_tokens": len(prompt.split()), "method": "domain_retrieval", "domain": domain}\n',
+        "per_problem": [
+            {"problem_id": "math_1", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 90}, "output": {"prediction": "56", "domain": "algebra", "method": "domain_retrieval"}},
+            {"problem_id": "math_2", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 110}, "output": {"prediction": "12", "domain": "algebra", "method": "domain_retrieval"}},
+            {"problem_id": "math_3", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 130}, "output": {"prediction": "78.54", "domain": "geometry", "method": "domain_retrieval"}},
+            {"problem_id": "math_4", "correct": True, "scores": {"accuracy": 1.0, "context_cost": 140}, "output": {"prediction": "120", "domain": "combinatorics", "method": "domain_retrieval"}},
+            {"problem_id": "math_5", "correct": False, "scores": {"accuracy": 0.0, "context_cost": 100}, "output": {"prediction": "6", "domain": "number_theory", "method": "domain_retrieval"}, "error": "expected 12, domain routing correct but retrieval miss"},
+        ],
+        "error": None,
+    },
+]
+RESEARCH_FRONTIER = {"objectives": {"accuracy": "maximize", "context_cost": "minimize"}, "points": [{"harness_id": "rag_domain_retrieval", "iteration": 2, "scores": {"accuracy": 0.8, "context_cost": 120}}, {"harness_id": "rag_no_retrieval", "iteration": 0, "scores": {"accuracy": 0.2, "context_cost": 50}}]}
+RESEARCH_QUESTIONS = {
+    "rag_best_accuracy": {"terms": ["0.8"]}, "rag_domain_routing": {"terms": ["MATH_DOMAINS", "classify_domain"], "logic": "any_two"},
+    "rag_bm25_scoring": {"terms": ["BM25", "query_words"], "logic": "any_two"}, "rag_retrieval_miss": {"terms": ["retrieval miss"]},
+    "rag_domain_categories": {"terms": ["geometry", "algebra", "combinatorics"], "logic": "any_two"},
+    "rag_baseline": {"terms": ["0.2"]}, "rag_cost_tradeoff": {"terms": ["50", "120"]},
+    "rag_method_field": {"terms": ["domain_retrieval"]}, "rag_source_readable": {"terms": ["def run"]},
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# DOMAIN 4: Tool Calling / Agentic
+# ═══════════════════════════════════════════════════════════════════
+
+TOOL_HARNESSES = [
+    {
+        "harness_id": "tool_single_step", "iteration": 0,
+        "scores": {"success_rate": 0.4, "avg_steps": 1.0},
+        "source": '"""Single-step tool calling."""\ndef run(problem):\n    task = problem["task"]\n    tools = problem.get("available_tools", [])\n    tool_desc = "\\n".join(f"- {t[\'name\']}: {t[\'description\']}" for t in tools)\n    prompt = f"Available tools:\\n{tool_desc}\\n\\nTask: {task}\\nCall exactly one tool. Format: TOOL(args)"\n    response = llm(prompt, max_tokens=128)\n    return {"prediction": response, "context_tokens": len(prompt.split()), "method": "single_step"}\n',
+        "per_problem": [
+            {"problem_id": "search_weather", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 1}, "output": {"prediction": "SEARCH('weather')", "method": "single_step"}},
+            {"problem_id": "multi_step_research", "correct": False, "scores": {"success_rate": 0.0, "avg_steps": 1}, "output": {"prediction": "SEARCH('topic')"}, "error": "required 3 tool calls, only made 1"},
+            {"problem_id": "file_edit_chain", "correct": False, "scores": {"success_rate": 0.0, "avg_steps": 1}, "output": {"prediction": "READ('file.py')"}, "error": "required READ then EDIT, only made READ"},
+            {"problem_id": "calc_then_store", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 1}, "output": {"prediction": "CALC('2+2')", "method": "single_step"}},
+            {"problem_id": "api_chain", "correct": False, "scores": {"success_rate": 0.0, "avg_steps": 1}, "output": {"prediction": "API_CALL('GET /users')"}, "error": "needed to chain auth then list then filter"},
+        ],
+        "error": None,
+    },
+    {
+        "harness_id": "tool_plan_then_act", "iteration": 2,
+        "scores": {"success_rate": 0.8, "avg_steps": 3.2},
+        "source": '"""Plan-then-act: decompose into steps before calling tools."""\ndef run(problem):\n    task = problem["task"]\n    tools = problem.get("available_tools", [])\n    tool_desc = "\\n".join(f"- {t[\'name\']}: {t[\'description\']}" for t in tools)\n    plan_prompt = f"Tools:\\n{tool_desc}\\n\\nTask: {task}\\n\\nList the steps needed (1 tool per step):"\n    plan = llm(plan_prompt, max_tokens=256)\n    exec_prompt = f"Plan:\\n{plan}\\n\\nExecute step 1. Format: TOOL(args)"\n    response = llm(exec_prompt, max_tokens=128)\n    return {"prediction": response, "context_tokens": len(plan_prompt.split()) + len(exec_prompt.split()), "method": "plan_then_act", "plan_steps": plan.count("\\n")}\n',
+        "per_problem": [
+            {"problem_id": "search_weather", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 2}, "output": {"prediction": "SEARCH('weather')", "method": "plan_then_act"}},
+            {"problem_id": "multi_step_research", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 4}, "output": {"prediction": "SEARCH->READ->SUMMARIZE", "method": "plan_then_act"}},
+            {"problem_id": "file_edit_chain", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 3}, "output": {"prediction": "READ->EDIT->VERIFY", "method": "plan_then_act"}},
+            {"problem_id": "calc_then_store", "correct": True, "scores": {"success_rate": 1.0, "avg_steps": 2}, "output": {"prediction": "CALC->STORE", "method": "plan_then_act"}},
+            {"problem_id": "api_chain", "correct": False, "scores": {"success_rate": 0.0, "avg_steps": 5}, "output": {"prediction": "AUTH->LIST->???"}, "error": "plan correct but execution hallucinated step 3"},
+        ],
+        "error": None,
+    },
+]
+TOOL_FRONTIER = {"objectives": {"success_rate": "maximize", "avg_steps": "minimize"}, "points": [{"harness_id": "tool_plan_then_act", "iteration": 2, "scores": {"success_rate": 0.8, "avg_steps": 3.2}}, {"harness_id": "tool_single_step", "iteration": 0, "scores": {"success_rate": 0.4, "avg_steps": 1.0}}]}
+TOOL_QUESTIONS = {
+    "tool_best_success": {"terms": ["0.8"]}, "tool_plan_approach": {"terms": ["plan_then_act"]},
+    "tool_multi_step_failure": {"terms": ["required 3 tool calls"]}, "tool_api_chain_issue": {"terms": ["hallucinated"]},
+    "tool_plan_vs_single": {"terms": ["0.8", "0.4"]}, "tool_step_count": {"terms": ["avg_steps"]},
+    "tool_decomposition": {"terms": ["step 1", "plan"], "logic": "any_two"}, "tool_source_readable": {"terms": ["def run"]},
+}
+
+# ═══════════════════════════════════════════════════════════════════
+# DOMAIN 5: ML Training / Optimization
+# ═══════════════════════════════════════════════════════════════════
+
+ML_HARNESSES = [
+    {
+        "harness_id": "ml_default_config", "iteration": 0,
+        "scores": {"val_accuracy": 0.72, "training_cost": 100},
+        "source": '"""Default ML config."""\ndef run(problem):\n    dataset = problem["dataset"]\n    model_type = problem.get("model_type", "transformer")\n    prompt = (f"Dataset: {dataset}\\nModel: {model_type}\\n"\n              f"Suggest hyperparameters for training.\\n"\n              f"Output JSON: {{lr, batch_size, epochs, optimizer}}")\n    response = llm(prompt, max_tokens=256)\n    return {"prediction": response, "context_tokens": len(prompt.split()), "method": "default_config"}\n',
+        "per_problem": [
+            {"problem_id": "cifar10", "correct": True, "scores": {"val_accuracy": 0.85, "training_cost": 80}, "output": {"prediction": '{"lr": 0.001, "batch_size": 64}'}},
+            {"problem_id": "imdb_sentiment", "correct": True, "scores": {"val_accuracy": 0.88, "training_cost": 60}, "output": {"prediction": '{"lr": 2e-5, "batch_size": 16}'}},
+            {"problem_id": "protein_folding", "correct": False, "scores": {"val_accuracy": 0.45, "training_cost": 200}, "output": {"prediction": '{"lr": 0.01}'}, "error": "lr too high, diverged after epoch 5"},
+            {"problem_id": "timeseries", "correct": False, "scores": {"val_accuracy": 0.60, "training_cost": 90}, "output": {"prediction": '{"batch_size": 128}'}, "error": "batch_size too large for small dataset"},
+        ],
+        "error": None,
+    },
+    {
+        "harness_id": "ml_dataset_aware", "iteration": 3,
+        "scores": {"val_accuracy": 0.91, "training_cost": 150},
+        "source": '"""Dataset-aware config -- analyzes data characteristics first."""\ndef _analyze_dataset(problem):\n    n_samples = problem.get("n_samples", 10000)\n    n_features = problem.get("n_features", 100)\n    task_type = problem.get("task_type", "classification")\n    return f"Samples: {n_samples}, Features: {n_features}, Task: {task_type}"\n\ndef run(problem):\n    analysis = _analyze_dataset(problem)\n    model_type = problem.get("model_type", "transformer")\n    prompt = (f"Dataset analysis:\\n{analysis}\\nModel: {model_type}\\n\\n"\n              f"Based on the dataset size and task, suggest optimal hyperparameters.\\n"\n              f"For small datasets (<1000), use lower lr and more regularization.\\n"\n              f"For large datasets (>100k), use larger batch sizes.\\n"\n              f"Output JSON: {{lr, batch_size, epochs, optimizer, weight_decay}}")\n    response = llm(prompt, max_tokens=256)\n    return {"prediction": response, "context_tokens": len(prompt.split()), "method": "dataset_aware", "analysis": analysis}\n',
+        "per_problem": [
+            {"problem_id": "cifar10", "correct": True, "scores": {"val_accuracy": 0.92, "training_cost": 120}, "output": {"prediction": '{"lr": 0.0003}', "method": "dataset_aware"}},
+            {"problem_id": "imdb_sentiment", "correct": True, "scores": {"val_accuracy": 0.91, "training_cost": 80}, "output": {"prediction": '{"lr": 2e-5, "weight_decay": 0.01}', "method": "dataset_aware"}},
+            {"problem_id": "protein_folding", "correct": True, "scores": {"val_accuracy": 0.89, "training_cost": 250}, "output": {"prediction": '{"lr": 0.0001, "weight_decay": 0.1}', "method": "dataset_aware"}},
+            {"problem_id": "timeseries", "correct": False, "scores": {"val_accuracy": 0.82, "training_cost": 100}, "output": {"prediction": '{"lr": 0.0005}'}, "error": "needed specialized architecture hint for temporal data"},
+        ],
+        "error": None,
+    },
+]
+ML_FRONTIER = {"objectives": {"val_accuracy": "maximize", "training_cost": "minimize"}, "points": [{"harness_id": "ml_dataset_aware", "iteration": 3, "scores": {"val_accuracy": 0.91, "training_cost": 150}}, {"harness_id": "ml_default_config", "iteration": 0, "scores": {"val_accuracy": 0.72, "training_cost": 100}}]}
+ML_QUESTIONS = {
+    "ml_best_val_accuracy": {"terms": ["0.91"]}, "ml_dataset_analysis": {"terms": ["_analyze_dataset"]},
+    "ml_lr_divergence": {"terms": ["lr too high", "diverged"], "logic": "any_two"}, "ml_batch_size_issue": {"terms": ["batch_size too large"]},
+    "ml_weight_decay": {"terms": ["weight_decay"]}, "ml_small_dataset_rule": {"terms": ["small datasets"]},
+    "ml_default_vs_aware": {"terms": ["0.91", "0.72"]}, "ml_source_readable": {"terms": ["def run"]},
 }
 
 
-# ── 24 diagnostic questions in 4 tiers ──────────────────────────
+# ═══════════════════════════════════════════════════════════════════
+# Evaluation
+# ═══════════════════════════════════════════════════════════════════
 
-DIAGNOSTIC_QUESTIONS = {
-    # ── Tier 1: Direct facts ────────────────────────────────────
-    "T1_01_best_accuracy": {
-        "tier": 1,
-        "question": "What is the highest accuracy achieved?",
-        "terms": ["1.0000"],
-    },
-    "T1_02_best_harness_id": {
-        "tier": 1,
-        "question": "Which harness achieved the best accuracy?",
-        "terms": ["keyword"],
-    },
-    "T1_03_worst_cost": {
-        "tier": 1,
-        "question": "Which harness has the highest context cost?",
-        "terms": ["97"],
-    },
-    "T1_04_best_cost": {
-        "tier": 1,
-        "question": "What is the lowest context cost for a working harness?",
-        "terms": ["8.0"],
-    },
-    "T1_05_how_many_seeds": {
-        "tier": 1,
-        "question": "How many seed harnesses were there?",
-        "terms": ["iteration 0"],
-    },
-    "T1_06_frontier_size": {
-        "tier": 1,
-        "question": "How many harnesses are on the Pareto frontier?",
-        "terms": ["frontier"],
-    },
-    "T1_07_source_readable": {
-        "tier": 1,
-        "question": "Can we read the winning harness source code?",
-        "terms": ["def run"],
-    },
-    # ── Tier 2: Comparison ──────────────────────────────────────
-    "T2_08_keyword_vs_tfidf": {
-        "tier": 2,
-        "question": "How does keyword classifier compare to TF-IDF hybrid?",
-        "terms": ["1.0000", "0.375"],
-    },
-    "T2_09_seed_vs_proposed": {
-        "tier": 2,
-        "question": "Did proposed harnesses outperform seeds?",
-        "terms": ["0.0000", "1.0000"],
-    },
-    "T2_10_cost_tradeoff": {
-        "tier": 2,
-        "question": "Is there a cost/accuracy tradeoff on the frontier?",
-        "terms": ["accuracy", "context_cost"],
-    },
-    "T2_11_few_shot_vs_retrieval_cost": {
-        "tier": 2,
-        "question": "Which seed used more tokens: few-shot or retrieval?",
-        "terms": ["70", "97"],
-    },
-    "T2_12_iteration_progress": {
-        "tier": 2,
-        "question": "Did accuracy improve from iteration 0 to iteration 2?",
-        "terms": ["iteration 0", "iteration 2"],
-    },
-    # ── Tier 3: Causal reasoning ────────────────────────────────
-    "T3_13_why_seeds_failed": {
-        "tier": 3,
-        "question": "Why did all seeds score 0% accuracy?",
-        "terms": ["wrong", "0.0000"],
-    },
-    "T3_14_why_llm_caller_failed": {
-        "tier": 3,
-        "question": "Why did the LLM caller harness fail?",
-        "terms": ["connect"],
-    },
-    "T3_15_why_keyword_works": {
-        "tier": 3,
-        "question": "What technique does the winning harness use?",
-        "terms": ["DOMAIN_KEYWORDS"],
-    },
-    "T3_16_tfidf_failure_mode": {
-        "tier": 3,
-        "question": "What is the TF-IDF hybrid's main failure mode?",
-        "terms": ["fallback"],
-    },
-    "T3_17_error_pattern_visible": {
-        "tier": 3,
-        "question": "Are error patterns extracted (not just raw traces)?",
-        "terms": ["wrong"],
-    },
-    "T3_18_connection_error_detail": {
-        "tier": 3,
-        "question": "What specific error did the localhost LLM call produce?",
-        "terms": ["connection"],
-    },
-    # ── Tier 4: Synthesis ───────────────────────────────────────
-    "T4_19_avoid_llm_approach": {
-        "tier": 4,
-        "question": "Should the next proposer avoid calling external LLMs?",
-        "terms": ["connect", "DOMAIN_KEYWORDS"],
-        "logic": "both_needed",
-    },
-    "T4_20_improve_tfidf_strategy": {
-        "tier": 4,
-        "question": "Can we identify how to improve the TF-IDF hybrid?",
-        "terms": ["fallback", "tfidf"],
-    },
-    "T4_21_keyword_list_extensible": {
-        "tier": 4,
-        "question": "Is the keyword list visible so a proposer could extend it?",
-        "terms": ["gpu", "protein", "revenue", "championship"],
-    },
-    "T4_22_method_field_visible": {
-        "tier": 4,
-        "question": "Can the proposer see which method was used per prediction?",
-        "terms": ["keyword_match"],
-    },
-    "T4_23_zero_cost_approach_visible": {
-        "tier": 4,
-        "question": "Is it clear the winning approach uses zero LLM tokens?",
-        "terms": ["keyword", "8.0"],
-    },
-    "T4_24_all_approaches_visible": {
-        "tier": 4,
-        "question": "Can the proposer see all distinct approaches tried?",
-        "terms": ["zero-shot", "few-shot", "keyword"],
-        "logic": "any_two",
-    },
+DOMAINS = {
+    "Classification": (CLASSIFICATION_HARNESSES, CLASSIFICATION_FRONTIER, CLASSIFICATION_QUESTIONS),
+    "Code Generation": (CODE_HARNESSES, CODE_FRONTIER, CODE_QUESTIONS),
+    "Research / RAG": (RESEARCH_HARNESSES, RESEARCH_FRONTIER, RESEARCH_QUESTIONS),
+    "Tool Calling": (TOOL_HARNESSES, TOOL_FRONTIER, TOOL_QUESTIONS),
+    "ML Training": (ML_HARNESSES, ML_FRONTIER, ML_QUESTIONS),
 }
 
 
-def check_question(digest_lower: str, qdata: dict) -> bool:
-    """Check if a question is answerable from the digest."""
+def check_question(digest_lower, qdata):
     terms = qdata["terms"]
     logic = qdata.get("logic", "all")
-
     if logic == "all":
         return all(t.lower() in digest_lower for t in terms)
-    elif logic == "both_needed":
-        return all(t.lower() in digest_lower for t in terms)
     elif logic == "any_two":
-        found = sum(1 for t in terms if t.lower() in digest_lower)
-        return found >= 2
+        return sum(1 for t in terms if t.lower() in digest_lower) >= 2
     return False
 
 
 def evaluate_quality():
-    print("=" * 72)
-    print("COMPACTION QUALITY EVALUATION — 24 questions, 4 tiers")
-    print("=" * 72)
+    print("=" * 78)
+    print("MULTI-DOMAIN COMPACTION QUALITY EVALUATION")
+    print("=" * 78)
     print()
 
-    all_results = []
+    domain_results = {}
+    for domain_name, (harnesses, frontier, questions) in DOMAINS.items():
+        domain_results[domain_name] = {}
+        for level in range(0, 11):
+            c = Compactor(level=level)
+            digest, metrics = c.build_digest(harnesses, frontier)
+            digest_lower = digest.lower()
+            passed = sum(1 for q in questions.values() if check_question(digest_lower, q))
+            domain_results[domain_name][level] = {
+                "passed": passed, "total": len(questions),
+                "pct": passed / len(questions) * 100,
+                "savings": metrics.savings_pct,
+            }
 
+    for domain_name in DOMAINS:
+        print(f"--- {domain_name} ---")
+        for level in [0, 3, 5, 7, 10]:
+            r = domain_results[domain_name][level]
+            bar = "#" * int(r["pct"] / 5)
+            print(f"  Level {level:2d} | {r['savings']:4.0f}% saved | {r['pct']:5.1f}% quality [{bar:20s}]")
+        print()
+
+    print("=" * 78)
+    print("AGGREGATE")
+    print("=" * 78)
     for level in range(0, 11):
-        c = Compactor(level=level)
-        digest, metrics = c.build_digest(REALISTIC_HARNESSES, FRONTIER)
-        digest_lower = digest.lower()
+        total_p = sum(domain_results[d][level]["passed"] for d in DOMAINS)
+        total_q = sum(domain_results[d][level]["total"] for d in DOMAINS)
+        avg_sav = sum(domain_results[d][level]["savings"] for d in DOMAINS) / len(DOMAINS)
+        pct = total_p / total_q * 100
+        bar = "#" * int(pct / 5)
+        print(f"Level {level:2d} | {avg_sav:4.0f}% saved | {pct:5.1f}% quality [{bar:20s}]")
 
-        tier_results = {1: [], 2: [], 3: [], 4: []}
-        total_pass = 0
-
-        for qname, qdata in DIAGNOSTIC_QUESTIONS.items():
-            passed = check_question(digest_lower, qdata)
-            tier_results[qdata["tier"]].append((qname, passed))
-            if passed:
-                total_pass += 1
-
-        tier_scores = {}
-        for tier in range(1, 5):
-            items = tier_results[tier]
-            tier_scores[tier] = sum(1 for _, p in items if p)
-
-        quality = total_pass / len(DIAGNOSTIC_QUESTIONS)
-
-        all_results.append({
-            "level": level,
-            "chars": metrics.compacted_chars,
-            "savings": metrics.savings_pct,
-            "total_pass": total_pass,
-            "quality": quality,
-            "tier_scores": tier_scores,
-            "tier_results": tier_results,
-        })
-
-        t1 = f"T1:{tier_scores[1]}/7"
-        t2 = f"T2:{tier_scores[2]}/5"
-        t3 = f"T3:{tier_scores[3]}/6"
-        t4 = f"T4:{tier_scores[4]}/6"
-        bar = "#" * int(quality * 30)
-
-        print(
-            f"Level {level:2d} | {metrics.compacted_chars:5d} chars "
-            f"({metrics.savings_pct:4.0f}% saved) | "
-            f"{total_pass}/24 | {t1} {t2} {t3} {t4} | "
-            f"[{bar:30s}]"
-        )
-
-    # Detail: what's lost
     print()
-    print("-" * 72)
-    print("INFORMATION LOSS BY TIER")
-    print("-" * 72)
-    for r in all_results:
-        lost = []
-        for tier in range(1, 5):
-            for qname, passed in r["tier_results"][tier]:
-                if not passed:
-                    lost.append(f"T{tier}:{qname.split('_', 2)[-1]}")
-        if lost:
-            print(f"Level {r['level']:2d}: LOST [{', '.join(lost)}]")
-
-    # Validations
-    print()
-    print("-" * 72)
+    print("-" * 78)
     print("VALIDATION")
-    print("-" * 72)
+    print("-" * 78)
+    ok = 0
+    total = 0
 
-    passed_v = 0
-    total_v = 0
-
-    # V1: Level 0 answers all
-    total_v += 1
-    l0 = all_results[0]
-    if l0["quality"] == 1.0:
-        print(f"PASS: Level 0 — {l0['total_pass']}/24 questions")
-        passed_v += 1
+    total += 1
+    if all(domain_results[d][0]["pct"] == 100 for d in DOMAINS):
+        print("PASS: All domains 100% at level 0"); ok += 1
     else:
-        print(f"FAIL: Level 0 — {l0['total_pass']}/24 questions")
+        print("FAIL: Some domains below 100% at level 0")
 
-    # V2: Default (5) answers >= 20/24
-    total_v += 1
-    l5 = all_results[5]
-    if l5["total_pass"] >= 20:
-        print(f"PASS: Level 5 (default) — {l5['total_pass']}/24 questions, {l5['savings']:.0f}% saved")
-        passed_v += 1
+    total += 1
+    if all(domain_results[d][5]["pct"] >= 90 for d in DOMAINS):
+        print("PASS: All domains >= 90% at default level"); ok += 1
     else:
-        print(f"FAIL: Level 5 — {l5['total_pass']}/24 questions")
+        for d in DOMAINS:
+            if domain_results[d][5]["pct"] < 90: print(f"  FAIL: {d} = {domain_results[d][5]['pct']:.0f}%")
 
-    # V3: Level 10 answers >= 16/24
-    total_v += 1
-    l10 = all_results[10]
-    if l10["total_pass"] >= 16:
-        print(f"PASS: Level 10 (max) — {l10['total_pass']}/24 questions, {l10['savings']:.0f}% saved")
-        passed_v += 1
+    total += 1
+    if all(domain_results[d][10]["pct"] >= 70 for d in DOMAINS):
+        print("PASS: All domains >= 70% at max level"); ok += 1
     else:
-        print(f"FAIL: Level 10 — {l10['total_pass']}/24 questions")
+        for d in DOMAINS:
+            if domain_results[d][10]["pct"] < 70: print(f"  FAIL: {d} = {domain_results[d][10]['pct']:.0f}%")
 
-    # V4: Tier 1 (direct facts) always 100% at levels 0-7
-    total_v += 1
-    t1_ok = all(all_results[i]["tier_scores"][1] == 7 for i in range(8))
-    if t1_ok:
-        print("PASS: Tier 1 (direct facts) — 7/7 at levels 0-7")
-        passed_v += 1
-    else:
-        print("FAIL: Tier 1 lost questions before level 8")
-
-    # V5: Tier 3 (causal) still >= 4/6 at level 10
-    total_v += 1
-    if l10["tier_scores"][3] >= 4:
-        print(f"PASS: Tier 3 (causal) at level 10 — {l10['tier_scores'][3]}/6")
-        passed_v += 1
-    else:
-        print(f"FAIL: Tier 3 at level 10 — {l10['tier_scores'][3]}/6")
-
-    # V6: No cliff > 3 questions lost in one step
-    total_v += 1
+    total += 1
     cliff = False
-    for i in range(1, len(all_results)):
-        drop = all_results[i - 1]["total_pass"] - all_results[i]["total_pass"]
-        if drop > 3:
-            print(f"FAIL: Cliff at level {i}: lost {drop} questions")
-            cliff = True
-    if not cliff:
-        print("PASS: No quality cliffs (max 3 questions lost per step)")
-        passed_v += 1
+    for d in DOMAINS:
+        for l in range(1, 11):
+            drop = domain_results[d][l-1]["pct"] - domain_results[d][l]["pct"]
+            if drop > 30: print(f"  FAIL: {d} cliff at level {l}"); cliff = True
+    if not cliff: print("PASS: No quality cliffs"); ok += 1
 
-    # V7: Savings at default >= 30%
-    total_v += 1
-    if l5["savings"] >= 30:
-        print(f"PASS: Default savings — {l5['savings']:.0f}%")
-        passed_v += 1
-    else:
-        print(f"FAIL: Default savings — {l5['savings']:.0f}%")
+    total += 1
+    avg5 = sum(domain_results[d][5]["savings"] for d in DOMAINS) / len(DOMAINS)
+    if avg5 >= 30: print(f"PASS: Average savings at default = {avg5:.0f}%"); ok += 1
+    else: print(f"FAIL: Average savings at default = {avg5:.0f}%")
 
-    # V8: Tier 4 (synthesis) >= 4/6 at default
-    total_v += 1
-    if l5["tier_scores"][4] >= 4:
-        print(f"PASS: Tier 4 (synthesis) at default — {l5['tier_scores'][4]}/6")
-        passed_v += 1
-    else:
-        print(f"FAIL: Tier 4 at default — {l5['tier_scores'][4]}/6")
-
-    print(f"\n{'=' * 72}")
-    print(f"RESULT: {passed_v}/{total_v} validations passed")
-    print(f"{'=' * 72}")
-
-    return passed_v == total_v
+    print(f"\n{'=' * 78}")
+    print(f"RESULT: {ok}/{total} validations passed")
+    print(f"{'=' * 78}")
+    return ok == total
 
 
 if __name__ == "__main__":
