@@ -11,6 +11,14 @@ All notable changes to KAOS are documented here.
 - **#24 Lint operation** -- `kaos mh lint <search-agent-id>` health-checks for empty scores, failed harnesses, iteration errors, missing frontiers.
 - **#26 Persistent skills** -- Winning harnesses auto-filed to knowledge agent. `kaos mh knowledge` shows discoveries by benchmark. Future searches use prior winners as seeds.
 
+### Smart Context Compaction (#11 partial fix)
+
+- **Compactor class** -- Tunable compaction (level 0-10) with three strategies: lossless (scores, source), structured extraction (traces → error patterns + samples), progressive summarization (conversation → sliding window).
+- **Archive digest** -- Proposer gets a pre-built digest of all harnesses instead of doing 5-10 tool calls. Reduces proposer turns from ~10 to 1-2, fixing the main cause of `claude --print` timeouts.
+- **Conversation compaction** -- CCR auto-compacts conversations >20 messages. Old tool results compressed to `[tool result: N chars]`. Recent messages kept verbatim.
+- **compaction_level config** -- `SearchConfig.compaction_level` (0-10), configurable in `kaos.yaml`. Level 0 = raw data, 5 = balanced (default), 10 = maximum.
+- **38 compaction tests** -- Monotonic compression verified across all levels. Retention score measured (scores + source always preserved). Digest quality validated at 7 levels.
+
 ### Full-Text Search (Hermes Agent pattern)
 
 - **#25 VFS search** -- `kaos search "query"` searches across all file contents. `--agent` scopes to one agent. `Kaos.search()` API. Returns agent_id, path, line number, matching content.

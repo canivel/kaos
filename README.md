@@ -7,7 +7,7 @@
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
 [![Version](https://img.shields.io/badge/version-0.4.0-blueviolet)]()
-[![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
 [![Dependencies](https://img.shields.io/badge/deps-44%20total-lightgrey)]()
@@ -750,6 +750,7 @@ Inspired by [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6
 - **VFS auto-index** (#23) — `kaos index <agent-id>` builds a navigable `/index.md`
 - **Lint** (#24) — `kaos mh lint <id>` health-checks for contradictions, failures, gaps
 - **Persistent skills** (#26) — `kaos mh knowledge` shows all discoveries by benchmark
+- **Smart compaction** (#11) — Tunable context compression (level 0-10). Pre-built archive digest reduces proposer turns from ~10 to 1-2, fixing the main cause of timeouts
 
 ### v0.3.x Highlights
 - `--json` on all commands, worker subprocess, `provider: claude_code`

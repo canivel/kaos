@@ -157,6 +157,7 @@ class ProposerAgent:
         n_candidates: int,
         benchmark_name: str,
         frontier: ParetoFrontier,
+        compaction_level: int = 5,
     ) -> list[HarnessCandidate]:
         """Run the proposer agent and collect submitted harness candidates.
 
@@ -175,6 +176,10 @@ class ProposerAgent:
             frontier_lines.append(f"  {p.harness_id[:12]}... (iter {p.iteration}): {scores_str}")
         frontier_summary = "\n".join(frontier_lines) if frontier_lines else "  (empty — seeds not yet evaluated)"
 
+        # Pre-build archive digest so the proposer doesn't need multiple
+        # tool calls to read the archive (reduces turns from 5-10 to 1-2)
+        archive_digest = self._build_archive_digest(compaction_level)
+
         prompt = build_proposer_prompt(
             iteration=iteration,
             n_candidates=n_candidates,
@@ -182,6 +187,16 @@ class ProposerAgent:
             objective_summary=objective_summary,
             frontier_summary=frontier_summary,
         )
+
+        if archive_digest:
+            prompt += (
+                "\n\n## Pre-loaded Archive Digest\n\n"
+                "The following is a compacted summary of ALL prior harnesses, "
+                "their scores, error patterns, and source code. You can still "
+                "use the archive tools for details, but this digest should have "
+                "everything you need to propose improvements.\n\n"
+                + archive_digest
+            )
 
         # Spawn and run the proposer agent
         config = {}
@@ -216,6 +231,90 @@ class ProposerAgent:
             iteration, len(self._submitted),
         )
         return self._submitted
+
+    # ── Archive digest ───────────────────────────────────────────
+
+    def _build_archive_digest(self, compaction_level: int) -> str:
+        """Pre-read the archive and build a compacted digest."""
+        from kaos.metaharness.compactor import Compactor
+
+        try:
+            compactor = Compactor(level=compaction_level)
+            harness_dirs = self.afs.ls(self.search_agent_id, "/harnesses")
+
+            harness_data = []
+            for entry in harness_dirs:
+                if not entry.get("is_dir"):
+                    continue
+                hid = entry["name"]
+                h: dict = {"harness_id": hid}
+
+                try:
+                    h["scores"] = json.loads(
+                        self.afs.read(self.search_agent_id, f"/harnesses/{hid}/scores.json").decode()
+                    )
+                except FileNotFoundError:
+                    h["scores"] = {}
+
+                try:
+                    meta = json.loads(
+                        self.afs.read(self.search_agent_id, f"/harnesses/{hid}/metadata.json").decode()
+                    )
+                    h["iteration"] = meta.get("iteration", 0)
+                    h["error"] = meta.get("error")
+                except FileNotFoundError:
+                    h["iteration"] = 0
+
+                try:
+                    h["source"] = self.afs.read(
+                        self.search_agent_id, f"/harnesses/{hid}/source.py"
+                    ).decode()
+                except FileNotFoundError:
+                    h["source"] = ""
+
+                try:
+                    pp_raw = self.afs.read(
+                        self.search_agent_id, f"/harnesses/{hid}/per_problem.jsonl"
+                    ).decode()
+                    h["per_problem"] = [
+                        json.loads(line) for line in pp_raw.strip().split("\n") if line.strip()
+                    ]
+                except FileNotFoundError:
+                    h["per_problem"] = []
+
+                harness_data.append(h)
+
+            if not harness_data:
+                return ""
+
+            # Read frontier
+            try:
+                frontier_data = json.loads(
+                    self.afs.read(self.search_agent_id, "/pareto/frontier.json").decode()
+                )
+            except FileNotFoundError:
+                frontier_data = None
+
+            digest, metrics = compactor.build_digest(harness_data, frontier_data)
+
+            # Store metrics for debugging
+            self.afs.write(
+                self.search_agent_id,
+                f"/compaction_metrics.json",
+                json.dumps(metrics.to_dict(), indent=2).encode(),
+            )
+
+            logger.info(
+                "Archive digest: %d→%d chars (%.0f%% saved, retention=%.0f%%)",
+                metrics.original_chars, metrics.compacted_chars,
+                metrics.savings_pct, metrics.retention_score * 100,
+            )
+
+            return digest
+
+        except Exception as e:
+            logger.warning("Failed to build archive digest: %s", e)
+            return ""
 
     # ── Archive tool handlers ────────────────────────────────────
 

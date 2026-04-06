@@ -156,6 +156,7 @@ class SearchConfig:
     eval_subset_size: int | None = None  # Subsample problems for faster search
     harness_timeout_seconds: int = 300
     proposer_timeout_seconds: int = 900  # 15 min max per proposer iteration
+    compaction_level: int = 5  # 0 (no compaction) to 10 (maximum)
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -275,6 +275,11 @@ class ClaudeCodeRunner:
                         agent_id, label=f"auto-iter-{iteration}"
                     )
 
+                # Compact conversation if it's getting large (>20 messages)
+                if len(conversation) > 20:
+                    from kaos.metaharness.compactor import compact_conversation
+                    conversation = compact_conversation(conversation, keep_recent=6)
+
                 # Persist state
                 self.afs.set_state(agent_id, "iteration", iteration + 1)
                 self.afs.set_state(agent_id, "conversation", conversation)

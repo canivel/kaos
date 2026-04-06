@@ -120,6 +120,7 @@ class MetaHarnessSearch:
                         n_candidates=self.config.candidates_per_iteration,
                         benchmark_name=self.benchmark.name,
                         frontier=frontier,
+                        compaction_level=self.config.compaction_level,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -338,6 +339,7 @@ class MetaHarnessSearch:
                         n_candidates=self.config.candidates_per_iteration,
                         benchmark_name=self.benchmark.name,
                         frontier=frontier,
+                        compaction_level=self.config.compaction_level,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
