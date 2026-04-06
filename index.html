@@ -225,10 +225,10 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <section class="hero">
 <div class="wrap">
   <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. CLI-first with <code>--json</code> output for any agent framework.</p>
+  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction saves ~120K tokens per search with zero quality loss.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="#changelog" class="btn btn-secondary">What's New in v0.4.1</a>
+    <a href="#compaction" class="btn btn-secondary">See the savings &darr;</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
@@ -236,9 +236,9 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   </div>
   <div class="badges">
     <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.4.1</span>
-    <span class="badge green">157 tests passing</span>
-    <span class="badge blue">Python 3.11+</span>
-    <span class="badge">Apache 2.0</span>
+    <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">~120K tokens saved / search</span>
+    <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">78% token reduction</span>
+    <span class="badge">100% quality at default</span>
     <span class="badge">CLI-first + MCP</span>
     <span class="badge">Zero AI SDK deps</span>
   </div>
