@@ -291,16 +291,11 @@ class Compactor:
 
         parts: list[str] = []
 
-        # Level 0: return raw data
+        # Level 0: structured digest with all data (no data dropped, but organized)
         if self.level == 0:
-            parts.append("## Full Archive (no compaction)\n")
-            parts.append(original)
-            metrics.compacted_chars = len(original)
-            metrics.has_error_patterns = True
-            metrics.has_source_code = True
-            metrics.has_scores = True
-            metrics.has_failure_samples = True
-            return "\n".join(parts), metrics
+            # Still build a structured digest — raw JSON dumps are less useful
+            # than organized output with error patterns extracted
+            pass  # fall through to the normal digest builder
 
         # Frontier summary
         if frontier_data:

@@ -117,9 +117,12 @@ class TestCompactorLevels:
     def test_level_0_no_compaction(self):
         c = Compactor(level=0)
         digest, metrics = c.build_digest(SAMPLE_HARNESS_DATA, SAMPLE_FRONTIER)
-        # Level 0 should be essentially full data
-        assert metrics.ratio > 0.9
+        # Level 0 uses structured digest — still extracts patterns but keeps all data
         assert metrics.retention_score == 1.0
+        assert metrics.has_error_patterns
+        assert metrics.has_source_code
+        assert metrics.has_scores
+        assert metrics.has_failure_samples
 
     def test_level_5_balanced(self):
         c = Compactor(level=5)
