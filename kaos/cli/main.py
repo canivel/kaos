@@ -444,14 +444,11 @@ def serve(db: str, port: int, host: str, transport: str, config_file: str):
     ccr = ClaudeCodeRunner(afs, router)
     mcp_server = init_server(afs, ccr)
 
-    console.print(f"[green]Starting KAOS MCP server ({transport})...[/green]")
-
     if transport == "stdio":
-        # Redirect stdout → stderr so any library logging to stdout
-        # (e.g., benchmark modules, print statements) doesn't corrupt
-        # the MCP JSON-RPC stdio protocol. The MCP library uses its own
-        # write stream from stdio_server(), not sys.stdout.
+        # Redirect stdout → stderr BEFORE any output.
+        # Any text on stdout corrupts the MCP JSON-RPC protocol.
         sys.stdout = sys.stderr
+        logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
         from mcp.server.stdio import stdio_server
         asyncio.run(_run_stdio(mcp_server))
     else:
