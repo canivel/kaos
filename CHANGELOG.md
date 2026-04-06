@@ -2,6 +2,32 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.4.0] - 2026-04-06
+
+### Knowledge Compounding (Karpathy LLM Wiki pattern)
+
+- **#22 Cross-search memory** -- Persistent "kaos-knowledge" agent stores winning harnesses and frontiers. New searches automatically load prior discoveries as seeds instead of starting from scratch. Knowledge compounds across searches.
+- **#23 VFS auto-index** -- `kaos index <agent-id>` builds `/index.md` with categorized file listing. `Kaos.build_index()` API.
+- **#24 Lint operation** -- `kaos mh lint <search-agent-id>` health-checks for empty scores, failed harnesses, iteration errors, missing frontiers.
+- **#26 Persistent skills** -- Winning harnesses auto-filed to knowledge agent. `kaos mh knowledge` shows discoveries by benchmark. Future searches use prior winners as seeds.
+
+### Full-Text Search (Hermes Agent pattern)
+
+- **#25 VFS search** -- `kaos search "query"` searches across all file contents. `--agent` scopes to one agent. `Kaos.search()` API. Returns agent_id, path, line number, matching content.
+
+### New CLI Commands
+
+- `kaos search <query>` -- full-text search across all agent VFS contents
+- `kaos index <agent-id>` -- build /index.md for an agent's VFS
+- `kaos mh lint <search-id>` -- health-check a search archive
+- `kaos mh knowledge` -- view persistent knowledge base / discoveries
+
+### New Core API
+
+- `Kaos.get_or_create_singleton(name)` -- get or create a persistent named agent
+- `Kaos.build_index(agent_id)` -- build /index.md for an agent
+- `Kaos.search(query, agent_id=None)` -- full-text search across file contents
+
 ## [0.3.1] - 2026-04-05
 
 ### Bug Fixes

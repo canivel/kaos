@@ -50,7 +50,7 @@ def _json_err(ctx, msg: str):
 
 
 @click.group()
-@click.version_option(version="0.3.1", prog_name="kaos")
+@click.version_option(version="0.4.0", prog_name="kaos")
 @click.option("--json", "json_output", is_flag=True, default=False,
               help="Output structured JSON (auto-enabled when piped)")
 @click.pass_context
@@ -616,6 +616,55 @@ def logs(ctx, agent_id: str, db: str, tail: int):
         afs.close()
 
 
+@cli.command("index")
+@click.argument("agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def build_index(ctx, agent_id: str, db: str):
+    """Build an /index.md for an agent's VFS."""
+    afs = _get_afs(db)
+    try:
+        content = afs.build_index(agent_id)
+        if ctx.obj.get("json"):
+            click.echo(json.dumps({"agent_id": agent_id, "index": content}))
+        else:
+            console.print(content)
+    except ValueError as e:
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
+@cli.command("search")
+@click.argument("query_text")
+@click.option("--agent", "-a", help="Scope to one agent")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--limit", "-n", default=50, help="Max results")
+@click.pass_context
+def search_files(ctx, query_text: str, agent: str, db: str, limit: int):
+    """Full-text search across agent VFS file contents."""
+    afs = _get_afs(db)
+    try:
+        results = afs.search(query_text, agent_id=agent, limit=limit)
+        if _json_out(ctx, results):
+            return
+        if not results:
+            console.print("[dim]No matches[/dim]")
+            return
+        from rich.table import Table as _T
+        table = _T(title=f"Search: {query_text}")
+        table.add_column("Agent", style="cyan", max_width=14)
+        table.add_column("Path")
+        table.add_column("Line", justify="right")
+        table.add_column("Content", max_width=60)
+        for r in results:
+            table.add_row(r["agent_id"][:12] + "...", r["path"], str(r["line"]), r["content"][:60])
+        console.print(table)
+    finally:
+        afs.close()
+
+
 # ── Meta-Harness Commands ────────────────────────────────────────
 
 
@@ -913,6 +962,138 @@ def mh_resume(search_agent_id, benchmark, db, config_file):
 
     console.print(f"\n[green]{result.summary()}[/green]")
     afs.close()
+
+
+@mh.command("lint")
+@click.argument("search_agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def mh_lint(ctx, search_agent_id, db):
+    """Health-check a search archive for issues."""
+    afs = _get_afs(db)
+    try:
+        info = afs.status(search_agent_id)
+        harness_dirs = afs.ls(search_agent_id, "/harnesses")
+        issues_found = []
+
+        # Check for harnesses with empty scores
+        empty_scores = 0
+        failed_harnesses = 0
+        all_scores = {}
+        for entry in harness_dirs:
+            if not entry.get("is_dir"):
+                continue
+            hid = entry["name"]
+            try:
+                scores = json.loads(afs.read(search_agent_id, f"/harnesses/{hid}/scores.json").decode())
+                meta = json.loads(afs.read(search_agent_id, f"/harnesses/{hid}/metadata.json").decode())
+                if not scores:
+                    empty_scores += 1
+                if meta.get("error"):
+                    failed_harnesses += 1
+                all_scores[hid] = scores
+            except FileNotFoundError:
+                issues_found.append(f"Missing scores/metadata for harness {hid[:12]}")
+
+        if empty_scores:
+            issues_found.append(f"{empty_scores} harnesses have empty scores (evaluation failed)")
+        if failed_harnesses:
+            issues_found.append(f"{failed_harnesses} harnesses have errors in metadata")
+
+        # Check for iteration errors
+        iter_dirs = afs.ls(search_agent_id, "/iterations")
+        error_iters = 0
+        for entry in iter_dirs:
+            if entry.get("is_dir"):
+                try:
+                    afs.read(search_agent_id, f"{entry['path']}/error.json")
+                    error_iters += 1
+                except FileNotFoundError:
+                    pass
+        if error_iters:
+            issues_found.append(f"{error_iters} iterations had errors (proposer timeout or eval failure)")
+
+        # Check frontier
+        try:
+            frontier = json.loads(afs.read(search_agent_id, "/pareto/frontier.json").decode())
+            frontier_size = len(frontier.get("points", []))
+            if frontier_size == 0:
+                issues_found.append("Pareto frontier is empty — no successful harnesses")
+        except FileNotFoundError:
+            issues_found.append("No Pareto frontier found")
+            frontier_size = 0
+
+        result = {
+            "search_agent_id": search_agent_id,
+            "status": info["status"],
+            "total_harnesses": len(harness_dirs),
+            "frontier_size": frontier_size,
+            "issues": issues_found,
+            "health": "clean" if not issues_found else f"{len(issues_found)} issues",
+        }
+        if _json_out(ctx, result):
+            return
+
+        console.print(f"[bold]Lint: {search_agent_id[:14]}...[/bold]")
+        console.print(f"  Status: {info['status']}")
+        console.print(f"  Harnesses: {len(harness_dirs)}, Frontier: {frontier_size}")
+        if issues_found:
+            console.print(f"\n[yellow]{len(issues_found)} issues found:[/yellow]")
+            for issue in issues_found:
+                console.print(f"  - {issue}")
+        else:
+            console.print(f"\n[green]Clean — no issues found[/green]")
+    except ValueError as e:
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
+
+
+@mh.command("knowledge")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def mh_knowledge(ctx, db):
+    """Show the persistent knowledge base — discoveries from all prior searches."""
+    afs = _get_afs(db)
+    try:
+        knowledge_id = afs.get_or_create_singleton("kaos-knowledge")
+        files = afs.ls(knowledge_id, "/discoveries") if afs.exists(knowledge_id, "/discoveries") else []
+
+        benchmarks = []
+        for entry in files:
+            if entry.get("is_dir"):
+                bname = entry["name"]
+                try:
+                    latest = json.loads(
+                        afs.read(knowledge_id, f"/discoveries/{bname}/latest_search.json").decode()
+                    )
+                except FileNotFoundError:
+                    latest = {}
+                harnesses = afs.ls(knowledge_id, f"/discoveries/{bname}/harnesses") if afs.exists(knowledge_id, f"/discoveries/{bname}/harnesses") else []
+                benchmarks.append({
+                    "benchmark": bname,
+                    "harnesses_stored": len(harnesses),
+                    "latest_search": latest,
+                })
+
+        result = {"knowledge_agent_id": knowledge_id, "benchmarks": benchmarks}
+        if _json_out(ctx, result):
+            return
+
+        console.print(f"[bold]Knowledge Agent:[/bold] {knowledge_id[:14]}...")
+        if not benchmarks:
+            console.print("[dim]No discoveries yet — run a search first[/dim]")
+        for b in benchmarks:
+            console.print(f"\n  [cyan]{b['benchmark']}[/cyan]")
+            console.print(f"    Harnesses stored: {b['harnesses_stored']}")
+            if b["latest_search"]:
+                console.print(f"    Best scores: {b['latest_search'].get('best_scores', {})}")
+    except ValueError as e:
+        if not _json_err(ctx, str(e)):
+            console.print(f"[red]{e}[/red]")
+    finally:
+        afs.close()
 
 
 if __name__ == "__main__":

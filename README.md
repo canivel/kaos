@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.4.0-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-119%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -205,16 +205,20 @@ kaos restore <agent-id> --checkpoint X # Roll back
 kaos diff <agent-id> --from X --to Y   # What changed between checkpoints?
 kaos query "SELECT * FROM events"      # SQL queries
 kaos dashboard                         # Live TUI monitor
+kaos search "TF-IDF retrieval"         # Full-text search across all agents
+kaos index <agent-id>                  # Build /index.md for agent VFS
 kaos mh search -b text_classify -n 10 --background  # Background worker
 kaos mh search -b text_classify --dry-run            # Seeds only, no proposer
 kaos mh status <search-agent-id>       # Poll search progress
+kaos mh lint <search-agent-id>         # Health-check search archive
+kaos mh knowledge                      # View persistent knowledge base
 kaos mh resume <search-agent-id>       # Resume interrupted search
 kaos export <agent-id> -o backup.db    # Export a single agent
 
 # JSON output — composable with any agent framework
 kaos --json ls                         # Structured JSON to stdout
-kaos --json ls | jq '.[] | select(.status == "running")'
-kaos --json mh status <id> | jq .frontier_size
+kaos --json search "keyword"           # Search results as JSON
+kaos --json mh knowledge | jq .benchmarks
 ```
 
 ### Live Dashboard
@@ -736,32 +740,28 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.3.1
+## What's New in v0.4.0
 
-### Bug Fixes
-- **Windows Unicode crash** (#1) — CLI no longer crashes on non-ASCII output (cp1252 encoding)
-- **Parallel spawn contention** (#2) — `spawn()` retries on WAL lock, `wal_autocheckpoint=100`
-- **Large output truncation** (#7) — Results >4KB stored in VFS `/result.txt`, MCP returns preview + pointer
-- **Background search lock** (#16) — Frequent WAL checkpointing reduces lock hold time
+### Knowledge Compounding
+Inspired by [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): knowledge now **compounds across searches** instead of resetting.
 
-### New CLI Commands
-- **`kaos read <agent-id> <path>`** (#4) — Read files from agent VFS directly
-- **`kaos logs <agent-id>`** (#6) — View conversation history + event log with `--tail N`
-- **`kaos mh search --dry-run`** (#17) — Evaluate seeds only, report baseline scores
+- **Cross-search memory** (#22) — Persistent "kaos-knowledge" agent stores winning harnesses and frontiers. New searches load prior discoveries as seeds.
+- **Full-text search** (#25) — `kaos search "TF-IDF"` searches across all agent VFS contents
+- **VFS auto-index** (#23) — `kaos index <agent-id>` builds a navigable `/index.md`
+- **Lint** (#24) — `kaos mh lint <id>` health-checks for contradictions, failures, gaps
+- **Persistent skills** (#26) — `kaos mh knowledge` shows all discoveries by benchmark
 
-### v0.3.0 Highlights
-- `--json` on all commands (composable with any agent, 10-32x cheaper than MCP)
-- Worker subprocess for `mh search` (survives parent exit)
-- `provider: claude_code` (no API key needed)
-- Pluggable `llm()` callable injected into harnesses
-- Fail-fast retries, proposer timeout handling, objectives inherit from benchmark
+### v0.3.x Highlights
+- `--json` on all commands, worker subprocess, `provider: claude_code`
+- `kaos read`, `kaos logs`, `kaos mh search --dry-run`
+- Bug fixes: Unicode crash, WAL contention, output truncation, stdout corruption
 
 ### Upgrading
 
 ```bash
 git pull origin main
 uv sync
-kaos --version  # 0.3.1
+kaos --version  # 0.4.0
 ```
 
 If you have the MCP server running (via Claude Code or `kaos serve`), restart it so it picks up the new code:

@@ -168,6 +168,20 @@ class Kaos:
         finally:
             conn.close()
 
+    def get_or_create_singleton(self, name: str, config: dict | None = None) -> str:
+        """Get an existing agent by name, or create one if it doesn't exist.
+
+        Used for persistent agents like the knowledge store that should
+        survive across sessions.
+        """
+        row = self.conn.execute(
+            "SELECT agent_id FROM agents WHERE name = ? ORDER BY created_at DESC LIMIT 1",
+            (name,),
+        ).fetchone()
+        if row:
+            return row[0]
+        return self.spawn(name, config=config)
+
     def complete(self, agent_id: str) -> None:
         """Mark an agent as completed."""
         self.set_status(agent_id, "completed")
@@ -616,6 +630,78 @@ class Kaos:
         cursor = self.conn.execute(sql, params)
         columns = [desc[0] for desc in cursor.description] if cursor.description else []
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    # ── Index ────────────────────────────────────────────────────────
+
+    def build_index(self, agent_id: str) -> str:
+        """Build an /index.md file listing all files in the agent's VFS.
+
+        Returns the generated index content.
+        """
+        self._assert_agent_exists(agent_id)
+        rows = self.conn.execute(
+            "SELECT path, is_dir, size FROM files "
+            "WHERE agent_id = ? AND deleted = 0 AND path != '/' "
+            "ORDER BY path",
+            (agent_id,),
+        ).fetchall()
+
+        lines = ["# Index\n"]
+        current_dir = ""
+        for path, is_dir, size in rows:
+            parts = path.strip("/").split("/")
+            if len(parts) > 1:
+                parent = "/" + "/".join(parts[:-1])
+                if parent != current_dir:
+                    current_dir = parent
+                    lines.append(f"\n## {current_dir}/\n")
+            if is_dir:
+                lines.append(f"- **{parts[-1]}/** (directory)")
+            else:
+                lines.append(f"- `{parts[-1]}` ({size}b)")
+
+        content = "\n".join(lines) + "\n"
+        self.write(agent_id, "/index.md", content.encode())
+        return content
+
+    # ── Search ──────────────────────────────────────────────────────
+
+    def search(self, query: str, agent_id: str | None = None, limit: int = 50) -> list[dict]:
+        """Full-text search across file contents.
+
+        Searches all non-deleted files (optionally scoped to one agent).
+        Returns matches with path, agent_id, and matching line.
+        """
+        results = []
+        query_lower = query.lower()
+
+        sql = (
+            "SELECT agent_id, path, content_hash FROM files "
+            "WHERE deleted = 0 AND is_dir = 0 AND content_hash IS NOT NULL"
+        )
+        params: list = []
+        if agent_id:
+            sql += " AND agent_id = ?"
+            params.append(agent_id)
+        sql += " ORDER BY path LIMIT 500"
+
+        rows = self.conn.execute(sql, params).fetchall()
+        for aid, path, content_hash in rows:
+            try:
+                content = self.blobs.retrieve(content_hash).decode("utf-8", errors="replace")
+                for i, line in enumerate(content.split("\n"), 1):
+                    if query_lower in line.lower():
+                        results.append({
+                            "agent_id": aid,
+                            "path": path,
+                            "line": i,
+                            "content": line.strip()[:200],
+                        })
+                        if len(results) >= limit:
+                            return results
+            except Exception:
+                continue
+        return results
 
     # ── Internal Helpers ─────────────────────────────────────────────
 

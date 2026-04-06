@@ -214,7 +214,10 @@ class MetaHarnessSearch:
                 frontier.to_dict(),
             )
 
-        # Step 4: Final results
+        # Step 4: File discoveries to persistent knowledge agent
+        self._file_to_knowledge(frontier)
+
+        # Step 5: Final results
         total_duration = time.time() - start_time
         self.afs.complete(self.search_agent_id)
 
@@ -433,7 +436,7 @@ class MetaHarnessSearch:
         self.afs.set_state(self.search_agent_id, "current_iteration", iteration)
 
     def _load_seeds(self) -> list[HarnessCandidate]:
-        """Load seed harnesses from config or benchmark."""
+        """Load seed harnesses from config, benchmark defaults, and prior discoveries."""
         seeds = []
 
         # From config (file paths)
@@ -445,12 +448,19 @@ class MetaHarnessSearch:
                 metadata={"source": "seed_file", "path": path},
             ))
 
-        # From benchmark defaults
-        for source in self.benchmark.get_seed_harnesses():
-            seeds.append(HarnessCandidate.create(
-                source_code=source,
-                metadata={"source": "benchmark_seed"},
-            ))
+        # From prior searches (knowledge agent)
+        priors = self._load_prior_discoveries()
+        seeds.extend(priors)
+
+        # From benchmark defaults (skip if we already have prior discoveries)
+        if not priors:
+            for source in self.benchmark.get_seed_harnesses():
+                seeds.append(HarnessCandidate.create(
+                    source_code=source,
+                    metadata={"source": "benchmark_seed"},
+                ))
+        else:
+            logger.info("Using %d prior discoveries instead of default seeds", len(priors))
 
         return seeds
 
@@ -541,6 +551,89 @@ class MetaHarnessSearch:
             "/pareto/history.jsonl",
             history_text.encode(),
         )
+
+    def _file_to_knowledge(self, frontier: ParetoFrontier) -> None:
+        """File winning harnesses and insights to the persistent knowledge agent."""
+        try:
+            knowledge_id = self.afs.get_or_create_singleton("kaos-knowledge")
+            benchmark = self.config.benchmark
+
+            # Store frontier
+            self.afs.write(
+                knowledge_id,
+                f"/discoveries/{benchmark}/frontier.json",
+                json.dumps(frontier.to_dict(), indent=2).encode(),
+            )
+
+            # Store winning harness source code
+            for point in frontier.points:
+                try:
+                    source = self.afs.read(
+                        self.search_agent_id,
+                        f"/harnesses/{point.harness_id}/source.py",
+                    )
+                    self.afs.write(
+                        knowledge_id,
+                        f"/discoveries/{benchmark}/harnesses/{point.harness_id[:12]}.py",
+                        source,
+                    )
+                except FileNotFoundError:
+                    pass
+
+            # Store search summary
+            summary = {
+                "search_agent_id": self.search_agent_id,
+                "benchmark": benchmark,
+                "frontier_size": len(frontier.points),
+                "best_scores": {
+                    obj: max(
+                        (p.scores.get(obj, 0) for p in frontier.points),
+                        default=0,
+                    )
+                    for obj in self.config.objective_directions()
+                },
+                "iterations": self.config.max_iterations,
+                "harnesses_evaluated": len(self._all_results),
+            }
+            self.afs.write(
+                knowledge_id,
+                f"/discoveries/{benchmark}/latest_search.json",
+                json.dumps(summary, indent=2).encode(),
+            )
+
+            logger.info("Filed discoveries to knowledge agent %s", knowledge_id[:12])
+        except Exception as e:
+            logger.warning("Failed to file discoveries to knowledge: %s", e)
+
+    def _load_prior_discoveries(self) -> list[HarnessCandidate]:
+        """Load winning harnesses from prior searches via the knowledge agent."""
+        priors = []
+        try:
+            knowledge_id = self.afs.get_or_create_singleton("kaos-knowledge")
+            benchmark = self.config.benchmark
+            harness_dir = f"/discoveries/{benchmark}/harnesses"
+
+            entries = self.afs.ls(knowledge_id, harness_dir)
+            for entry in entries:
+                if entry.get("is_dir") or not entry["path"].endswith(".py"):
+                    continue
+                try:
+                    source = self.afs.read(knowledge_id, entry["path"]).decode()
+                    priors.append(HarnessCandidate.create(
+                        source_code=source,
+                        metadata={"source": "prior_discovery", "path": entry["path"]},
+                    ))
+                except Exception:
+                    continue
+
+            if priors:
+                logger.info(
+                    "Loaded %d prior discoveries for %s from knowledge base",
+                    len(priors), benchmark,
+                )
+        except Exception:
+            pass
+        return priors
 
 
 class SearchResult:
