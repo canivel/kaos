@@ -559,7 +559,7 @@ class ClaudeCodeProvider(LLMProvider):
         tool_choice: str | None = None,
     ) -> LLMResponse:
         import subprocess
-        import functools
+        import time as _time
 
         prompt = self._serialize_conversation(messages, tools)
         prompt_bytes = prompt.encode("utf-8")
@@ -570,9 +570,6 @@ class ClaudeCodeProvider(LLMProvider):
             cmd += ["--model", effective_model]
 
         # Strip CLAUDECODE so nested claude --print doesn't refuse to start.
-        # Use subprocess.run in a thread executor — asyncio.create_subprocess_exec
-        # is unreliable on Windows ProactorEventLoop when parent stdio is already
-        # in use by MCP protocol.
         env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
         timeout = self.timeout
 
@@ -586,22 +583,44 @@ class ClaudeCodeProvider(LLMProvider):
             )
 
         loop = asyncio.get_running_loop()
-        try:
-            proc_result = await loop.run_in_executor(None, _run_sync)
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"claude subprocess timed out after {timeout}s")
 
-        if proc_result.returncode != 0:
-            err = proc_result.stderr.decode("utf-8", errors="replace").strip()
-            raise RuntimeError(f"claude --print failed (rc={proc_result.returncode}): {err}")
+        # Retry with backoff on empty responses (rate limiting)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                proc_result = await loop.run_in_executor(None, _run_sync)
+            except subprocess.TimeoutExpired:
+                raise TimeoutError(f"claude subprocess timed out after {timeout}s")
 
-        stdout_text = proc_result.stdout.decode("utf-8", errors="replace")
-        stderr_text = proc_result.stderr.decode("utf-8", errors="replace").strip()
+            if proc_result.returncode != 0:
+                err = proc_result.stderr.decode("utf-8", errors="replace").strip()
+                raise RuntimeError(f"claude --print failed (rc={proc_result.returncode}): {err}")
 
-        if not stdout_text.strip():
-            logger.warning("claude --print returned empty stdout. stderr: %r", stderr_text)
+            stdout_text = proc_result.stdout.decode("utf-8", errors="replace")
+            stderr_text = proc_result.stderr.decode("utf-8", errors="replace").strip()
 
-        return self._parse(stdout_text)
+            if stdout_text.strip():
+                return self._parse(stdout_text)
+
+            # Empty response — likely rate limited by active Claude Code session
+            if attempt < max_retries - 1:
+                wait = 5 * (attempt + 1)
+                logger.warning(
+                    "claude --print returned empty (attempt %d/%d, retrying in %ds). "
+                    "This usually means an active Claude Code session is consuming the API quota.",
+                    attempt + 1, max_retries, wait,
+                )
+                await asyncio.sleep(wait)
+            else:
+                raise RuntimeError(
+                    "claude --print returned empty response after 3 attempts. "
+                    "This happens when an active Claude Code session is consuming "
+                    "the API quota. Either close the active session first, or use "
+                    "provider: anthropic with an ANTHROPIC_API_KEY for independent quota."
+                )
+
+        # unreachable but keeps type checker happy
+        raise RuntimeError("claude --print failed")
 
     async def close(self) -> None:
         pass  # No persistent connections
