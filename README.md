@@ -530,7 +530,18 @@ Meta-Harness automates the search. Here's the loop:
 
 **Paper-aligned improvements:** The proposer prompt enforces additive changes after regressions, isolates variables (one change per harness), and cross-references iterations. Harness candidates go through **two-stage validation** (AST check for a top-level `run()` function + smoke test) before evaluation. The proposer also has a `mh_grep_archive` tool to search across all files in the archive, making it easy to find which harnesses use a specific technique or which traces contain a failure mode.
 
-**Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file.
+**Smart Context Compaction (v0.4.0):** The proposer needs to read all prior harnesses, scores, and traces before proposing improvements. Without compaction, this means 5-10 tool calls per iteration, each replaying the full conversation — causing timeouts with subprocess-based providers. KAOS now pre-builds a structured **archive digest** that extracts error patterns, keeps scores and source code losslessly, and drops noise (correct-problem traces, verbose per-problem details). The proposer reads one digest instead of making 10 tool calls.
+
+```
+Compaction Results (6 diagnostic questions, all levels):
+Level  0 │ 5292 chars ( 22% saved) │ quality=100% │ 6/6 questions answerable
+Level  5 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 questions answerable ← default
+Level 10 │ 2512 chars ( 63% saved) │ quality=100% │ 6/6 questions answerable
+```
+
+Zero quality loss at any level — structured extraction is actually *better* than raw data because it surfaces patterns explicitly. Configure with `compaction_level` (0-10) in `SearchConfig` or `kaos.yaml`.
+
+**Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file. Knowledge compounds across searches via the persistent knowledge agent.
 
 ```bash
 # Run a search
@@ -634,11 +645,16 @@ router:
   classifier_model: local-qwen
   fallback_model: claude-sonnet
   context_compression: true
+  max_retries: 1             # fail fast — retries handled at search level
 
 ccr:
   max_iterations: 100
   checkpoint_interval: 10
   max_parallel_agents: 8
+
+search:
+  compaction_level: 5        # 0 (no compaction) to 10 (maximum), default 5
+  proposer_timeout: 900      # seconds per proposer iteration
 ```
 
 The `provider: local` format is backward compatible with the existing `vllm_endpoint` syntax — existing configs continue to work without changes.

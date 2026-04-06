@@ -368,6 +368,58 @@ Datasets are downloaded on first use and cached in `~/.cache/kaos/datasets/`. Su
 
 ---
 
+## Smart Context Compaction (v0.4.0)
+
+The proposer needs to read all prior harnesses, scores, and traces before proposing improvements. Without compaction, this means 5-10 tool calls per iteration — each replaying the full conversation via `claude --print`, causing timeouts.
+
+KAOS pre-builds a structured **archive digest** using three strategies:
+
+| Data type | Strategy | What happens |
+|---|---|---|
+| Scores, metadata | Lossless | Kept as-is (small, 100% signal) |
+| Source code | Lossless (levels 0-7), stripped (8-10) | Proposer always sees the code |
+| Per-problem results | Structured extraction | Error patterns + N failure samples |
+| Traces | Filtered | Only errors/failures kept, correct problems dropped |
+| Proposer conversation | Progressive summarization | Old turns summarized, recent kept verbatim |
+
+**Quality evaluation results** (tested with 6 diagnostic questions):
+
+```
+Level  0 │ 5292 chars ( 22% saved) │ quality=100% │ 6/6 questions answerable
+Level  3 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 questions answerable
+Level  5 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 questions answerable  ← default
+Level  7 │ 3024 chars ( 56% saved) │ quality=100% │ 6/6 questions answerable
+Level 10 │ 2512 chars ( 63% saved) │ quality=100% │ 6/6 questions answerable
+```
+
+Zero quality loss at any level. Structured extraction surfaces patterns explicitly — it's actually *better* than raw data for the proposer.
+
+Configure in `kaos.yaml`:
+```yaml
+search:
+  compaction_level: 5  # 0 (full data) to 10 (maximum compression)
+```
+
+Or per-search:
+```python
+config = SearchConfig(benchmark="text_classify", compaction_level=7)
+```
+
+---
+
+## Knowledge Compounding (v0.4.0)
+
+Knowledge now compounds across searches instead of resetting. When a search completes, winning harnesses are filed to a persistent "kaos-knowledge" agent. New searches automatically load prior discoveries as seeds.
+
+```bash
+kaos mh knowledge       # view discoveries by benchmark
+kaos mh lint <id>       # health-check a search archive
+kaos search "TF-IDF"    # full-text search across all agents
+kaos index <agent-id>   # build navigable /index.md
+```
+
+---
+
 ## CLI Reference
 
 ```bash
@@ -377,6 +429,8 @@ kaos mh search -b BENCHMARK -n ITERATIONS -k CANDIDATES
     --eval-model MODEL        # Force model for evaluation
     --max-parallel N          # Parallel evaluations
     --eval-subset N           # Subsample problems for speed
+    --dry-run                 # Evaluate seeds only, report baseline
+    --background              # Run as detached worker process
 
 # Resume an interrupted search from last completed iteration
 kaos mh resume SEARCH_AGENT_ID
@@ -389,6 +443,12 @@ kaos mh frontier SEARCH_AGENT_ID
 
 # Inspect a specific harness
 kaos mh inspect SEARCH_AGENT_ID HARNESS_ID
+
+# Health-check a search archive
+kaos mh lint SEARCH_AGENT_ID
+
+# View persistent knowledge base
+kaos mh knowledge
 ```
 
 ---
