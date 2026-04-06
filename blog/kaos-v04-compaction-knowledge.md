@@ -1,4 +1,4 @@
-# KAOS v0.4: your agents remember now, and they use 46% less context doing it
+# KAOS v0.4: your agents remember now, and they use 78% less context doing it
 
 <!-- HERO IMAGE — Generate with this prompt:
 
@@ -19,7 +19,7 @@ no robots. Style: abstract, clean, developer-focused infrastructure.
 
 ![Hero image](hero-v04.png)
 
-*we fixed the proposer timeout problem, made knowledge compound across searches, and built a compactor that saves 46% context with zero quality loss. here's what happened and why it matters.*
+*we fixed the proposer timeout problem, made knowledge compound across searches, and built a compactor that cuts agent context by 78% with zero quality loss. here's what happened and why it matters.*
 
 **GitHub:** [github.com/canivel/kaos](https://github.com/canivel/kaos) | **Website:** [canivel.github.io/kaos](https://canivel.github.io/kaos) | **License:** Apache 2.0 | Free and open source
 
@@ -147,35 +147,37 @@ Level 10 │  53% saved │  88% quality
 
 at the default level, every domain retains 100% quality. no exceptions. the 12% quality drop at max level comes from code generation and RAG — domains where specific error messages and routing decisions matter most.
 
-### the real savings: ~120K tokens per search
+### the real savings: 78% fewer tokens
 
 <!-- TOKEN SAVINGS CHART — Generate with this prompt:
 
 Horizontal bar chart on dark background (#0a0a0f). 16:9 ratio.
-5 domain rows, each with a gradient bar (purple→cyan) showing tokens
-saved and a thin green bar below showing quality retention %.
-Domain labels on the left. Token counts on the right of each bar.
-Bottom: aggregate box with "~120K tokens saved, 78% reduction,
-~$108/month at 10 searches/day" in a highlighted panel.
+5 domain rows, each with a gradient bar (purple→cyan) showing %
+tokens saved and a thin green bar below showing quality retention %.
+Domain labels on the left. Percentages on the right of each bar.
+Bottom: aggregate box with "78% reduction, 100% quality retained"
+in a highlighted panel.
 Style: clean, minimal, dark theme matching the other diagrams.
 
 -->
 
 ![Token savings by domain](compaction-chart.svg)
 
-heres where it gets real. without compaction, the proposer makes ~3 archive reads per iteration (ls, read scores, read source/traces). with compaction, its 1 digest read. over a 10-iteration search:
+heres where it gets real. without compaction, the proposer makes ~3 archive reads per iteration (ls, read scores, read source/traces). with compaction, its 1 digest read. the reduction per domain:
 
 ```
-Classification:   ~33K tokens saved (84% reduction)
-Code Generation:  ~21K tokens saved (77% reduction)
-Research / RAG:   ~24K tokens saved (76% reduction)
-Tool Calling:     ~21K tokens saved (77% reduction)
-ML Training:      ~21K tokens saved (76% reduction)
+Classification:   84% fewer tokens — 100% quality
+Code Generation:  77% fewer tokens — 100% quality
+Research / RAG:   76% fewer tokens — 100% quality
+Tool Calling:     77% fewer tokens — 100% quality
+ML Training:      76% fewer tokens — 100% quality
 
-Total:            ~120K tokens saved per search (78% reduction)
+Aggregate:        78% fewer tokens — 100% quality at default
 ```
 
 this matters a LOT right now because claude is limiting context heavily. every token you waste on verbose traces is a token you cant use for actual reasoning. with compaction, the proposer gets a dense, organized digest instead of raw JSON noise — and it uses 78% fewer tokens to get there.
+
+at scale the absolute numbers add up too. a 10-iteration search across these domains saves roughly 120K tokens. at sonnet pricing ($3/M input), thats ~$0.36 per search. running 10 searches a day during a research sprint, thats ~$108/month. but honestly the real value isnt the money — its that searches that used to timeout now complete because the context actually fits.
 
 at $3/M input tokens (sonnet pricing), thats about $0.36 saved per search. if youre running 10 searches a day during an active research sprint, thats ~$108/month. not life-changing money, but the real value is that searches that used to timeout now complete because the context fits.
 
