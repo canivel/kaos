@@ -9,7 +9,8 @@ All notable changes to KAOS are documented here.
 - **`provider: agent_sdk`** -- 5th provider type. Uses `claude_agent_sdk.query()` instead of `claude --print` subprocess. No rate limit competition with active Claude Code sessions. Seeds scored 90.6% accuracy vs 0% with `claude_code` provider in the same session.
 - **Single-shot proposer** -- proposer makes one LLM call instead of 5-10 multi-turn tool calls. Completes in ~18s vs timing out at 120s+.
 - **Empty response = error** -- `claude --print` returning empty stdout now retries 3x with backoff then raises with actionable message instead of silently producing garbage.
-- Default timeout 600s → 120s across all providers.
+- Default timeout 600s → 300s across all providers (120s was too short for complex benchmarks).
+- `max_prior_seeds=5` — caps knowledge compounding to top 5 discoveries instead of loading all.
 
 ### Provider Comparison
 

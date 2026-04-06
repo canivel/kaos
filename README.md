@@ -780,7 +780,7 @@ models:
 ### Other v0.4.x Highlights
 - Cross-search memory, full-text search, VFS index, lint, persistent skills
 - Smart compaction (78% fewer tokens, 100% quality at default)
-- Single-shot proposer, text extraction fallback, 120s default timeout
+- Single-shot proposer, text extraction fallback, max_prior_seeds=5
 
 ### v0.3.x Highlights
 - `--json` on all commands, worker subprocess, `provider: claude_code`
