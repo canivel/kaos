@@ -660,11 +660,17 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
 
     elif provider_type == "claude_code":
         model_id = kwargs.get("model_id", "")
-        timeout = kwargs.get("timeout", 120.0)  # 120s — single-shot, no multi-turn
+        timeout = kwargs.get("timeout", 120.0)
         return ClaudeCodeProvider(model_id=model_id, timeout=timeout)
+
+    elif provider_type == "agent_sdk":
+        from kaos.router.agent_sdk import AgentSDKProvider
+        model_id = kwargs.get("model_id", "sonnet")
+        timeout = kwargs.get("timeout", 120.0)
+        return AgentSDKProvider(model_id=model_id, timeout=timeout)
 
     else:
         raise ValueError(
             f"Unknown provider: {provider_type}. "
-            "Use 'openai', 'anthropic', 'local', or 'claude_code'."
+            "Use 'openai', 'anthropic', 'local', 'claude_code', or 'agent_sdk'."
         )

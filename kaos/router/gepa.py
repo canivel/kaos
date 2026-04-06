@@ -80,9 +80,9 @@ class GEPARouter:
                     api_key_env=cfg.api_key_env,
                     endpoint=cfg.vllm_endpoint or None,
                 )
-            elif cfg.provider == "claude_code":
+            elif cfg.provider in ("claude_code", "agent_sdk"):
                 self.clients[name] = create_provider(
-                    "claude_code",
+                    cfg.provider,
                     model_id=cfg.model_id,
                     timeout=cfg.timeout,
                 )
