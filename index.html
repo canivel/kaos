@@ -419,55 +419,80 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <h2>Smart Context Compaction</h2>
   <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level: 100% quality at 34% savings. Max level: 88% quality at 53% savings.</p>
 
-  <div class="compaction-grid">
-    <div>
-      <table class="compaction-table">
-        <thead>
-          <tr><th>Domain</th><th>Savings</th><th>Quality</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Classification</td>
-            <td>52%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:52%"></div></div></td>
-          </tr>
-          <tr>
-            <td>Code Generation</td>
-            <td>31%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:31%"></div></div></td>
-          </tr>
-          <tr>
-            <td>Research / RAG</td>
-            <td>28%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:28%"></div></div></td>
-          </tr>
-          <tr>
-            <td>Tool Calling</td>
-            <td>30%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:30%"></div></div></td>
-          </tr>
-          <tr>
-            <td>ML Training</td>
-            <td>28%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:28%"></div></div></td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Results at default compaction level (5). Quality measured across direct facts, comparison, causal reasoning, and synthesis questions per domain.</p>
-    </div>
-    <div>
-      <ul class="compaction-benefits">
-        <li><strong>Scores &amp; source code</strong> &mdash; always lossless. The proposer needs exact numbers and full code.</li>
-        <li><strong>Error patterns extracted</strong> &mdash; "3/8 wrong: science&rarr;technology (2x), timeout (1x)" is more useful than 8 raw trace entries.</li>
-        <li><strong>Failure samples kept</strong> &mdash; tunable: 20 at level 0, 3 at level 5, 0 at level 10. The proposer sees why problems fail, not just that they fail.</li>
-        <li><strong>Conversation auto-compacted</strong> &mdash; tool results older than 6 turns compressed to <code>[tool result: N chars]</code>. Recent turns kept verbatim.</li>
-      </ul>
-    </div>
+  <!-- Full matrix: domains x levels -->
+  <div style="overflow-x:auto;margin-bottom:2rem">
+    <table class="compaction-table" style="min-width:700px">
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th>Level 0</th>
+          <th>Level 3</th>
+          <th style="border-bottom-color:var(--accent2)">Level 5 <span style="color:var(--accent2);font-size:.65rem">(default)</span></th>
+          <th>Level 7</th>
+          <th>Level 10</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600">Classification</td>
+          <td>29% <span class="quality-badge">100%</span></td>
+          <td>52% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">52% <span class="quality-badge">100%</span></td>
+          <td>61% <span class="quality-badge">100%</span></td>
+          <td>68% <span class="quality-badge">100%</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Code Generation</td>
+          <td>31% <span class="quality-badge">100%</span></td>
+          <td>31% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">31% <span class="quality-badge">100%</span></td>
+          <td>41% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">90%</span></td>
+          <td>56% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">70%</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Research / RAG</td>
+          <td>24% <span class="quality-badge">100%</span></td>
+          <td>28% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">28% <span class="quality-badge">100%</span></td>
+          <td>34% <span class="quality-badge">100%</span></td>
+          <td>44% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">78%</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">Tool Calling</td>
+          <td>30% <span class="quality-badge">100%</span></td>
+          <td>30% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">30% <span class="quality-badge">100%</span></td>
+          <td>39% <span class="quality-badge">100%</span></td>
+          <td>53% <span class="quality-badge">100%</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600">ML Training</td>
+          <td>28% <span class="quality-badge">100%</span></td>
+          <td>28% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">28% <span class="quality-badge">100%</span></td>
+          <td>32% <span class="quality-badge">100%</span></td>
+          <td>45% <span class="quality-badge">100%</span></td>
+        </tr>
+        <tr style="border-top:2px solid var(--accent)">
+          <td style="font-weight:700;color:var(--fg)">Aggregate</td>
+          <td>28% <span class="quality-badge">100%</span></td>
+          <td>34% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06);font-weight:600">34% <span class="quality-badge">100%</span></td>
+          <td>41% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">98%</span></td>
+          <td>53% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">88%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Quality drops at high levels come from code generation (error messages) and research (routing details) &mdash; the lowest-value data drops first.</p>
+
+  <div style="max-width:600px;margin:0 auto">
+    <ul class="compaction-benefits">
+      <li><strong>Scores &amp; source code</strong> &mdash; always lossless. The proposer needs exact numbers and full code.</li>
+      <li><strong>Error patterns extracted</strong> &mdash; "3/8 wrong: science&rarr;technology (2x), timeout (1x)" beats raw traces.</li>
+      <li><strong>Failure samples tunable</strong> &mdash; 20 at level 0, 3 at default, 0 at max. See why problems fail, not just that they fail.</li>
+      <li><strong>Conversation auto-compacted</strong> &mdash; old tool results compressed to <code>[tool result: N chars]</code>. Recent turns kept verbatim.</li>
+    </ul>
   </div>
 
   <div class="stat-row">
