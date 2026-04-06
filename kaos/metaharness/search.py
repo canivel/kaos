@@ -450,8 +450,15 @@ class MetaHarnessSearch:
                 metadata={"source": "seed_file", "path": path},
             ))
 
-        # From prior searches (knowledge agent)
+        # From prior searches (knowledge agent) — capped to avoid digest bloat
         priors = self._load_prior_discoveries()
+        max_priors = self.config.max_prior_seeds
+        if len(priors) > max_priors:
+            logger.info(
+                "Capping prior discoveries from %d to %d (max_prior_seeds)",
+                len(priors), max_priors,
+            )
+            priors = priors[:max_priors]
         seeds.extend(priors)
 
         # From benchmark defaults (skip if we already have prior discoveries)
