@@ -402,7 +402,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
     <div class="feat-card">
       <div class="icon">&#x1f9e0;</div>
       <h3>Smart Context Compaction</h3>
-      <p>Tunable compression (0-10) reduces proposer context by 42-63%. Evaluated across 4 tiers of diagnostic questions &mdash; default level retains full quality. Structured extraction &gt; raw data.</p>
+      <p>Tunable compression (0-10) tested across 5 domains: classification, code gen, research, tool calling, ML. 100% quality retained at default level. Structured extraction &gt; raw data.</p>
     </div>
     <div class="feat-card">
       <div class="icon">&#x1f4da;</div>
@@ -417,48 +417,48 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="compaction" id="compaction">
 <div class="wrap">
   <h2>Smart Context Compaction</h2>
-  <p class="lead">Reduce context by 42-63% with full quality retention at the default level. Structured extraction beats raw data.</p>
+  <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level: 100% quality at 34% savings. Max level: 88% quality at 53% savings.</p>
 
   <div class="compaction-grid">
     <div>
       <table class="compaction-table">
         <thead>
-          <tr><th>Level</th><th>Savings</th><th>Quality</th><th></th></tr>
+          <tr><th>Domain</th><th>Savings</th><th>Quality</th><th></th></tr>
         </thead>
         <tbody>
           <tr>
-            <td>0 <span style="color:var(--fg2);font-size:.75rem">(full)</span></td>
-            <td>21%</td>
+            <td>Classification</td>
+            <td>52%</td>
             <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:21%"></div></div></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:52%"></div></div></td>
           </tr>
           <tr>
-            <td>3</td>
-            <td>42%</td>
+            <td>Code Generation</td>
+            <td>31%</td>
             <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:42%"></div></div></td>
-          </tr>
-          <tr style="background:rgba(108,92,231,.06)">
-            <td>5 <span style="color:var(--accent2);font-size:.75rem">(default)</span></td>
-            <td style="color:var(--fg);font-weight:600">42%</td>
-            <td><span class="quality-badge">100%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:42%"></div></div></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:31%"></div></div></td>
           </tr>
           <tr>
-            <td>7</td>
-            <td>56%</td>
-            <td><span class="quality-badge">88%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:56%"></div></div></td>
+            <td>Research / RAG</td>
+            <td>28%</td>
+            <td><span class="quality-badge">100%</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:28%"></div></div></td>
           </tr>
           <tr>
-            <td>10 <span style="color:var(--fg2);font-size:.75rem">(max)</span></td>
-            <td>63%</td>
-            <td><span class="quality-badge">83%</span></td>
-            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:63%"></div></div></td>
+            <td>Tool Calling</td>
+            <td>30%</td>
+            <td><span class="quality-badge">100%</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:30%"></div></div></td>
+          </tr>
+          <tr>
+            <td>ML Training</td>
+            <td>28%</td>
+            <td><span class="quality-badge">100%</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:28%"></div></div></td>
           </tr>
         </tbody>
       </table>
-      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Quality measured across 4 tiers: direct facts, comparison, causal reasoning, and synthesis. Default level retains full quality.</p>
+      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Results at default compaction level (5). Quality measured across direct facts, comparison, causal reasoning, and synthesis questions per domain.</p>
     </div>
     <div>
       <ul class="compaction-benefits">
@@ -473,10 +473,10 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="stat-row">
     <div class="stat-box">
       <span class="num green">100%</span>
-      <span class="label">Quality retained (default)</span>
+      <span class="label">Quality at default level</span>
     </div>
     <div class="stat-box">
-      <span class="num cyan">42%</span>
+      <span class="num cyan">34%</span>
       <span class="label">Context saved (default)</span>
     </div>
     <div class="stat-box">
