@@ -1,201 +1,240 @@
-# KAOS v0.4: Zero-Loss Compaction, Knowledge That Compounds, and a CLI That Agents Actually Use
+# KAOS v0.4: your agents remember now, and they use 46% less context doing it
 
-*Your agents were isolated, auditable, and checkpointed. Now they're also efficient, persistent, and composable. Here's what changed from v0.3 to v0.4 — and the real-world results.*
+<!-- HERO IMAGE — Generate with this prompt:
+
+Wide 16:9 dark-themed tech illustration. Center composition:
+A glowing SQLite cylinder with a brain-like neural pattern overlaid,
+connected by luminous threads to 3-4 translucent agent bubbles orbiting it.
+Each bubble has a different colored glow (purple, cyan, green, orange).
+From the brain pattern, arrows flow downward into a funnel/compressor
+that outputs a smaller, brighter, concentrated dot — representing
+compressed context. Next to the funnel: a small "46% smaller" label
+in monospace font. Below: a timeline showing 3 search iterations
+with a knowledge line connecting them (not resetting to zero).
+Color palette: deep navy (#0a0a0f), purple (#6c5ce7), cyan (#18ffff),
+green (#00e676), orange (#f97316). No text except the label, no faces,
+no robots. Style: abstract, clean, developer-focused infrastructure.
+
+-->
+
+![Hero image](hero-v04.png)
+
+*we fixed the proposer timeout problem, made knowledge compound across searches, and built a compactor that saves 46% context with zero quality loss. here's what happened and why it matters.*
 
 **GitHub:** [github.com/canivel/kaos](https://github.com/canivel/kaos) | **Website:** [canivel.github.io/kaos](https://canivel.github.io/kaos) | **License:** Apache 2.0 | Free and open source
 
 ---
 
-## The Problem We Had
+## the problem we had
 
-v0.2 gave KAOS its Meta-Harness — an AI that automatically optimizes the code wrapping your LLM. It worked. On our text_classify benchmark, the proposer took accuracy from 0% to 100% in two iterations, inventing a domain-keyword classifier from scratch.
+so v0.2 shipped Meta-Harness and it worked. the proposer took accuracy from 0% to 100% in two iterations on our text_classify benchmark, inventing a domain-keyword classifier from scratch. no LLM calls, just pure Python. pretty cool.
 
-But it was fragile. The proposer kept dying.
+but then it kept dying hahaha
 
-Here's why: each proposer iteration made 5-10 tool calls — list the archive, read 3 traces, read 2 source files, grep for patterns, submit a harness. Each tool call went through `claude --print`, which replays the *entire conversation* as input. By turn 6, the prompt was enormous. Timeout. Every time.
+every search past iteration 2 would timeout. the proposer makes 5-10 tool calls per iteration — list the archive, read 3 traces, read 2 source files, grep for patterns, submit a harness. each tool call goes through `claude --print`, which replays the ENTIRE conversation as input. by turn 6 the prompt is enormous and boom, timeout.
 
-We tried raising the timeout from 300s to 600s. Then to 900s. The proposer still died on iteration 3+ because the conversation kept growing.
-
-The fundamental issue wasn't the timeout — it was the architecture. We were feeding the proposer raw data and making it forage through the archive one tool call at a time. Every tool call made the next one slower.
+we tried raising the timeout from 300s to 600s. then 900s. didnt help. the problem wasnt the timeout — it was the architecture. we were feeding the proposer raw data and making it forage through the archive one tool call at a time. every tool call made the next one slower.
 
 ---
 
-## What We Built: Smart Context Compaction
+## smart context compaction
 
-Instead of letting the proposer explore the archive with tool calls, we pre-digest the entire archive and inject it into the prompt. One read instead of ten.
+instead of letting the proposer explore the archive with tool calls, we pre-digest the entire archive and inject it into the prompt. one read instead of ten.
 
-But "pre-digest" doesn't mean "truncate." Truncation is lossy in an uncontrolled way — you drop the tail and have no idea if the tail was the most important part. We built a **structured compactor** with three strategies:
+but "pre-digest" doesnt mean "truncate." truncation is lossy in an uncontrolled way — you drop the tail and have no idea if the tail was the most important part. we built a structured compactor with three strategies:
 
-| Data Type | Strategy | What Happens |
-|---|---|---|
-| Scores, metadata | **Lossless** | Kept exactly as-is. Small data, 100% signal. |
-| Source code | **Lossless** (levels 0-7) | The proposer needs to read the code. |
-| Per-problem results | **Structured extraction** | Raw traces → error patterns + failure samples. "3/8 wrong: science→technology (2x), timeout (1x)" is more useful than 8 verbose trace entries. |
-| Traces | **Filtered** | Only error/failure entries kept. Correct-problem traces dropped — they add noise, not signal. |
-| Conversation history | **Progressive summarization** | Old tool results → `[tool result: N chars]`. Recent turns kept verbatim. |
+<!-- COMPACTION DIAGRAM — Generate with this prompt:
 
-The key insight: structured extraction is *better* than raw data for the proposer. It surfaces the patterns explicitly instead of burying them in noise.
+Horizontal flow diagram on dark background (#0a0a0f). 16:9 ratio.
+LEFT: A tall stack of document icons labeled "Raw Archive" with sizes
+"30KB traces, 7KB source, 10KB per-problem" in small monospace text.
+An arrow flows right through a diamond-shaped "Compactor" node glowing
+purple (#6c5ce7).
+The compactor has 3 small labels branching from it:
+  - "Lossless" (green, pointing to scores/source icons)
+  - "Extract" (cyan, pointing to an error-pattern summary icon)
+  - "Filter" (orange, pointing to a filtered/smaller trace icon)
+RIGHT: A compact document icon labeled "Archive Digest" that's visually
+~half the size of the left stack. A badge reads "46% smaller, 0% loss".
+Below the flow: a bar chart showing 5 levels (0,3,5,7,10) with
+decreasing bar heights for size and all bars at the same height for
+quality (100%). Style: clean, minimal, rounded boxes.
 
-### The Results
+-->
 
-We tested with 6 diagnostic questions — the specific facts a proposer needs to propose a good harness:
+![Compaction flow](compaction-flow.png)
 
-- Q1: Which harness scored best? (proposed_keyword_classifier, accuracy=1.0)
-- Q2: What approach works? (keyword matching beats LLM-based)
-- Q3: Why did the seeds fail? (empty prediction, scored 0%)
-- Q4: Why did the LLM caller fail? (connection refused)
-- Q5: What's the best cost? (8.0 context tokens)
-- Q6: Is the winning source code available? (DOMAIN_KEYWORDS dict)
+**lossless** — scores and source code stay exactly as-is. small data, 100% signal. the proposer needs exact numbers and full code.
+
+**structured extraction** — raw traces and per-problem results get converted to error patterns. instead of 8 verbose trace entries you get "3/8 wrong: science→technology (2x), timeout (1x)". this is actually MORE useful than the raw data because it surfaces the patterns explicitly.
+
+**filtered** — correct-problem traces get dropped entirely. they add noise, not signal. only errors and failures kept.
+
+**conversation compaction** — for the CCR agent loop, tool results older than 6 turns get compressed to `[tool result: N chars]`. recent turns kept verbatim.
+
+### the results
+
+we tested with 6 diagnostic questions — the specific facts a proposer needs to make good decisions:
+
+- Q1: which harness scored best?
+- Q2: what approach works?
+- Q3: why did the seeds fail?
+- Q4: why did the LLM caller fail?
+- Q5: whats the best cost?
+- Q6: is the winning source code readable?
 
 ```
-Level  0 │ 5292 chars ( 22% saved) │ quality=100% │ 6/6 answerable
-Level  3 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 answerable
-Level  5 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 answerable  ← default
-Level  7 │ 3024 chars ( 56% saved) │ quality=100% │ 6/6 answerable
-Level 10 │ 2512 chars ( 63% saved) │ quality=100% │ 6/6 answerable
+Level  0 │ 5292 chars ( 22% saved) │ 6/6 answerable │ 100% quality
+Level  3 │ 3672 chars ( 46% saved) │ 6/6 answerable │ 100% quality
+Level  5 │ 3672 chars ( 46% saved) │ 6/6 answerable │ 100% quality  ← default
+Level  7 │ 3024 chars ( 56% saved) │ 6/6 answerable │ 100% quality
+Level 10 │ 2512 chars ( 63% saved) │ 6/6 answerable │ 100% quality
 ```
 
-**Zero quality loss at any compaction level.** The proposer can answer all 6 diagnostic questions whether you compress 22% or 63%. The savings come from dropping data that has no diagnostic value — correct-problem traces, verbose per-problem output, duplicate formatting.
+zero quality loss at any compaction level. the proposer can answer all 6 diagnostic questions whether you compress 22% or 63%. the savings come from dropping data that has no diagnostic value — correct-problem traces, verbose per-problem output, duplicate formatting.
 
-### How to Use It
+the key insight: structured extraction is actually BETTER than raw data for the proposer. it surfaces patterns that would take the LLM several reads to figure out from raw JSON.
 
-Default compaction level is 5 (46% savings). Configure in `kaos.yaml`:
+you can tune it in `kaos.yaml`:
 
 ```yaml
 search:
   compaction_level: 5  # 0 (no compaction) to 10 (maximum)
 ```
 
-Or per-search:
-
-```python
-config = SearchConfig(benchmark="text_classify", compaction_level=7)
-```
-
-Level 0 if you want the proposer to see everything. Level 10 if you're running on a model with a small context window.
+level 0 if you want the proposer to see everything. level 10 if youre running on a model with a small context window.
 
 ---
 
-## Knowledge That Compounds
+## knowledge that compounds
 
-This was the other big gap. Every `mh search` started from scratch — the proposer had zero memory of prior searches. It would discover "TF-IDF + keyword matching beats zero-shot by 100%" and then that finding would die when the search completed. The next search on the same benchmark would re-discover the same thing from scratch.
+this was the other big gap. every `mh search` started from scratch. the proposer had zero memory of prior searches. it would discover "TF-IDF + keyword matching beats zero-shot by 100%" and then that finding would die when the search completed. next search? starts over from seed harnesses, re-discovers the same thing.
 
-Inspired by [Karpathy's LLM Wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): *"The tedious part of maintaining a knowledge base is not the reading or the thinking — it's the bookkeeping."*
+i was reading [karpathy's LLM wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) and it clicked — "the tedious part of maintaining a knowledge base is not the reading or the thinking — its the bookkeeping." LLMs dont get bored maintaining cross-references.
 
-### How It Works
+<!-- KNOWLEDGE COMPOUNDING — Generate with this prompt:
 
-When a search completes, KAOS files the results to a persistent "kaos-knowledge" agent:
+Vertical flow diagram on dark background (#0a0a0f). 16:9 ratio.
+3 horizontal "search" lanes stacked vertically, connected by a
+vertical glowing line on the left (the knowledge thread).
+
+Lane 1 "Search 1": starts with 3 grey seed icons → arrow → proposer
+icon → arrow → green star icon labeled "keyword classifier 100%".
+Arrow goes down to the knowledge line.
+
+Lane 2 "Search 2": starts with the green star icon (loaded from
+knowledge line!) → arrow → proposer → arrow → cyan star "TF-IDF
+variant, 30% faster". Arrow goes down to knowledge line.
+
+Lane 3 "Search 3": starts with BOTH green and cyan stars (loaded
+from knowledge) → arrow → proposer → arrow → orange star "edge
+case specialist".
+
+On the left, the vertical knowledge line is labeled "kaos-knowledge
+agent" with a SQLite icon at the bottom.
+
+Style: clean timeline, thin glowing connections, dark background.
+
+-->
+
+![Knowledge compounding](knowledge-compound.png)
+
+### how it works
+
+when a search completes, KAOS files the results to a persistent "kaos-knowledge" agent:
 
 ```
 /discoveries/text_classify/
-    frontier.json           # Pareto-optimal harnesses
-    latest_search.json      # Summary: best scores, iterations, duration
+    frontier.json           # pareto-optimal harnesses
+    latest_search.json      # summary: best scores, iterations
     harnesses/
-        keyword_class.py    # The actual winning source code
-        few_shot_v2.py      # Second-best approach
+        keyword_class.py    # the actual winning source code
+        few_shot_v2.py      # second-best approach
 ```
 
-When a new search starts, KAOS loads prior discoveries as seeds instead of the default zero-shot/few-shot/retrieval seeds:
+when a new search starts, KAOS loads prior discoveries as seeds instead of the default zero-shot/few-shot/retrieval seeds.
 
-```
-Search 1: Seeds → zero-shot (0%), few-shot (0%), retrieval (0%)
-           Proposer invents keyword classifier → 100% accuracy
+search 1: seeds are generic → proposer invents keyword classifier → 100% accuracy
 
-Search 2: Seeds → keyword_classifier (100%) ← loaded from knowledge
-           Proposer starts from 100% and explores cost optimization
-           Discovers: TF-IDF variant that's 30% faster
+search 2: seeds loaded from knowledge = keyword classifier (100%) → proposer starts from 100% and explores cost optimization
 
-Search 3: Seeds → keyword_classifier (100%), tfidf_variant (100%, 30% faster)
-           Proposer focuses on edge cases...
-```
+search 3: seeds = both prior winners → proposer focuses on edge cases
 
-Each search builds on the last. The bookkeeping is automatic.
-
-### CLI Commands
+each search builds on the last. the bookkeeping is automatic.
 
 ```bash
-# View what's in the knowledge base
-kaos mh knowledge
-
-# Full-text search across all agent file contents
-kaos search "TF-IDF retrieval"
-
-# Build a navigable index for an agent's VFS
-kaos index <agent-id>
-
-# Health-check a search archive
-kaos mh lint <search-agent-id>
+kaos mh knowledge       # view whats in the knowledge base
+kaos search "TF-IDF"    # full-text search across all agents
+kaos index <agent-id>   # build navigable /index.md
+kaos mh lint <id>       # health-check a search archive
 ```
 
 ---
 
-## CLI-First Architecture (v0.3)
+## CLI-first architecture
 
-This was the biggest architectural shift. An [article on CLIs vs MCP for AI agents](https://medium.com/@unicodeveloper/10-must-have-clis-for-your-ai-agents-in-2026-51ba0d0881df) had a striking finding: CLI is 10-32x cheaper on tokens than MCP, with ~100% reliability vs MCP's 72%.
+btw this was the biggest architectural shift in v0.3. there was this [article about CLIs vs MCP for AI agents](https://medium.com/@unicodeveloper/10-must-have-clis-for-your-ai-agents-in-2026-51ba0d0881df) that showed CLI is 10-32x cheaper on tokens than MCP, with ~100% reliability vs MCP's 72%.
 
-The reason: MCP injects the entire tool schema into every context window. CLI just runs a command and gets the output.
+makes sense — MCP injects the entire tool schema into every context window. CLI just runs a command and gets the output.
 
-### `--json` on Everything
-
-Every KAOS CLI command now supports structured JSON output:
+so now every KAOS command supports `--json`:
 
 ```bash
-# Structured JSON — any agent framework can parse this
 kaos --json ls
-kaos --json status <agent-id>
 kaos --json mh status <search-id>
 kaos --json search "keyword"
-
-# Compose with jq
-kaos --json ls | jq '.[] | select(.status == "running")'
-
-# Pipe to other tools
 kaos --json mh knowledge | jq '.benchmarks[].harnesses_stored'
 ```
 
-Auto-enabled when stdout is piped (non-TTY). An agent calling `kaos --json ls` gets clean JSON; a human calling `kaos ls` gets a Rich table.
+auto-enabled when piped. an agent calling `kaos --json ls` gets clean JSON; a human calling `kaos ls` gets a Rich table.
 
-### Background Worker
+### background worker
 
-The MCP server's `mh_search` used to run the search as an `asyncio.create_task` in the same event loop. If the MCP connection dropped, the search died. If the proposer blocked the event loop, all other MCP tools froze.
+the MCP server used to run searches as asyncio tasks in the same event loop. if the MCP connection dropped, the search died.
 
-Now `mh_search` spawns a detached worker subprocess:
+now `mh_search` spawns a detached worker subprocess:
 
 ```bash
-# CLI: runs as a background process
 kaos mh search -b text_classify -n 10 --background
 # → "Worker launched (PID 12345). Log: kaos-worker-1712345678.log"
-
-# MCP: same thing — spawns a subprocess, returns immediately
-# Poll with: kaos mh status <search-agent-id>
 ```
 
-The worker:
-- Survives parent exit, MCP disconnection, or terminal close
-- Logs to `kaos-worker-*.log` (not /dev/null — that was a bug we fixed)
-- Writes progress to the DB, pollable via `kaos mh status`
-- On crash, the error is stored in the agent's state
-
-### New Commands (v0.3.1)
-
-```bash
-kaos read <agent-id> <path>    # Read VFS files from CLI
-kaos logs <agent-id>           # View conversation + event log
-kaos mh search --dry-run       # Evaluate seeds only, report baseline
-```
+survives parent exit, MCP disconnection, terminal close. logs to a file (not /dev/null — that was a fun bug to find hahaha, worker kept dying from missing numpy and we had no output to debug it).
 
 ---
 
-## The Self-Triage Story
+## KAOS eating its own dogfood
 
-We used KAOS to evaluate its own issues. Spawned a `self-triage-v030` agent, ingested all 14 GitHub issues into its VFS, scored each on impact/effort/feasibility, and implemented the top 6.
+<!-- SELF-TRIAGE — Generate with this prompt:
+
+Square illustration on dark background (#0a0a0f).
+Center: a circular Ouroboros-like shape made of code/terminal text,
+representing KAOS evaluating itself. Inside the circle: a small
+SQLite cylinder with a magnifying glass over it.
+Around the outside: 14 small issue/ticket icons, 6 of them with
+green checkmarks, 8 with grey dots. A scoreboard/leaderboard
+floating next to the circle shows:
+  "#15 score=6.0 ✓"
+  "#13 score=4.5 ✓"
+  "#12 score=4.5 ✓"
+The overall feeling: self-referential, recursive, meta.
+Color palette: dark navy background, purple accents, green checkmarks.
+Style: minimal, abstract, no faces.
+
+-->
+
+![Self-triage](self-triage.png)
+
+we used KAOS to evaluate its own issues. spawned a `self-triage-v030` agent, ingested all 14 GitHub issues into its VFS, scored each on impact/effort/feasibility, and implemented the top 6 in priority order.
 
 ```python
 afs = Kaos('kaos.db')
 triage_id = afs.spawn('self-triage-v030')
 
+# ingest all issues
 for issue in github_issues:
-    afs.write(triage_id, f'/issues/{issue["number"]}/issue.json', json.dumps(issue).encode())
+    afs.write(triage_id, f'/issues/{issue["number"]}/issue.json',
+              json.dumps(issue).encode())
     afs.set_state(triage_id, f'score.{issue["number"]}', {
         "impact": 9, "effort": 2, "feasibility": 10,
         "priority_score": 4.5,
@@ -204,7 +243,7 @@ for issue in github_issues:
 afs.checkpoint(triage_id, label='triage-complete')
 ```
 
-Then queried with SQL:
+then queried with SQL to get the ranking:
 
 ```sql
 SELECT key, json_extract(value, '$.priority_score') as score
@@ -212,37 +251,37 @@ FROM state WHERE key LIKE 'score.%'
 ORDER BY score DESC
 ```
 
-The top 6 by priority score got implemented in the same session. KAOS eating its own dogfood.
+13 issues closed across v0.3.0, v0.3.1, and v0.4.0. the framework triaged itself. for sure the most meta thing ive built.
 
 ---
 
-## Bug Fixes Worth Mentioning
+## bug fixes worth mentioning
 
-**Windows Unicode crash (#1)** — `sys.stdout.reconfigure(encoding="utf-8")` at CLI startup. No more `UnicodeEncodeError` on non-ASCII output.
+**windows unicode crash** — `sys.stdout.reconfigure(encoding="utf-8")` at CLI startup. no more `UnicodeEncodeError` on non-ASCII output.
 
-**MCP stdout corruption (#12)** — `sys.stdout = sys.stderr` in MCP stdio mode. Any library logging to stdout no longer corrupts the JSON-RPC protocol.
+**MCP stdout corruption** — `sys.stdout = sys.stderr` in stdio mode. any library logging to stdout no longer corrupts the JSON-RPC protocol.
 
-**Parallel spawn contention (#2)** — `spawn()` retries on WAL lock with backoff. `PRAGMA wal_autocheckpoint=100` keeps WAL small.
+**parallel spawn contention** — `spawn()` retries on WAL lock with backoff. `PRAGMA wal_autocheckpoint=100` keeps WAL small.
 
-**Large output truncation (#7)** — Results >4KB stored in agent VFS at `/result.txt`. MCP returns a preview + pointer.
+**evaluator bugs** — `_truncate()` was creating invalid JSON by slicing mid-string. error score keys had `+`/`-` prefixes that didnt match success keys. both caused every harness to score 0%. ouch.
 
-**Objectives override (#14)** — `SearchConfig.objectives` now defaults to `None` (inherit from benchmark) instead of hardcoding `["+accuracy", "-context_cost"]`.
+**objectives override** — `SearchConfig.objectives` now defaults to `None` (inherit from benchmark) instead of hardcoding `["+accuracy", "-context_cost"]`. this was breaking every custom benchmark.
 
-**Evaluator bugs (#12, #13)** — `_truncate()` no longer creates invalid JSON. Error score keys stripped of `+`/`-` prefixes. Both caused all harnesses to score 0%.
-
----
-
-## What's Next
-
-The one remaining P0 issue: **Claude Code as a full execution backend** (#11). Right now, `agent_spawn` creates an isolated VFS but can't actually *run* an agent with real tools (Bash, web search, file read). The `ClaudeCodeProvider` does single-shot `claude --print` — useful for the proposer, but not for autonomous agents.
-
-The vision: `agent_spawn` delegates to Claude Code as a subprocess. The spawned agent gets its own VFS, its own tool set, and its results flow back into KAOS. The entire research loop — propose, evaluate, score, checkpoint, iterate — runs inside KAOS autonomously.
-
-That's v0.5.
+**seed harnesses never called LLM** — the seeds returned `{"prompt": ...}` with no `"prediction"` key. guaranteed 0% accuracy. now they call `llm()` (injected by the evaluator) and actually predict.
 
 ---
 
-## Upgrading
+## whats next
+
+the one remaining P0: **Claude Code as a full execution backend**. right now `agent_spawn` creates an isolated VFS but cant actually run an agent with real tools (Bash, web search, file read). the `ClaudeCodeProvider` does single-shot `claude --print` — useful for the proposer, but not for autonomous agents.
+
+the vision: `agent_spawn` delegates to Claude Code as a subprocess. the spawned agent gets its own VFS, its own tool set, and its results flow back into KAOS. the entire research loop — propose, evaluate, score, checkpoint, iterate — runs inside KAOS autonomously.
+
+thats v0.5.
+
+---
+
+## upgrading
 
 ```bash
 git pull origin main
@@ -250,28 +289,28 @@ uv sync
 kaos --version  # 0.4.0
 ```
 
-Existing configs and databases work unchanged. MCP server needs a restart (Claude Code does this automatically on new session).
+existing configs and databases work unchanged. MCP server needs a restart.
 
 ---
 
-## Full Changelog
+## full changelog
 
-### v0.4.0 (April 6, 2026)
-- Cross-search memory via persistent knowledge agent
-- Smart context compaction (0-10, 46-63% savings, 0% quality loss)
-- Full-text search across VFS contents
+**v0.4.0** (April 6, 2026)
+- cross-search memory via persistent knowledge agent
+- smart context compaction (0-10, 46-63% savings, 0% quality loss)
+- full-text search across VFS contents
 - VFS auto-index, lint, persistent skills
 - 157 tests (38 new compaction tests)
 
-### v0.3.1 (April 5, 2026)
-- Bug fixes: Unicode crash, WAL contention, output truncation, stdout corruption
-- New: `kaos read`, `kaos logs`, `mh search --dry-run`
+**v0.3.1** (April 5, 2026)
+- bug fixes: Unicode crash, WAL contention, output truncation, stdout corruption
+- new: `kaos read`, `kaos logs`, `mh search --dry-run`
 
-### v0.3.0 (April 4, 2026)
+**v0.3.0** (April 4, 2026)
 - CLI-first architecture with `--json` output
-- Background worker subprocess for `mh search`
+- background worker subprocess for `mh search`
 - `provider: claude_code` (no API key needed)
-- Pluggable `llm()` callable for harnesses
-- Fail-fast retries, proposer timeout handling
+- pluggable `llm()` callable for harnesses
+- fail-fast retries, proposer timeout handling
 
 **GitHub:** [github.com/canivel/kaos](https://github.com/canivel/kaos) — 157 tests, Apache 2.0, zero AI SDK dependencies.
