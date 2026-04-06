@@ -412,11 +412,27 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 </div>
 </section>
 
+<!-- Knowledge visual -->
+<section style="background:var(--bg);padding:3rem 0">
+<div class="wrap" style="text-align:center">
+  <h2 style="font-size:1.6rem;margin-bottom:1rem">Knowledge Compounds Across Searches</h2>
+  <p style="color:var(--fg2);margin-bottom:2rem;font-size:1rem">Each search builds on prior discoveries. Winners become seeds. The proposer starts where the last search left off.</p>
+  <div style="max-width:800px;margin:0 auto">
+    <img src="blog/knowledge-compound.png" alt="Search 1 discovers keyword classifier → Search 2 starts from it and finds TF-IDF variant → Search 3 builds on both" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+  </div>
+</div>
+</section>
+
 <!-- Compaction -->
 <section class="compaction" id="compaction">
 <div class="wrap">
   <h2>Smart Context Compaction</h2>
   <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level: 100% quality at 34% savings. Max level: 88% quality at 53% savings.</p>
+
+  <!-- Compaction flow diagram — generated from blog prompt -->
+  <div style="max-width:800px;margin:0 auto 2.5rem">
+    <img src="blog/compaction-flow.png" alt="Raw archive → Compactor → Dense digest (78% smaller, 0% quality loss)" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+  </div>
 
   <!-- Full matrix: domains x levels -->
   <div style="overflow-x:auto;margin-bottom:2rem">
@@ -511,6 +527,11 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <span class="num green">~$108</span>
       <span class="label">Saved / month (10 searches/day)</span>
     </div>
+  </div>
+
+  <!-- Token savings chart — generated from blog prompt -->
+  <div style="max-width:800px;margin:2.5rem auto 0">
+    <img src="blog/compaction-chart.png" alt="Token savings by domain — 78% reduction across classification, code gen, research, tool calling, ML" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
   </div>
 </div>
 </section>
