@@ -2,6 +2,23 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.4.2] - 2026-04-06
+
+### New Provider: Claude Agent SDK
+
+- **`provider: agent_sdk`** -- 5th provider type. Uses `claude_agent_sdk.query()` instead of `claude --print` subprocess. No rate limit competition with active Claude Code sessions. Seeds scored 90.6% accuracy vs 0% with `claude_code` provider in the same session.
+- **Single-shot proposer** -- proposer makes one LLM call instead of 5-10 multi-turn tool calls. Completes in ~18s vs timing out at 120s+.
+- **Empty response = error** -- `claude --print` returning empty stdout now retries 3x with backoff then raises with actionable message instead of silently producing garbage.
+- Default timeout 600s → 120s across all providers.
+
+### Provider Comparison
+
+- `agent_sdk` -- shares session auth, no subprocess, works during active sessions
+- `claude_code` -- `claude --print` subprocess, only works when session is idle
+- `anthropic` -- direct API via httpx, needs ANTHROPIC_API_KEY, independent quota
+- `openai` -- any OpenAI-compatible endpoint, needs API key
+- `local` -- vLLM/ollama/llama.cpp, zero cost, needs GPU
+
 ## [0.4.1] - 2026-04-06
 
 ### Bug Fixes

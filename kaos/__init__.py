@@ -1,6 +1,6 @@
 """KAOS — Kernel for Agent Orchestration & Sandboxing."""
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 from kaos.core import Kaos
 

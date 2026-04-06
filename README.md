@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.4.1-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.4.2-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -604,14 +604,15 @@ kaos setup
 
 ### Multi-Provider Support
 
-KAOS supports four providers (no AI SDKs — raw httpx or subprocess):
+KAOS supports five providers:
 
-- **`provider: local`** — vLLM, ollama, llama.cpp, or any OpenAI-compatible local endpoint (default)
-- **`provider: openai`** — OpenAI API or any OpenAI-compatible cloud endpoint
-- **`provider: anthropic`** — Anthropic Claude API
-- **`provider: claude_code`** — Claude Code CLI subprocess (`claude --print`). No API key needed — uses your Claude Code subscription. Best for getting started fast.
+- **`provider: agent_sdk`** — Claude Agent SDK. No subprocess, no rate limit competition. Works during active Claude Code sessions. *Recommended.*
+- **`provider: claude_code`** — Claude Code CLI subprocess (`claude --print`). Only works when session is idle.
+- **`provider: anthropic`** — Direct Anthropic API via raw httpx. Needs `ANTHROPIC_API_KEY`. Independent quota.
+- **`provider: openai`** — Any OpenAI-compatible cloud endpoint. Needs API key.
+- **`provider: local`** — vLLM, ollama, llama.cpp. Zero cost, needs GPU.
 
-API keys are read from environment variables (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). `claude_code` needs no key.
+`agent_sdk` and `claude_code` use your Claude Code subscription (no API key). `anthropic` and `openai` need API keys via environment variables.
 
 ### Configuration
 
@@ -756,23 +757,30 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.4.1
+## What's New in v0.4.2
 
-### Proposer Text Extraction (#27)
-`claude --print` doesn't support tool calling — the proposer couldn't invoke `mh_submit_harness`. Now extracts ```python blocks from plain text responses as a fallback. Works with any provider (text-only or tool-capable).
+### Claude Agent SDK Provider
+New `provider: agent_sdk` uses the Claude Agent SDK directly — no subprocess, no conversation replay, no rate limit competition with active Claude Code sessions. Seeds scored **90.6% accuracy** vs 0% with the `claude_code` provider in the same session.
 
-### Smart Compaction — Multi-Domain Results
-Tested across 5 domains at the default compaction level (5):
+```yaml
+models:
+  claude-sonnet:
+    provider: agent_sdk          # uses Claude Agent SDK
+    model_id: claude-sonnet-4-6
+    timeout: 120
+```
 
-- **Classification** — 52% saved, 100% quality
-- **Code Generation** — 31% saved, 100% quality
-- **Research / RAG** — 28% saved, 100% quality
-- **Tool Calling** — 30% saved, 100% quality
-- **ML Training** — 28% saved, 100% quality
+### 5 Providers — Pick What Works
+- **`agent_sdk`** — shares session auth, works during active sessions (recommended)
+- **`claude_code`** — `claude --print` subprocess, works when session is idle
+- **`anthropic`** — direct API via httpx, needs API key, independent quota
+- **`openai`** — any OpenAI-compatible endpoint
+- **`local`** — vLLM/ollama/llama.cpp, zero cost
 
-### v0.4.0 Highlights
+### Other v0.4.x Highlights
 - Cross-search memory, full-text search, VFS index, lint, persistent skills
-- Tunable compaction (0-10), archive digest, conversation compaction
+- Smart compaction (78% fewer tokens, 100% quality at default)
+- Single-shot proposer, text extraction fallback, 120s default timeout
 
 ### v0.3.x Highlights
 - `--json` on all commands, worker subprocess, `provider: claude_code`

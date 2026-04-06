@@ -1,7 +1,7 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.4.1). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
+KAOS is a local-first multi-agent orchestration framework (v0.4.2). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
 
 ## Package & CLI
 - Package: `kaos` (import with `from kaos import Kaos`)
@@ -32,6 +32,7 @@ kaos/ccr/runner.py        → Agent execution loop
 kaos/ccr/tools.py         → Tool registry
 kaos/router/gepa.py       → GEPA model router (4 providers)
 kaos/router/providers.py  → LLM providers (local, openai, anthropic, claude_code)
+kaos/router/agent_sdk.py  → Claude Agent SDK provider (agent_sdk)
 kaos/router/classifier.py → LLM + heuristic classifier
 kaos/router/vllm_client.py → Raw httpx vLLM client
 kaos/mcp/server.py        → MCP server (18 tools)
