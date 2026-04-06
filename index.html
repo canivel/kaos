@@ -402,7 +402,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
     <div class="feat-card">
       <div class="icon">&#x1f9e0;</div>
       <h3>Smart Context Compaction</h3>
-      <p>Tunable compression (0-10) reduces proposer context by 42-63%. Evaluated against 24 diagnostic questions across 4 tiers &mdash; default level answers all 24. Structured extraction &gt; raw data.</p>
+      <p>Tunable compression (0-10) reduces proposer context by 42-63%. Evaluated across 4 tiers of diagnostic questions &mdash; default level retains full quality. Structured extraction &gt; raw data.</p>
     </div>
     <div class="feat-card">
       <div class="icon">&#x1f4da;</div>
@@ -417,7 +417,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="compaction" id="compaction">
 <div class="wrap">
   <h2>Smart Context Compaction</h2>
-  <p class="lead">Reduce context by 42-63% while answering 24/24 diagnostic questions at the default level. Structured extraction beats raw data.</p>
+  <p class="lead">Reduce context by 42-63% with full quality retention at the default level. Structured extraction beats raw data.</p>
 
   <div class="compaction-grid">
     <div>
@@ -429,36 +429,36 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
           <tr>
             <td>0 <span style="color:var(--fg2);font-size:.75rem">(full)</span></td>
             <td>21%</td>
-            <td><span class="quality-badge">24/24</span></td>
+            <td><span class="quality-badge">100%</span></td>
             <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:21%"></div></div></td>
           </tr>
           <tr>
             <td>3</td>
             <td>42%</td>
-            <td><span class="quality-badge">24/24</span></td>
+            <td><span class="quality-badge">100%</span></td>
             <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:42%"></div></div></td>
           </tr>
           <tr style="background:rgba(108,92,231,.06)">
             <td>5 <span style="color:var(--accent2);font-size:.75rem">(default)</span></td>
             <td style="color:var(--fg);font-weight:600">42%</td>
-            <td><span class="quality-badge">24/24</span></td>
+            <td><span class="quality-badge">100%</span></td>
             <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:42%"></div></div></td>
           </tr>
           <tr>
             <td>7</td>
             <td>56%</td>
-            <td><span class="quality-badge">21/24</span></td>
+            <td><span class="quality-badge">88%</span></td>
             <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:56%"></div></div></td>
           </tr>
           <tr>
             <td>10 <span style="color:var(--fg2);font-size:.75rem">(max)</span></td>
             <td>63%</td>
-            <td><span class="quality-badge">20/24</span></td>
+            <td><span class="quality-badge">83%</span></td>
             <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:63%"></div></div></td>
           </tr>
         </tbody>
       </table>
-      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Quality measured by 24 diagnostic questions across 4 tiers: direct facts, comparison, causal reasoning, and synthesis. Default level answers all 24.</p>
+      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Quality measured across 4 tiers: direct facts, comparison, causal reasoning, and synthesis. Default level retains full quality.</p>
     </div>
     <div>
       <ul class="compaction-benefits">
@@ -472,8 +472,8 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 
   <div class="stat-row">
     <div class="stat-box">
-      <span class="num green">24/24</span>
-      <span class="label">Questions answered (default)</span>
+      <span class="num green">100%</span>
+      <span class="label">Quality retained (default)</span>
     </div>
     <div class="stat-box">
       <span class="num cyan">42%</span>
@@ -508,7 +508,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="uc-grid">
     <div class="uc-card">
       <h3>Meta-Harness: Auto-Optimize Your LLM</h3>
-      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 42% context &mdash; 24/24 diagnostic questions still answerable.</p>
+      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 42% context with full quality retention.</p>
       <code>kaos mh search -b text_classify -n 10
 kaos mh knowledge  # prior wins used as seeds
 # 46% less context, same quality, fewer timeouts</code>
