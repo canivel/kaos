@@ -214,13 +214,18 @@ class ProposerAgent:
             logger.error("Proposer agent failed at iteration %d: %s", iteration, e)
 
         # Log the proposer conversation for debugging
-        conversation = self.afs.get_state(agent_id, "conversation")
+        conversation = self.afs.get_state_or(agent_id, "conversation")
         if conversation:
             self.afs.write(
                 self.search_agent_id,
                 f"/iterations/{iteration}/proposer_conversation.json",
                 json.dumps(conversation, indent=2).encode(),
             )
+
+        # Fallback: if no tool-call submissions (e.g. claude --print doesn't
+        # support tool-use), extract ```python blocks from the response text
+        if not self._submitted and conversation:
+            self._extract_from_text(conversation, n_candidates)
 
         # Set iteration on all submitted candidates
         for h in self._submitted:
@@ -231,6 +236,46 @@ class ProposerAgent:
             iteration, len(self._submitted),
         )
         return self._submitted
+
+    def _extract_from_text(self, conversation: list[dict], max_candidates: int) -> None:
+        """Extract harness candidates from plain text when tool-use isn't available.
+
+        Scans assistant messages for ```python blocks containing a run() function.
+        This is the fallback for providers like claude --print that don't support
+        structured tool calling.
+        """
+        import re
+
+        python_block_re = re.compile(r"```python\s*\n(.*?)```", re.DOTALL)
+
+        for msg in reversed(conversation):
+            if msg.get("role") != "assistant":
+                continue
+            content = msg.get("content", "")
+            if not content:
+                continue
+
+            blocks = python_block_re.findall(content)
+            for block in blocks:
+                block = block.strip()
+                if "def run(" not in block:
+                    continue
+                if len(self._submitted) >= max_candidates:
+                    break
+
+                candidate = HarnessCandidate.create(
+                    source_code=block,
+                    metadata={"source": "text_extraction", "rationale": "extracted from plain text response"},
+                )
+                valid, err = candidate.validate_interface()
+                if valid:
+                    self._submitted.append(candidate)
+                    logger.info(
+                        "Extracted harness from text: %s (%d chars)",
+                        candidate.harness_id[:12], len(block),
+                    )
+                else:
+                    logger.debug("Extracted block failed validation: %s", err)
 
     # ── Archive digest ───────────────────────────────────────────
 
