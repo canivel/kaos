@@ -118,6 +118,34 @@ nav a:hover{color:var(--fg)}
 .feat-card p{color:var(--fg2);font-size:.9rem;line-height:1.6}
 .feat-card code{background:var(--bg3);padding:.15rem .4rem;border-radius:4px;font-size:.8rem;color:var(--accent2)}
 
+/* ── Compaction ───────────────────────────────────── */
+.compaction h2{text-align:center;font-size:2rem;margin-bottom:1rem}
+.compaction .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1.05rem}
+.compaction-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;max-width:900px;margin:0 auto;align-items:start}
+@media(max-width:768px){.compaction-grid{grid-template-columns:1fr}}
+.compaction-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem}
+.compaction-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+.compaction-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.compaction-table tr:hover td{background:rgba(108,92,231,.05)}
+.compaction-table .bar-cell{padding:.5rem .8rem}
+.savings-bar{height:8px;border-radius:4px;background:var(--bg3)}
+.savings-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--cyan))}
+.quality-badge{display:inline-block;font-size:.75rem;padding:.15rem .5rem;border-radius:10px;background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.2);font-weight:600}
+.compaction-benefits{list-style:none;padding:0}
+.compaction-benefits li{padding:.6rem 0 .6rem 1.5rem;color:var(--fg2);font-size:.92rem;line-height:1.55;position:relative}
+.compaction-benefits li::before{content:'';position:absolute;left:0;top:.85rem;width:8px;height:8px;border-radius:50%}
+.compaction-benefits li:nth-child(1)::before{background:var(--green)}
+.compaction-benefits li:nth-child(2)::before{background:var(--cyan)}
+.compaction-benefits li:nth-child(3)::before{background:var(--accent2)}
+.compaction-benefits li:nth-child(4)::before{background:var(--orange)}
+.stat-row{display:flex;gap:2rem;justify-content:center;margin-top:2.5rem;flex-wrap:wrap}
+.stat-box{text-align:center;padding:1.2rem 1.8rem;background:var(--bg3);border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+.stat-box .num{font-size:2rem;font-weight:800;font-family:var(--mono);display:block;line-height:1}
+.stat-box .num.green{color:var(--green)}
+.stat-box .num.cyan{color:var(--cyan)}
+.stat-box .num.accent{color:var(--accent2)}
+.stat-box .label{font-size:.78rem;color:var(--fg2);margin-top:.3rem;display:block;text-transform:uppercase;letter-spacing:.5px}
+
 /* ── Architecture ─────────────────────────────────── */
 .architecture{background:var(--bg2)}
 .architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
@@ -184,6 +212,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#problem">Problem</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
+    <li><a href="#compaction">Compaction</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
     <li><a href="#changelog">Changelog</a></li>
     <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
@@ -302,6 +331,8 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <tr><td>Portable runtime</td><td>Cloud-dependent / in-memory</td><td>Single .db file, anywhere</td></tr>
       <tr><td>State persistence</td><td>Framework-specific, lost on crash</td><td>SQLite &mdash; crash-safe</td></tr>
       <tr><td>Token / cost tracking</td><td>Varies, often manual</td><td>SELECT SUM(token_count) ...</td></tr>
+      <tr><td>Context efficiency</td><td>Full context every call</td><td>Smart compaction: 46-63% smaller, 0% quality loss</td></tr>
+      <tr><td>Cross-session learning</td><td>Starts from scratch</td><td>Knowledge compounds across searches</td></tr>
     </tbody>
   </table>
   <p class="comp-note">KAOS isn't a replacement &mdash; it's the runtime layer they're missing. Use it underneath LangChain, or standalone with local LLMs.</p>
@@ -382,6 +413,80 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 </div>
 </section>
 
+<!-- Compaction -->
+<section class="compaction" id="compaction">
+<div class="wrap">
+  <h2>Smart Context Compaction</h2>
+  <p class="lead">Reduce context by 46-63% with zero quality loss. Structured extraction beats raw data.</p>
+
+  <div class="compaction-grid">
+    <div>
+      <table class="compaction-table">
+        <thead>
+          <tr><th>Level</th><th>Savings</th><th>Quality</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>0 <span style="color:var(--fg2);font-size:.75rem">(full)</span></td>
+            <td>22%</td>
+            <td><span class="quality-badge">6/6</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:22%"></div></div></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>46%</td>
+            <td><span class="quality-badge">6/6</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:46%"></div></div></td>
+          </tr>
+          <tr style="background:rgba(108,92,231,.06)">
+            <td>5 <span style="color:var(--accent2);font-size:.75rem">(default)</span></td>
+            <td style="color:var(--fg);font-weight:600">46%</td>
+            <td><span class="quality-badge">6/6</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:46%"></div></div></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>56%</td>
+            <td><span class="quality-badge">6/6</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:56%"></div></div></td>
+          </tr>
+          <tr>
+            <td>10 <span style="color:var(--fg2);font-size:.75rem">(max)</span></td>
+            <td>63%</td>
+            <td><span class="quality-badge">6/6</span></td>
+            <td class="bar-cell"><div class="savings-bar"><div class="savings-bar-fill" style="width:63%"></div></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:.8rem;font-size:.8rem;color:var(--fg2)">Quality measured by 6 diagnostic questions a proposer must answer correctly. All answerable at every level.</p>
+    </div>
+    <div>
+      <ul class="compaction-benefits">
+        <li><strong>Scores &amp; source code</strong> &mdash; always lossless. The proposer needs exact numbers and full code.</li>
+        <li><strong>Error patterns extracted</strong> &mdash; "3/8 wrong: science&rarr;technology (2x), timeout (1x)" is more useful than 8 raw trace entries.</li>
+        <li><strong>Failure samples kept</strong> &mdash; tunable: 20 at level 0, 3 at level 5, 0 at level 10. The proposer sees why problems fail, not just that they fail.</li>
+        <li><strong>Conversation auto-compacted</strong> &mdash; tool results older than 6 turns compressed to <code>[tool result: N chars]</code>. Recent turns kept verbatim.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="num green">0%</span>
+      <span class="label">Quality loss</span>
+    </div>
+    <div class="stat-box">
+      <span class="num cyan">46%</span>
+      <span class="label">Context saved (default)</span>
+    </div>
+    <div class="stat-box">
+      <span class="num accent">~10&rarr;2</span>
+      <span class="label">Proposer turns reduced</span>
+    </div>
+  </div>
+</div>
+</section>
+
 <!-- Architecture -->
 <section class="architecture">
 <div class="wrap">
@@ -399,10 +504,10 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="uc-grid">
     <div class="uc-card">
       <h3>Meta-Harness: Auto-Optimize Your LLM</h3>
-      <p>Your classifier gets 45% accuracy. Meta-Harness automatically searches for a better prompt/retrieval strategy by learning from execution traces. 0% &rarr; 100% in 2 iterations on our benchmark.</p>
+      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 46% context with zero quality loss.</p>
       <code>kaos mh search -b text_classify -n 10
-kaos mh frontier &lt;search-id&gt;
-# Pareto frontier: best accuracy vs. cost</code>
+kaos mh knowledge  # prior wins used as seeds
+# 46% less context, same quality, fewer timeouts</code>
     </div>
     <div class="uc-card">
       <h3>Autonomous Research Lab</h3>
