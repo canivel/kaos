@@ -350,7 +350,7 @@ class ClaudeCodeProvider(LLMProvider):
         "/opt/homebrew/bin/claude",
     ]
 
-    def __init__(self, model_id: str = "", timeout: float = 120.0):
+    def __init__(self, model_id: str = "", timeout: float = 300.0):
         self.model_id = model_id
         self.timeout = timeout
         # Resolve claude executable at init time
@@ -666,7 +666,7 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
     elif provider_type == "agent_sdk":
         from kaos.router.agent_sdk import AgentSDKProvider
         model_id = kwargs.get("model_id", "sonnet")
-        timeout = kwargs.get("timeout", 120.0)
+        timeout = kwargs.get("timeout", 300.0)
         return AgentSDKProvider(model_id=model_id, timeout=timeout)
 
     else:

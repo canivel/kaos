@@ -38,7 +38,7 @@ class AgentSDKProvider(LLMProvider):
     - System prompt support via SDK parameter
     """
 
-    def __init__(self, model_id: str = "claude-sonnet-4-6", timeout: float = 120.0):
+    def __init__(self, model_id: str = "claude-sonnet-4-6", timeout: float = 300.0):
         self.model_id = model_id
         self.timeout = timeout
 

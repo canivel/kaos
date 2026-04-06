@@ -371,18 +371,6 @@ class ProposerAgent:
 
             digest, metrics = compactor.build_digest(harness_data, frontier_data)
 
-            # Auto-escalate compaction if digest is too large for a single LLM call.
-            # Target: <20K chars (~5K tokens) to leave room for system prompt + response.
-            max_digest_chars = 20_000
-            while metrics.compacted_chars > max_digest_chars and compaction_level < 10:
-                compaction_level += 1
-                compactor = Compactor(level=compaction_level)
-                digest, metrics = compactor.build_digest(harness_data, frontier_data)
-                logger.info(
-                    "Digest too large (%d chars), escalated compaction to level %d → %d chars",
-                    metrics.compacted_chars, compaction_level, metrics.compacted_chars,
-                )
-
             # Store metrics for debugging
             self.afs.write(
                 self.search_agent_id,
