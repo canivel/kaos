@@ -733,6 +733,10 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
                 "is_success": result.is_success, "error": result.error,
                 "duration_ms": result.duration_ms,
             }, indent=2).encode())
+            # Store verifier diagnosis
+            if hasattr(result, "diagnosis") and result.diagnosis:
+                _afs.write(search_agent_id, f"{base}/diagnosis.json",
+                           json.dumps(result.diagnosis.to_dict(), indent=2).encode())
 
         # Recompute frontier from ALL harnesses
         all_scores_files = [
@@ -790,8 +794,9 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         compactor = Compactor(level=compaction_level)
         digest, metrics = compactor.build_digest(harness_data, frontier.to_dict())
 
-        # Results for this iteration
+        # Results + diagnoses for this iteration
         iter_results = []
+        diagnoses = []
         for harness, result in zip(candidates, results):
             iter_results.append({
                 "harness_id": harness.harness_id,
@@ -799,6 +804,13 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
                 "is_success": result.is_success,
                 "error": result.error,
             })
+            if hasattr(result, "diagnosis") and result.diagnosis:
+                diagnoses.append(result.diagnosis.to_text())
+
+        # Build diagnosis section for the response
+        diagnosis_text = ""
+        if diagnoses:
+            diagnosis_text = "\n\n## Verifier Diagnosis\n\n" + "\n\n".join(diagnoses)
 
         return json.dumps({
             "search_agent_id": search_agent_id,
@@ -807,10 +819,12 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             "results": iter_results,
             "frontier_size": len(frontier.points),
             "total_harnesses": len(all_scores_files),
-            "digest": digest,
+            "digest": digest + diagnosis_text,
             "instructions": (
-                "Read the updated digest. Propose improved harnesses and submit "
-                "with mh_submit_candidate. Then call mh_next_iteration again."
+                "Read the updated digest AND the verifier diagnosis above. "
+                "The diagnosis shows root causes and suggested fixes. "
+                "Propose improved harnesses and submit with mh_submit_candidate. "
+                "Then call mh_next_iteration again."
             ),
         }, indent=2)
 

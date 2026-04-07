@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.5.0-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.5.1-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -757,9 +757,13 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.5.0
+## What's New in v0.5.1
 
-### Collaborative Meta-Harness — Claude Code IS the proposer
+### Surrogate Verifier (#31, from EvoSkills arXiv:2604.01687)
+
+Every harness evaluation now produces structured failure diagnostics — not just "what went wrong" but "why it failed" and "how to fix it". The verifier is informationally isolated (reads outputs, not source code) to prevent confirmation bias. Integrated into the collaborative flow: `mh_next_iteration` returns the diagnosis alongside the digest.
+
+### v0.5.0: Collaborative Meta-Harness — Claude Code IS the proposer
 
 Three new MCP tools eliminate the subprocess bottleneck entirely. Claude Code drives the search loop — no extra process, no API key, no extra cost:
 

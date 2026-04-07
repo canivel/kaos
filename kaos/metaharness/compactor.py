@@ -334,6 +334,21 @@ class Compactor:
             if error:
                 parts.append(f"**Error:** {error}")
 
+            # Verifier diagnosis (if available — from SurrogateVerifier)
+            verifier_diag = h.get("diagnosis")
+            if verifier_diag:
+                if isinstance(verifier_diag, dict):
+                    suggestions = verifier_diag.get("suggestions", [])
+                    if suggestions:
+                        parts.append("**Verifier suggestions:**")
+                        for s in suggestions[:3]:
+                            parts.append(f"  - {s}")
+                    fp = verifier_diag.get("failure_patterns", [])
+                    if fp:
+                        parts.append("**Root causes:**")
+                        for p in fp[:3]:
+                            parts.append(f"  - {p.get('pattern', '?')}: {p.get('root_cause', '?')}")
+
             # Error pattern (structured extraction)
             if per_problem:
                 pattern, samples = self.compact_per_problem(per_problem)

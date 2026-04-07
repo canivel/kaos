@@ -2,7 +2,7 @@
 
 > How to expose KAOS as an MCP server for Claude Code and other MCP-compatible clients.
 
-> **v0.5.0 notes:**
+> **v0.5.1 notes:**
 > - **CLI-first architecture** — `--json` output on all commands. Agents can shell out to `kaos --json ls` instead of using MCP (10-32x cheaper on tokens).
 > - **Large output handling** — Agent results >4KB are stored in VFS at `/result.txt`. MCP returns a preview + pointer to use `agent_read` for the full output.
 > - **stdout protection** — MCP stdio transport redirects `sys.stdout` to `sys.stderr` at startup, preventing library logging from corrupting the JSON-RPC protocol.
@@ -14,7 +14,7 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [CLI Alternative (v0.5.0)](#cli-alternative)
+2. [CLI Alternative (v0.5.1)](#cli-alternative)
 3. [Starting the MCP Server](#starting-the-mcp-server)
 4. [Claude Code Integration](#claude-code-integration)
 5. [Available Tools](#available-tools)
@@ -32,7 +32,7 @@ The MCP server is implemented in `kaos/mcp/server.py` using the `mcp` Python pac
 
 ## CLI Alternative
 
-As of v0.5.0, every CLI command supports `--json` output, making KAOS composable with any agent via shell commands:
+As of v0.5.1, every CLI command supports `--json` output, making KAOS composable with any agent via shell commands:
 
 ```bash
 # Structured JSON output — any agent can parse this

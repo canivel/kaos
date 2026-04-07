@@ -151,15 +151,29 @@ class HarnessEvaluator:
                 "\n".join(json.dumps(p) for p in per_problem).encode(),
             )
             self.afs.set_state(agent_id, "scores", aggregate)
+
+            # Run Surrogate Verifier for structured failure diagnostics
+            from kaos.metaharness.verifier import verify_evaluation
+            diagnosis = verify_evaluation(
+                harness.harness_id, per_problem,
+                router=self.router,
+            )
+            self.afs.write(
+                agent_id,
+                "/evaluation/diagnosis.json",
+                json.dumps(diagnosis.to_dict(), indent=2).encode(),
+            )
             self.afs.complete(agent_id)
 
-            return EvaluationResult(
+            result = EvaluationResult(
                 harness_id=harness.harness_id,
                 scores=aggregate,
                 trace=trace,
                 per_problem=per_problem,
                 duration_ms=duration_ms,
             )
+            result.diagnosis = diagnosis  # attach for downstream use
+            return result
 
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)

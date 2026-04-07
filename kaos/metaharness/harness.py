@@ -122,6 +122,7 @@ class EvaluationResult:
     per_problem: list[dict[str, Any]] = field(default_factory=list)
     duration_ms: int = 0
     error: str | None = None
+    diagnosis: Any = None  # VerifierDiagnosis, attached after evaluation
 
     @property
     def is_success(self) -> bool:

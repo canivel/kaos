@@ -2,6 +2,17 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.5.1] - 2026-04-07
+
+### Surrogate Verifier (EvoSkills paper, arXiv:2604.01687)
+
+- **#31 Surrogate Verifier** -- After evaluating a harness, a separate verifier analyzes the results and produces structured failure diagnostics: per-problem root-cause analysis, failure pattern grouping, and actionable revision suggestions.
+- Informationally isolated: verifier reads outputs, NOT harness source code (prevents confirmation bias).
+- Integrated into evaluator: every `EvaluationResult` now carries a `diagnosis` with failure patterns, root causes, and suggestions.
+- Integrated into compactor: digest includes verifier suggestions and root causes alongside scores/traces.
+- Integrated into `mh_next_iteration`: response includes verifier diagnosis text so the proposer (Claude Code) sees structured "why it failed" + "how to fix it" alongside the archive digest.
+- MCP stdio fix: `sys.stdout = sys.stderr` was eating MCP protocol responses. Now preserves original stdout for the MCP transport.
+
 ## [0.5.0] - 2026-04-06
 
 ### Collaborative Meta-Harness — Claude Code IS the proposer

@@ -1,7 +1,7 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.5.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
+KAOS is a local-first multi-agent orchestration framework (v0.5.1). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file.
 
 ## Package & CLI
 - Package: `kaos` (import with `from kaos import Kaos`)
@@ -39,6 +39,7 @@ kaos/mcp/server.py        → MCP server (18 tools)
 kaos/cli/main.py          → CLI (20+ commands, --json output)
 kaos/metaharness/worker.py → Detached worker for background mh_search
 kaos/metaharness/search.py → Meta-Harness search loop
+kaos/metaharness/verifier.py → Surrogate Verifier (structured failure diagnostics)
 ```
 
 ## Rules
