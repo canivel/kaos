@@ -225,7 +225,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <section class="hero">
 <div class="wrap">
   <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 78% with zero quality loss.</p>
+  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default (95% max) with zero quality loss at default.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
     <a href="#compaction" class="btn btn-secondary">See the savings &darr;</a>
@@ -330,7 +330,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <tr><td>Portable runtime</td><td>Cloud-dependent / in-memory</td><td>Single .db file, anywhere</td></tr>
       <tr><td>State persistence</td><td>Framework-specific, lost on crash</td><td>SQLite &mdash; crash-safe</td></tr>
       <tr><td>Token / cost tracking</td><td>Varies, often manual</td><td>SELECT SUM(token_count) ...</td></tr>
-      <tr><td>Context efficiency</td><td>Full context every call</td><td>Smart compaction: 46-63% smaller, 0% quality loss</td></tr>
+      <tr><td>Context efficiency</td><td>Full context every call</td><td>Smart compaction: 57–95% smaller, 100% quality at default</td></tr>
       <tr><td>Cross-session learning</td><td>Starts from scratch</td><td>Knowledge compounds across searches</td></tr>
     </tbody>
   </table>
@@ -427,11 +427,11 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="compaction" id="compaction">
 <div class="wrap">
   <h2>Smart Context Compaction</h2>
-  <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level: 100% quality at 34% savings. Max level: 88% quality at 53% savings.</p>
+  <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level (5): 100% quality at 57% savings. Ultra level (10): 95% savings, scores always preserved.</p>
 
   <!-- Compaction flow diagram — generated from blog prompt -->
   <div style="max-width:800px;margin:0 auto 2.5rem">
-    <img src="blog/compaction-flow.png" alt="Raw archive → Compactor → Dense digest (78% smaller, 0% quality loss)" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+    <img src="blog/compaction-flow.png" alt="Raw archive → AAAK Compactor → Dense digest (57% smaller at default, 0% quality loss)" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
   </div>
 
   <!-- Full matrix: domains x levels -->
@@ -451,55 +451,55 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
         <tr>
           <td style="font-weight:600">Classification</td>
           <td>29% <span class="quality-badge">100%</span></td>
-          <td>52% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">52% <span class="quality-badge">100%</span></td>
-          <td>61% <span class="quality-badge">100%</span></td>
-          <td>68% <span class="quality-badge">100%</span></td>
+          <td>72% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">72% <span class="quality-badge">100%</span></td>
+          <td>72% <span class="quality-badge">100%</span></td>
+          <td>97% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">38%</span></td>
         </tr>
         <tr>
           <td style="font-weight:600">Code Generation</td>
           <td>31% <span class="quality-badge">100%</span></td>
-          <td>31% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">31% <span class="quality-badge">100%</span></td>
-          <td>41% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">90%</span></td>
-          <td>56% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">70%</span></td>
+          <td>58% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">58% <span class="quality-badge">100%</span></td>
+          <td>58% <span class="quality-badge">100%</span></td>
+          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">30%</span></td>
         </tr>
         <tr>
           <td style="font-weight:600">Research / RAG</td>
           <td>24% <span class="quality-badge">100%</span></td>
-          <td>28% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">28% <span class="quality-badge">100%</span></td>
-          <td>34% <span class="quality-badge">100%</span></td>
-          <td>44% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">78%</span></td>
+          <td>49% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">49% <span class="quality-badge">100%</span></td>
+          <td>49% <span class="quality-badge">100%</span></td>
+          <td>95% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">33%</span></td>
         </tr>
         <tr>
           <td style="font-weight:600">Tool Calling</td>
           <td>30% <span class="quality-badge">100%</span></td>
-          <td>30% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">30% <span class="quality-badge">100%</span></td>
-          <td>39% <span class="quality-badge">100%</span></td>
-          <td>53% <span class="quality-badge">100%</span></td>
+          <td>57% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">57% <span class="quality-badge">100%</span></td>
+          <td>57% <span class="quality-badge">100%</span></td>
+          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">38%</span></td>
         </tr>
         <tr>
           <td style="font-weight:600">ML Training</td>
           <td>28% <span class="quality-badge">100%</span></td>
-          <td>28% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">28% <span class="quality-badge">100%</span></td>
-          <td>32% <span class="quality-badge">100%</span></td>
-          <td>45% <span class="quality-badge">100%</span></td>
+          <td>49% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06)">49% <span class="quality-badge">100%</span></td>
+          <td>49% <span class="quality-badge">100%</span></td>
+          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">25%</span></td>
         </tr>
         <tr style="border-top:2px solid var(--accent)">
           <td style="font-weight:700;color:var(--fg)">Aggregate</td>
           <td>28% <span class="quality-badge">100%</span></td>
-          <td>34% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06);font-weight:600">34% <span class="quality-badge">100%</span></td>
-          <td>41% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">98%</span></td>
-          <td>53% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">88%</span></td>
+          <td>57% <span class="quality-badge">100%</span></td>
+          <td style="background:rgba(108,92,231,.06);font-weight:600">57% <span class="quality-badge">100%</span></td>
+          <td>57% <span class="quality-badge">100%</span></td>
+          <td>95% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">33%</span></td>
         </tr>
       </tbody>
     </table>
   </div>
-  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Quality drops at high levels come from code generation (error messages) and research (routing details) &mdash; the lowest-value data drops first.</p>
+  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Levels 3–7 produce identical AAAK-compact output (same tier). Level 10 ultra drops source code &amp; samples — scores &amp; error types always preserved. Powered by AAAK-style notation (MemPalace).</p>
 
   <div style="max-width:600px;margin:0 auto">
     <ul class="compaction-benefits">
@@ -516,22 +516,22 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <span class="label">Quality at default level</span>
     </div>
     <div class="stat-box">
-      <span class="num cyan">~120K</span>
-      <span class="label">Tokens saved per search</span>
+      <span class="num cyan">57%</span>
+      <span class="label">Context saved at default (L5)</span>
     </div>
     <div class="stat-box">
-      <span class="num accent">78%</span>
-      <span class="label">Token reduction</span>
+      <span class="num accent">95%</span>
+      <span class="label">Context saved at ultra (L10)</span>
     </div>
     <div class="stat-box">
-      <span class="num green">~$108</span>
-      <span class="label">Saved / month (10 searches/day)</span>
+      <span class="num green">5/5</span>
+      <span class="label">Domains pass quality validation</span>
     </div>
   </div>
 
   <!-- Token savings chart — generated from blog prompt -->
   <div style="max-width:800px;margin:2.5rem auto 0">
-    <img src="blog/compaction-chart.png" alt="Token savings by domain — 78% reduction across classification, code gen, research, tool calling, ML" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+    <img src="blog/compaction-chart.png" alt="Token savings by domain — 57% at default, 95% at ultra across classification, code gen, research, tool calling, ML" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
   </div>
 </div>
 </section>
@@ -553,10 +553,10 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="uc-grid">
     <div class="uc-card">
       <h3>Meta-Harness: Auto-Optimize Your LLM</h3>
-      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 42% context with full quality retention.</p>
+      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 57% context with full quality retention.</p>
       <code>kaos mh search -b text_classify -n 10
 kaos mh knowledge  # prior wins used as seeds
-# 46% less context, same quality, fewer timeouts</code>
+# 57% less context, same quality, fewer timeouts</code>
     </div>
     <div class="uc-card">
       <h3>Autonomous Research Lab</h3>
