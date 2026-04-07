@@ -2,6 +2,15 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.5.3] - 2026-04-07
+
+### ARC-AGI-3 Benchmark + Search Hang Fix
+
+- **ARC-AGI-3 benchmark** (`kaos/metaharness/benchmarks/arc_agi3.py`) — new interactive game benchmark. Scoring via RHAE (Relative Human Action Efficiency). Harnesses define `run(problem)` + `choose_action(grid, available_actions, state)`. 4 seed strategies: random, systematic, productive-first, click-objects.
+- **Fix: search hanging** — root cause: `asyncio.wait_for` cannot cancel `run_in_executor` threads. With old defaults (10 games × 120s × 4 seeds = 80 min) the process appeared frozen. Fixed: `time_per_game=25s`, `max_actions=800`, `n_search_games=6`. Seed eval now takes ~1.5 min (eval_subset=1) or ~3 min (eval_subset=2).
+- **MCP stdio guard** — `arc_agi.Arcade()` adds a `logging.StreamHandler(sys.stdout)` on init, which corrupts the MCP transport. Monkeypatches `StreamHandler.__init__` to redirect any stdout handler to stderr before import.
+- **`SearchConfig.harness_timeout_seconds` 300 → 60** — per-problem cap; arc-agi-3 games run at most 25s, all other benchmarks complete in seconds.
+
 ## [0.5.2] - 2026-04-07
 
 ### AAAK Compact Notation + Tiered Loading (inspired by MemPalace)

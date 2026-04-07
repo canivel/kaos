@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.5.2-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.5.3-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -757,9 +757,21 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.5.2
+## What's New in v0.5.3
 
-### AAAK Compact Notation (inspired by MemPalace)
+### ARC-AGI-3 Benchmark + Search Hang Fix
+
+New interactive game benchmark for meta-harness optimization. Each problem is an ARC-AGI-3 game; each harness defines `choose_action(grid, available_actions, state)`. Scoring via RHAE (Relative Human Action Efficiency — lower agent actions vs human baseline = higher score).
+
+Root cause of search hanging: `asyncio.wait_for` cannot cancel `run_in_executor` threads. Old defaults (10 games × 120s × 4 seeds) = 80 min per seed eval. Fixed: `time_per_game=25s`, `max_actions=800`, `n_search_games=6` → ~1.5 min for seed eval. `SearchConfig.harness_timeout_seconds` reduced from 300 → 60 (per-problem cap).
+
+```python
+# Start a search on ARC-AGI-3
+result = mh_start_search(benchmark="arc-agi-3", eval_subset=2)
+# Seeds: random, systematic, productive-first, click-objects
+```
+
+### v0.5.2: AAAK Compact Notation (inspired by MemPalace)
 
 Compactor now uses dense shorthand notation that any LLM reads without decoders. 57% savings at default level (was 34% with structured extraction) with 100% quality across all domains.
 
