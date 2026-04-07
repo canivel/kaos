@@ -155,7 +155,7 @@ class SearchConfig:
     objectives: list[str] | None = None  # None = inherit from benchmark
     max_parallel_evals: int = 4
     eval_subset_size: int | None = None  # Subsample problems for faster search
-    harness_timeout_seconds: int = 300
+    harness_timeout_seconds: int = 60  # per-problem timeout; arc-agi-3 games now run max 25s each
     proposer_timeout_seconds: int = 900  # 15 min max per proposer iteration
     compaction_level: int = 5  # 0 (no compaction) to 10 (maximum)
     max_prior_seeds: int = 5  # max prior discoveries to load as seeds
