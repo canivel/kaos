@@ -2,6 +2,22 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.5.2] - 2026-04-07
+
+### AAAK Compact Notation + Tiered Loading (inspired by MemPalace)
+
+- **AAAK-style compact notation** -- replaces verbose markdown with dense shorthand: `H:keyword|i2|acc=1.0|cost=8.0|8/8✓`. All LLMs read it without decoders. 57% savings at default level (was 34%).
+- **Tiered loading** -- L0 (verbose), L1 (AAAK+source), L2 (AAAK+top-3 source), L3 (ultra-compact scores only). Maps to compaction levels 0-10.
+- **100% quality at default** across all 5 domains (classification, code gen, research, tool calling, ML) with 49-72% savings per domain.
+- **L3 ultra** achieves 95% savings for severely context-limited scenarios.
+
+### Comparison: Old vs AAAK
+
+```
+Before (structured extraction):  34% saved, 100% quality at default
+After  (AAAK + tiered loading):  57% saved, 100% quality at default  ← +68% more savings
+```
+
 ## [0.5.1] - 2026-04-07
 
 ### Surrogate Verifier (EvoSkills paper, arXiv:2604.01687)

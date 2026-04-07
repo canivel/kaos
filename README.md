@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.5.1-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.5.2-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -757,9 +757,20 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.5.1
+## What's New in v0.5.2
 
-### Surrogate Verifier (#31, from EvoSkills arXiv:2604.01687)
+### AAAK Compact Notation (inspired by MemPalace)
+
+Compactor now uses dense shorthand notation that any LLM reads without decoders. 57% savings at default level (was 34% with structured extraction) with 100% quality across all domains.
+
+```
+Before: ## Harness keyword_cls (iteration 2)\n**Scores:** accuracy=1.0000, cost=8.0\n...
+After:  H:keyword_cl|i2|accuracy=1.0000|context_cost=8.0000|8/8✓
+```
+
+Four tiers: L0 verbose → L1 AAAK+source → L2 AAAK+top-3 → L3 ultra (95% savings).
+
+### v0.5.1: Surrogate Verifier (#31, from EvoSkills arXiv:2604.01687)
 
 Every harness evaluation now produces structured failure diagnostics — not just "what went wrong" but "why it failed" and "how to fix it". The verifier is informationally isolated (reads outputs, not source code) to prevent confirmation bias. Integrated into the collaborative flow: `mh_next_iteration` returns the diagnosis alongside the digest.
 
