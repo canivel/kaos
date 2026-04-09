@@ -428,7 +428,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
     <div class="feat-card">
       <div class="icon">&#x1f9e0;</div>
       <h3>Smart Context Compaction</h3>
-      <p>Tunable compression (0-10) tested across 5 domains: classification, code gen, research, tool calling, ML. 100% quality retained at default level. Structured extraction &gt; raw data.</p>
+      <p>Tunable compression (0-10) tested across 5 domains: classification, code gen, research, tool calling, ML. 100% quality retained at default level. Structured extraction &gt; raw data. Notation inspired by <a href="https://github.com/milla-jovovich/mempalace">MemPalace</a>.</p>
     </div>
     <div class="feat-card">
       <div class="icon">&#x1f4da;</div>
@@ -526,7 +526,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       </tbody>
     </table>
   </div>
-  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Levels 3–7 produce identical AAAK-compact output (same tier). Level 10 ultra drops source code &amp; samples — scores &amp; error types always preserved. Powered by AAAK-style notation (MemPalace).</p>
+  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Levels 3–7 produce identical AAAK-compact output (same tier). Level 10 ultra drops source code &amp; samples — scores &amp; error types always preserved. Powered by AAAK-style notation (<a href="https://github.com/milla-jovovich/mempalace" style="color:var(--accent2)">MemPalace</a>).</p>
 
   <div style="max-width:600px;margin:0 auto">
     <ul class="compaction-benefits">
@@ -640,7 +640,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <div class="demo-card-meta">
         <div class="demo-card-num">07 &mdash; Tutorial</div>
         <h3>CORAL Co-Evolution</h3>
-        <p>Multiple specialized agents evolve solutions in parallel. A hub agent periodically syncs the best discoveries &mdash; architectures, optimizers, regularization &mdash; back to the whole team.</p>
+        <p>Multiple specialized agents evolve solutions in parallel. A hub agent periodically syncs the best discoveries &mdash; architectures, optimizers, regularization &mdash; back to the whole team. Inspired by <a href="https://arxiv.org/abs/2604.01658">CORAL (arXiv:2604.01658)</a> — Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery.</p>
       </div>
       <div class="demo-card-screen"><img src="docs/demos/kaos_07_coral_coevolution.gif" alt="CORAL — co-evolution, hub sync, skill compounding" loading="lazy"></div>
     </div>
@@ -708,7 +708,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <div class="demo-card-meta">
         <div class="demo-card-num">UC-06 &mdash; Use Case</div>
         <h3>Fraud Detection: F1 0.58 &rarr; 0.81</h3>
-        <p>Fraud classifier stuck at 65% recall with 30% false positives. CORAL pivot prompts kick in at stagnation, co-evolution shares discoveries across agents, and F1 improves from 0.58 to 0.81.</p>
+        <p>Fraud classifier stuck at 65% recall with 30% false positives. <a href="https://arxiv.org/abs/2604.01658">CORAL</a> pivot prompts kick in at stagnation, co-evolution shares discoveries across agents, and F1 improves from 0.58 to 0.81.</p>
       </div>
       <div class="demo-card-screen"><img src="docs/demos/kaos_uc06_fraud_detection.gif" alt="Fraud Detection — CORAL pivot, F1 0.58 to 0.81" loading="lazy"></div>
     </div>
@@ -717,7 +717,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <div class="demo-card-meta">
         <div class="demo-card-num">UC-07 &mdash; Use Case</div>
         <h3>Autonomous Research Lab</h3>
-        <p>4 ML hypothesis agents run in parallel overnight &mdash; architecture search, optimizer tuning, scaling laws, regularization. Each isolated in its own VFS, results queryable with SQL when they finish.</p>
+        <p>4 ML hypothesis agents run in parallel overnight &mdash; architecture search, optimizer tuning, scaling laws, regularization. Each isolated in its own VFS, results queryable with SQL when they finish. Inspired by <a href="https://github.com/karpathy/autoresearch">Karpathy's autoresearch</a>.</p>
       </div>
       <div class="demo-card-screen"><img src="docs/demos/kaos_uc07_autonomous_research.gif" alt="Autonomous Research Lab — 4 hypothesis agents in parallel" loading="lazy"></div>
     </div>
@@ -726,7 +726,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <div class="demo-card-meta">
         <div class="demo-card-num">UC-08 &mdash; Use Case</div>
         <h3>CORAL Co-Evolution End-to-End</h3>
-        <p>3 specialized agents co-evolve solutions: reflect every iteration, pivot on plateau, consolidate shared skills every N steps. The hub syncs discoveries back to the team in real time.</p>
+        <p>3 specialized agents co-evolve solutions: reflect every iteration, pivot on plateau, consolidate shared skills every N steps. The hub syncs discoveries back to the team in real time. Based on <a href="https://arxiv.org/abs/2604.01658">CORAL (arXiv:2604.01658)</a>.</p>
       </div>
       <div class="demo-card-screen"><img src="docs/demos/kaos_uc08_coevolution_coral.gif" alt="CORAL Co-Evolution end-to-end — hub sync, skill sharing" loading="lazy"></div>
     </div>
@@ -836,7 +836,7 @@ kaos import snapshot.db
         <span class="release-date">April 9, 2026</span>
         <span class="release-tag">latest</span>
       </div>
-      <p class="release-category">CORAL: Autonomous Multi-Agent Evolution</p>
+      <p class="release-category">CORAL: Autonomous Multi-Agent Evolution &mdash; <a href="https://arxiv.org/abs/2604.01658" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.01658</a></p>
       <ul>
         <li><strong>Stagnation detection</strong> &mdash; after N non-improving iterations, proposer receives a <code>PIVOT REQUIRED</code> block demanding an orthogonal approach. Tracks <code>stagnant_iterations</code> and <code>delta</code> per iteration.</li>
         <li><strong>Three-tier memory</strong> &mdash; <code>/attempts/</code> (compact eval summaries), <code>/notes/</code> (proposer observations via <code>notes=</code> param), <code>/skills/</code> (reusable patterns). Skills persist cross-search via knowledge agent.</li>
@@ -877,7 +877,7 @@ kaos import snapshot.db
         <li><code>kaos mh lint &lt;id&gt;</code> &mdash; health-check search archives</li>
         <li><code>kaos mh knowledge</code> &mdash; view persistent discoveries by benchmark</li>
       </ul>
-      <p class="release-category">Smart Compaction</p>
+      <p class="release-category">Smart Compaction &mdash; <a href="https://github.com/milla-jovovich/mempalace" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">MemPalace</a></p>
       <ul>
         <li>Tunable context compression (level 0-10) &mdash; reduces proposer turns from ~10 to 1-2</li>
         <li>Pre-built archive digest injected into proposer prompt</li>
