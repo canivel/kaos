@@ -51,23 +51,26 @@ nav a:hover{color:var(--fg)}
 .nav-cta:hover{background:var(--accent2);color:#fff !important}
 
 /* ── Hero ─────────────────────────────────────────── */
-.hero{padding:8rem 0 5rem;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-100px;left:-100px;width:700px;height:700px;background:radial-gradient(circle,rgba(108,92,231,.14) 0%,transparent 65%);pointer-events:none}
-.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative}
-.hero h1{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:1.2rem}
+.hero{padding:9rem 0 0;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:900px;height:600px;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,.18) 0%,transparent 70%);pointer-events:none}
+.hero-copy{position:relative;padding-bottom:4rem}
+.hero h1{font-size:clamp(2.6rem,5.5vw,4.4rem);font-weight:800;letter-spacing:-1.5px;line-height:1.12;margin-bottom:1.4rem}
 .hero h1 .highlight{background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .subtitle{font-size:clamp(.95rem,1.6vw,1.1rem);color:var(--fg2);margin-bottom:2rem;line-height:1.7}
-.hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem}
+.hero .subtitle{font-size:clamp(1rem,2vw,1.2rem);color:var(--fg2);max-width:680px;margin:0 auto 2.2rem;line-height:1.7}
+.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:8px;font-weight:600;font-size:.95rem;transition:all .2s}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent2);color:#fff;transform:translateY(-1px);box-shadow:0 8px 30px rgba(108,92,231,.3)}
 .btn-secondary{background:var(--bg3);color:var(--fg);border:1px solid rgba(255,255,255,.1)}
 .btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);transform:translateY(-1px)}
-.badges{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.8rem}
+.badges{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}
 .badge{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.06)}
 .badge.green{color:var(--green);border-color:rgba(0,230,118,.2)}
 .badge.blue{color:var(--cyan);border-color:rgba(24,255,255,.2)}
-.hero-screen{border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.3);box-shadow:0 32px 80px rgba(0,0,0,.65),0 0 0 1px rgba(108,92,231,.1)}
+/* Terminal sits below copy, bleeds edge-to-edge inside a max-width container */
+.hero-terminal{position:relative;max-width:1060px;margin:0 auto;padding:0 2rem}
+.hero-terminal::before{content:'';position:absolute;top:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:1}
+.hero-screen{border-radius:14px 14px 0 0;overflow:hidden;border:1px solid rgba(108,92,231,.3);border-bottom:none;box-shadow:0 -8px 60px rgba(108,92,231,.15),0 32px 80px rgba(0,0,0,.7)}
 .hero-screen img{width:100%;display:block}
 
 /* ── Install bar ──────────────────────────────────── */
@@ -238,8 +241,8 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 }
 @media(max-width:768px){
   nav ul{display:none}
-  .hero{padding:7rem 0 4rem}
-  .hero-inner{grid-template-columns:1fr;gap:2.5rem}
+  .hero{padding:7rem 0 0}
+  .hero-terminal{padding:0 0}
   section{padding:3.5rem 0}
   .wrap{padding:0 1.2rem}
   .pain-grid,.feat-grid,.uc-grid{grid-template-columns:1fr}
@@ -275,31 +278,29 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <!-- Hero -->
 <section class="hero">
 <div class="wrap">
-  <div class="hero-inner">
-    <div class="hero-left">
-      <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-      <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default with zero quality loss.</p>
-      <div class="hero-buttons">
-        <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-        <a href="#research">See the research &darr;</a>
-      </div>
-      <div class="install-bar">
-        <span class="prompt">$</span>
-        <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
-      </div>
-      <div class="badges">
-        <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
-        <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
-        <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
-        <span class="badge">CLI-first + MCP</span>
-        <span class="badge">Zero AI SDK deps</span>
-      </div>
+  <div class="hero-copy">
+    <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
+    <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default with zero quality loss.</p>
+    <div class="hero-buttons">
+      <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
+      <a href="#research" class="btn btn-secondary">See the research &darr;</a>
     </div>
-    <div class="hero-right">
-      <div class="hero-screen">
-        <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations">
-      </div>
+    <div class="install-bar">
+      <span class="prompt">$</span>
+      <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
     </div>
+    <div class="badges">
+      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
+      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
+      <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
+      <span class="badge">CLI-first + MCP</span>
+      <span class="badge">Zero AI SDK deps</span>
+    </div>
+  </div>
+</div>
+<div class="hero-terminal">
+  <div class="hero-screen">
+    <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations">
   </div>
 </div>
 </section>
