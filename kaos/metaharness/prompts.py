@@ -126,6 +126,42 @@ Do NOT propose minor variations of the same idea — explore distinct approaches
 """
 
 
+def build_pivot_prompt(stagnant: int, best_source_preview: str) -> str:
+    """CORAL Tier 1: inject after N non-improving iterations to force orthogonal exploration."""
+    return (
+        f"\n\n## ⚠ PIVOT REQUIRED (stagnant for {stagnant} iteration(s))\n\n"
+        "The Pareto frontier has NOT improved for the last "
+        f"{stagnant} consecutive iterations. Incremental changes are not working.\n\n"
+        "You MUST try something **structurally different**:\n"
+        "1. Identify the fundamental assumption of the current best approach\n"
+        "2. Negate that assumption — build an approach that avoids it entirely\n"
+        "3. Consider: chain-of-thought, few-shot examples, ensemble voting, "
+        "decomposition, domain-specific features, entirely different architecture\n"
+        "4. Do NOT submit a variant of the current best\n\n"
+        "Current best harness (first 300 chars):\n"
+        f"```python\n{best_source_preview}\n```\n"
+    )
+
+
+def build_consolidation_prompt(iteration: int) -> str:
+    """CORAL Tier 2: skills heartbeat — distil reusable patterns every K iterations."""
+    return (
+        f"\n\n## 🔬 CONSOLIDATION HEARTBEAT (iteration {iteration})\n\n"
+        f"You have completed {iteration} iterations. Before proposing the next harness, "
+        "extract reusable patterns you have discovered and record them as skills "
+        "using `mh_write_skill(search_agent_id, name, description, code_template)`.\n\n"
+        "A **skill** is a pattern that reliably helps — a preprocessing step, "
+        "a prompt template, a fallback strategy, a data transformation. "
+        "Skills are stored across searches and injected into future proposers.\n\n"
+        "Examples of good skills:\n"
+        "- `chain_of_thought_classification`: Add step-by-step reasoning before label\n"
+        "- `confidence_threshold_fallback`: Return None when model is uncertain, "
+        "let a backup rule handle it\n"
+        "- `domain_keyword_boost`: Prefilter candidates using keyword scores before LLM\n\n"
+        "After writing skills, proceed with your harness proposal.\n"
+    )
+
+
 def build_proposer_prompt(
     iteration: int,
     n_candidates: int,

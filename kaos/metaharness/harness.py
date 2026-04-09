@@ -159,6 +159,8 @@ class SearchConfig:
     proposer_timeout_seconds: int = 900  # 15 min max per proposer iteration
     compaction_level: int = 5  # 0 (no compaction) to 10 (maximum)
     max_prior_seeds: int = 5  # max prior discoveries to load as seeds
+    stagnation_threshold: int = 3  # CORAL: pivot prompt after N non-improving iterations
+    consolidation_interval: int = 5  # CORAL: skills heartbeat every N iterations
 
     def to_dict(self) -> dict:
         return asdict(self)

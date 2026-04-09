@@ -333,6 +333,63 @@ async def list_tools() -> list[Tool]:
                 "required": ["search_agent_id"],
             },
         ),
+        # ── CORAL: Skills ────────────────────────────────────────
+        Tool(
+            name="mh_write_skill",
+            description=(
+                "Write a reusable skill (pattern/template) discovered during search. "
+                "Skills are stored in the search agent VFS (/skills/) AND the persistent "
+                "knowledge agent so future searches start with them. Call this during "
+                "consolidation heartbeats or any time you discover a reliable pattern."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string"},
+                    "name": {"type": "string", "description": "Skill identifier (snake_case)"},
+                    "description": {"type": "string", "description": "What the skill does and when to use it"},
+                    "code_template": {"type": "string", "description": "Code template or example (optional)"},
+                },
+                "required": ["search_agent_id", "name", "description"],
+            },
+        ),
+        # ── CORAL: Co-Evolution ──────────────────────────────────
+        Tool(
+            name="mh_spawn_coevolution",
+            description=(
+                "Spawn N co-evolving search agents sharing a hub. Returns agent IDs and "
+                "the hub ID. Drive each agent independently with mh_submit_candidate + "
+                "mh_next_iteration. Call mh_hub_sync periodically to share discoveries "
+                "across agents. Best results with N=2-4 agents."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "benchmark": {"type": "string", "description": "Benchmark name"},
+                    "n_agents": {"type": "integer", "default": 2, "description": "Number of co-evolving agents (2-4)"},
+                    "eval_subset": {"type": "integer", "description": "Subsample problems per eval"},
+                    "compaction_level": {"type": "integer", "default": 5},
+                    "hub_sync_interval": {"type": "integer", "default": 2, "description": "Auto-sync every N iterations"},
+                },
+                "required": ["benchmark"],
+            },
+        ),
+        Tool(
+            name="mh_hub_sync",
+            description=(
+                "Push this agent's best harnesses + skills to the shared hub, and pull "
+                "other agents' best discoveries into this agent's archive. Call every "
+                "hub_sync_interval iterations to enable cross-agent learning. "
+                "Only works for agents spawned with mh_spawn_coevolution."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "search_agent_id": {"type": "string"},
+                },
+                "required": ["search_agent_id"],
+            },
+        ),
     ]
 
 
@@ -358,6 +415,110 @@ def _import_benchmarks() -> None:
         import kaos.metaharness.benchmarks.arc_agi3  # noqa: F401
     except ImportError:
         pass
+
+
+def _do_hub_sync(search_agent_id: str, hub_id: str, afs: Kaos) -> dict:
+    """CORAL Tier 3: push this agent's best harnesses+skills to hub, pull others' best.
+
+    Synchronous — called from mh_hub_sync and auto-triggered in mh_next_iteration.
+    Returns a summary dict with pushed/pulled counts.
+    """
+    agent_index = afs.get_state_or(search_agent_id, "agent_index") or 0
+    n_agents = afs.get_state_or(hub_id, "n_agents") or 1
+    iteration = afs.get_state_or(search_agent_id, "current_iteration") or 0
+    pushed_harnesses: list[str] = []
+    pulled_harnesses: list[str] = []
+
+    # ── Push: best harnesses → hub ──────────────────────────────
+    try:
+        frontier_data = json.loads(afs.read(search_agent_id, "/pareto/frontier.json").decode())
+        for point in frontier_data.get("points", [])[:3]:
+            hid = point["harness_id"]
+            try:
+                src = afs.read(search_agent_id, f"/harnesses/{hid}/source.py")
+                scores_b = afs.read(search_agent_id, f"/harnesses/{hid}/scores.json")
+                afs.write(hub_id, f"/best_per_agent/agent_{agent_index}/{hid}.py", src)
+                afs.write(hub_id, f"/best_per_agent/agent_{agent_index}/{hid}.scores.json", scores_b)
+                pushed_harnesses.append(hid[:12])
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # ── Push: skills → hub ──────────────────────────────────────
+    try:
+        for se in afs.ls(search_agent_id, "/skills"):
+            if se.get("is_dir") or not se["path"].endswith(".json"):
+                continue
+            try:
+                afs.write(hub_id, f"/shared_skills/{se['name']}", afs.read(search_agent_id, se["path"]))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # ── Pull: other agents' best → this archive ─────────────────
+    for other_idx in range(n_agents):
+        if other_idx == agent_index:
+            continue
+        try:
+            other_dir = f"/best_per_agent/agent_{other_idx}"
+            for fe in afs.ls(hub_id, other_dir):
+                if fe.get("is_dir") or not fe["path"].endswith(".py"):
+                    continue
+                hid = fe["name"].replace(".py", "")
+                if _agent_has_harness(afs, search_agent_id, hid):
+                    continue
+                try:
+                    src = afs.read(hub_id, fe["path"])
+                    scores_path = fe["path"].replace(".py", ".scores.json")
+                    scores_b = afs.read(hub_id, scores_path)
+                    afs.write(search_agent_id, f"/harnesses/{hid}/source.py", src)
+                    afs.write(search_agent_id, f"/harnesses/{hid}/scores.json", scores_b)
+                    afs.write(search_agent_id, f"/harnesses/{hid}/metadata.json",
+                              json.dumps({"harness_id": hid, "iteration": iteration,
+                                          "metadata": {"source": f"hub_agent_{other_idx}"},
+                                          "is_success": True, "error": None,
+                                          "duration_ms": 0}, indent=2).encode())
+                    pulled_harnesses.append(hid[:12])
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    # ── Pull: shared skills ──────────────────────────────────────
+    try:
+        for se in afs.ls(hub_id, "/shared_skills"):
+            if se.get("is_dir") or not se["path"].endswith(".json"):
+                continue
+            try:
+                afs.write(search_agent_id, f"/skills/{se['name']}", afs.read(hub_id, se["path"]))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return {
+        "status": "synced",
+        "agent_index": agent_index,
+        "pushed_harnesses": pushed_harnesses,
+        "pulled_harnesses": pulled_harnesses,
+        "iteration": iteration,
+        "message": (
+            f"Pushed {len(pushed_harnesses)} harnesses, "
+            f"pulled {len(pulled_harnesses)} from other agents. "
+            "Pulled harnesses appear in the next digest."
+        ),
+    }
+
+
+def _agent_has_harness(afs: Kaos, agent_id: str, harness_id: str) -> bool:
+    """Check if agent already has a harness stored (avoid duplicate imports)."""
+    try:
+        afs.read(agent_id, f"/harnesses/{harness_id}/scores.json")
+        return True
+    except Exception:
+        return False
 
 
 async def _dispatch(name: str, args: dict[str, Any]) -> str:
@@ -612,6 +773,10 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         _afs.set_state(search.search_agent_id, "pending_candidates", [])
         _afs.set_state(search.search_agent_id, "collaborative", True)
         _afs.set_state(search.search_agent_id, "benchmark", benchmark_name)
+        # CORAL stagnation state init
+        _afs.set_state(search.search_agent_id, "stagnant_iterations", 0)
+        _afs.set_state(search.search_agent_id, "prev_best_scores", {})
+        _afs.set_state(search.search_agent_id, "prev_frontier_size", 0)
 
         # Build digest for Claude Code to read
         compactor = Compactor(level=compaction_level)
@@ -658,6 +823,16 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         valid, err = candidate.validate_interface()
         if not valid:
             return json.dumps({"error": f"Invalid harness: {err}. Fix and resubmit."})
+
+        # CORAL Tier 2: persist notes if provided
+        notes = args.get("notes", "")
+        if notes:
+            iteration = (_afs.get_state_or(search_agent_id, "current_iteration") or 0) + 1
+            note_path = f"/notes/iter_{iteration}_{candidate.harness_id[:8]}.md"
+            try:
+                _afs.write(search_agent_id, note_path, notes.encode())
+            except Exception as e:
+                logger.warning("Failed to write notes: %s", e)
 
         # Store in pending list
         pending = _afs.get_state_or(search_agent_id, "pending_candidates", [])
@@ -762,8 +937,34 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         # Store frontier
         _afs.write(search_agent_id, "/pareto/frontier.json",
                    json.dumps(frontier.to_dict(), indent=2).encode())
+
+        # CORAL Tier 1: stagnation detection
+        from kaos.metaharness.prompts import build_pivot_prompt, build_consolidation_prompt
+        prev_best: dict = _afs.get_state_or(search_agent_id, "prev_best_scores") or {}
+        stagnant: int = _afs.get_state_or(search_agent_id, "stagnant_iterations") or 0
+        curr_best: dict = {}
+        for obj_name in objectives:
+            vals = [p.scores.get(obj_name, 0.0) for p in frontier.points]
+            curr_best[obj_name] = max(vals) if vals else 0.0
+        epsilon = 0.001
+        frontier_improved = any(
+            abs(curr_best.get(o, 0.0) - prev_best.get(o, 0.0)) > epsilon for o in curr_best
+        ) or (len(frontier.points) > (_afs.get_state_or(search_agent_id, "prev_frontier_size") or 0))
+        stagnant = 0 if frontier_improved else stagnant + 1
+        _afs.set_state(search_agent_id, "stagnant_iterations", stagnant)
+        _afs.set_state(search_agent_id, "prev_best_scores", curr_best)
+        _afs.set_state(search_agent_id, "prev_frontier_size", len(frontier.points))
+        delta = {"prev_best": prev_best, "curr_best": curr_best,
+                 "stagnant_iterations": stagnant, "frontier_improved": frontier_improved}
+
         _afs.set_state(search_agent_id, "current_iteration", iteration)
         _afs.set_state(search_agent_id, "pending_candidates", [])  # clear pending
+
+        # CORAL Tier 3: auto hub-sync if this agent is part of a co-evolution run
+        hub_id = _afs.get_state_or(search_agent_id, "hub_id")
+        hub_sync_interval = _afs.get_state_or(search_agent_id, "hub_sync_interval") or 2
+        if hub_id and iteration % hub_sync_interval == 0:
+            _do_hub_sync(search_agent_id, hub_id, _afs)
 
         # Build updated digest
         harness_data = []
@@ -792,6 +993,27 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             harness_data.append(h)
 
         compactor = Compactor(level=compaction_level)
+
+        # CORAL Tier 2: load skills and prepend to harness context
+        skills_prefix = ""
+        try:
+            skill_entries = _afs.ls(search_agent_id, "/skills")
+            skill_lines = []
+            for se in skill_entries[:10]:  # cap at 10 to avoid context bloat
+                if se.get("is_dir") or not se["path"].endswith(".json"):
+                    continue
+                try:
+                    sk = json.loads(_afs.read(search_agent_id, se["path"]).decode())
+                    skill_lines.append(f"- **{sk['name']}**: {sk['description']}")
+                    if sk.get("code_template"):
+                        skill_lines.append(f"  ```python\n  {sk['code_template'][:200]}\n  ```")
+                except Exception:
+                    continue
+            if skill_lines:
+                skills_prefix = "## Reusable Skills\n\n" + "\n".join(skill_lines) + "\n\n"
+        except Exception:
+            pass
+
         digest, metrics = compactor.build_digest(harness_data, frontier.to_dict())
 
         # Results + diagnoses for this iteration
@@ -806,11 +1028,43 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             })
             if hasattr(result, "diagnosis") and result.diagnosis:
                 diagnoses.append(result.diagnosis.to_text())
+            # CORAL Tier 2: write to /attempts/
+            try:
+                _afs.write(search_agent_id, f"/attempts/{harness.harness_id}.json",
+                           json.dumps({
+                               "harness_id": harness.harness_id, "iteration": iteration,
+                               "scores": result.scores, "is_success": result.is_success,
+                               "error": result.error,
+                               "approach": harness.source_code[:200],
+                               "rationale": harness.metadata.get("rationale", ""),
+                           }, indent=2).encode())
+            except Exception:
+                pass
 
-        # Build diagnosis section for the response
         diagnosis_text = ""
         if diagnoses:
             diagnosis_text = "\n\n## Verifier Diagnosis\n\n" + "\n\n".join(diagnoses)
+
+        # CORAL Tier 1: pivot prompt if stagnant
+        pivot_text = ""
+        stagnation_threshold = config.stagnation_threshold
+        if stagnant >= stagnation_threshold:
+            best_src = ""
+            if frontier.points:
+                try:
+                    raw = _afs.read(search_agent_id, f"/harnesses/{frontier.points[0].harness_id}/source.py").decode()
+                    best_src = raw[:300] + ("..." if len(raw) > 300 else "")
+                except Exception:
+                    pass
+            pivot_text = build_pivot_prompt(stagnant, best_src)
+
+        # CORAL Tier 2: consolidation heartbeat
+        consolidation_text = ""
+        cons_interval = config.consolidation_interval
+        if iteration > 0 and iteration % cons_interval == 0:
+            consolidation_text = build_consolidation_prompt(iteration)
+
+        full_digest = skills_prefix + digest + diagnosis_text + pivot_text + consolidation_text
 
         return json.dumps({
             "search_agent_id": search_agent_id,
@@ -819,14 +1073,131 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             "results": iter_results,
             "frontier_size": len(frontier.points),
             "total_harnesses": len(all_scores_files),
-            "digest": digest + diagnosis_text,
+            "stagnant_iterations": stagnant,
+            "delta": delta,
+            "digest": full_digest,
             "instructions": (
-                "Read the updated digest AND the verifier diagnosis above. "
-                "The diagnosis shows root causes and suggested fixes. "
-                "Propose improved harnesses and submit with mh_submit_candidate. "
+                "Read the updated digest, verifier diagnosis, and any pivot/consolidation prompts above. "
+                "Propose improved harnesses and submit with mh_submit_candidate(search_agent_id, source_code, "
+                "rationale, notes='...your observations...'). "
+                "Use mh_write_skill(search_agent_id, name, description) to record reusable patterns. "
                 "Then call mh_next_iteration again."
             ),
         }, indent=2)
+
+    elif name == "mh_write_skill":
+        search_agent_id = args["search_agent_id"]
+        skill_name = args["name"].replace(" ", "_").lower()
+        skill_data = {
+            "name": skill_name,
+            "description": args["description"],
+            "code_template": args.get("code_template", ""),
+            "created_at_iteration": _afs.get_state_or(search_agent_id, "current_iteration") or 0,
+        }
+        payload = json.dumps(skill_data, indent=2).encode()
+        _afs.write(search_agent_id, f"/skills/{skill_name}.json", payload)
+        # Persist to knowledge agent
+        try:
+            knowledge_id = _afs.get_or_create_singleton("kaos-knowledge")
+            benchmark_name = _afs.get_state_or(search_agent_id, "benchmark") or "unknown"
+            _afs.write(knowledge_id, f"/skills/{benchmark_name}/{skill_name}.json", payload)
+        except Exception as e:
+            logger.warning("Failed to persist skill to knowledge agent: %s", e)
+        return json.dumps({"status": "ok", "skill": skill_name,
+                           "message": f"Skill '{skill_name}' saved and persisted to knowledge agent."}, indent=2)
+
+    elif name == "mh_spawn_coevolution":
+        from kaos.metaharness.harness import SearchConfig
+        from kaos.metaharness.search import MetaHarnessSearch
+        from kaos.metaharness.benchmarks import get_benchmark
+        from kaos.metaharness.compactor import Compactor
+        _import_benchmarks()
+
+        benchmark_name = args["benchmark"]
+        n_agents = args.get("n_agents", 2)
+        eval_subset = args.get("eval_subset")
+        compaction_level = args.get("compaction_level", 5)
+        hub_sync_interval = args.get("hub_sync_interval", 2)
+
+        bench = get_benchmark(benchmark_name)
+
+        # Create hub agent
+        hub_id = _afs.spawn("mh-hub", config={"benchmark": benchmark_name})
+        _afs.mkdir(hub_id, "/best_per_agent")
+        _afs.mkdir(hub_id, "/shared_skills")
+        _afs.mkdir(hub_id, "/shared_attempts")
+        _afs.set_state(hub_id, "benchmark", benchmark_name)
+        _afs.set_state(hub_id, "n_agents", n_agents)
+
+        search_agent_ids = []
+        seed_digests = []
+        for i in range(n_agents):
+            config_i = SearchConfig(
+                benchmark=benchmark_name,
+                eval_subset_size=eval_subset,
+                compaction_level=compaction_level,
+            )
+            search_i = MetaHarnessSearch(_afs, _ccr.router, bench, config_i)
+            search_i.search_agent_id = search_i._init_archive()
+
+            seeds_i = search_i._load_seeds()
+            problems_i = bench.get_search_set()
+            if eval_subset:
+                problems_i = bench.get_subset(problems_i, eval_subset)
+
+            seed_results_i = await search_i.evaluator.evaluate_parallel(
+                seeds_i, problems=problems_i, max_parallel=config_i.max_parallel_evals,
+            )
+            for h, r in zip(seeds_i, seed_results_i):
+                search_i._store_result(h, r, iteration=0)
+
+            frontier_i = search_i._compute_frontier()
+            search_i._store_frontier(frontier_i, iteration=0)
+
+            sid = search_i.search_agent_id
+            _afs.set_state(sid, "current_iteration", 0)
+            _afs.set_state(sid, "pending_candidates", [])
+            _afs.set_state(sid, "collaborative", True)
+            _afs.set_state(sid, "benchmark", benchmark_name)
+            _afs.set_state(sid, "hub_id", hub_id)
+            _afs.set_state(sid, "hub_sync_interval", hub_sync_interval)
+            _afs.set_state(sid, "agent_index", i)
+            _afs.set_state(sid, "stagnant_iterations", 0)
+            _afs.set_state(sid, "prev_best_scores", {})
+            _afs.set_state(sid, "prev_frontier_size", 0)
+            search_agent_ids.append(sid)
+
+            compactor_i = Compactor(level=compaction_level)
+            hdata_i = [{"harness_id": h.harness_id, "iteration": 0,
+                        "scores": r.scores, "source": h.source_code,
+                        "per_problem": r.per_problem, "error": r.error}
+                       for h, r in zip(seeds_i, seed_results_i)]
+            d_i, _ = compactor_i.build_digest(hdata_i, frontier_i.to_dict())
+            seed_digests.append({"agent_index": i, "agent_id": sid, "digest": d_i})
+
+        return json.dumps({
+            "hub_id": hub_id,
+            "search_agent_ids": search_agent_ids,
+            "n_agents": n_agents,
+            "benchmark": benchmark_name,
+            "hub_sync_interval": hub_sync_interval,
+            "seed_digests": seed_digests,
+            "instructions": (
+                f"You have {n_agents} co-evolving agents. Drive each with "
+                "mh_submit_candidate + mh_next_iteration independently. "
+                f"Call mh_hub_sync(search_agent_id) every {hub_sync_interval} iterations "
+                "to share discoveries across agents. Agents that build on each other's "
+                "best work get 2x the improvement rate (CORAL paper result)."
+            ),
+        }, indent=2)
+
+    elif name == "mh_hub_sync":
+        search_agent_id = args["search_agent_id"]
+        hub_id = _afs.get_state_or(search_agent_id, "hub_id")
+        if not hub_id:
+            return json.dumps({"error": "Agent not in a co-evolution run. Use mh_spawn_coevolution first."})
+        result = _do_hub_sync(search_agent_id, hub_id, _afs)
+        return json.dumps(result, indent=2)
 
     else:
         raise ValueError(f"Unknown tool: {name}")

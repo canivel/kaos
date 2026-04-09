@@ -2,6 +2,34 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.6.0] - 2026-04-09
+
+### CORAL: Autonomous Multi-Agent Evolution (inspired by arXiv:2604.01658)
+
+Three tiers of CORAL-inspired improvements to the Meta-Harness.
+
+**Tier 1 — Stagnation Detection + Pivot Prompts**
+- `SearchConfig.stagnation_threshold` (default 3): after N consecutive non-improving iterations, inject a `PIVOT REQUIRED` section into the proposer digest requiring a structurally different approach
+- `SearchConfig.consolidation_interval` (default 5): skills heartbeat fires every K iterations
+- `stagnant_iterations` and `delta` returned in `mh_next_iteration` response so Claude Code can observe the stagnation signal
+- Both automated (`search.py`) and collaborative (`mh_next_iteration`) paths track stagnation
+
+**Tier 2 — Three-Tier Memory (attempts / notes / skills)**
+- Search archive gains `/attempts/`, `/notes/`, `/skills/` directories (CORAL filesystem model)
+- Every evaluated harness writes a compact summary to `/attempts/{id}.json` — fast scanning without reading full source
+- `mh_submit_candidate` accepts optional `notes` param — observations written to `/notes/iter_N.md`
+- New MCP tool `mh_write_skill(search_agent_id, name, description, code_template)` — write reusable patterns discovered during search; persisted to knowledge agent across searches
+- Skills loaded into every proposer prompt and `mh_next_iteration` digest (max 10, MRU)
+- Consolidation heartbeat in digest asks proposer to extract skills every `consolidation_interval` iterations
+- Skills survive across searches: `_file_to_knowledge` now archives `/skills/` alongside harnesses
+
+**Tier 3 — Concurrent Multi-Agent Co-Evolution**
+- New MCP tool `mh_spawn_coevolution(benchmark, n_agents, ...)` — spawns N independent search agents + 1 hub agent
+- New MCP tool `mh_hub_sync(search_agent_id)` — push current best harnesses+skills to hub, pull other agents' discoveries into local archive
+- Auto-sync: `mh_next_iteration` calls `_do_hub_sync` automatically every `hub_sync_interval` iterations (default 2)
+- Hub structure: `/best_per_agent/agent_N/`, `/shared_skills/`, `/shared_attempts/`
+- Cross-agent harnesses appear in next digest and Pareto frontier
+
 ## [0.5.3] - 2026-04-07
 
 ### ARC-AGI-3 Benchmark + Search Hang Fix

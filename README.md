@@ -6,7 +6,7 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
-[![Version](https://img.shields.io/badge/version-0.5.3-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
@@ -757,7 +757,29 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 - [Architecture](docs/architecture.md) — System design deep dive.
 - [Database Schema](docs/schema.md) — All 8 tables documented.
 
-## What's New in v0.5.3
+## What's New in v0.6.0
+
+### CORAL: Autonomous Multi-Agent Evolution (arXiv:2604.01658)
+
+Three tiers of improvements inspired by the CORAL paper, which achieves 3-10× higher improvement rates and set a new kernel engineering record (1363→1103 cycles) using shared persistent memory, heartbeat-driven reflection, and multi-agent co-evolution.
+
+**Tier 1 — Stagnation detection + pivot prompts:** After N non-improving iterations, the proposer receives a `PIVOT REQUIRED` section demanding a structurally different approach. No more incremental tweaks on a stuck frontier.
+
+**Tier 2 — Three-tier memory (attempts / notes / skills):**
+- `/attempts/` — compact summary of every eval for fast proposer scanning
+- `/notes/` — optional iteration observations from Claude Code via `mh_submit_candidate(..., notes="...")`
+- `/skills/` — reusable patterns written via `mh_write_skill(...)`, persisted to knowledge agent across searches
+
+**Tier 3 — Concurrent multi-agent co-evolution:**
+```python
+# Start 3 co-evolving agents sharing a hub
+result = mh_spawn_coevolution(benchmark="text_classify", n_agents=3)
+# Drive agent_0, agent_1, agent_2 independently
+# Every 2 iterations, hub auto-syncs best harnesses across agents
+mh_hub_sync(agent_0_id)   # push yours, pull theirs
+```
+
+### v0.5.3: ARC-AGI-3 Benchmark + Search Hang Fix
 
 ### ARC-AGI-3 Benchmark + Search Hang Fix
 

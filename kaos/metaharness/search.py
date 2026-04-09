@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 from kaos.metaharness.evaluator import HarnessEvaluator
 from kaos.metaharness.harness import HarnessCandidate, EvaluationResult, SearchConfig
 from kaos.metaharness.pareto import compute_pareto, ParetoFrontier
+from kaos.metaharness.prompts import build_pivot_prompt
 from kaos.metaharness.proposer import ProposerAgent
 
 if TYPE_CHECKING:
@@ -113,6 +114,7 @@ class MetaHarnessSearch:
             )
 
             # 3a. Proposer inspects archive and proposes candidates
+            stagnant = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -121,6 +123,8 @@ class MetaHarnessSearch:
                         benchmark_name=self.benchmark.name,
                         frontier=frontier,
                         compaction_level=self.config.compaction_level,
+                        stagnant_iterations=stagnant,
+                        stagnation_threshold=self.config.stagnation_threshold,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -179,9 +183,10 @@ class MetaHarnessSearch:
             for harness, result in zip(valid_candidates, results):
                 self._store_result(harness, result, iteration=iteration)
 
-            # Update frontier
+            # Update frontier + stagnation tracking (CORAL Tier 1)
             frontier = self._compute_frontier()
             self._store_frontier(frontier, iteration=iteration)
+            stagnant = self._update_stagnation(frontier, iteration)
 
             # Store iteration metadata
             self.afs.write(
@@ -332,6 +337,7 @@ class MetaHarnessSearch:
 
             self.afs.checkpoint(search_agent_id, label=f"pre-iter-{iteration}")
 
+            stagnant_r = self.afs.get_state_or(search_agent_id, "stagnant_iterations") or 0
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -340,6 +346,8 @@ class MetaHarnessSearch:
                         benchmark_name=self.benchmark.name,
                         frontier=frontier,
                         compaction_level=self.config.compaction_level,
+                        stagnant_iterations=stagnant_r,
+                        stagnation_threshold=self.config.stagnation_threshold,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -374,6 +382,7 @@ class MetaHarnessSearch:
 
             frontier = self._compute_frontier()
             self._store_frontier(frontier, iteration=iteration)
+            self._update_stagnation(frontier, iteration)
 
             self.afs.set_state(search_agent_id, "current_iteration", iteration)
             self.afs.set_state(search_agent_id, "frontier", frontier.to_dict())
@@ -395,6 +404,38 @@ class MetaHarnessSearch:
             total_duration_seconds=total_duration,
             iterations_completed=self.config.max_iterations,
         )
+
+    def _update_stagnation(self, frontier: ParetoFrontier, iteration: int) -> int:
+        """CORAL Tier 1: track consecutive non-improving iterations.
+
+        Returns the current stagnant_iterations count (after update).
+        Writes stagnant_iterations and prev_best_scores to VFS state.
+        """
+        prev_best: dict = self.afs.get_state_or(self.search_agent_id, "prev_best_scores") or {}
+        stagnant: int = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
+
+        curr_best: dict[str, float] = {}
+        for obj in self.config.objective_directions():
+            vals = [p.scores.get(obj, 0.0) for p in frontier.points]
+            curr_best[obj] = max(vals) if vals else 0.0
+
+        epsilon = 0.001
+        improved = any(
+            abs(curr_best.get(obj, 0.0) - prev_best.get(obj, 0.0)) > epsilon
+            for obj in curr_best
+        ) or (len(frontier.points) > (self.afs.get_state_or(self.search_agent_id, "prev_frontier_size") or 0))
+
+        stagnant = 0 if improved else stagnant + 1
+        self.afs.set_state(self.search_agent_id, "stagnant_iterations", stagnant)
+        self.afs.set_state(self.search_agent_id, "prev_best_scores", curr_best)
+        self.afs.set_state(self.search_agent_id, "prev_frontier_size", len(frontier.points))
+
+        if stagnant >= self.config.stagnation_threshold:
+            logger.warning(
+                "Iteration %d: frontier stagnant for %d iterations — pivot prompt active",
+                iteration, stagnant,
+            )
+        return stagnant
 
     def _init_archive(self) -> str:
         """Create the search agent and initialize the archive filesystem."""
@@ -424,6 +465,13 @@ class MetaHarnessSearch:
         self.afs.mkdir(agent_id, "/harnesses")
         self.afs.mkdir(agent_id, "/iterations")
         self.afs.mkdir(agent_id, "/pareto")
+        # CORAL Tier 2: three-tier memory
+        self.afs.mkdir(agent_id, "/attempts")   # compact per-eval summaries
+        self.afs.mkdir(agent_id, "/notes")      # proposer scratch space
+        self.afs.mkdir(agent_id, "/skills")     # reusable patterns (persisted)
+
+        # Pre-load skills from knowledge agent for this benchmark
+        self._load_skills_from_knowledge(agent_id)
 
         logger.info("Search archive initialized: agent %s", agent_id[:12])
         return agent_id
@@ -473,6 +521,28 @@ class MetaHarnessSearch:
 
         return seeds
 
+    def _load_skills_from_knowledge(self, agent_id: str) -> None:
+        """CORAL Tier 2: seed /skills/ from knowledge agent's prior discoveries."""
+        try:
+            knowledge_id = self.afs.get_or_create_singleton("kaos-knowledge")
+            benchmark = self.config.benchmark
+            skill_dir = f"/skills/{benchmark}"
+            entries = self.afs.ls(knowledge_id, skill_dir)
+            count = 0
+            for entry in entries:
+                if entry.get("is_dir") or not entry["path"].endswith(".json"):
+                    continue
+                try:
+                    skill_data = self.afs.read(knowledge_id, entry["path"])
+                    self.afs.write(agent_id, f"/skills/{entry['name']}", skill_data)
+                    count += 1
+                except Exception:
+                    continue
+            if count:
+                logger.info("Loaded %d skills from knowledge agent for %s", count, benchmark)
+        except Exception:
+            pass
+
     def _store_result(
         self,
         harness: HarnessCandidate,
@@ -520,6 +590,20 @@ class MetaHarnessSearch:
                 "is_success": result.is_success,
                 "error": result.error,
                 "duration_ms": result.duration_ms,
+            }, indent=2).encode(),
+        )
+        # CORAL Tier 2: compact summary in /attempts/ for fast proposer scanning
+        self.afs.write(
+            self.search_agent_id,
+            f"/attempts/{hid}.json",
+            json.dumps({
+                "harness_id": hid,
+                "iteration": iteration,
+                "scores": result.scores,
+                "is_success": result.is_success,
+                "error": result.error,
+                "approach": harness.source_code[:200],
+                "rationale": harness.metadata.get("rationale", ""),
             }, indent=2).encode(),
         )
 
@@ -609,6 +693,24 @@ class MetaHarnessSearch:
                 f"/discoveries/{benchmark}/latest_search.json",
                 json.dumps(summary, indent=2).encode(),
             )
+
+            # CORAL Tier 2: persist skills discovered during this search
+            try:
+                skill_entries = self.afs.ls(self.search_agent_id, "/skills")
+                for entry in skill_entries:
+                    if entry.get("is_dir") or not entry["path"].endswith(".json"):
+                        continue
+                    try:
+                        skill_data = self.afs.read(self.search_agent_id, entry["path"])
+                        self.afs.write(
+                            knowledge_id,
+                            f"/skills/{benchmark}/{entry['name']}",
+                            skill_data,
+                        )
+                    except Exception:
+                        continue
+            except Exception:
+                pass
 
             logger.info("Filed discoveries to knowledge agent %s", knowledge_id[:12])
         except Exception as e:

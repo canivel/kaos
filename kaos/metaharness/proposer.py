@@ -14,7 +14,7 @@ from typing import Any, TYPE_CHECKING
 from kaos.ccr.runner import ClaudeCodeRunner
 from kaos.ccr.tools import ToolDefinition
 from kaos.metaharness.harness import HarnessCandidate
-from kaos.metaharness.prompts import build_proposer_prompt
+from kaos.metaharness.prompts import build_proposer_prompt, build_pivot_prompt, build_consolidation_prompt
 
 if TYPE_CHECKING:
     from kaos.core import Kaos
@@ -158,6 +158,8 @@ class ProposerAgent:
         benchmark_name: str,
         frontier: ParetoFrontier,
         compaction_level: int = 5,
+        stagnant_iterations: int = 0,
+        stagnation_threshold: int = 3,
     ) -> list[HarnessCandidate]:
         """Run the proposer agent and collect submitted harness candidates.
 
@@ -189,14 +191,38 @@ class ProposerAgent:
         )
 
         if archive_digest:
+            # Prepend any reusable skills discovered so far
+            skills_text = self._load_skills_text()
             prompt += (
                 "\n\n## Pre-loaded Archive Digest\n\n"
                 "The following is a compacted summary of ALL prior harnesses, "
                 "their scores, error patterns, and source code. You can still "
                 "use the archive tools for details, but this digest should have "
                 "everything you need to propose improvements.\n\n"
+                + (skills_text + "\n" if skills_text else "")
                 + archive_digest
             )
+
+        # CORAL Tier 1: stagnation pivot
+        if stagnant_iterations >= stagnation_threshold and frontier.points:
+            best_src = ""
+            try:
+                best_hid = frontier.points[0].harness_id
+                raw = self.afs.read(self.search_agent_id, f"/harnesses/{best_hid}/source.py").decode()
+                best_src = raw[:300] + ("..." if len(raw) > 300 else "")
+            except Exception:
+                pass
+            prompt += build_pivot_prompt(stagnant_iterations, best_src)
+
+        # CORAL Tier 2: consolidation heartbeat
+        from kaos.metaharness.harness import SearchConfig as _SC
+        try:
+            cfg_data = json.loads(self.afs.read(self.search_agent_id, "/config.json").decode())
+            cons_interval = cfg_data.get("consolidation_interval", 5)
+        except Exception:
+            cons_interval = 5
+        if iteration > 0 and iteration % cons_interval == 0:
+            prompt += build_consolidation_prompt(iteration)
 
         # Single-shot mode: send the full prompt once, extract python blocks.
         # This avoids the multi-turn CCR loop where each turn replays the
@@ -305,6 +331,34 @@ class ProposerAgent:
                     )
                 else:
                     logger.debug("Extracted block failed validation: %s", err)
+
+    # ── Skills ──────────────────────────────────────────────────
+
+    def _load_skills_text(self, max_skills: int = 10) -> str:
+        """Load reusable skills from /skills/ and format them for the prompt."""
+        try:
+            entries = self.afs.ls(self.search_agent_id, "/skills")
+            skills = []
+            for entry in entries:
+                if entry.get("is_dir") or not entry["path"].endswith(".json"):
+                    continue
+                try:
+                    skill = json.loads(self.afs.read(self.search_agent_id, entry["path"]).decode())
+                    skills.append(skill)
+                except Exception:
+                    continue
+            if not skills:
+                return ""
+            skills = skills[:max_skills]
+            lines = ["## Reusable Skills (distilled from prior iterations)"]
+            for s in skills:
+                lines.append(f"- **{s['name']}**: {s['description']}")
+                if s.get("code_template"):
+                    snippet = s["code_template"][:200]
+                    lines.append(f"  ```python\n  {snippet}\n  ```")
+            return "\n".join(lines)
+        except Exception:
+            return ""
 
     # ── Archive digest ───────────────────────────────────────────
 
