@@ -51,26 +51,51 @@ nav a:hover{color:var(--fg)}
 .nav-cta:hover{background:var(--accent2);color:#fff !important}
 
 /* ── Hero ─────────────────────────────────────────── */
-.hero{padding:10rem 0 6rem;text-align:center;position:relative}
-.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(108,92,231,.12) 0%,transparent 70%);pointer-events:none}
-.hero h1{font-size:clamp(2.5rem,6vw,4.2rem);font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:1.5rem}
+.hero{padding:8rem 0 5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;left:-100px;width:700px;height:700px;background:radial-gradient(circle,rgba(108,92,231,.14) 0%,transparent 65%);pointer-events:none}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative}
+.hero h1{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:1.2rem}
 .hero h1 .highlight{background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .subtitle{font-size:clamp(1.05rem,2.5vw,1.3rem);color:var(--fg2);max-width:720px;margin:0 auto 2.5rem;line-height:1.65}
-.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.hero .subtitle{font-size:clamp(.95rem,1.6vw,1.1rem);color:var(--fg2);margin-bottom:2rem;line-height:1.7}
+.hero-buttons{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.8rem}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:8px;font-weight:600;font-size:.95rem;transition:all .2s}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent2);color:#fff;transform:translateY(-1px);box-shadow:0 8px 30px rgba(108,92,231,.3)}
 .btn-secondary{background:var(--bg3);color:var(--fg);border:1px solid rgba(255,255,255,.1)}
 .btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);transform:translateY(-1px)}
-.badges{display:flex;gap:.6rem;justify-content:center;margin-top:2.5rem;flex-wrap:wrap}
+.badges{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.8rem}
 .badge{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.06)}
 .badge.green{color:var(--green);border-color:rgba(0,230,118,.2)}
 .badge.blue{color:var(--cyan);border-color:rgba(24,255,255,.2)}
+.hero-screen{border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.3);box-shadow:0 32px 80px rgba(0,0,0,.65),0 0 0 1px rgba(108,92,231,.1)}
+.hero-screen img{width:100%;display:block}
 
 /* ── Install bar ──────────────────────────────────── */
-.install-bar{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.5rem;display:inline-flex;align-items:center;gap:1rem;font-family:var(--mono);font-size:.95rem;margin-top:2rem;color:var(--fg2)}
+.install-bar{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.5rem;display:inline-flex;align-items:center;gap:1rem;font-family:var(--mono);font-size:.9rem;color:var(--fg2)}
 .install-bar .prompt{color:var(--green)}
 .install-bar .cmd{color:var(--fg)}
+
+/* ── Research Foundation ──────────────────────────── */
+.research-banner{background:var(--bg2);padding:4.5rem 0;border-top:1px solid rgba(108,92,231,.15);border-bottom:1px solid rgba(108,92,231,.1)}
+.rb-header{text-align:center;margin-bottom:3rem}
+.rb-eyebrow{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:.7rem}
+.rb-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.5px}
+.rb-sub{color:var(--fg2);font-size:1rem;max-width:640px;margin:0 auto;line-height:1.7}
+.rb-papers{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+.rb-paper{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.5rem;border-top:3px solid var(--accent);transition:border-color .2s,transform .2s}
+.rb-paper:hover{transform:translateY(-3px)}
+.rb-paper:nth-child(1){border-top-color:var(--accent2)}
+.rb-paper:nth-child(2){border-top-color:var(--cyan)}
+.rb-paper:nth-child(3){border-top-color:var(--green)}
+.rb-paper:nth-child(4){border-top-color:var(--orange)}
+.rb-paper-tag{font-family:var(--mono);font-size:.68rem;color:var(--fg2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem}
+.rb-paper h3{font-size:1.05rem;font-weight:700;margin-bottom:.3rem;color:var(--fg)}
+.rb-paper-source{font-size:.78rem;color:var(--fg2);margin-bottom:.7rem}
+.rb-paper-source a{color:var(--accent2);text-decoration:none}
+.rb-paper-source a:hover{color:var(--cyan)}
+.rb-paper p{font-size:.87rem;color:var(--fg2);line-height:1.55;margin-bottom:.8rem}
+.rb-paper-used{font-size:.78rem;color:var(--fg2);border-top:1px solid rgba(255,255,255,.05);padding-top:.7rem;margin-top:.3rem}
+.rb-paper-used code{background:var(--bg3);padding:.1rem .35rem;border-radius:3px;font-size:.75rem;color:var(--accent2)}
 
 /* ── Problem ──────────────────────────────────────── */
 .problem{background:var(--bg2)}
@@ -189,10 +214,6 @@ footer a{color:var(--fg2)}
 footer a:hover{color:var(--accent2)}
 footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 
-/* ── Hero GIF ─────────────────────────────────────── */
-.hero-gif{max-width:960px;margin:3rem auto 0;border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.25);box-shadow:0 24px 80px rgba(0,0,0,.6)}
-.hero-gif img{width:100%;display:block}
-
 /* ── Demos Gallery ────────────────────────────────── */
 .demos{background:var(--bg2);padding:5rem 0}
 .demos>div>h2{text-align:center;font-size:2rem;margin-bottom:.6rem}
@@ -212,9 +233,13 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 .uc-gif img{width:100%;display:block}
 
 /* ── Mobile ───────────────────────────────────────── */
+@media(max-width:900px){
+  .rb-papers{grid-template-columns:repeat(2,1fr)}
+}
 @media(max-width:768px){
   nav ul{display:none}
   .hero{padding:7rem 0 4rem}
+  .hero-inner{grid-template-columns:1fr;gap:2.5rem}
   section{padding:3.5rem 0}
   .wrap{padding:0 1.2rem}
   .pain-grid,.feat-grid,.uc-grid{grid-template-columns:1fr}
@@ -222,6 +247,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   .comp-table th,.comp-table td{padding:.5rem .6rem}
   .install-bar{font-size:.8rem;padding:.8rem 1rem}
   .demo-card h3{font-size:1.1rem}
+  .rb-papers{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -232,6 +258,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <div class="wrap">
   <div class="logo"><span>K</span>AOS</div>
   <ul>
+    <li><a href="#research">Research</a></li>
     <li><a href="#problem">Problem</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
@@ -248,25 +275,72 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <!-- Hero -->
 <section class="hero">
 <div class="wrap">
-  <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-  <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default (95% max) with zero quality loss at default.</p>
-  <div class="hero-buttons">
-    <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="#compaction" class="btn btn-secondary">See the savings &darr;</a>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
+      <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default with zero quality loss.</p>
+      <div class="hero-buttons">
+        <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
+        <a href="#research">See the research &darr;</a>
+      </div>
+      <div class="install-bar">
+        <span class="prompt">$</span>
+        <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
+      </div>
+      <div class="badges">
+        <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
+        <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
+        <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
+        <span class="badge">CLI-first + MCP</span>
+        <span class="badge">Zero AI SDK deps</span>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-screen">
+        <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations">
+      </div>
+    </div>
   </div>
-  <div class="install-bar">
-    <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
+</div>
+</section>
+
+<!-- Research Foundation -->
+<section class="research-banner" id="research">
+<div class="wrap">
+  <div class="rb-header">
+    <div class="rb-eyebrow">Research Foundation</div>
+    <h2 class="rb-title">Every Breakthrough in Multi-Agent AI,<br>Unified in One Framework</h2>
+    <p class="rb-sub">KAOS doesn&rsquo;t just cite the papers &mdash; it implements them. Four cutting-edge research contributions from 2025&ndash;2026, production-ready and running locally on your machine.</p>
   </div>
-  <div class="badges">
-    <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
-    <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
-    <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
-    <span class="badge">CLI-first + MCP</span>
-    <span class="badge">Zero AI SDK deps</span>
-  </div>
-  <div class="hero-gif">
-    <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations" loading="lazy">
+  <div class="rb-papers">
+    <div class="rb-paper">
+      <div class="rb-paper-tag">Automated Optimization</div>
+      <h3>Meta-Harness</h3>
+      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2603.28052">arXiv:2603.28052</a> &bull; Stanford / MIT / KRAFTON</div>
+      <p>Evolutionary proposer reads full execution traces and automatically searches for the best prompt strategy, retrieval approach, and context design.</p>
+      <div class="rb-paper-used">Used in: <code>kaos mh search</code></div>
+    </div>
+    <div class="rb-paper">
+      <div class="rb-paper-tag">Context Compression</div>
+      <h3>MemPalace</h3>
+      <div class="rb-paper-source"><a href="https://github.com/milla-jovovich/mempalace">github.com/milla-jovovich/mempalace</a></div>
+      <p>AAAK compact notation &mdash; dense shorthand that any LLM reads without decoders. 57% context savings at default, 95% at ultra, with 100% quality retained.</p>
+      <div class="rb-paper-used">Used in: <code>Compactor</code> &bull; <code>kaos mh search</code></div>
+    </div>
+    <div class="rb-paper">
+      <div class="rb-paper-tag">Multi-Agent Co-Evolution</div>
+      <h3>CORAL</h3>
+      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01658">arXiv:2604.01658</a></div>
+      <p>Shared persistent memory, per-iteration reflection, stagnation-triggered pivot, and live skill sharing across co-evolving agents. 3&ndash;10&times; higher improvement rates.</p>
+      <div class="rb-paper-used">Used in: <code>mh_spawn_coevolution</code> &bull; <code>mh_hub_sync</code></div>
+    </div>
+    <div class="rb-paper">
+      <div class="rb-paper-tag">Failure Diagnosis</div>
+      <h3>EvoSkills</h3>
+      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01687">arXiv:2604.01687</a></div>
+      <p>Surrogate Verifier &mdash; informationally isolated failure diagnostics. Reads execution outputs only, never source code. Gives the proposer structured &ldquo;why it failed + how to fix it&rdquo;.</p>
+      <div class="rb-paper-used">Used in: <code>SurrogateVerifier</code></div>
+    </div>
   </div>
 </div>
 </section>
