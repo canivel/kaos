@@ -189,6 +189,21 @@ footer a{color:var(--fg2)}
 footer a:hover{color:var(--accent2)}
 footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 
+/* ── Demo Strip ───────────────────────────────────── */
+.demos{background:var(--bg);padding:3.5rem 0}
+.demos h2{text-align:center;font-size:2rem;margin-bottom:.8rem}
+.demos .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1rem;max-width:660px;margin-left:auto;margin-right:auto}
+.demo-main{max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.demo-main img{width:100%;display:block}
+.demo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:900px;margin:1.5rem auto 0}
+.demo-thumb{border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.06);transition:border-color .2s}
+.demo-thumb:hover{border-color:var(--accent2)}
+.demo-thumb img{width:100%;display:block}
+.demo-thumb p{font-size:.7rem;color:var(--fg2);padding:.4rem .5rem;text-align:center;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Use-case GIF preview */
+.uc-gif{margin-top:1rem;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.uc-gif img{width:100%;display:block}
+
 /* ── Mobile ───────────────────────────────────────── */
 @media(max-width:768px){
   nav ul{display:none}
@@ -199,6 +214,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   .comp-table{font-size:.8rem}
   .comp-table th,.comp-table td{padding:.5rem .6rem}
   .install-bar{font-size:.8rem;padding:.8rem 1rem}
+  .demo-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -213,6 +229,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#features">Features</a></li>
     <li><a href="#comparison">vs Others</a></li>
     <li><a href="#compaction">Compaction</a></li>
+    <li><a href="#demos">Demos</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
     <li><a href="#changelog">Changelog</a></li>
     <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
@@ -546,6 +563,51 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 </div>
 </section>
 
+<!-- Demo Recordings -->
+<section class="demos" id="demos">
+<div class="wrap">
+  <h2>See KAOS in Action</h2>
+  <p class="lead">Animated terminal recordings — no setup, no slides. Watch the real CLI running real agent workflows.</p>
+  <div class="demo-main">
+    <img src="docs/demos/kaos_01_getting_started.gif" alt="KAOS Getting Started — spawn agents, write files, query VFS" loading="lazy">
+  </div>
+  <div class="demo-grid">
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_02_checkpoints.gif" alt="Checkpoints &amp; Rollback" loading="lazy">
+      <p>02 Checkpoints</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_03_parallel_agents.gif" alt="Parallel Agents &amp; GEPA Router" loading="lazy">
+      <p>03 Parallel Agents</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_04_mcp_server.gif" alt="MCP Server Integration" loading="lazy">
+      <p>04 MCP Server</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_05_audit_trail.gif" alt="Audit Trail &amp; SQL Queries" loading="lazy">
+      <p>05 Audit Trail</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_06_meta_harness.gif" alt="Meta-Harness Search" loading="lazy">
+      <p>06 Meta-Harness</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_07_coral_coevolution.gif" alt="CORAL Co-Evolution" loading="lazy">
+      <p>07 CORAL</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_08_custom_benchmark.gif" alt="Custom Benchmarks" loading="lazy">
+      <p>08 Custom Benchmark</p>
+    </div>
+    <div class="demo-thumb">
+      <img src="docs/demos/kaos_uc08_coevolution_coral.gif" alt="CORAL Co-Evolution end-to-end" loading="lazy">
+      <p>UC: CORAL E2E</p>
+    </div>
+  </div>
+</div>
+</section>
+
 <!-- Use Cases -->
 <section class="use-cases" id="use-cases">
 <div class="wrap">
@@ -557,6 +619,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <code>kaos mh search -b text_classify -n 10
 kaos mh knowledge  # prior wins used as seeds
 # 57% less context, same quality, fewer timeouts</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="Meta-Harness: classifier 45%→87% in 10 iterations" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>Autonomous Research Lab</h3>
@@ -566,6 +629,7 @@ kaos mh knowledge  # prior wins used as seeds
   {"name": "optim", "prompt": "Try AdamW..."},
   {"name": "scale", "prompt": "Try 2x batch..."},
 ])</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc07_autonomous_research.gif" alt="Autonomous Research Lab — 4 hypothesis agents running in parallel" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>Code Review Swarm</h3>
@@ -576,6 +640,7 @@ kaos mh knowledge  # prior wins used as seeds
   {"name": "style",     "prompt": "Review..."},
   {"name": "tests",     "prompt": "What's missing?"},
 ])</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc01_code_review_swarm.gif" alt="Code Review Swarm — 4 parallel agents with isolated VFS" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>Self-Healing Agent</h3>
@@ -585,12 +650,14 @@ try:
     await ccr.run_agent(agent, "Migrate DB")
 except Exception:
     db.restore(agent, cp)  # rollback this one</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc02_self_healing_agent.gif" alt="Self-Healing Agent — checkpoint, simulate failure, auto-restore" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>Fraud Detection Optimization</h3>
       <p>Your fraud classifier has 65% recall with 30% false positives. Meta-Harness finds a red-flag checklist + contrastive examples approach that improves F1 by 20 points.</p>
       <code>kaos mh search -b fraud_detection -n 8
 # Pareto: [high recall] vs [balanced F1]</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc06_fraud_detection.gif" alt="Fraud Detection — F1 0.58→0.81 via CORAL pivot prompts" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>Post-Mortem Debugging</h3>
@@ -599,6 +666,7 @@ except Exception:
 kaos --json query "SELECT tool_name, error
   FROM tool_calls
   WHERE agent_id = ? AND status = 'error'"</code>
+      <div class="uc-gif"><img src="docs/demos/kaos_uc03_post_mortem_debug.gif" alt="Post-Mortem Debugging — SQL audit trail, log search, diff" loading="lazy"></div>
     </div>
     <div class="uc-card">
       <h3>CLI-Composable Pipelines</h3>
