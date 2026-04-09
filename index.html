@@ -189,17 +189,24 @@ footer a{color:var(--fg2)}
 footer a:hover{color:var(--accent2)}
 footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 
-/* ── Demo Strip ───────────────────────────────────── */
-.demos{background:var(--bg);padding:3.5rem 0}
-.demos h2{text-align:center;font-size:2rem;margin-bottom:.8rem}
-.demos .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1rem;max-width:660px;margin-left:auto;margin-right:auto}
-.demo-main{max-width:900px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.4)}
-.demo-main img{width:100%;display:block}
-.demo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:900px;margin:1.5rem auto 0}
-.demo-thumb{border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.06);transition:border-color .2s}
-.demo-thumb:hover{border-color:var(--accent2)}
-.demo-thumb img{width:100%;display:block}
-.demo-thumb p{font-size:.7rem;color:var(--fg2);padding:.4rem .5rem;text-align:center;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── Hero GIF ─────────────────────────────────────── */
+.hero-gif{max-width:960px;margin:3rem auto 0;border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.25);box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.hero-gif img{width:100%;display:block}
+
+/* ── Demos Gallery ────────────────────────────────── */
+.demos{background:var(--bg2);padding:5rem 0}
+.demos>div>h2{text-align:center;font-size:2rem;margin-bottom:.6rem}
+.demos .lead{text-align:center;color:var(--fg2);margin-bottom:.5rem;font-size:1rem;max-width:660px;margin-left:auto;margin-right:auto}
+.demo-section-label{text-align:center;font-family:var(--mono);font-size:.75rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin:3rem 0 2rem;display:flex;align-items:center;gap:1rem}
+.demo-section-label::before,.demo-section-label::after{content:'';flex:1;height:1px;background:rgba(108,92,231,.2)}
+.demo-gallery{display:flex;flex-direction:column;gap:3.5rem}
+.demo-card{max-width:960px;margin:0 auto;width:100%}
+.demo-card-meta{margin-bottom:.9rem}
+.demo-card-num{font-family:var(--mono);font-size:.72rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:.25rem}
+.demo-card h3{font-size:1.35rem;font-weight:700;margin-bottom:.35rem;color:var(--fg)}
+.demo-card p{color:var(--fg2);font-size:.92rem;line-height:1.55}
+.demo-card-screen{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 50px rgba(0,0,0,.5);margin-top:.9rem}
+.demo-card-screen img{width:100%;display:block}
 /* Use-case GIF preview */
 .uc-gif{margin-top:1rem;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
 .uc-gif img{width:100%;display:block}
@@ -214,7 +221,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   .comp-table{font-size:.8rem}
   .comp-table th,.comp-table td{padding:.5rem .6rem}
   .install-bar{font-size:.8rem;padding:.8rem 1rem}
-  .demo-grid{grid-template-columns:repeat(2,1fr)}
+  .demo-card h3{font-size:1.1rem}
 }
 </style>
 </head>
@@ -257,6 +264,9 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
     <span class="badge">CLI-first + MCP</span>
     <span class="badge">Zero AI SDK deps</span>
+  </div>
+  <div class="hero-gif">
+    <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations" loading="lazy">
   </div>
 </div>
 </section>
@@ -567,43 +577,160 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="demos" id="demos">
 <div class="wrap">
   <h2>See KAOS in Action</h2>
-  <p class="lead">Animated terminal recordings — no setup, no slides. Watch the real CLI running real agent workflows.</p>
-  <div class="demo-main">
-    <img src="docs/demos/kaos_01_getting_started.gif" alt="KAOS Getting Started — spawn agents, write files, query VFS" loading="lazy">
+  <p class="lead">Real terminal recordings. Real CLI. Real results — no voiceover, no slides.</p>
+
+  <div class="demo-section-label">Tutorial Series</div>
+  <div class="demo-gallery">
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">01 &mdash; Tutorial</div>
+        <h3>Getting Started in 2 Minutes</h3>
+        <p>Install KAOS, initialize the database, spawn your first agent, write files to its isolated VFS, and query the full audit trail with SQL &mdash; all from the terminal.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_01_getting_started.gif" alt="Getting Started — kaos init, spawn, write, read, query" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">02 &mdash; Tutorial</div>
+        <h3>Checkpoint, Diff &amp; Surgical Restore</h3>
+        <p>Snapshot an agent before a risky operation, make changes, compare the diff, and roll back exactly that one agent &mdash; without touching any other.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_02_checkpoints.gif" alt="Checkpoints — snapshot, diff, restore" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">03 &mdash; Tutorial</div>
+        <h3>Parallel Agents &amp; the GEPA Router</h3>
+        <p>Spawn multiple agents simultaneously. GEPA classifies each task by complexity and routes to the right model tier &mdash; local fast, local strong, or cloud &mdash; automatically.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_03_parallel_agents.gif" alt="Parallel Agents — GEPA routing, concurrent execution" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">04 &mdash; Tutorial</div>
+        <h3>MCP Server &mdash; 18 Tools for Claude Code</h3>
+        <p>Connect KAOS as an MCP server. Claude Code gains direct access to agent spawning, VFS reads/writes, checkpoints, and meta-harness search &mdash; all without leaving the IDE.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_04_mcp_server.gif" alt="MCP Server — kaos mcp setup, tool list, agent_spawn" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">05 &mdash; Tutorial</div>
+        <h3>Full Audit Trail &amp; SQL Queries</h3>
+        <p>Every tool call, file write, and state change is journaled. Query across all agents with plain SQL &mdash; find failures, measure token costs, trace exactly what each agent did.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_05_audit_trail.gif" alt="Audit Trail — kaos logs, SQL queries, kaos search" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">06 &mdash; Tutorial</div>
+        <h3>Meta-Harness: Automated Search Loop</h3>
+        <p>Seed with your baseline, let the proposer read full execution traces, generate better harnesses, evaluate them, update the Pareto frontier. Knowledge compounds across runs.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_06_meta_harness.gif" alt="Meta-Harness CLI — kaos mh search, frontier, knowledge" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">07 &mdash; Tutorial</div>
+        <h3>CORAL Co-Evolution</h3>
+        <p>Multiple specialized agents evolve solutions in parallel. A hub agent periodically syncs the best discoveries &mdash; architectures, optimizers, regularization &mdash; back to the whole team.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_07_coral_coevolution.gif" alt="CORAL — co-evolution, hub sync, skill compounding" loading="lazy"></div>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">08 &mdash; Tutorial</div>
+        <h3>Custom Benchmarks</h3>
+        <p>Define your own task harness in Python, plug it into the meta-harness search loop, and let KAOS optimize the prompt strategy automatically against your real data.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_08_custom_benchmark.gif" alt="Custom Benchmarks — define harness, run mh search" loading="lazy"></div>
+    </div>
+
   </div>
-  <div class="demo-grid">
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_02_checkpoints.gif" alt="Checkpoints &amp; Rollback" loading="lazy">
-      <p>02 Checkpoints</p>
+
+  <div class="demo-section-label">End-to-End Use Cases</div>
+  <div class="demo-gallery">
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-01 &mdash; Use Case</div>
+        <h3>Code Review Swarm</h3>
+        <p>4 agents review the same codebase from different angles &mdash; security vulnerabilities, performance, code style, and test coverage &mdash; all in parallel, fully isolated, results queryable by SQL.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc01_code_review_swarm.gif" alt="Code Review Swarm — 4 parallel agents, findings, SQL summary" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_03_parallel_agents.gif" alt="Parallel Agents &amp; GEPA Router" loading="lazy">
-      <p>03 Parallel Agents</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-02 &mdash; Use Case</div>
+        <h3>Self-Healing Agent</h3>
+        <p>Checkpoint before a risky database migration, simulate a failure mid-operation, watch the agent automatically restore to the clean state &mdash; while other agents keep running unaffected.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc02_self_healing_agent.gif" alt="Self-Healing Agent — checkpoint, failure, auto-restore" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_04_mcp_server.gif" alt="MCP Server Integration" loading="lazy">
-      <p>04 MCP Server</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-03 &mdash; Use Case</div>
+        <h3>Post-Mortem Debugging</h3>
+        <p>An agent broke production. Walk through the complete audit trail: stream logs, run SQL queries against the event journal, search across all agents, and diff checkpoints to pinpoint exactly what changed.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc03_post_mortem_debug.gif" alt="Post-Mortem — logs, SQL queries, search, diff" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_05_audit_trail.gif" alt="Audit Trail &amp; SQL Queries" loading="lazy">
-      <p>05 Audit Trail</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-04 &mdash; Use Case</div>
+        <h3>Meta-Harness: Classifier 45% &rarr; 87%</h3>
+        <p>Start with a broken text classifier at 45% accuracy. Meta-Harness runs 10 automated iterations &mdash; reading traces, proposing strategies, evaluating candidates &mdash; and finds an approach hitting 87%.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="Meta-Harness Classifier — 45% to 87% in 10 iterations" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_06_meta_harness.gif" alt="Meta-Harness Search" loading="lazy">
-      <p>06 Meta-Harness</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-05 &mdash; Use Case</div>
+        <h3>Parallel Refactor: Tests + Impl + Docs</h3>
+        <p>3 agents tackle the same module simultaneously &mdash; one writes tests, one refactors the implementation, one updates documentation. All isolated, all checkpointed, merged when done.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc05_parallel_refactor.gif" alt="Parallel Refactor — 3 agents: tests, impl, docs" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_07_coral_coevolution.gif" alt="CORAL Co-Evolution" loading="lazy">
-      <p>07 CORAL</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-06 &mdash; Use Case</div>
+        <h3>Fraud Detection: F1 0.58 &rarr; 0.81</h3>
+        <p>Fraud classifier stuck at 65% recall with 30% false positives. CORAL pivot prompts kick in at stagnation, co-evolution shares discoveries across agents, and F1 improves from 0.58 to 0.81.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc06_fraud_detection.gif" alt="Fraud Detection — CORAL pivot, F1 0.58 to 0.81" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_08_custom_benchmark.gif" alt="Custom Benchmarks" loading="lazy">
-      <p>08 Custom Benchmark</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-07 &mdash; Use Case</div>
+        <h3>Autonomous Research Lab</h3>
+        <p>4 ML hypothesis agents run in parallel overnight &mdash; architecture search, optimizer tuning, scaling laws, regularization. Each isolated in its own VFS, results queryable with SQL when they finish.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc07_autonomous_research.gif" alt="Autonomous Research Lab — 4 hypothesis agents in parallel" loading="lazy"></div>
     </div>
-    <div class="demo-thumb">
-      <img src="docs/demos/kaos_uc08_coevolution_coral.gif" alt="CORAL Co-Evolution end-to-end" loading="lazy">
-      <p>UC: CORAL E2E</p>
+
+    <div class="demo-card">
+      <div class="demo-card-meta">
+        <div class="demo-card-num">UC-08 &mdash; Use Case</div>
+        <h3>CORAL Co-Evolution End-to-End</h3>
+        <p>3 specialized agents co-evolve solutions: reflect every iteration, pivot on plateau, consolidate shared skills every N steps. The hub syncs discoveries back to the team in real time.</p>
+      </div>
+      <div class="demo-card-screen"><img src="docs/demos/kaos_uc08_coevolution_coral.gif" alt="CORAL Co-Evolution end-to-end — hub sync, skill sharing" loading="lazy"></div>
     </div>
+
   </div>
 </div>
 </section>
