@@ -2,6 +2,8 @@
 
 > How to expose KAOS as an MCP server for Claude Code and other MCP-compatible clients.
 
+![MCP Server Integration — 18 tools, Claude Code, agent_spawn and mh_search](../docs/demos/kaos_04_mcp_server.gif)
+
 > **v0.5.2 notes:**
 > - **CLI-first architecture** — `--json` output on all commands. Agents can shell out to `kaos --json ls` instead of using MCP (10-32x cheaper on tokens).
 > - **Large output handling** — Agent results >4KB are stored in VFS at `/result.txt`. MCP returns a preview + pointer to use `agent_read` for the full output.

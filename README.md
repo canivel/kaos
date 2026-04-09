@@ -6,6 +6,8 @@
 
 ![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
 
+> **See it in action** — animated demos of every feature below, or jump to [Use Cases](#real-world-examples).
+
 [![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
 [![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
@@ -83,6 +85,8 @@ uv sync
 kaos setup          # interactive wizard — picks a preset, generates kaos.yaml,
                     # auto-installs MCP server into Claude Code, auto-inits DB
 ```
+
+![Getting Started — init, spawn, write, isolate](docs/demos/kaos_01_getting_started.gif)
 
 ### As a Python library (no infrastructure needed)
 
@@ -221,6 +225,24 @@ kaos --json search "keyword"           # Search results as JSON
 kaos --json mh knowledge | jq .benchmarks
 ```
 
+### Parallel Agents + GEPA Router
+
+Run multiple agents simultaneously — GEPA classifies task complexity and auto-routes each to the right model tier.
+
+![Parallel agents — GEPA routing, simultaneous execution, SQL cost summary](docs/demos/kaos_03_parallel_agents.gif)
+
+### MCP Server — Claude Code Integration
+
+18 tools over MCP. Claude spawns agents, reads VFS files, queries the database — all from a conversation.
+
+![MCP server — kaos setup, 18 tools, Claude Code connected](docs/demos/kaos_04_mcp_server.gif)
+
+### Audit Trail & SQL Queries
+
+Every operation recorded. Query token cost, find failures, full-text search across all agents.
+
+![Audit trail — kaos logs, SQL queries, kaos search](docs/demos/kaos_05_audit_trail.gif)
+
 ### Live Dashboard
 
 Monitor all agents in real time — status, files, tool calls, token usage, and a streaming event log. The dashboard includes a dedicated **Meta-Harness panel** (purple border) showing active searches with status, current iteration, harness count, and frontier size — auto-refreshes every 5 seconds.
@@ -264,6 +286,8 @@ diff = db.diff_checkpoints(agent, cp1, cp2)
 # diff.files.added, diff.files.modified, diff.state.changed, diff.tool_calls
 ```
 
+![Checkpoints — snapshot, diff, surgical restore](docs/demos/kaos_02_checkpoints.gif)
+
 ### Content-Addressable Blob Store
 
 Files are stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with garbage collection keeps storage lean — even with hundreds of agents.
@@ -296,6 +320,8 @@ results = await ccr.run_parallel([
 # Each agent's findings are in its own VFS — combine, compare, or query with SQL.
 ```
 
+![Code Review Swarm — 4 parallel agents, findings, SQL token summary](docs/demos/kaos_uc01_code_review_swarm.gif)
+
 ### Self-Healing Agent
 
 Checkpoint before risky operations, automatically restore on failure:
@@ -309,6 +335,14 @@ except Exception:
     db.restore(agent, cp)  # roll back just this agent
     # other agents keep running, unaffected
 ```
+
+![Self-Healing Agent — checkpoint, migration fails, auto-restore, audit log](docs/demos/kaos_uc02_self_healing_agent.gif)
+
+### Parallel Refactor: Tests + Implementation + Docs
+
+Three tasks, three agents, one third of the time — with full isolation so none can corrupt the others:
+
+![Parallel Refactor — GEPA routing, 3 agents, real test output](docs/demos/kaos_uc05_parallel_refactor.gif)
 
 ### Autonomous Research Lab (autoresearch pattern)
 
@@ -335,11 +369,15 @@ db.query("""
 
 autoresearch uses git commit/reset — KAOS uses formal checkpoints with diff. autoresearch tracks results in a TSV — KAOS gives you SQL. autoresearch is 1 agent — KAOS runs N in parallel, isolated.
 
+![Autonomous Research Lab — 4 hypothesis agents, SQL results comparison](docs/demos/kaos_uc07_autonomous_research.gif)
+
 **Multi-GPU orchestration** is also supported: run 6 agents across 3 GPUs, each assigned to a model tier via GEPA `force_model`. For example, GPU 0 runs a 7B for sweeps, GPU 1 a 32B for architecture exploration, and GPU 2 a 70B for novel research. See `examples/multi_gpu_research.py` for the full setup. [Full tutorial](docs/tutorial-autoresearch.md)
 
 ### Post-Mortem Debugging
 
 An agent broke something. Figure out exactly what happened:
+
+![Post-Mortem — kaos logs, SQL failure queries, search, diff, restore](docs/demos/kaos_uc03_post_mortem_debug.gif)
 
 ```python
 # examples/post_mortem.py
@@ -377,6 +415,10 @@ db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [agent_id
 # Or just copy the whole database:
 # cp kaos.db full-backup.db
 ```
+
+### Meta-Harness in Action: 45% → 87% Accuracy
+
+![Meta-Harness classifier — seed eval, iteration traces, 87% frontier](docs/demos/kaos_uc04_meta_harness_classifier.gif)
 
 ### Optimize a Support Ticket Classifier (Meta-Harness)
 
@@ -497,6 +539,8 @@ result = await search.run()
 # Pareto frontier: [high recall, more tokens] ↔ [balanced F1, fewer tokens]
 ```
 
+![Fraud Detection Meta-Harness — F1 0.58→0.81, pivot prompt, Pareto frontier](docs/demos/kaos_uc06_fraud_detection.gif)
+
 ---
 
 ## Meta-Harness: How It Works
@@ -542,6 +586,8 @@ Level 10 │ 2512 chars ( 63% saved) │ quality=100% │ 6/6 questions answerab
 Zero quality loss at any level — structured extraction is actually *better* than raw data because it surfaces patterns explicitly. Configure with `compaction_level` (0-10) in `SearchConfig` or `kaos.yaml`.
 
 **Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file. Knowledge compounds across searches via the persistent knowledge agent.
+
+![Meta-Harness Search — iterations, proposer traces, frontier](docs/demos/kaos_06_meta_harness.gif)
 
 ```bash
 # Run a search
@@ -750,6 +796,21 @@ KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. 
 
 ## Tutorials & Docs
 
+### Video Demos
+
+| Tutorial | Demo |
+|---|---|
+| Getting Started | ![](docs/demos/kaos_01_getting_started.gif) |
+| Checkpoints & Restore | ![](docs/demos/kaos_02_checkpoints.gif) |
+| Parallel Agents + GEPA | ![](docs/demos/kaos_03_parallel_agents.gif) |
+| MCP Server | ![](docs/demos/kaos_04_mcp_server.gif) |
+| Audit Trail & SQL | ![](docs/demos/kaos_05_audit_trail.gif) |
+| Meta-Harness Search | ![](docs/demos/kaos_06_meta_harness.gif) |
+| CORAL Co-Evolution | ![](docs/demos/kaos_07_coral_coevolution.gif) |
+| Custom Benchmark | ![](docs/demos/kaos_08_custom_benchmark.gif) |
+
+### Written Guides
+
 - **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
 - **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
 - **[Autonomous Research Lab](docs/tutorial-autoresearch.md)** — Run N research agents in parallel, each exploring a different ML hypothesis. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
@@ -778,6 +839,8 @@ result = mh_spawn_coevolution(benchmark="text_classify", n_agents=3)
 # Every 2 iterations, hub auto-syncs best harnesses across agents
 mh_hub_sync(agent_0_id)   # push yours, pull theirs
 ```
+
+![CORAL Co-Evolution — 3 agents, hub sync, shared skills, 0.87 frontier](docs/demos/kaos_uc08_coevolution_coral.gif)
 
 ### v0.5.3: ARC-AGI-3 Benchmark + Search Hang Fix
 

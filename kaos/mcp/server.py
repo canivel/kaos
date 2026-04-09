@@ -938,10 +938,11 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         _afs.write(search_agent_id, "/pareto/frontier.json",
                    json.dumps(frontier.to_dict(), indent=2).encode())
 
-        # CORAL Tier 1: stagnation detection
-        from kaos.metaharness.prompts import build_pivot_prompt, build_consolidation_prompt
+        # CORAL Tier 1: stagnation detection with plateau cooldown
+        from kaos.metaharness.prompts import build_pivot_prompt, build_consolidation_prompt, build_reflect_prompt
         prev_best: dict = _afs.get_state_or(search_agent_id, "prev_best_scores") or {}
         stagnant: int = _afs.get_state_or(search_agent_id, "stagnant_iterations") or 0
+        pivot_fired_at: int | None = _afs.get_state_or(search_agent_id, "pivot_fired_at")
         curr_best: dict = {}
         for obj_name in objectives:
             vals = [p.scores.get(obj_name, 0.0) for p in frontier.points]
@@ -950,10 +951,25 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         frontier_improved = any(
             abs(curr_best.get(o, 0.0) - prev_best.get(o, 0.0)) > epsilon for o in curr_best
         ) or (len(frontier.points) > (_afs.get_state_or(search_agent_id, "prev_frontier_size") or 0))
-        stagnant = 0 if frontier_improved else stagnant + 1
+        if frontier_improved:
+            stagnant = 0
+            pivot_fired_at = None
+        else:
+            stagnant += 1
         _afs.set_state(search_agent_id, "stagnant_iterations", stagnant)
         _afs.set_state(search_agent_id, "prev_best_scores", curr_best)
         _afs.set_state(search_agent_id, "prev_frontier_size", len(frontier.points))
+        # Update pivot_fired_at: fire when stagnant >= threshold and cooldown expired
+        stagnation_threshold = config.stagnation_threshold
+        should_pivot = (
+            stagnant >= stagnation_threshold
+            and (pivot_fired_at is None or stagnant - pivot_fired_at >= stagnation_threshold)
+        )
+        if should_pivot:
+            _afs.set_state(search_agent_id, "pivot_fired_at", stagnant)
+            pivot_fired_at = stagnant
+        elif frontier_improved:
+            _afs.set_state(search_agent_id, "pivot_fired_at", None)
         delta = {"prev_best": prev_best, "curr_best": curr_best,
                  "stagnant_iterations": stagnant, "frontier_improved": frontier_improved}
 
@@ -1028,13 +1044,22 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             })
             if hasattr(result, "diagnosis") and result.diagnosis:
                 diagnoses.append(result.diagnosis.to_text())
-            # CORAL Tier 2: write to /attempts/
+            # CORAL Tier 2: write to /attempts/ with status field
             try:
+                ep = 0.001
+                if not prev_best:
+                    attempt_status = "neutral"
+                elif any(result.scores.get(o, 0.0) - prev_best.get(o, 0.0) > ep for o in result.scores):
+                    attempt_status = "improved"
+                elif any(prev_best.get(o, 0.0) - result.scores.get(o, 0.0) > ep for o in result.scores):
+                    attempt_status = "regression"
+                else:
+                    attempt_status = "neutral"
                 _afs.write(search_agent_id, f"/attempts/{harness.harness_id}.json",
                            json.dumps({
                                "harness_id": harness.harness_id, "iteration": iteration,
-                               "scores": result.scores, "is_success": result.is_success,
-                               "error": result.error,
+                               "scores": result.scores, "status": attempt_status,
+                               "is_success": result.is_success, "error": result.error,
                                "approach": harness.source_code[:200],
                                "rationale": harness.metadata.get("rationale", ""),
                            }, indent=2).encode())
@@ -1045,10 +1070,12 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         if diagnoses:
             diagnosis_text = "\n\n## Verifier Diagnosis\n\n" + "\n\n".join(diagnoses)
 
-        # CORAL Tier 1: pivot prompt if stagnant
+        # CORAL: per-iteration reflect (always fires)
+        reflect_text = build_reflect_prompt(iteration)
+
+        # CORAL Tier 1: pivot prompt — cooldown-protected (only fires when should_pivot)
         pivot_text = ""
-        stagnation_threshold = config.stagnation_threshold
-        if stagnant >= stagnation_threshold:
+        if should_pivot:
             best_src = ""
             if frontier.points:
                 try:
@@ -1064,7 +1091,7 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         if iteration > 0 and iteration % cons_interval == 0:
             consolidation_text = build_consolidation_prompt(iteration)
 
-        full_digest = skills_prefix + digest + diagnosis_text + pivot_text + consolidation_text
+        full_digest = skills_prefix + digest + diagnosis_text + reflect_text + pivot_text + consolidation_text
 
         return json.dumps({
             "search_agent_id": search_agent_id,

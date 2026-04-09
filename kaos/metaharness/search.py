@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 from kaos.metaharness.evaluator import HarnessEvaluator
 from kaos.metaharness.harness import HarnessCandidate, EvaluationResult, SearchConfig
 from kaos.metaharness.pareto import compute_pareto, ParetoFrontier
-from kaos.metaharness.prompts import build_pivot_prompt
+from kaos.metaharness.prompts import build_pivot_prompt, build_reflect_prompt
 from kaos.metaharness.proposer import ProposerAgent
 
 if TYPE_CHECKING:
@@ -115,6 +115,7 @@ class MetaHarnessSearch:
 
             # 3a. Proposer inspects archive and proposes candidates
             stagnant = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
+            pivot_fired_at = self.afs.get_state_or(self.search_agent_id, "pivot_fired_at")
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -125,6 +126,7 @@ class MetaHarnessSearch:
                         compaction_level=self.config.compaction_level,
                         stagnant_iterations=stagnant,
                         stagnation_threshold=self.config.stagnation_threshold,
+                        pivot_fired_at=pivot_fired_at,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -338,6 +340,7 @@ class MetaHarnessSearch:
             self.afs.checkpoint(search_agent_id, label=f"pre-iter-{iteration}")
 
             stagnant_r = self.afs.get_state_or(search_agent_id, "stagnant_iterations") or 0
+            pivot_fired_at_r = self.afs.get_state_or(search_agent_id, "pivot_fired_at")
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -348,6 +351,7 @@ class MetaHarnessSearch:
                         compaction_level=self.config.compaction_level,
                         stagnant_iterations=stagnant_r,
                         stagnation_threshold=self.config.stagnation_threshold,
+                        pivot_fired_at=pivot_fired_at_r,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -409,10 +413,14 @@ class MetaHarnessSearch:
         """CORAL Tier 1: track consecutive non-improving iterations.
 
         Returns the current stagnant_iterations count (after update).
-        Writes stagnant_iterations and prev_best_scores to VFS state.
+        Writes stagnant_iterations, prev_best_scores, and pivot_fired_at to VFS state.
+
+        Plateau cooldown (matches CORAL repo): pivot re-fires only after another
+        stagnation_threshold non-improving iterations since the last fire.
         """
         prev_best: dict = self.afs.get_state_or(self.search_agent_id, "prev_best_scores") or {}
         stagnant: int = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
+        pivot_fired_at: int | None = self.afs.get_state_or(self.search_agent_id, "pivot_fired_at")
 
         curr_best: dict[str, float] = {}
         for obj in self.config.objective_directions():
@@ -425,16 +433,32 @@ class MetaHarnessSearch:
             for obj in curr_best
         ) or (len(frontier.points) > (self.afs.get_state_or(self.search_agent_id, "prev_frontier_size") or 0))
 
-        stagnant = 0 if improved else stagnant + 1
+        if improved:
+            stagnant = 0
+            pivot_fired_at = None  # reset cooldown on any improvement
+        else:
+            stagnant += 1
+
         self.afs.set_state(self.search_agent_id, "stagnant_iterations", stagnant)
         self.afs.set_state(self.search_agent_id, "prev_best_scores", curr_best)
         self.afs.set_state(self.search_agent_id, "prev_frontier_size", len(frontier.points))
 
-        if stagnant >= self.config.stagnation_threshold:
+        threshold = self.config.stagnation_threshold
+        # Cooldown check: fire pivot only if stagnant >= threshold AND
+        # we haven't fired recently (or never fired)
+        should_pivot = (
+            stagnant >= threshold
+            and (pivot_fired_at is None or stagnant - pivot_fired_at >= threshold)
+        )
+        if should_pivot:
+            self.afs.set_state(self.search_agent_id, "pivot_fired_at", stagnant)
             logger.warning(
-                "Iteration %d: frontier stagnant for %d iterations — pivot prompt active",
-                iteration, stagnant,
+                "Iteration %d: pivot prompt fired (stagnant=%d, threshold=%d)",
+                iteration, stagnant, threshold,
             )
+        elif pivot_fired_at is not None and improved:
+            self.afs.set_state(self.search_agent_id, "pivot_fired_at", None)
+
         return stagnant
 
     def _init_archive(self) -> str:
@@ -593,6 +617,22 @@ class MetaHarnessSearch:
             }, indent=2).encode(),
         )
         # CORAL Tier 2: compact summary in /attempts/ for fast proposer scanning
+        prev_best: dict = self.afs.get_state_or(self.search_agent_id, "prev_best_scores") or {}
+        epsilon = 0.001
+        if not prev_best:
+            attempt_status = "neutral"
+        elif any(
+            result.scores.get(obj, 0.0) - prev_best.get(obj, 0.0) > epsilon
+            for obj in result.scores
+        ):
+            attempt_status = "improved"
+        elif any(
+            prev_best.get(obj, 0.0) - result.scores.get(obj, 0.0) > epsilon
+            for obj in result.scores
+        ):
+            attempt_status = "regression"
+        else:
+            attempt_status = "neutral"
         self.afs.write(
             self.search_agent_id,
             f"/attempts/{hid}.json",
@@ -600,6 +640,7 @@ class MetaHarnessSearch:
                 "harness_id": hid,
                 "iteration": iteration,
                 "scores": result.scores,
+                "status": attempt_status,
                 "is_success": result.is_success,
                 "error": result.error,
                 "approach": harness.source_code[:200],

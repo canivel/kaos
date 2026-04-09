@@ -1,0 +1,150 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 04 — MCP Server + Claude Code
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 74
+- content: a
+  delay: 54
+- content: o
+  delay: 53
+- content: s
+  delay: 74
+- content: ' '
+  delay: 61
+- content: s
+  delay: 57
+- content: e
+  delay: 49
+- content: t
+  delay: 59
+- content: u
+  delay: 70
+- content: p
+  delay: 59
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mKAOS Setup Wizard\e[0m\r\n  ────────────────────────────────────────\r\n  \e[90mSelect a preset:\e[0m\r\n  \e[92m›\e[0m 1. Claude Code (recommended)\r\n    2. Local vLLM (Qwen 7B+70B)\r\
+    \n    3. Hybrid (local + Claude fallback)\r\n    4. OpenAI GPT-4o\r\n\r\n  \e[33m1\e[0m\r\n\r\n  \e[92m✓\e[0m Config written:     \e[36mkaos.yaml\e[0m\r\n  \e[92m✓\e[0m Database created:   \e[36mkaos.db\e\
+    [0m\r\n  \e[92m✓\e[0m MCP server wired:   \e[36m~/.claude/settings.json\e[0m\r\n\r\n  \e[92mRestart Claude Code — 18 KAOS tools are now available.\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 53
+- content: a
+  delay: 44
+- content: o
+  delay: 45
+- content: s
+  delay: 49
+- content: ' '
+  delay: 60
+- content: s
+  delay: 60
+- content: e
+  delay: 47
+- content: r
+  delay: 60
+- content: v
+  delay: 60
+- content: e
+  delay: 67
+- content: ' '
+  delay: 69
+- content: '-'
+  delay: 70
+- content: '-'
+  delay: 62
+- content: t
+  delay: 63
+- content: r
+  delay: 50
+- content: a
+  delay: 59
+- content: n
+  delay: 62
+- content: s
+  delay: 70
+- content: p
+  delay: 52
+- content: o
+  delay: 73
+- content: r
+  delay: 45
+- content: t
+  delay: 54
+- content: ' '
+  delay: 65
+- content: s
+  delay: 44
+- content: t
+  delay: 65
+- content: d
+  delay: 60
+- content: i
+  delay: 57
+- content: o
+  delay: 66
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[92m✓\e[0m KAOS MCP server started\r\n  Transport: \e[36mstdio\e[0m\r\n  Tools:     \e[1m18\e[0m tools registered\r\n  Database:  \e[36mkaos.db\e[0m\r\n\r\n  \e[90magent_spawn    agent_status\
+    \   agent_read     agent_write\e[0m\r\n  \e[90magent_ls       agent_kill     agent_query    agent_parallel\e[0m\r\n  \e[90magent_checkpoint  agent_restore  agent_diff  agent_pause\e[0m\r\n  \e[90mmh_start_search\
+    \   mh_next_iter   mh_submit   mh_frontier\e[0m\r\n\r\n  \e[90mWaiting for MCP client connection...\e[0m\r\n"
+  delay: 60
+- content: ''
+  delay: 1500
+- content: "  \e[34m→\e[0m Claude Code connected\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500

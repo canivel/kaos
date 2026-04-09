@@ -126,8 +126,22 @@ Do NOT propose minor variations of the same idea — explore distinct approaches
 """
 
 
+def build_reflect_prompt(iteration: int) -> str:
+    """CORAL: lightweight per-iteration reflection (fires after every eval)."""
+    return (
+        f"\n\n## Reflect (iteration {iteration})\n\n"
+        "Before proposing: record what you learned this iteration in `/notes/`. "
+        "What worked? What failed and why? What hypothesis will you test next? "
+        "Use `mh_submit_candidate(..., notes='...')` to attach observations.\n"
+    )
+
+
 def build_pivot_prompt(stagnant: int, best_source_preview: str) -> str:
-    """CORAL Tier 1: inject after N non-improving iterations to force orthogonal exploration."""
+    """CORAL Tier 1: inject when plateau cooldown fires — demand orthogonal approach.
+
+    Cooldown-protected: only fires once per stagnation_threshold non-improving
+    iterations (not on every stagnant iteration after threshold).
+    """
     return (
         f"\n\n## ⚠ PIVOT REQUIRED (stagnant for {stagnant} iteration(s))\n\n"
         "The Pareto frontier has NOT improved for the last "

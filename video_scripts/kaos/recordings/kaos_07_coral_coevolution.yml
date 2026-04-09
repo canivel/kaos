@@ -1,0 +1,293 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 07 — CORAL Co-Evolution
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: '#'
+  delay: 64
+- content: ' '
+  delay: 47
+- content: S
+  delay: 49
+- content: p
+  delay: 68
+- content: a
+  delay: 58
+- content: w
+  delay: 72
+- content: n
+  delay: 55
+- content: ' '
+  delay: 48
+- content: '3'
+  delay: 44
+- content: ' '
+  delay: 59
+- content: c
+  delay: 74
+- content: o
+  delay: 61
+- content: '-'
+  delay: 67
+- content: e
+  delay: 68
+- content: v
+  delay: 65
+- content: o
+  delay: 66
+- content: l
+  delay: 56
+- content: v
+  delay: 66
+- content: i
+  delay: 74
+- content: n
+  delay: 58
+- content: g
+  delay: 45
+- content: ' '
+  delay: 52
+- content: a
+  delay: 50
+- content: g
+  delay: 45
+- content: e
+  delay: 72
+- content: n
+  delay: 70
+- content: t
+  delay: 57
+- content: s
+  delay: 64
+- content: ' '
+  delay: 52
+- content: v
+  delay: 67
+- content: i
+  delay: 47
+- content: a
+  delay: 62
+- content: ' '
+  delay: 60
+- content: M
+  delay: 59
+- content: C
+  delay: 52
+- content: P
+  delay: 56
+- content: ' '
+  delay: 61
+- content: f
+  delay: 61
+- content: r
+  delay: 45
+- content: o
+  delay: 62
+- content: m
+  delay: 69
+- content: ' '
+  delay: 60
+- content: C
+  delay: 58
+- content: l
+  delay: 58
+- content: a
+  delay: 54
+- content: u
+  delay: 69
+- content: d
+  delay: 49
+- content: e
+  delay: 67
+- content: .
+  delay: 51
+- content: .
+  delay: 52
+- content: .
+  delay: 51
+- content: "\r\n"
+  delay: 180
+- content: "\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 58
+- content: a
+  delay: 68
+- content: o
+  delay: 65
+- content: s
+  delay: 54
+- content: ' '
+  delay: 58
+- content: m
+  delay: 70
+- content: h
+  delay: 64
+- content: ' '
+  delay: 66
+- content: s
+  delay: 48
+- content: t
+  delay: 65
+- content: a
+  delay: 69
+- content: t
+  delay: 60
+- content: u
+  delay: 66
+- content: s
+  delay: 49
+- content: ' '
+  delay: 64
+- content: '-'
+  delay: 45
+- content: '-'
+  delay: 73
+- content: a
+  delay: 47
+- content: l
+  delay: 58
+- content: l
+  delay: 68
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mCo-Evolution Hub\e[0m  \e[36m01JQHUB...\e[0m\r\n  ──────────────────────────────────────────────────\r\n  \e[1mAgent A\e[0m  \e[90m01JQAG1...\e[0m  iter \e[92m8\e[0m/10  acc=\e[92m0.87\e\
+    [0m  \e[92m↑ improved\e[0m\r\n  \e[1mAgent B\e[0m  \e[90m01JQAG2...\e[0m  iter \e[33m8\e[0m/10  acc=\e[33m0.84\e[0m  \e[90m  neutral\e[0m\r\n  \e[1mAgent C\e[0m  \e[90m01JQAG3...\e[0m  iter \e[92m8\e\
+    [0m/10  acc=\e[92m0.89\e[0m  \e[92m↑ improved\e[0m\r\n\r\n  \e[1mShared Skills\e[0m (\e[92m4\e[0m total from hub):\r\n  • \e[92mchain_of_thought_classification\e[0m  \e[90mcontributed by: Agent A iter\
+    \ 3\e[0m\r\n  • \e[92mfew_shot_domain_examples\e[0m          \e[90mcontributed by: Agent C iter 5\e[0m\r\n  • \e[92mstructured_output_parsing\e[0m         \e[90mcontributed by: Agent B iter 4\e[0m\r\
+    \n  • \e[92mconfidence_threshold_fallback\e[0m     \e[90mcontributed by: Agent A iter 6\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 64
+- content: a
+  delay: 58
+- content: o
+  delay: 68
+- content: s
+  delay: 51
+- content: ' '
+  delay: 46
+- content: r
+  delay: 66
+- content: e
+  delay: 72
+- content: a
+  delay: 71
+- content: d
+  delay: 61
+- content: ' '
+  delay: 59
+- content: '0'
+  delay: 57
+- content: '1'
+  delay: 53
+- content: J
+  delay: 53
+- content: Q
+  delay: 67
+- content: A
+  delay: 54
+- content: G
+  delay: 49
+- content: '1'
+  delay: 69
+- content: .
+  delay: 67
+- content: .
+  delay: 66
+- content: .
+  delay: 71
+- content: ' '
+  delay: 74
+- content: /
+  delay: 72
+- content: n
+  delay: 67
+- content: o
+  delay: 46
+- content: t
+  delay: 65
+- content: e
+  delay: 68
+- content: s
+  delay: 66
+- content: /
+  delay: 73
+- content: i
+  delay: 51
+- content: t
+  delay: 45
+- content: e
+  delay: 61
+- content: r
+  delay: 52
+- content: _
+  delay: 63
+- content: '8'
+  delay: 51
+- content: .
+  delay: 51
+- content: m
+  delay: 61
+- content: d
+  delay: 58
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[32m## Reflect (iteration 8)\e[0m\r\n\r\nChain-of-thought continues to help (+4pts over baseline).\r\nAttempted ensemble voting — regression (-2pts), likely due to\r\ninconsistent formatting\
+    \ between model calls. Will isolate the\r\nvoting aggregation logic next iteration.\r\n\r\nNext hypothesis: structured JSON output + confidence score\r\nbefore final label decision.\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500

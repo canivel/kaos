@@ -6,6 +6,8 @@
 **Cost:** $0 (everything runs locally)
 **Requirements:** A machine with a GPU (16GB+ VRAM for 7B models, 48GB+ for 70B)
 
+![KAOS Getting Started — spawn agents, write files, query VFS](../docs/demos/kaos_01_getting_started.gif)
+
 ---
 
 ## Table of Contents
@@ -430,6 +432,8 @@ You'll see every action: `agent_spawn`, `file_write`, `tool_call_start`, `tool_c
 
 ## 7. Parallel Agents — The Real Power
 
+![Parallel Agents & GEPA Router — 3 agents running concurrently](../docs/demos/kaos_03_parallel_agents.gif)
+
 This is where KAOS shines. Ask Claude Code:
 
 > "Use KAOS to run 3 agents in parallel:
@@ -473,6 +477,8 @@ The key insight: **each agent wrote to `/src/payments.py` or `/tests/test_paymen
 
 ## 8. Checkpoint, Restore, and Debug
 
+![Checkpoints & Rollback — checkpoint before risky operations, restore on failure](../docs/demos/kaos_02_checkpoints.gif)
+
 ### Scenario: Safe refactoring with rollback
 
 Tell Claude Code:
@@ -503,6 +509,8 @@ This is time-travel debugging. You can see exactly what the agent did, step by s
 ---
 
 ## 9. Post-Mortem: When Things Go Wrong
+
+![Post-Mortem Debugging — SQL audit trail, log search, checkpoint diff](../docs/demos/kaos_uc03_post_mortem_debug.gif)
 
 An agent failed or produced bad output. Here's how to investigate.
 

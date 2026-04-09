@@ -1,0 +1,649 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 03 — Parallel Agents + GEPA Router
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 73
+- content: a
+  delay: 64
+- content: o
+  delay: 71
+- content: s
+  delay: 58
+- content: ' '
+  delay: 70
+- content: p
+  delay: 64
+- content: a
+  delay: 48
+- content: r
+  delay: 68
+- content: a
+  delay: 57
+- content: l
+  delay: 54
+- content: l
+  delay: 62
+- content: e
+  delay: 71
+- content: l
+  delay: 47
+- content: ' '
+  delay: 44
+- content: \
+  delay: 65
+- content: "\r\n"
+  delay: 180
+- content: "\r\n"
+  delay: 60
+- content: ' '
+  delay: 57
+- content: ' '
+  delay: 65
+- content: '-'
+  delay: 66
+- content: t
+  delay: 53
+- content: ' '
+  delay: 65
+- content: t
+  delay: 65
+- content: e
+  delay: 46
+- content: s
+  delay: 58
+- content: t
+  delay: 60
+- content: s
+  delay: 51
+- content: ' '
+  delay: 57
+- content: ' '
+  delay: 67
+- content: ' '
+  delay: 48
+- content: ' '
+  delay: 57
+- content: '"'
+  delay: 57
+- content: W
+  delay: 52
+- content: r
+  delay: 59
+- content: i
+  delay: 67
+- content: t
+  delay: 58
+- content: e
+  delay: 73
+- content: ' '
+  delay: 66
+- content: u
+  delay: 61
+- content: n
+  delay: 63
+- content: i
+  delay: 73
+- content: t
+  delay: 65
+- content: ' '
+  delay: 64
+- content: t
+  delay: 74
+- content: e
+  delay: 60
+- content: s
+  delay: 51
+- content: t
+  delay: 59
+- content: s
+  delay: 72
+- content: ' '
+  delay: 52
+- content: f
+  delay: 49
+- content: o
+  delay: 53
+- content: r
+  delay: 65
+- content: ' '
+  delay: 45
+- content: t
+  delay: 58
+- content: h
+  delay: 66
+- content: e
+  delay: 67
+- content: ' '
+  delay: 72
+- content: p
+  delay: 66
+- content: a
+  delay: 65
+- content: y
+  delay: 74
+- content: m
+  delay: 58
+- content: e
+  delay: 67
+- content: n
+  delay: 72
+- content: t
+  delay: 45
+- content: s
+  delay: 59
+- content: ' '
+  delay: 49
+- content: m
+  delay: 58
+- content: o
+  delay: 59
+- content: d
+  delay: 66
+- content: u
+  delay: 55
+- content: l
+  delay: 65
+- content: e
+  delay: 62
+- content: '"'
+  delay: 66
+- content: ' '
+  delay: 55
+- content: \
+  delay: 66
+- content: "\r\n"
+  delay: 180
+- content: "\r\n"
+  delay: 60
+- content: ' '
+  delay: 52
+- content: ' '
+  delay: 63
+- content: '-'
+  delay: 71
+- content: t
+  delay: 58
+- content: ' '
+  delay: 49
+- content: r
+  delay: 66
+- content: e
+  delay: 45
+- content: f
+  delay: 54
+- content: a
+  delay: 49
+- content: c
+  delay: 45
+- content: t
+  delay: 59
+- content: o
+  delay: 73
+- content: r
+  delay: 52
+- content: ' '
+  delay: 70
+- content: '"'
+  delay: 69
+- content: R
+  delay: 67
+- content: e
+  delay: 45
+- content: f
+  delay: 51
+- content: a
+  delay: 61
+- content: c
+  delay: 63
+- content: t
+  delay: 50
+- content: o
+  delay: 52
+- content: r
+  delay: 53
+- content: ' '
+  delay: 67
+- content: p
+  delay: 49
+- content: a
+  delay: 57
+- content: y
+  delay: 67
+- content: m
+  delay: 59
+- content: e
+  delay: 56
+- content: n
+  delay: 52
+- content: t
+  delay: 71
+- content: s
+  delay: 55
+- content: ' '
+  delay: 46
+- content: t
+  delay: 62
+- content: o
+  delay: 70
+- content: ' '
+  delay: 54
+- content: u
+  delay: 48
+- content: s
+  delay: 45
+- content: e
+  delay: 66
+- content: ' '
+  delay: 44
+- content: S
+  delay: 47
+- content: t
+  delay: 45
+- content: r
+  delay: 48
+- content: i
+  delay: 66
+- content: p
+  delay: 54
+- content: e
+  delay: 52
+- content: ' '
+  delay: 69
+- content: S
+  delay: 68
+- content: D
+  delay: 51
+- content: K
+  delay: 62
+- content: ' '
+  delay: 66
+- content: v
+  delay: 72
+- content: '3'
+  delay: 49
+- content: '"'
+  delay: 60
+- content: ' '
+  delay: 44
+- content: \
+  delay: 73
+- content: "\r\n"
+  delay: 180
+- content: "\r\n"
+  delay: 60
+- content: ' '
+  delay: 70
+- content: ' '
+  delay: 55
+- content: '-'
+  delay: 74
+- content: t
+  delay: 51
+- content: ' '
+  delay: 57
+- content: d
+  delay: 69
+- content: o
+  delay: 50
+- content: c
+  delay: 46
+- content: s
+  delay: 48
+- content: ' '
+  delay: 50
+- content: ' '
+  delay: 62
+- content: ' '
+  delay: 46
+- content: ' '
+  delay: 72
+- content: ' '
+  delay: 60
+- content: '"'
+  delay: 66
+- content: U
+  delay: 66
+- content: p
+  delay: 50
+- content: d
+  delay: 61
+- content: a
+  delay: 44
+- content: t
+  delay: 46
+- content: e
+  delay: 66
+- content: ' '
+  delay: 68
+- content: p
+  delay: 71
+- content: a
+  delay: 46
+- content: y
+  delay: 56
+- content: m
+  delay: 56
+- content: e
+  delay: 53
+- content: n
+  delay: 53
+- content: t
+  delay: 46
+- content: ' '
+  delay: 48
+- content: A
+  delay: 63
+- content: P
+  delay: 65
+- content: I
+  delay: 60
+- content: ' '
+  delay: 67
+- content: d
+  delay: 51
+- content: o
+  delay: 53
+- content: c
+  delay: 69
+- content: u
+  delay: 59
+- content: m
+  delay: 60
+- content: e
+  delay: 67
+- content: n
+  delay: 44
+- content: t
+  delay: 73
+- content: a
+  delay: 63
+- content: t
+  delay: 63
+- content: i
+  delay: 59
+- content: o
+  delay: 55
+- content: n
+  delay: 65
+- content: '"'
+  delay: 61
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[34mGEPA Router\e[0m — classifying tasks:\r\n  tests    → \e[35mlocal_strong\e[0m  (complex: code generation)\r\n  refactor → \e[35mlocal_strong\e[0m  (complex: refactoring)\r\n  docs\
+    \     → \e[36mlocal_fast\e[0m   (standard: documentation)\r\n\r\nLaunching 3 agents in parallel...\r\n\r\n  \e[90m[████░░░░░░]\e[0m tests     \e[33mrunning\e[0m   iter 3/8\r\n  \e[90m[██████░░░░]\e\
+    [0m refactor  \e[33mrunning\e[0m   iter 5/8\r\n  \e[90m[██████████]\e[0m docs      \e[92mdone\e[0m      8/8 ✓\r\n"
+  delay: 60
+- content: ''
+  delay: 1400
+- content: "\r  \e[90m[██████████]\e[0m tests     \e[92mdone\e[0m      8/8 ✓\r\n  \e[90m[██████████]\e[0m refactor  \e[92mdone\e[0m      8/8 ✓\r\n\r\n  \e[92m✓ All 3 agents completed\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 73
+- content: a
+  delay: 57
+- content: o
+  delay: 55
+- content: s
+  delay: 74
+- content: ' '
+  delay: 65
+- content: q
+  delay: 60
+- content: u
+  delay: 72
+- content: e
+  delay: 46
+- content: r
+  delay: 73
+- content: y
+  delay: 60
+- content: ' '
+  delay: 46
+- content: '"'
+  delay: 67
+- content: S
+  delay: 72
+- content: E
+  delay: 73
+- content: L
+  delay: 51
+- content: E
+  delay: 61
+- content: C
+  delay: 50
+- content: T
+  delay: 46
+- content: ' '
+  delay: 54
+- content: n
+  delay: 59
+- content: a
+  delay: 63
+- content: m
+  delay: 58
+- content: e
+  delay: 50
+- content: ','
+  delay: 48
+- content: ' '
+  delay: 65
+- content: t
+  delay: 72
+- content: o
+  delay: 47
+- content: o
+  delay: 57
+- content: l
+  delay: 70
+- content: _
+  delay: 56
+- content: c
+  delay: 71
+- content: a
+  delay: 61
+- content: l
+  delay: 55
+- content: l
+  delay: 68
+- content: s
+  delay: 48
+- content: ','
+  delay: 51
+- content: ' '
+  delay: 72
+- content: t
+  delay: 66
+- content: o
+  delay: 53
+- content: k
+  delay: 50
+- content: e
+  delay: 73
+- content: n
+  delay: 56
+- content: s
+  delay: 59
+- content: ' '
+  delay: 74
+- content: F
+  delay: 57
+- content: R
+  delay: 46
+- content: O
+  delay: 73
+- content: M
+  delay: 50
+- content: ' '
+  delay: 67
+- content: v
+  delay: 72
+- content: _
+  delay: 56
+- content: a
+  delay: 69
+- content: g
+  delay: 65
+- content: e
+  delay: 49
+- content: n
+  delay: 62
+- content: t
+  delay: 49
+- content: _
+  delay: 73
+- content: s
+  delay: 56
+- content: t
+  delay: 73
+- content: a
+  delay: 64
+- content: t
+  delay: 71
+- content: s
+  delay: 53
+- content: ' '
+  delay: 71
+- content: W
+  delay: 58
+- content: H
+  delay: 59
+- content: E
+  delay: 57
+- content: R
+  delay: 57
+- content: E
+  delay: 64
+- content: ' '
+  delay: 58
+- content: n
+  delay: 54
+- content: a
+  delay: 71
+- content: m
+  delay: 53
+- content: e
+  delay: 69
+- content: ' '
+  delay: 72
+- content: I
+  delay: 55
+- content: N
+  delay: 69
+- content: ' '
+  delay: 68
+- content: (
+  delay: 55
+- content: ''''
+  delay: 66
+- content: t
+  delay: 62
+- content: e
+  delay: 67
+- content: s
+  delay: 44
+- content: t
+  delay: 64
+- content: s
+  delay: 61
+- content: ''''
+  delay: 48
+- content: ','
+  delay: 54
+- content: ''''
+  delay: 61
+- content: r
+  delay: 46
+- content: e
+  delay: 65
+- content: f
+  delay: 55
+- content: a
+  delay: 65
+- content: c
+  delay: 72
+- content: t
+  delay: 50
+- content: o
+  delay: 71
+- content: r
+  delay: 70
+- content: ''''
+  delay: 68
+- content: ','
+  delay: 55
+- content: ''''
+  delay: 51
+- content: d
+  delay: 70
+- content: o
+  delay: 70
+- content: c
+  delay: 47
+- content: s
+  delay: 66
+- content: ''''
+  delay: 65
+- content: )
+  delay: 63
+- content: '"'
+  delay: 53
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mname       \e[0m  \e[1mtool_calls\e[0m  \e[1mtokens\e[0m\r\n  ──────────  ──────────  ───────\r\n  tests        23           4820\r\n  refactor     31           6104\r\n  docs   \
+    \      12           1937\r\n\r\n  \e[90mTotal: 66 tool calls, 12861 tokens\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500

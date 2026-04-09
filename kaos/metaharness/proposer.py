@@ -14,7 +14,7 @@ from typing import Any, TYPE_CHECKING
 from kaos.ccr.runner import ClaudeCodeRunner
 from kaos.ccr.tools import ToolDefinition
 from kaos.metaharness.harness import HarnessCandidate
-from kaos.metaharness.prompts import build_proposer_prompt, build_pivot_prompt, build_consolidation_prompt
+from kaos.metaharness.prompts import build_proposer_prompt, build_pivot_prompt, build_consolidation_prompt, build_reflect_prompt
 
 if TYPE_CHECKING:
     from kaos.core import Kaos
@@ -160,6 +160,7 @@ class ProposerAgent:
         compaction_level: int = 5,
         stagnant_iterations: int = 0,
         stagnation_threshold: int = 3,
+        pivot_fired_at: int | None = None,
     ) -> list[HarnessCandidate]:
         """Run the proposer agent and collect submitted harness candidates.
 
@@ -203,8 +204,16 @@ class ProposerAgent:
                 + archive_digest
             )
 
-        # CORAL Tier 1: stagnation pivot
-        if stagnant_iterations >= stagnation_threshold and frontier.points:
+        # CORAL: per-iteration reflect (always fires)
+        prompt += build_reflect_prompt(iteration)
+
+        # CORAL Tier 1: stagnation pivot — cooldown-protected
+        # Only fire if stagnant >= threshold AND (never fired OR enough new stagnant iters since last fire)
+        should_pivot = (
+            stagnant_iterations >= stagnation_threshold
+            and (pivot_fired_at is None or stagnant_iterations - pivot_fired_at >= stagnation_threshold)
+        )
+        if should_pivot and frontier.points:
             best_src = ""
             try:
                 best_hid = frontier.points[0].harness_id
@@ -215,7 +224,6 @@ class ProposerAgent:
             prompt += build_pivot_prompt(stagnant_iterations, best_src)
 
         # CORAL Tier 2: consolidation heartbeat
-        from kaos.metaharness.harness import SearchConfig as _SC
         try:
             cfg_data = json.loads(self.afs.read(self.search_agent_id, "/config.json").decode())
             cons_interval = cfg_data.get("consolidation_interval", 5)

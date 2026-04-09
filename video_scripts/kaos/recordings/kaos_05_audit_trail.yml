@@ -1,0 +1,410 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 05 — Audit Trail & SQL Queries
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 71
+- content: a
+  delay: 47
+- content: o
+  delay: 55
+- content: s
+  delay: 58
+- content: ' '
+  delay: 66
+- content: l
+  delay: 62
+- content: o
+  delay: 63
+- content: g
+  delay: 67
+- content: s
+  delay: 62
+- content: ' '
+  delay: 62
+- content: '0'
+  delay: 60
+- content: '1'
+  delay: 44
+- content: J
+  delay: 68
+- content: Q
+  delay: 49
+- content: R
+  delay: 57
+- content: E
+  delay: 61
+- content: F
+  delay: 58
+- content: .
+  delay: 53
+- content: .
+  delay: 62
+- content: .
+  delay: 67
+- content: ' '
+  delay: 51
+- content: '-'
+  delay: 51
+- content: '-'
+  delay: 69
+- content: t
+  delay: 54
+- content: a
+  delay: 60
+- content: i
+  delay: 63
+- content: l
+  delay: 51
+- content: ' '
+  delay: 61
+- content: '1'
+  delay: 46
+- content: '0'
+  delay: 45
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[90m[10:42:01]\e[0m \e[36mfile_write\e[0m   /src/auth.py           \e[90m1240 bytes\e[0m\r\n  \e[90m[10:42:04]\e[0m \e[34mtool_call \e[0m   bash: pytest tests/     \e[92mexit 0\e[0m\r\
+    \n  \e[90m[10:42:11]\e[0m \e[36mfile_write\e[0m   /tests/test_auth.py     \e[90m890 bytes\e[0m\r\n  \e[90m[10:42:12]\e[0m \e[35mstate_set \e[0m   progress=75\r\n  \e[90m[10:42:15]\e[0m \e[33mcheckpoint\e\
+    [0m   pre-migration\r\n  \e[90m[10:42:20]\e[0m \e[36mfile_write\e[0m   /src/database.py        \e[90m42 bytes\e[0m  \e[33m← ⚠\e[0m\r\n  \e[90m[10:42:21]\e[0m \e[34mtool_call \e[0m   bash: python migrate.py\
+    \ \e[33mexit 1\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 51
+- content: a
+  delay: 48
+- content: o
+  delay: 64
+- content: s
+  delay: 58
+- content: ' '
+  delay: 55
+- content: q
+  delay: 64
+- content: u
+  delay: 65
+- content: e
+  delay: 59
+- content: r
+  delay: 68
+- content: y
+  delay: 44
+- content: ' '
+  delay: 49
+- content: '"'
+  delay: 61
+- content: S
+  delay: 72
+- content: E
+  delay: 60
+- content: L
+  delay: 62
+- content: E
+  delay: 59
+- content: C
+  delay: 49
+- content: T
+  delay: 65
+- content: ' '
+  delay: 64
+- content: n
+  delay: 56
+- content: a
+  delay: 72
+- content: m
+  delay: 57
+- content: e
+  delay: 48
+- content: ','
+  delay: 71
+- content: ' '
+  delay: 65
+- content: S
+  delay: 57
+- content: U
+  delay: 57
+- content: M
+  delay: 63
+- content: (
+  delay: 47
+- content: t
+  delay: 66
+- content: o
+  delay: 63
+- content: k
+  delay: 56
+- content: e
+  delay: 60
+- content: n
+  delay: 73
+- content: _
+  delay: 73
+- content: c
+  delay: 54
+- content: o
+  delay: 60
+- content: u
+  delay: 70
+- content: n
+  delay: 46
+- content: t
+  delay: 52
+- content: )
+  delay: 65
+- content: ' '
+  delay: 50
+- content: t
+  delay: 47
+- content: o
+  delay: 62
+- content: k
+  delay: 61
+- content: e
+  delay: 65
+- content: n
+  delay: 57
+- content: s
+  delay: 55
+- content: ' '
+  delay: 49
+- content: F
+  delay: 57
+- content: R
+  delay: 71
+- content: O
+  delay: 64
+- content: M
+  delay: 52
+- content: ' '
+  delay: 70
+- content: a
+  delay: 47
+- content: g
+  delay: 44
+- content: e
+  delay: 55
+- content: n
+  delay: 66
+- content: t
+  delay: 66
+- content: s
+  delay: 53
+- content: ' '
+  delay: 51
+- content: J
+  delay: 66
+- content: O
+  delay: 74
+- content: I
+  delay: 51
+- content: N
+  delay: 58
+- content: ' '
+  delay: 64
+- content: t
+  delay: 61
+- content: o
+  delay: 73
+- content: o
+  delay: 56
+- content: l
+  delay: 55
+- content: _
+  delay: 44
+- content: c
+  delay: 45
+- content: a
+  delay: 64
+- content: l
+  delay: 68
+- content: l
+  delay: 53
+- content: s
+  delay: 69
+- content: ' '
+  delay: 47
+- content: U
+  delay: 59
+- content: S
+  delay: 44
+- content: I
+  delay: 69
+- content: N
+  delay: 47
+- content: G
+  delay: 44
+- content: (
+  delay: 72
+- content: a
+  delay: 55
+- content: g
+  delay: 51
+- content: e
+  delay: 44
+- content: n
+  delay: 48
+- content: t
+  delay: 55
+- content: _
+  delay: 50
+- content: i
+  delay: 69
+- content: d
+  delay: 74
+- content: )
+  delay: 59
+- content: ' '
+  delay: 52
+- content: G
+  delay: 69
+- content: R
+  delay: 44
+- content: O
+  delay: 45
+- content: U
+  delay: 64
+- content: P
+  delay: 53
+- content: ' '
+  delay: 48
+- content: B
+  delay: 53
+- content: Y
+  delay: 73
+- content: ' '
+  delay: 65
+- content: n
+  delay: 57
+- content: a
+  delay: 47
+- content: m
+  delay: 45
+- content: e
+  delay: 58
+- content: '"'
+  delay: 45
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mname          \e[0m  \e[1mtokens\e[0m\r\n  ──────────────  ───────\r\n  researcher      4820\r\n  refactor-agent  6301\r\n  doc-writer      1937\r\n\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 69
+- content: a
+  delay: 59
+- content: o
+  delay: 56
+- content: s
+  delay: 57
+- content: ' '
+  delay: 62
+- content: s
+  delay: 46
+- content: e
+  delay: 61
+- content: a
+  delay: 73
+- content: r
+  delay: 45
+- content: c
+  delay: 62
+- content: h
+  delay: 57
+- content: ' '
+  delay: 72
+- content: '"'
+  delay: 58
+- content: b
+  delay: 54
+- content: r
+  delay: 67
+- content: o
+  delay: 60
+- content: k
+  delay: 69
+- content: e
+  delay: 67
+- content: n
+  delay: 53
+- content: _
+  delay: 66
+- content: m
+  delay: 60
+- content: i
+  delay: 44
+- content: g
+  delay: 50
+- content: r
+  delay: 52
+- content: a
+  delay: 51
+- content: t
+  delay: 68
+- content: i
+  delay: 59
+- content: o
+  delay: 64
+- content: n
+  delay: 54
+- content: '"'
+  delay: 55
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[92m2\e[0m matches across \e[92m2\e[0m agents:\r\n\r\n  \e[36m01JQREF.../src/database.py\e[0m:\e[33m1\e[0m   DROP TABLE users;\r\n  \e[36m01JQREF.../src/auth.py\e[0m:\e[33m3\e[0m   \
+    \   \e[33mbroken_migration()\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500

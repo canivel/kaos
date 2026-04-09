@@ -1,0 +1,932 @@
+config:
+  cols: 108
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Consolas, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: 'KAOS — Parallel Refactor: 3 Agents, 1 PR'
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 34
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.8'
+      position: absolute
+      right: 15px
+      width: 80px
+records:
+- content: "\r\n\e[90m┌────────────────────────────────────────────────────────┐\r\n│  \e[93mKAOS Use Case 05 — Parallel Refactor: 3 agents, 1 PR\e[90m  │\r\n└────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: k
+  delay: 56
+- content: a
+  delay: 55
+- content: o
+  delay: 55
+- content: s
+  delay: 66
+- content: ' '
+  delay: 73
+- content: p
+  delay: 55
+- content: a
+  delay: 53
+- content: r
+  delay: 65
+- content: a
+  delay: 62
+- content: l
+  delay: 70
+- content: l
+  delay: 66
+- content: e
+  delay: 55
+- content: l
+  delay: 69
+- content: ' '
+  delay: 75
+- content: \
+  delay: 63
+- content: "\r\n"
+  delay: 160
+- content: ''
+  delay: 60
+- content: ' '
+  delay: 53
+- content: ' '
+  delay: 56
+- content: '-'
+  delay: 73
+- content: t
+  delay: 63
+- content: ' '
+  delay: 60
+- content: t
+  delay: 52
+- content: e
+  delay: 66
+- content: s
+  delay: 73
+- content: t
+  delay: 58
+- content: s
+  delay: 69
+- content: ' '
+  delay: 68
+- content: ' '
+  delay: 65
+- content: ' '
+  delay: 66
+- content: ' '
+  delay: 59
+- content: '"'
+  delay: 74
+- content: W
+  delay: 66
+- content: r
+  delay: 70
+- content: i
+  delay: 56
+- content: t
+  delay: 57
+- content: e
+  delay: 52
+- content: ' '
+  delay: 65
+- content: p
+  delay: 53
+- content: y
+  delay: 60
+- content: t
+  delay: 74
+- content: e
+  delay: 59
+- content: s
+  delay: 55
+- content: t
+  delay: 52
+- content: ' '
+  delay: 52
+- content: u
+  delay: 72
+- content: n
+  delay: 68
+- content: i
+  delay: 55
+- content: t
+  delay: 67
+- content: ' '
+  delay: 60
+- content: t
+  delay: 67
+- content: e
+  delay: 59
+- content: s
+  delay: 75
+- content: t
+  delay: 55
+- content: s
+  delay: 75
+- content: ' '
+  delay: 55
+- content: f
+  delay: 74
+- content: o
+  delay: 57
+- content: r
+  delay: 72
+- content: ' '
+  delay: 62
+- content: t
+  delay: 64
+- content: h
+  delay: 73
+- content: e
+  delay: 71
+- content: ' '
+  delay: 67
+- content: p
+  delay: 61
+- content: a
+  delay: 56
+- content: y
+  delay: 57
+- content: m
+  delay: 69
+- content: e
+  delay: 65
+- content: n
+  delay: 71
+- content: t
+  delay: 64
+- content: s
+  delay: 66
+- content: ' '
+  delay: 52
+- content: m
+  delay: 58
+- content: o
+  delay: 55
+- content: d
+  delay: 54
+- content: u
+  delay: 72
+- content: l
+  delay: 64
+- content: e
+  delay: 73
+- content: '"'
+  delay: 65
+- content: ' '
+  delay: 71
+- content: \
+  delay: 57
+- content: "\r\n"
+  delay: 160
+- content: ''
+  delay: 60
+- content: ' '
+  delay: 59
+- content: ' '
+  delay: 64
+- content: '-'
+  delay: 66
+- content: t
+  delay: 70
+- content: ' '
+  delay: 55
+- content: r
+  delay: 56
+- content: e
+  delay: 59
+- content: f
+  delay: 62
+- content: a
+  delay: 56
+- content: c
+  delay: 61
+- content: t
+  delay: 68
+- content: o
+  delay: 71
+- content: r
+  delay: 70
+- content: ' '
+  delay: 55
+- content: '"'
+  delay: 70
+- content: R
+  delay: 65
+- content: e
+  delay: 74
+- content: f
+  delay: 57
+- content: a
+  delay: 70
+- content: c
+  delay: 74
+- content: t
+  delay: 56
+- content: o
+  delay: 62
+- content: r
+  delay: 70
+- content: ' '
+  delay: 58
+- content: p
+  delay: 69
+- content: a
+  delay: 71
+- content: y
+  delay: 70
+- content: m
+  delay: 67
+- content: e
+  delay: 69
+- content: n
+  delay: 66
+- content: t
+  delay: 56
+- content: s
+  delay: 65
+- content: .
+  delay: 52
+- content: p
+  delay: 70
+- content: y
+  delay: 66
+- content: ' '
+  delay: 62
+- content: t
+  delay: 61
+- content: o
+  delay: 55
+- content: ' '
+  delay: 62
+- content: u
+  delay: 58
+- content: s
+  delay: 63
+- content: e
+  delay: 66
+- content: ' '
+  delay: 64
+- content: S
+  delay: 56
+- content: t
+  delay: 70
+- content: r
+  delay: 72
+- content: i
+  delay: 73
+- content: p
+  delay: 69
+- content: e
+  delay: 64
+- content: ' '
+  delay: 65
+- content: S
+  delay: 72
+- content: D
+  delay: 59
+- content: K
+  delay: 72
+- content: ' '
+  delay: 72
+- content: v
+  delay: 74
+- content: '3'
+  delay: 60
+- content: .
+  delay: 53
+- content: ' '
+  delay: 61
+- content: K
+  delay: 75
+- content: e
+  delay: 58
+- content: e
+  delay: 55
+- content: p
+  delay: 64
+- content: ' '
+  delay: 66
+- content: t
+  delay: 59
+- content: h
+  delay: 73
+- content: e
+  delay: 55
+- content: ' '
+  delay: 73
+- content: s
+  delay: 53
+- content: a
+  delay: 65
+- content: m
+  delay: 74
+- content: e
+  delay: 60
+- content: ' '
+  delay: 67
+- content: p
+  delay: 59
+- content: u
+  delay: 74
+- content: b
+  delay: 62
+- content: l
+  delay: 58
+- content: i
+  delay: 56
+- content: c
+  delay: 69
+- content: ' '
+  delay: 61
+- content: A
+  delay: 58
+- content: P
+  delay: 75
+- content: I
+  delay: 69
+- content: .
+  delay: 72
+- content: '"'
+  delay: 59
+- content: ' '
+  delay: 67
+- content: \
+  delay: 71
+- content: "\r\n"
+  delay: 160
+- content: ''
+  delay: 60
+- content: ' '
+  delay: 56
+- content: ' '
+  delay: 61
+- content: '-'
+  delay: 54
+- content: t
+  delay: 67
+- content: ' '
+  delay: 61
+- content: d
+  delay: 52
+- content: o
+  delay: 72
+- content: c
+  delay: 71
+- content: s
+  delay: 57
+- content: ' '
+  delay: 65
+- content: ' '
+  delay: 70
+- content: ' '
+  delay: 55
+- content: ' '
+  delay: 75
+- content: ' '
+  delay: 59
+- content: '"'
+  delay: 54
+- content: U
+  delay: 75
+- content: p
+  delay: 59
+- content: d
+  delay: 75
+- content: a
+  delay: 71
+- content: t
+  delay: 75
+- content: e
+  delay: 73
+- content: ' '
+  delay: 74
+- content: A
+  delay: 63
+- content: P
+  delay: 62
+- content: I
+  delay: 55
+- content: ' '
+  delay: 61
+- content: d
+  delay: 75
+- content: o
+  delay: 59
+- content: c
+  delay: 72
+- content: s
+  delay: 61
+- content: ':'
+  delay: 72
+- content: ' '
+  delay: 56
+- content: n
+  delay: 55
+- content: e
+  delay: 67
+- content: w
+  delay: 71
+- content: ' '
+  delay: 58
+- content: S
+  delay: 64
+- content: t
+  delay: 55
+- content: r
+  delay: 66
+- content: i
+  delay: 56
+- content: p
+  delay: 64
+- content: e
+  delay: 62
+- content: ' '
+  delay: 67
+- content: v
+  delay: 54
+- content: '3'
+  delay: 65
+- content: ' '
+  delay: 55
+- content: e
+  delay: 67
+- content: n
+  delay: 69
+- content: d
+  delay: 57
+- content: p
+  delay: 53
+- content: o
+  delay: 58
+- content: i
+  delay: 74
+- content: n
+  delay: 71
+- content: t
+  delay: 58
+- content: s
+  delay: 63
+- content: ' '
+  delay: 65
+- content: a
+  delay: 54
+- content: n
+  delay: 65
+- content: d
+  delay: 75
+- content: ' '
+  delay: 64
+- content: r
+  delay: 64
+- content: e
+  delay: 55
+- content: s
+  delay: 73
+- content: p
+  delay: 60
+- content: o
+  delay: 64
+- content: n
+  delay: 58
+- content: s
+  delay: 70
+- content: e
+  delay: 65
+- content: ' '
+  delay: 70
+- content: s
+  delay: 66
+- content: h
+  delay: 60
+- content: a
+  delay: 52
+- content: p
+  delay: 59
+- content: e
+  delay: 75
+- content: s
+  delay: 62
+- content: '"'
+  delay: 73
+- content: "\r\n"
+  delay: 160
+- content: "\r\n\e[34mGEPA routing:\e[0m\r\n  tests    → \e[35mlocal_strong\e[0m  (code generation, complex)\r\n  refactor → \e[35mlocal_strong\e[0m  (refactoring, complex)\r\n  docs     → \e[36mlocal_fast\e\
+    [0m   (documentation, standard)\r\n\r\n"
+  delay: 55
+- content: ''
+  delay: 500
+- content: "  \e[90m[░░░░░░░░░░]\e[0m tests    \e[33mrunning\e[0m  reading payments.py ...\r\n  \e[90m[░░░░░░░░░░]\e[0m refactor \e[33mrunning\e[0m  reading payments.py ...\r\n  \e[90m[░░░░░░░░░░]\e[0m\
+    \ docs     \e[33mrunning\e[0m  reading payments.py ...\r\n"
+  delay: 55
+- content: ''
+  delay: 1000
+- content: "\r  \e[90m[████░░░░░░]\e[0m tests    \e[33mrunning\e[0m  writing test_payments.py\r\n  \e[90m[██████░░░░]\e[0m refactor \e[33mrunning\e[0m  rewriting charge() method\r\n  \e[90m[██████████]\e\
+    [0m docs     \e[92mdone ✓\e[0m   wrote /docs/payments_api.md\r\n"
+  delay: 55
+- content: ''
+  delay: 1200
+- content: "\r  \e[90m[██████████]\e[0m tests    \e[92mdone ✓\e[0m   wrote /tests/test_payments.py (22 tests)\r\n  \e[90m[██████████]\e[0m refactor \e[92mdone ✓\e[0m   wrote /src/payments.py\r\n\r\n  \e\
+    [92mAll 3 completed in 1m 12s\e[0m  (vs ~3m 36s sequential)\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: k
+  delay: 55
+- content: a
+  delay: 67
+- content: o
+  delay: 61
+- content: s
+  delay: 75
+- content: ' '
+  delay: 61
+- content: r
+  delay: 62
+- content: e
+  delay: 61
+- content: a
+  delay: 58
+- content: d
+  delay: 53
+- content: ' '
+  delay: 67
+- content: $
+  delay: 64
+- content: (
+  delay: 56
+- content: k
+  delay: 74
+- content: a
+  delay: 74
+- content: o
+  delay: 61
+- content: s
+  delay: 56
+- content: ' '
+  delay: 58
+- content: '-'
+  delay: 73
+- content: '-'
+  delay: 64
+- content: j
+  delay: 66
+- content: s
+  delay: 63
+- content: o
+  delay: 66
+- content: n
+  delay: 52
+- content: ' '
+  delay: 53
+- content: l
+  delay: 63
+- content: s
+  delay: 72
+- content: ' '
+  delay: 52
+- content: '|'
+  delay: 56
+- content: ' '
+  delay: 53
+- content: p
+  delay: 70
+- content: y
+  delay: 67
+- content: t
+  delay: 68
+- content: h
+  delay: 63
+- content: o
+  delay: 73
+- content: n
+  delay: 63
+- content: ' '
+  delay: 75
+- content: '-'
+  delay: 70
+- content: c
+  delay: 73
+- content: ' '
+  delay: 61
+- content: '"'
+  delay: 71
+- content: i
+  delay: 55
+- content: m
+  delay: 69
+- content: p
+  delay: 72
+- content: o
+  delay: 59
+- content: r
+  delay: 69
+- content: t
+  delay: 53
+- content: ' '
+  delay: 72
+- content: s
+  delay: 64
+- content: y
+  delay: 73
+- content: s
+  delay: 53
+- content: ','
+  delay: 62
+- content: j
+  delay: 59
+- content: s
+  delay: 56
+- content: o
+  delay: 52
+- content: n
+  delay: 57
+- content: ;
+  delay: 69
+- content: d
+  delay: 56
+- content: '='
+  delay: 52
+- content: j
+  delay: 71
+- content: s
+  delay: 67
+- content: o
+  delay: 65
+- content: n
+  delay: 73
+- content: .
+  delay: 53
+- content: l
+  delay: 57
+- content: o
+  delay: 52
+- content: a
+  delay: 62
+- content: d
+  delay: 75
+- content: (
+  delay: 66
+- content: s
+  delay: 72
+- content: y
+  delay: 52
+- content: s
+  delay: 68
+- content: .
+  delay: 71
+- content: s
+  delay: 70
+- content: t
+  delay: 58
+- content: d
+  delay: 59
+- content: i
+  delay: 55
+- content: n
+  delay: 58
+- content: )
+  delay: 68
+- content: ;
+  delay: 56
+- content: p
+  delay: 56
+- content: r
+  delay: 61
+- content: i
+  delay: 56
+- content: n
+  delay: 58
+- content: t
+  delay: 67
+- content: (
+  delay: 66
+- content: '['
+  delay: 73
+- content: a
+  delay: 74
+- content: '['
+  delay: 53
+- content: ''''
+  delay: 53
+- content: a
+  delay: 59
+- content: g
+  delay: 58
+- content: e
+  delay: 60
+- content: n
+  delay: 63
+- content: t
+  delay: 67
+- content: _
+  delay: 73
+- content: i
+  delay: 67
+- content: d
+  delay: 68
+- content: ''''
+  delay: 61
+- content: ']'
+  delay: 66
+- content: ' '
+  delay: 72
+- content: f
+  delay: 62
+- content: o
+  delay: 70
+- content: r
+  delay: 72
+- content: ' '
+  delay: 70
+- content: a
+  delay: 60
+- content: ' '
+  delay: 56
+- content: i
+  delay: 73
+- content: n
+  delay: 60
+- content: ' '
+  delay: 54
+- content: d
+  delay: 66
+- content: ' '
+  delay: 54
+- content: i
+  delay: 55
+- content: f
+  delay: 74
+- content: ' '
+  delay: 69
+- content: a
+  delay: 53
+- content: '['
+  delay: 70
+- content: ''''
+  delay: 69
+- content: n
+  delay: 58
+- content: a
+  delay: 72
+- content: m
+  delay: 66
+- content: e
+  delay: 75
+- content: ''''
+  delay: 55
+- content: ']'
+  delay: 61
+- content: '='
+  delay: 57
+- content: '='
+  delay: 62
+- content: ''''
+  delay: 71
+- content: t
+  delay: 52
+- content: e
+  delay: 63
+- content: s
+  delay: 57
+- content: t
+  delay: 60
+- content: s
+  delay: 53
+- content: ''''
+  delay: 55
+- content: ']'
+  delay: 54
+- content: '['
+  delay: 75
+- content: '0'
+  delay: 55
+- content: ']'
+  delay: 52
+- content: )
+  delay: 71
+- content: '"'
+  delay: 56
+- content: )
+  delay: 65
+- content: ' '
+  delay: 75
+- content: /
+  delay: 59
+- content: t
+  delay: 59
+- content: e
+  delay: 58
+- content: s
+  delay: 62
+- content: t
+  delay: 58
+- content: s
+  delay: 61
+- content: /
+  delay: 53
+- content: t
+  delay: 53
+- content: e
+  delay: 59
+- content: s
+  delay: 64
+- content: t
+  delay: 68
+- content: _
+  delay: 52
+- content: p
+  delay: 52
+- content: a
+  delay: 55
+- content: y
+  delay: 55
+- content: m
+  delay: 65
+- content: e
+  delay: 63
+- content: n
+  delay: 73
+- content: t
+  delay: 65
+- content: s
+  delay: 75
+- content: .
+  delay: 75
+- content: p
+  delay: 73
+- content: y
+  delay: 53
+- content: ' '
+  delay: 56
+- content: '|'
+  delay: 72
+- content: ' '
+  delay: 56
+- content: h
+  delay: 56
+- content: e
+  delay: 65
+- content: a
+  delay: 71
+- content: d
+  delay: 72
+- content: ' '
+  delay: 54
+- content: '-'
+  delay: 57
+- content: '2'
+  delay: 64
+- content: '5'
+  delay: 57
+- content: "\r\n"
+  delay: 160
+- content: "\r\n\e[90mimport pytest\e[0m\r\n\e[90mfrom payments import PaymentsClient\e[0m\r\n\r\n\e[35mclass\e[0m \e[92mTestChargeCard\e[0m:\r\n    \e[35mdef\e[0m \e[92mtest_successful_charge\e[0m(self,\
+    \ mock_stripe):\r\n        client = PaymentsClient()\r\n        result = client.charge(\e[32m\"tok_visa\"\e[0m, amount=\e[33m2000\e[0m)\r\n        \e[35massert\e[0m result.status == \e[32m\"succeeded\"\
+    \e[0m\r\n        \e[35massert\e[0m result.amount == \e[33m2000\e[0m\r\n\r\n    \e[35mdef\e[0m \e[92mtest_declined_card\e[0m(self, mock_stripe):\r\n        mock_stripe.raises = stripe.CardError(\e[32m\"\
+    declined\"\e[0m)\r\n        \e[35mwith\e[0m pytest.raises(PaymentDeclined):\r\n            client.charge(\e[32m\"tok_fail\"\e[0m, amount=\e[33m100\e[0m)\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: ''
+  delay: 1800

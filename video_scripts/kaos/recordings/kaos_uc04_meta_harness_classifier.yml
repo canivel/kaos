@@ -1,0 +1,504 @@
+config:
+  cols: 108
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Consolas, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: 'KAOS — Meta-Harness: 45%→87% Accuracy'
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 34
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.8'
+      position: absolute
+      right: 15px
+      width: 80px
+records:
+- content: "\r\n\e[90m┌───────────────────────────────────────────────────────┐\r\n│  \e[93mKAOS Use Case 04 — Meta-Harness: 45% → 87% Accuracy\e[90m  │\r\n└───────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: '#'
+  delay: 53
+- content: ' '
+  delay: 75
+- content: S
+  delay: 63
+- content: t
+  delay: 54
+- content: a
+  delay: 73
+- content: r
+  delay: 65
+- content: t
+  delay: 59
+- content: ':'
+  delay: 63
+- content: ' '
+  delay: 69
+- content: o
+  delay: 53
+- content: u
+  delay: 55
+- content: r
+  delay: 71
+- content: ' '
+  delay: 55
+- content: s
+  delay: 75
+- content: u
+  delay: 61
+- content: p
+  delay: 73
+- content: p
+  delay: 57
+- content: o
+  delay: 53
+- content: r
+  delay: 71
+- content: t
+  delay: 57
+- content: ' '
+  delay: 70
+- content: t
+  delay: 52
+- content: i
+  delay: 58
+- content: c
+  delay: 75
+- content: k
+  delay: 64
+- content: e
+  delay: 55
+- content: t
+  delay: 74
+- content: ' '
+  delay: 56
+- content: c
+  delay: 64
+- content: l
+  delay: 73
+- content: a
+  delay: 59
+- content: s
+  delay: 63
+- content: s
+  delay: 64
+- content: i
+  delay: 63
+- content: f
+  delay: 72
+- content: i
+  delay: 64
+- content: e
+  delay: 61
+- content: r
+  delay: 69
+- content: ' '
+  delay: 56
+- content: g
+  delay: 55
+- content: e
+  delay: 71
+- content: t
+  delay: 61
+- content: s
+  delay: 59
+- content: ' '
+  delay: 63
+- content: '4'
+  delay: 70
+- content: '5'
+  delay: 52
+- content: '%'
+  delay: 63
+- content: ' '
+  delay: 71
+- content: a
+  delay: 56
+- content: c
+  delay: 65
+- content: c
+  delay: 64
+- content: u
+  delay: 59
+- content: r
+  delay: 60
+- content: a
+  delay: 71
+- content: c
+  delay: 53
+- content: y
+  delay: 66
+- content: .
+  delay: 62
+- content: "\r\n"
+  delay: 160
+- content: "\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: k
+  delay: 73
+- content: a
+  delay: 59
+- content: o
+  delay: 55
+- content: s
+  delay: 67
+- content: ' '
+  delay: 62
+- content: m
+  delay: 70
+- content: h
+  delay: 72
+- content: ' '
+  delay: 65
+- content: s
+  delay: 61
+- content: e
+  delay: 67
+- content: a
+  delay: 57
+- content: r
+  delay: 61
+- content: c
+  delay: 60
+- content: h
+  delay: 67
+- content: ' '
+  delay: 72
+- content: '-'
+  delay: 63
+- content: '-'
+  delay: 63
+- content: b
+  delay: 70
+- content: e
+  delay: 75
+- content: n
+  delay: 73
+- content: c
+  delay: 71
+- content: h
+  delay: 61
+- content: m
+  delay: 75
+- content: a
+  delay: 67
+- content: r
+  delay: 63
+- content: k
+  delay: 58
+- content: ' '
+  delay: 67
+- content: t
+  delay: 66
+- content: e
+  delay: 68
+- content: x
+  delay: 53
+- content: t
+  delay: 58
+- content: _
+  delay: 53
+- content: c
+  delay: 71
+- content: l
+  delay: 69
+- content: a
+  delay: 66
+- content: s
+  delay: 65
+- content: s
+  delay: 60
+- content: i
+  delay: 63
+- content: f
+  delay: 64
+- content: y
+  delay: 67
+- content: ' '
+  delay: 56
+- content: '-'
+  delay: 60
+- content: '-'
+  delay: 65
+- content: i
+  delay: 62
+- content: t
+  delay: 52
+- content: e
+  delay: 55
+- content: r
+  delay: 61
+- content: a
+  delay: 52
+- content: t
+  delay: 62
+- content: i
+  delay: 52
+- content: o
+  delay: 65
+- content: n
+  delay: 52
+- content: s
+  delay: 63
+- content: ' '
+  delay: 55
+- content: '1'
+  delay: 53
+- content: '0'
+  delay: 59
+- content: ' '
+  delay: 53
+- content: '-'
+  delay: 54
+- content: '-'
+  delay: 61
+- content: b
+  delay: 64
+- content: a
+  delay: 71
+- content: c
+  delay: 52
+- content: k
+  delay: 68
+- content: g
+  delay: 59
+- content: r
+  delay: 66
+- content: o
+  delay: 71
+- content: u
+  delay: 65
+- content: n
+  delay: 59
+- content: d
+  delay: 58
+- content: "\r\n"
+  delay: 160
+- content: "\r\n\e[92m✓\e[0m Search started  \e[36m01JQMHS...\e[0m\r\n  Evaluating 3 seed harnesses...\r\n"
+  delay: 55
+- content: ''
+  delay: 700
+- content: "  Seed 1 (zero-shot):    acc=\e[33m0.45\e[0m  cost=0.28  \e[90m← baseline\e[0m\r\n  Seed 2 (few-shot-3):   acc=\e[33m0.61\e[0m  cost=0.54\r\n  Seed 3 (cot-prompt):   acc=\e[33m0.68\e[0m  cost=0.71\r\
+    \n  \e[90mInitial frontier: 2 points\e[0m\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: '#'
+  delay: 59
+- content: ' '
+  delay: 73
+- content: W
+  delay: 61
+- content: a
+  delay: 71
+- content: t
+  delay: 55
+- content: c
+  delay: 73
+- content: h
+  delay: 54
+- content: ' '
+  delay: 63
+- content: i
+  delay: 55
+- content: t
+  delay: 69
+- content: e
+  delay: 64
+- content: r
+  delay: 52
+- content: a
+  delay: 58
+- content: t
+  delay: 73
+- content: i
+  delay: 57
+- content: o
+  delay: 74
+- content: n
+  delay: 54
+- content: s
+  delay: 71
+- content: ' '
+  delay: 66
+- content: r
+  delay: 68
+- content: u
+  delay: 59
+- content: n
+  delay: 59
+- content: .
+  delay: 72
+- content: .
+  delay: 54
+- content: .
+  delay: 58
+- content: "\r\n"
+  delay: 160
+- content: "\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: k
+  delay: 65
+- content: a
+  delay: 73
+- content: o
+  delay: 70
+- content: s
+  delay: 70
+- content: ' '
+  delay: 73
+- content: m
+  delay: 63
+- content: h
+  delay: 53
+- content: ' '
+  delay: 69
+- content: s
+  delay: 53
+- content: t
+  delay: 70
+- content: a
+  delay: 65
+- content: t
+  delay: 74
+- content: u
+  delay: 52
+- content: s
+  delay: 54
+- content: ' '
+  delay: 52
+- content: '0'
+  delay: 73
+- content: '1'
+  delay: 69
+- content: J
+  delay: 58
+- content: Q
+  delay: 55
+- content: M
+  delay: 70
+- content: H
+  delay: 65
+- content: S
+  delay: 72
+- content: .
+  delay: 62
+- content: .
+  delay: 54
+- content: .
+  delay: 72
+- content: "\r\n"
+  delay: 160
+- content: "\r\n  Iter 3: acc=\e[92m0.74\e[0m  \e[92m↑ new frontier point\e[0m\r\n          Proposer insight: \e[90m\"Traces show confusion on compound tickets\"\e[0m\r\n          Applied: two-stage verification\
+    \ prompt\r\n\r\n  Iter 5: acc=\e[92m0.81\e[0m  \e[92m↑ new frontier point\e[0m\r\n          Proposer insight: \e[90m\"Ambiguous tickets need contrastive examples\"\e[0m\r\n          Applied: 5 contrastive\
+    \ examples + explicit uncertainty flag\r\n\r\n  Iter 8: acc=\e[92m0.87\e[0m  \e[92m↑ best so far\e[0m\r\n          Proposer insight: \e[90m\"Domain keyword pre-filter reduces noise\e[0m\e[90m\"\e[0m\r\
+    \n          Applied: keyword routing → specialized sub-prompt per category\r\n\r\n  Iter 10: search complete.\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: k
+  delay: 56
+- content: a
+  delay: 61
+- content: o
+  delay: 55
+- content: s
+  delay: 56
+- content: ' '
+  delay: 56
+- content: m
+  delay: 70
+- content: h
+  delay: 69
+- content: ' '
+  delay: 70
+- content: f
+  delay: 60
+- content: r
+  delay: 52
+- content: o
+  delay: 75
+- content: n
+  delay: 66
+- content: t
+  delay: 73
+- content: i
+  delay: 66
+- content: e
+  delay: 54
+- content: r
+  delay: 64
+- content: ' '
+  delay: 67
+- content: '0'
+  delay: 54
+- content: '1'
+  delay: 53
+- content: J
+  delay: 72
+- content: Q
+  delay: 64
+- content: M
+  delay: 62
+- content: H
+  delay: 71
+- content: S
+  delay: 54
+- content: .
+  delay: 55
+- content: .
+  delay: 68
+- content: .
+  delay: 52
+- content: "\r\n"
+  delay: 160
+- content: "\r\n  \e[1mPareto Frontier — 3 optimal harnesses:\e[0m\r\n  ──────────────────────────────────────────────────────\r\n  \e[34m★\e[0m \e[92mBest accuracy\e[0m:  acc=\e[92m0.8700\e[0m  cost=0.63\
+    \  iter=8\r\n     strategy: keyword-routing + specialized sub-prompts\r\n  \e[34m★\e[0m \e[32mBest cost\e[0m:     acc=0.8100  cost=\e[92m0.31\e[0m  iter=5\r\n     strategy: contrastive examples + confidence\
+    \ gate\r\n  \e[34m★\e[0m \e[33mBalanced\e[0m:      acc=0.8400  cost=0.44  iter=7\r\n     strategy: CoT + 3 domain examples\r\n\r\n  \e[90mImprovement: 45% → 87% (+42 points, 10 iterations)\e[0m\r\n\
+    \  \e[90mSearch archived to knowledge base for next run.\e[0m\r\n"
+  delay: 55
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 420
+- content: ''
+  delay: 1800

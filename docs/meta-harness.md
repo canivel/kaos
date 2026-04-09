@@ -4,6 +4,8 @@
 
 Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) by Lee, Nair, Zhang, Lee, Khattab, and Finn (Stanford/KRAFTON/MIT). Original code: [stanford-iris-lab/meta-harness-tbench2-artifact](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact).
 
+![Meta-Harness: classifier accuracy 45%→87% in 10 iterations](../docs/demos/kaos_uc04_meta_harness_classifier.gif)
+
 ---
 
 ## What Problem Does This Solve?
@@ -248,6 +250,8 @@ The `mh_grep_archive` tool is especially valuable in later iterations when the a
 ---
 
 ## Running the Benchmarks
+
+![Meta-Harness CLI — kaos mh search, frontier progress, knowledge compounding](../docs/demos/kaos_06_meta_harness.gif)
 
 ### Text Classification
 

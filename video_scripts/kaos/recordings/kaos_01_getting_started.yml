@@ -1,0 +1,246 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 01 — Getting Started
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 67
+- content: a
+  delay: 59
+- content: o
+  delay: 68
+- content: s
+  delay: 58
+- content: ' '
+  delay: 55
+- content: i
+  delay: 74
+- content: n
+  delay: 64
+- content: i
+  delay: 58
+- content: t
+  delay: 67
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[92m✓\e[0m Database initialized: \e[36mkaos.db\e[0m\r\n\e[90m  Schema created, blob store ready, event journal started.\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 72
+- content: a
+  delay: 60
+- content: o
+  delay: 47
+- content: s
+  delay: 65
+- content: ' '
+  delay: 61
+- content: l
+  delay: 68
+- content: s
+  delay: 54
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[90mNo agents yet. Use 'kaos run' or the Python API to spawn agents.\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: p
+  delay: 46
+- content: y
+  delay: 52
+- content: t
+  delay: 69
+- content: h
+  delay: 59
+- content: o
+  delay: 62
+- content: n
+  delay: 58
+- content: ' '
+  delay: 58
+- content: d
+  delay: 65
+- content: e
+  delay: 44
+- content: m
+  delay: 44
+- content: o
+  delay: 71
+- content: .
+  delay: 47
+- content: p
+  delay: 53
+- content: y
+  delay: 68
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[90m# Spawning two agents writing to the same path...\e[0m\r\n\r\nresearcher  → \e[36m/findings.md\e[0m  \"\e[1m# Bug Report\\nSQL injection in auth.py\e[0m\"\r\ndoc-writer  → \e[36m/findings.md\e\
+    [0m  \"\e[1m# Docs Draft\\nAPI v2 overview\e[0m\"\r\n\r\n\e[90m# Reading back — fully isolated:\e[0m\r\nresearcher  /findings.md → \e[32m# Bug Report\\nSQL injection in auth.py\e[0m\r\ndoc-writer  /findings.md\
+    \ → \e[32m# Docs Draft\\nAPI v2 overview\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 61
+- content: a
+  delay: 70
+- content: o
+  delay: 65
+- content: s
+  delay: 73
+- content: ' '
+  delay: 71
+- content: l
+  delay: 74
+- content: s
+  delay: 61
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1m\e[34mAgent ID\e[0m               \e[1mName\e[0m          \e[1mStatus\e[0m    \e[1mFiles\e[0m  \e[1mCreated\e[0m\r\n  ──────────────────────  ────────────  ────────  ─────  ────────────────\r\
+    \n  \e[90m01JQXYZ1234567890AB\e[0m  researcher    \e[92mrunning\e[0m    2      just now\r\n  \e[90m01JQABC9876543210CD\e[0m  doc-writer    \e[92mrunning\e[0m    1      just now\r\n\r\n  \e[90m2 agents\
+    \ total\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 50
+- content: a
+  delay: 53
+- content: o
+  delay: 54
+- content: s
+  delay: 58
+- content: ' '
+  delay: 49
+- content: r
+  delay: 69
+- content: e
+  delay: 51
+- content: a
+  delay: 67
+- content: d
+  delay: 60
+- content: ' '
+  delay: 67
+- content: '0'
+  delay: 68
+- content: '1'
+  delay: 51
+- content: J
+  delay: 66
+- content: Q
+  delay: 45
+- content: X
+  delay: 58
+- content: Y
+  delay: 49
+- content: Z
+  delay: 52
+- content: '1'
+  delay: 74
+- content: '2'
+  delay: 67
+- content: '3'
+  delay: 70
+- content: '4'
+  delay: 61
+- content: '5'
+  delay: 60
+- content: '6'
+  delay: 51
+- content: '7'
+  delay: 60
+- content: '8'
+  delay: 72
+- content: '9'
+  delay: 54
+- content: '0'
+  delay: 61
+- content: A
+  delay: 59
+- content: B
+  delay: 70
+- content: ' '
+  delay: 65
+- content: /
+  delay: 70
+- content: f
+  delay: 66
+- content: i
+  delay: 71
+- content: n
+  delay: 61
+- content: d
+  delay: 49
+- content: i
+  delay: 51
+- content: n
+  delay: 70
+- content: g
+  delay: 66
+- content: s
+  delay: 44
+- content: .
+  delay: 65
+- content: m
+  delay: 74
+- content: d
+  delay: 52
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[32m# Bug Report\e[0m\r\nSQL injection in auth.py\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500

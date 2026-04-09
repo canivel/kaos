@@ -2,6 +2,8 @@
 
 > Run N research agents in parallel, each exploring a different ML hypothesis, all isolated and auditable. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 
+![Autonomous Research Lab — 4 hypothesis agents running in parallel](../docs/demos/kaos_uc07_autonomous_research.gif)
+
 ---
 
 ## The Idea
@@ -172,6 +174,8 @@ for agent_name in ["architecture-explorer", "optimizer-explorer", "scaling-explo
 ```
 
 ## Running the Demo
+
+![Parallel Agents & GEPA Router — running multiple hypothesis agents concurrently](../docs/demos/kaos_03_parallel_agents.gif)
 
 ```bash
 # With vLLM running locally:

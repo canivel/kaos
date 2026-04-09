@@ -1,0 +1,299 @@
+config:
+  cols: 110
+  command: bash
+  cursorStyle: bar
+  cwd: null
+  env:
+    recording: true
+  fontFamily: '"JetBrains Mono, Fira Code, Monaco, Monospace"'
+  fontSize: 13
+  frameBox:
+    style:
+      border: 0px black solid
+    title: KAOS 06 — Meta-Harness Search
+    type: window
+  frameDelay: auto
+  letterSpacing: 0
+  lineHeight: 1.2
+  maxIdleTime: 1800
+  quality: 100
+  repeat: 0
+  rows: 32
+  theme:
+    background: '#0d1117'
+    black: '#161b22'
+    blue: '#58a6ff'
+    brightBlack: '#6e7681'
+    brightBlue: '#79c0ff'
+    brightCyan: '#56d4dd'
+    brightGreen: '#56d364'
+    brightMagenta: '#d2a8ff'
+    brightRed: '#ffa198'
+    brightWhite: '#f0f6fc'
+    brightYellow: '#e3b341'
+    cursor: '#58a6ff'
+    cyan: '#39c5cf'
+    foreground: '#c9d1d9'
+    green: '#3fb950'
+    magenta: '#bc8cff'
+    red: '#ff7b72'
+    white: '#b1bac4'
+    yellow: '#e3b341'
+  watermark:
+    imagePath: null
+    style:
+      bottom: 15px
+      opacity: '0.9'
+      position: absolute
+      right: 15px
+      width: 100px
+records:
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 70
+- content: a
+  delay: 61
+- content: o
+  delay: 74
+- content: s
+  delay: 61
+- content: ' '
+  delay: 71
+- content: m
+  delay: 52
+- content: h
+  delay: 51
+- content: ' '
+  delay: 49
+- content: s
+  delay: 68
+- content: e
+  delay: 51
+- content: a
+  delay: 55
+- content: r
+  delay: 64
+- content: c
+  delay: 56
+- content: h
+  delay: 56
+- content: ' '
+  delay: 67
+- content: '-'
+  delay: 67
+- content: '-'
+  delay: 72
+- content: b
+  delay: 59
+- content: e
+  delay: 67
+- content: n
+  delay: 57
+- content: c
+  delay: 66
+- content: h
+  delay: 56
+- content: m
+  delay: 48
+- content: a
+  delay: 63
+- content: r
+  delay: 50
+- content: k
+  delay: 60
+- content: ' '
+  delay: 72
+- content: t
+  delay: 48
+- content: e
+  delay: 48
+- content: x
+  delay: 55
+- content: t
+  delay: 61
+- content: _
+  delay: 69
+- content: c
+  delay: 65
+- content: l
+  delay: 57
+- content: a
+  delay: 63
+- content: s
+  delay: 48
+- content: s
+  delay: 48
+- content: i
+  delay: 50
+- content: f
+  delay: 54
+- content: y
+  delay: 57
+- content: ' '
+  delay: 65
+- content: '-'
+  delay: 52
+- content: '-'
+  delay: 70
+- content: i
+  delay: 74
+- content: t
+  delay: 60
+- content: e
+  delay: 64
+- content: r
+  delay: 59
+- content: a
+  delay: 65
+- content: t
+  delay: 59
+- content: i
+  delay: 74
+- content: o
+  delay: 46
+- content: n
+  delay: 50
+- content: s
+  delay: 54
+- content: ' '
+  delay: 67
+- content: '1'
+  delay: 64
+- content: '0'
+  delay: 57
+- content: ' '
+  delay: 73
+- content: '-'
+  delay: 61
+- content: '-'
+  delay: 71
+- content: b
+  delay: 68
+- content: a
+  delay: 61
+- content: c
+  delay: 53
+- content: k
+  delay: 46
+- content: g
+  delay: 62
+- content: r
+  delay: 49
+- content: o
+  delay: 48
+- content: u
+  delay: 44
+- content: n
+  delay: 72
+- content: d
+  delay: 64
+- content: "\r\n"
+  delay: 180
+- content: "\r\n\e[92m✓\e[0m Meta-Harness search started\r\n  Search agent: \e[36m01JQMHS1234567890XY\e[0m\r\n  Benchmark:    \e[1mtext_classify\e[0m\r\n  Iterations:   10\r\n  Candidates/iter: 2\r\n  Running\
+    \ in background — use 'kaos mh status' to monitor.\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 52
+- content: a
+  delay: 72
+- content: o
+  delay: 50
+- content: s
+  delay: 55
+- content: ' '
+  delay: 66
+- content: m
+  delay: 50
+- content: h
+  delay: 49
+- content: ' '
+  delay: 69
+- content: s
+  delay: 71
+- content: t
+  delay: 55
+- content: a
+  delay: 51
+- content: t
+  delay: 65
+- content: u
+  delay: 65
+- content: s
+  delay: 73
+- content: ' '
+  delay: 63
+- content: '0'
+  delay: 53
+- content: '1'
+  delay: 65
+- content: J
+  delay: 57
+- content: Q
+  delay: 56
+- content: M
+  delay: 60
+- content: H
+  delay: 53
+- content: S
+  delay: 48
+- content: .
+  delay: 58
+- content: .
+  delay: 45
+- content: .
+  delay: 54
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mMeta-Harness Search\e[0m  \e[36m01JQMHS...\e[0m\r\n  ────────────────────────────────────────────\r\n  Benchmark:    \e[1mtext_classify\e[0m\r\n  Iteration:    \e[92m7\e[0m / 10\r\
+    \n  Harnesses:    \e[1m14\e[0m evaluated\r\n  Stagnant:     \e[92m0\e[0m iterations\r\n\r\n  \e[1mPareto Frontier\e[0m (\e[92m3\e[0m points):\r\n  \e[34m★\e[0m accuracy=\e[92m0.89\e[0m  cost=0.41  iter=6\
+    \   \e[36m01JQBEST...\e[0m\r\n  \e[34m★\e[0m accuracy=0.84  cost=\e[92m0.12\e[0m  iter=5   \e[36m01JQCHEAP..\e[0m\r\n  \e[34m★\e[0m accuracy=0.87  cost=0.22  iter=7   \e[36m01JQBAL...\e[0m\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: k
+  delay: 73
+- content: a
+  delay: 63
+- content: o
+  delay: 63
+- content: s
+  delay: 65
+- content: ' '
+  delay: 63
+- content: m
+  delay: 61
+- content: h
+  delay: 63
+- content: ' '
+  delay: 46
+- content: k
+  delay: 54
+- content: n
+  delay: 53
+- content: o
+  delay: 71
+- content: w
+  delay: 60
+- content: l
+  delay: 52
+- content: e
+  delay: 46
+- content: d
+  delay: 72
+- content: g
+  delay: 44
+- content: e
+  delay: 60
+- content: "\r\n"
+  delay: 180
+- content: "\r\n  \e[1mKnowledge Base\e[0m\r\n  ────────────────────────────────────────────\r\n  \e[33mtext_classify\e[0m  3 frontier harnesses  best=0.89\r\n  \e[33marc_agi3\e[0m       2 frontier harnesses\
+    \  best=0.41\r\n\r\n  Skills:\r\n  • \e[92mchain_of_thought_classification\e[0m  +12 accuracy pts\r\n  • \e[92mconfidence_threshold_fallback\e[0m     -8% cost\r\n  • \e[92mfew_shot_domain_examples\e\
+    [0m          +7 accuracy pts\r\n"
+  delay: 60
+- content: "\r\n\e[32m❯\e[0m "
+  delay: 400
+- content: ''
+  delay: 1500
