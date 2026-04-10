@@ -1,4 +1,4 @@
-# From 48% to 83%: How KAOS v0.6.0 Automates Multi-Agent ML Research
+# From 48% to 83%: How KAOS v0.6.0 Automates Multi-Agent AI Research
 
 *Code Quality · April 10, 2026 · 10 min read*
 

@@ -1,8 +1,8 @@
-# Migrate 2 Million Rows. Detect Corruption at Row 847K. Rollback in 0.3s.
+# KAOS AI Agents Detected Data Corruption at Row 847K and Rolled Back the Migration in 0.3 Seconds
 
 *Data Engineering · April 13, 2026 · 9 min read*
 
-*How KAOS checkpoints, detects anomalies mid-migration, and surgically restores one agent — while the rest of your database operations keep running.*
+*A 2M-row backfill hit 7.6% unexpected NULLs mid-stream. The KAOS migration agent detected the anomaly, rolled back its own VFS in 0.3 seconds, and left every other agent running untouched.*
 
 ---
 

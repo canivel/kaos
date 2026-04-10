@@ -1,8 +1,8 @@
-# Why `git reset --hard` Is the Wrong Tool for Agent Pipelines
+# How KAOS AI Agents Roll Back a Cascading CI Failure in 0.3 Seconds
 
 *Code Quality · April 11, 2026 · 8 min read*
 
-*When one bad fix cascades to four failures, a repo-wide reset blows up every other agent's work. Per-agent VFS checkpoints roll back in 0.3 seconds — surgically, without touching anything else.*
+*When one bad fix cascades to four failures, a repo-wide git reset blows up every other agent's work. KAOS AI agents roll back per-agent VFS checkpoints in 0.3 seconds — surgically, without touching anything else.*
 
 ---
 

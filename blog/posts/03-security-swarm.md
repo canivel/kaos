@@ -1,8 +1,8 @@
-# 4 Security Agents, 1 PR, Zero Conflicts.
+# How KAOS Runs 4 Specialized AI Security Agents in Parallel — and Aggregates Every Finding in SQL
 
 *Security · April 12, 2026 · 7 min read*
 
-*Running specialized security agents in parallel — SQL injection, secrets, auth bypass, unsafe deserialization — each isolated, results aggregated via SQL.*
+*SQL injection, secrets leakage, auth bypass, unsafe deserialization — each KAOS AI agent owns one attack surface, runs in full isolation, and results aggregate across all four with a single SQL query.*
 
 ---
 

@@ -1,8 +1,8 @@
-# 4 Hypotheses. 4 Agents. 1 Night. Let the Machine Do the Research.
+# How KAOS Runs a Full ML Research Lab Overnight with 4 Parallel AI Agents
 
 *ML Research · April 15, 2026 · 9 min read*
 
-*How KAOS turns a single train.py into a parallel ML experiment lab — isolated, auditable, and queryable — inspired by Karpathy's autoresearch.*
+*4 KAOS AI agents explore orthogonal hypotheses simultaneously — LoRA, Lion optimizer, batch scaling, regularization — each isolated, each auditable. You wake up to a SQL table of results and a clear winner (-19.2% val_loss).*
 
 ---
 

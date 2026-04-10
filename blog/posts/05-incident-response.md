@@ -1,8 +1,8 @@
-# 2am. Production is Down. Root Cause Found in 12 Seconds.
+# How KAOS AI Agents Found a Production Root Cause in 12 Seconds
 
 *SRE / Operations · April 14, 2026 · 8 min read*
 
-*SQL queries over KAOS's append-only event journal turned a 47-minute outage hunt into a 12-second lookup. This is what auditable infrastructure looks like.*
+*23% HTTP 500 rate at 2am. A KAOS agent queried the append-only event journal, found 847 ConnectionPoolErrors, and traced them to a single config write 47 minutes prior — in 12 seconds.*
 
 ---
 

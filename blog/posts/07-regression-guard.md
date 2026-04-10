@@ -1,8 +1,8 @@
-# Your New Model Regressed by 8%. KAOS Caught It Before You Shipped.
+# How KAOS AI Agents Caught an 8% Model Regression Before It Left CI
 
 *MLOps · April 16, 2026 · 7 min read*
 
-*Automated benchmark regression detection: 5 benchmarks, 1 model update, 12 minutes. The deploy that would have broken production was blocked before it left CI.*
+*A model swap dropped code_review accuracy from 0.83 to 0.76. KAOS AI agents ran 5 benchmarks, detected the regression, blocked the deploy, and ran a targeted Meta-Harness re-optimization that restored 0.83 — all in CI, no human in the loop.*
 
 ---
 
