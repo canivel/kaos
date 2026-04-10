@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Agent Broke the Build. KAOS Fixed It While You Slept. — KAOS Blog</title>
+<meta name="description" content="How isolated VFS + surgical checkpoints turn a cascading test failure into a self-correcting pipeline — with a full SQL audit of every step.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+/* Article layout */
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+
+/* Header */
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+/* Body */
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+
+/* Code */
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body pre code{color:var(--fg2)}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+
+/* Callout box */
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+/* Pivot block highlight */
+.pivot-block{background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:1.2rem 1.5rem;font-family:var(--mono);font-size:.82rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem;overflow-x:auto}
+
+/* Demo GIF */
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+
+/* Result table */
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(108,92,231,.05)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+/* Tier cards */
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.tier-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.2rem;border-top:3px solid var(--accent)}
+.tier-card:nth-child(2){border-top-color:var(--cyan)}
+.tier-card:nth-child(3){border-top-color:var(--green)}
+.tier-card h4{font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--fg)}
+.tier-card p{font-size:.82rem;color:var(--fg2);line-height:1.55;margin:0}
+
+/* Paper pills */
+.paper-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 1.5rem}
+.paper-pill{font-family:var(--mono);font-size:.72rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);border:1px solid rgba(255,255,255,.07);color:var(--fg2);text-decoration:none;transition:border-color .2s}
+.paper-pill:hover{border-color:var(--accent2);color:var(--accent2);text-decoration:none}
+
+/* Footer */
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+
+@media(max-width:768px){
+  .tier-grid{grid-template-columns:1fr}
+  .post-header h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">← Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<header class="post-header">
+  <span class="post-tag">Code Quality &mdash; April 11, 2026</span>
+  <h1>Your Agent Broke the Build.<br><em>KAOS Fixed It While You Slept.</em></h1>
+  <p class="post-subtitle">How isolated VFS + surgical checkpoints turn a cascading test failure into a self-correcting pipeline — with a full SQL audit of every step.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item"><span class="dot"></span>8 min read</span>
+    <span class="post-meta-item"><span class="dot"></span>checkpoints</span>
+    <span class="post-meta-item"><span class="dot"></span>SDLC</span>
+    <span class="post-meta-item"><span class="dot"></span>rollback</span>
+  </div>
+</header>
+
+<article class="post-body">
+
+<p>The refactor looked clean. The type change was surgical — just the <code>amount</code> field. But when CI ran, one test failed. Then the fix made it four.</p>
+
+<p>This is the cascading failure pattern. You're not debugging the original problem anymore. You're debugging the fix to the fix. By morning, you've got six failing tests and a commit message that says <em>"should be fine."</em></p>
+
+<p>KAOS handles this differently. Here's the exact sequence.</p>
+
+<hr>
+
+<div class="demo-gif">
+  <img src="../docs/demos/kaos_uc_sdlc.gif" alt="KAOS SDLC self-healing demo — checkpoint, wrong fix, cascade, rollback, correct fix, all tests green" loading="lazy">
+</div>
+<p class="demo-gif-caption">Full sequence: spawn agent → checkpoint → wrong fix → 4 failures → surgical restore → root cause read → correct fix → 47 tests green.</p>
+
+<hr>
+
+<h2>The Scenario</h2>
+
+<p>Payment service. The <code>amount</code> field was refactored from <code>float</code> to <code>str</code> for API serialization consistency. One test breaks immediately:</p>
+
+<pre><code>FAILED tests/test_payment.py::test_payment_decimal_precision
+AssertionError: 10.00 != 10.0
+
+Expected: Decimal('10.00')
+Got:      10.0
+
+1 failed, 46 passed in 3.2s</code></pre>
+
+<p>The dangerous pattern: fixing numeric precision by changing types can cascade. <code>float</code>, <code>Decimal</code>, and <code>str</code> all behave differently with equality checks, rounding, and JSON serialization. One wrong fix can turn one failure into four.</p>
+
+<h2>Step 1 — Spawn the QA Agent</h2>
+
+<p>The QA agent gets its own isolated VFS — a complete copy of the payment service code in its own SQLite-backed virtual filesystem. It cannot affect your working tree or any other agent.</p>
+
+<pre><code>kaos spawn payment-qa --from ./payment-service
+
+# [payment-qa] agent spawned  vfs_id=pqa-8f3a
+# [payment-qa] running pytest...
+
+FAILED tests/test_payment.py::test_payment_decimal_precision
+  AssertionError: assert Decimal('10.00') == 10.0
+
+  payment/models.py line 47:
+    return float(self.amount)  # ← this line, post-refactor
+
+1 failed, 46 passed</code></pre>
+
+<p>The failure is isolated inside the agent's VFS. Your repo is untouched. The agent has the full test suite output and the exact failure line.</p>
+
+<h2>Step 2 — Checkpoint Before Attempting Anything</h2>
+
+<p>Before the agent touches a single line of code, it checkpoints. This is the safety net — not a git stash, not a branch, but a point-in-time snapshot of this agent's entire VFS state.</p>
+
+<pre><code>kaos checkpoint payment-qa --label pre-fix-attempt
+
+# Checkpoint created: pre-fix-attempt
+# Files snapshotted: 23
+# VFS state: 1 test failing, 46 passing
+# Timestamp: 2026-04-11T02:14:33Z</code></pre>
+
+<p>The key distinction: this checkpoint belongs to <code>payment-qa</code> specifically. If the fix goes wrong, you restore exactly this agent's state — not a repo-wide git reset that blows up every other agent's work in progress.</p>
+
+<h2>Step 3 — The Wrong Fix (and Why It Matters)</h2>
+
+<p>The agent's first attempt is logically reasonable. The test expects <code>Decimal('10.00')</code>. The field returns <code>float</code>. Obvious fix: wrap in <code>float()</code> to normalize everything.</p>
+
+<pre><code># payment/models.py — agent's first attempt
+def get_amount(self):
+-   return self.amount
++   return float(self.amount)  # normalize to float</code></pre>
+
+<p>This is catastrophically wrong for financial data. <code>float(Decimal('10.00'))</code> returns <code>10.0</code> — losing the precision. And it breaks four more tests that were relying on <code>Decimal</code> arithmetic staying exact:</p>
+
+<pre><code>FAILED tests/test_payment.py::test_payment_decimal_precision
+FAILED tests/test_payment.py::test_payment_total_rounding
+FAILED tests/test_payment.py::test_invoice_line_items_sum
+FAILED tests/test_payment.py::test_refund_partial_amount
+
+4 failed, 43 passed in 3.4s</code></pre>
+
+<p>1 failure became 4. The cascade happened. The agent is now in a worse state than when it started.</p>
+
+<h2>Step 4 — Surgical Restore</h2>
+
+<p>This is the key differentiator. One command returns the agent to exactly the pre-fix checkpoint — not a git stash, not a branch switch, not a <code>git reset --hard</code> that would affect the entire repository:</p>
+
+<pre><code>kaos restore payment-qa --label pre-fix-attempt
+
+# Restoring payment-qa to checkpoint: pre-fix-attempt
+# Reverting 1 file: payment/models.py
+# --- payment/models.py
+# +++ payment/models.py (restored)
+# @@ -44,7 +44,7 @@
+#  def get_amount(self):
+# -    return float(self.amount)
+# +    return self.amount
+#
+# Restore complete in 0.04s
+# VFS state: 1 test failing, 46 passing (pre-fix state confirmed)</code></pre>
+
+<p><strong>Surgical</strong> is the right word. Other agents running in parallel — integration tests, the documentation agent, the security scanner — none of them are touched. This one agent's VFS is rewound. Everything else keeps going.</p>
+
+<h2>Step 5 — Read the Diagnostics</h2>
+
+<p>During the failed fix attempt, the QA agent wrote a structured failure report to its VFS. That report is now readable even after the restore — the agent's <code>/qa/</code> directory is part of the VFS snapshot:</p>
+
+<pre><code>kaos read payment-qa /qa/failure_report.md
+
+## Failure Analysis: test_payment_decimal_precision
+
+**Root cause**: Precision loss in financial calculations.
+
+The `amount` field uses `Decimal` for exact arithmetic. After the
+refactor, `models.py` returns the raw field value which is now a
+string (`"10.00"`). The test compares against `Decimal('10.00')`.
+
+String != Decimal. The equality check fails.
+
+**The wrong path**: Converting to `float` loses mantissa precision.
+`float("10.00")` == `10.0` — two decimal places lost, and float
+arithmetic is not associative at scale.
+
+**Correct path**: `Decimal(str(amount)).quantize(Decimal('0.01'))`
+This preserves precision, handles string input, and passes IEEE 854
+decimal arithmetic requirements for financial calculations.</code></pre>
+
+<p>The agent diagnosed itself. The failure report sits in the VFS audit trail and is SQL-queryable forever.</p>
+
+<h2>Step 6 — The Right Fix</h2>
+
+<p>Armed with the root cause from the diagnostic report, the agent applies the correct fix:</p>
+
+<pre><code># payment/models.py — correct fix
+from decimal import Decimal, ROUND_HALF_UP
+
+def get_amount(self) -> Decimal:
+    """Return amount as Decimal with 2dp precision."""
+    return Decimal(str(self.amount)).quantize(
+        Decimal('0.01'),
+        rounding=ROUND_HALF_UP
+    )</code></pre>
+
+<pre><code># kaos run payment-qa "pytest tests/test_payment.py -v"
+
+tests/test_payment.py::test_payment_decimal_precision  PASSED
+tests/test_payment.py::test_payment_total_rounding     PASSED
+tests/test_payment.py::test_invoice_line_items_sum     PASSED
+tests/test_payment.py::test_refund_partial_amount      PASSED
+tests/test_payment.py::test_payment_create             PASSED
+... (42 more)
+
+47 passed in 3.1s</code></pre>
+
+<p>All 47 tests pass. The fix is clean. The agent writes the patch to its VFS for human review before it touches the real codebase.</p>
+
+<h2>The Audit Trail</h2>
+
+<p>Every event in this sequence is recorded in the KAOS SQLite journal. The full timeline is a SQL query:</p>
+
+<pre><code>kaos --json query "
+SELECT timestamp, event_type, file_path, notes
+FROM vfs_events
+WHERE agent_id = 'payment-qa'
+ORDER BY timestamp ASC"</code></pre>
+
+<table class="result-table">
+  <thead>
+    <tr><th>Timestamp</th><th>Event</th><th>File</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>02:14:29</td><td>spawn</td><td>—</td><td class="good">agent created, VFS initialized</td></tr>
+    <tr><td>02:14:31</td><td>tool_call</td><td>—</td><td>pytest run: 1 fail, 46 pass</td></tr>
+    <tr><td>02:14:33</td><td>checkpoint</td><td>—</td><td class="good">label: pre-fix-attempt</td></tr>
+    <tr><td>02:14:41</td><td>write</td><td>payment/models.py</td><td>attempt: float() cast</td></tr>
+    <tr><td>02:14:43</td><td>tool_call</td><td>—</td><td class="bad">pytest: 4 fail — cascade</td></tr>
+    <tr><td>02:14:44</td><td>write</td><td>/qa/failure_report.md</td><td>root cause diagnosed</td></tr>
+    <tr><td>02:14:45</td><td>restore</td><td>—</td><td class="warn">restored to pre-fix-attempt</td></tr>
+    <tr><td>02:14:52</td><td>write</td><td>payment/models.py</td><td>Decimal.quantize() fix applied</td></tr>
+    <tr><td>02:14:54</td><td>tool_call</td><td>—</td><td class="good">pytest: 47 pass</td></tr>
+  </tbody>
+</table>
+
+<p>Every write. Every restore. Every test run. Timestamped, queryable, permanent. <code>git log</code> tells you what changed. The KAOS event journal tells you <em>what happened</em>.</p>
+
+<h2>Why This Is Different From <code>git reset</code></h2>
+
+<p><code>git reset --hard</code> resets your entire working tree. Every file, every agent, every in-progress change. If you had four agents running when the QA agent made its bad fix, you just destroyed all four of their work.</p>
+
+<p>KAOS restores one agent's VFS. Other agents are isolated by design — they run against their own SQLite-backed filesystems. The failing agent rewinds. Everything else keeps going.</p>
+
+<ul>
+  <li><strong>git reset</strong> is repo-wide. KAOS restore is per-agent.</li>
+  <li><strong>git log</strong> shows commits. KAOS events show every file write with the test output that caused it.</li>
+  <li><strong>git stash</strong> is manual. KAOS checkpoints are programmatic — your agent creates them before every risky operation.</li>
+  <li><strong>git bisect</strong> finds which commit broke things. KAOS SQL finds what the agent was doing at 02:14:41 that caused 3 new failures.</li>
+</ul>
+
+<div class="callout">
+  <strong>The surgical guarantee:</strong> In a system where 4 agents are running simultaneously, one failing and recovering does not degrade the other 3. KAOS isolation is at the VFS layer, not the filesystem layer. Each agent's state is fully independent.
+</div>
+
+<hr>
+
+<p>The build fixed itself while you slept. The audit trail told you exactly what happened when you woke up — down to the millisecond, down to the exact file write that caused the cascade, down to the restore that unwound it.</p>
+
+<p style="color:var(--fg2);font-size:.9rem"><em>KAOS is MIT-licensed and runs entirely locally. No data leaves your machine.</em></p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>

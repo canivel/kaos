@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migrate 2 Million Rows. Detect Corruption at Row 847K. Rollback in 0.3s. — KAOS Blog</title>
+<meta name="description" content="How KAOS checkpoints, detects anomalies mid-migration, and surgically restores one agent — while the rest of your database operations keep running.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+/* Article layout */
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+
+/* Header */
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+/* Body */
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+
+/* Code */
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body pre code{color:var(--fg2)}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+
+/* Callout box */
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+/* Pivot block highlight */
+.pivot-block{background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:1.2rem 1.5rem;font-family:var(--mono);font-size:.82rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem;overflow-x:auto}
+
+/* Demo GIF */
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+
+/* Result table */
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(108,92,231,.05)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+/* Tier cards */
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.tier-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.2rem;border-top:3px solid var(--accent)}
+.tier-card:nth-child(2){border-top-color:var(--cyan)}
+.tier-card:nth-child(3){border-top-color:var(--green)}
+.tier-card h4{font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--fg)}
+.tier-card p{font-size:.82rem;color:var(--fg2);line-height:1.55;margin:0}
+
+/* Paper pills */
+.paper-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 1.5rem}
+.paper-pill{font-family:var(--mono);font-size:.72rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);border:1px solid rgba(255,255,255,.07);color:var(--fg2);text-decoration:none;transition:border-color .2s}
+.paper-pill:hover{border-color:var(--accent2);color:var(--accent2);text-decoration:none}
+
+/* Footer */
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+
+@media(max-width:768px){
+  .tier-grid{grid-template-columns:1fr}
+  .post-header h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">← Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<header class="post-header">
+  <span class="post-tag">Data Engineering &mdash; April 13, 2026</span>
+  <h1>Migrate 2 Million Rows.<br><em>Detect Corruption at Row 847K. Rollback in 0.3s.</em></h1>
+  <p class="post-subtitle">How KAOS checkpoints, detects anomalies mid-migration, and surgically restores one agent — while the rest of your database operations keep running.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item"><span class="dot"></span>9 min read</span>
+    <span class="post-meta-item"><span class="dot"></span>database</span>
+    <span class="post-meta-item"><span class="dot"></span>migration</span>
+    <span class="post-meta-item"><span class="dot"></span>checkpoints</span>
+  </div>
+</header>
+
+<article class="post-body">
+
+<p>The migration looked fine until row 847,412. Then 7.6% of rows came out NULL where they should have been NOT NULL. The <code>subscription_tier</code> column — the one that determines what every user can access — had silent data corruption at scale.</p>
+
+<p>Without KAOS, you find this after the migration completes and a monitoring alert fires. With KAOS, the anomaly detector catches it mid-stream, pauses the migration, and rolls back in 0.3 seconds — before any corruption reaches production.</p>
+
+<hr>
+
+<div class="demo-gif">
+  <img src="../docs/demos/kaos_uc_migration.gif" alt="KAOS migration rollback demo — 2M row backfill, anomaly at row 847K, 0.3s surgical rollback" loading="lazy">
+</div>
+<p class="demo-gif-caption">Phase 1 succeeds, checkpoint taken. Phase 2 backfill detects NULL anomaly at row 847,412. Rollback in 0.3s. Analytics agents unaffected.</p>
+
+<hr>
+
+<h2>The Migration Plan</h2>
+
+<p>Adding a <code>subscription_tier</code> column to a 2-million-row <code>users</code> table. Three phases, checkpoints between each, analytics agents running alongside:</p>
+
+<pre><code># migration/add_subscription_tier.py
+
+PHASES = [
+    {
+        "name": "schema_change",
+        "sql": "ALTER TABLE users ADD COLUMN subscription_tier VARCHAR(20)",
+        "checkpoint": "pre-backfill"
+    },
+    {
+        "name": "backfill",
+        "sql": """
+            UPDATE users
+            SET subscription_tier = s.tier
+            FROM subscriptions s
+            WHERE users.id = s.user_id
+        """,
+        "batch_size": 10_000,
+        "anomaly_check": True,
+        "checkpoint": "pre-constraint"
+    },
+    {
+        "name": "enforce_constraint",
+        "sql": "ALTER TABLE users ALTER COLUMN subscription_tier SET NOT NULL",
+        "checkpoint": "complete"
+    }
+]</code></pre>
+
+<p>Other analytics agents — <code>analytics-agent-1</code> and <code>analytics-agent-2</code> — are running queries against the same data throughout. The migration agent cannot interfere with them because each agent has its own isolated VFS.</p>
+
+<h2>Phase 1 Succeeds — First Checkpoint</h2>
+
+<p>The schema change applies cleanly. Zero rows affected by the ALTER. Time to lock in the state before touching data:</p>
+
+<pre><code># Phase 1: schema change
+kaos run migration-agent "ALTER TABLE users ADD COLUMN subscription_tier VARCHAR(20)"
+
+# [migration-agent] schema change: SUCCESS
+# [migration-agent] 2,041,847 rows will be updated in Phase 2
+
+kaos checkpoint migration-agent --label pre-backfill
+
+# Checkpoint created: pre-backfill
+# Phase 1 state: schema applied, no data changes yet
+# Timestamp: 2026-04-13T01:33:11Z
+# Files snapshotted: 18
+# Note: this is the point-of-no-return boundary</code></pre>
+
+<p>This checkpoint is the safety line. If anything goes wrong in the 2-million-row backfill, <code>kaos restore migration-agent --label pre-backfill</code> returns to exactly this state — schema applied, data untouched, ready to retry with a fix.</p>
+
+<h2>Phase 2 — The Backfill (and the Anomaly)</h2>
+
+<p>The backfill starts in 10,000-row batches. The anomaly detector samples NULL counts every 50K rows and compares against expected 0%:</p>
+
+<pre><code>[backfill]  100,000 rows processed  NULL count: 0      (0.0%)  ✓
+[backfill]  200,000 rows processed  NULL count: 0      (0.0%)  ✓
+[backfill]  300,000 rows processed  NULL count: 0      (0.0%)  ✓
+[backfill]  500,000 rows processed  NULL count: 0      (0.0%)  ✓
+[backfill]  700,000 rows processed  NULL count: 0      (0.0%)  ✓
+[backfill]  847,412 rows processed  NULL count: 64,412 (7.6%)  ✗
+
+ANOMALY DETECTED: NULL rate 7.6% exceeds threshold 0.0%
+Expected: 0 NULLs in subscription_tier
+Got:      64,412 NULLs out of 847,412 rows processed
+
+Migration PAUSED. No further rows updated.
+Initiating anomaly report...</code></pre>
+
+<p>The migration pauses automatically. 7.6% NULL rate with a NOT NULL target is not recoverable without a fix — enforcing the constraint now would fail outright, and silently shipping NULL subscription tiers to production would be worse.</p>
+
+<h2>Surgical Rollback — 0.3 Seconds</h2>
+
+<p>One command. The migration agent's VFS is restored to the pre-backfill checkpoint — schema applied, no data changes, exactly where Phase 1 left off:</p>
+
+<pre><code>kaos restore migration-agent --label pre-backfill
+
+# Restoring migration-agent to checkpoint: pre-backfill
+#
+# Changes reverted:
+# --- migration/state.json
+# +++ migration/state.json (restored)
+# @@ -3,8 +3,5 @@
+# -  "phase": "backfill",
+# -  "rows_processed": 847412,
+# -  "null_count": 64412,
+# -  "status": "anomaly_paused"
+# +  "phase": "schema_complete",
+# +  "rows_processed": 0,
+# +  "status": "ready_for_backfill"
+#
+# Restore complete in 0.31s
+# VFS state: schema applied, zero data changes (pre-backfill confirmed)</code></pre>
+
+<p>0.31 seconds. The full VFS state of the migration agent is rewound. The partial backfill state, the anomaly markers, the paused status — all gone. We're back to a clean, known-good state.</p>
+
+<h2>While This Was Happening — Other Agents Kept Running</h2>
+
+<p>This is the isolation payoff. The migration failure didn't touch anything outside its own VFS:</p>
+
+<pre><code>kaos ls
+
+# NAME                STATUS    UPTIME   EVENTS
+# migration-agent     restored  14m      847 (rollback applied)
+# analytics-agent-1   running   14m      1,204
+# analytics-agent-2   running   14m      983
+# dashboard-agent     running   14m      441</code></pre>
+
+<p>All three other agents kept running through the entire incident — spawn, backfill, anomaly detection, rollback. They never noticed. Their VFS state was never touched. This is what isolated VFS means in practice.</p>
+
+<div class="callout">
+  <strong>The key guarantee:</strong> A migration agent failing and rolling back has zero effect on any other agent. Their VFS is in a separate SQLite-backed filesystem. The migration's partial state exists only inside <code>migration-agent</code>'s VFS and is now gone after the restore.
+</div>
+
+<h2>Root Cause Analysis</h2>
+
+<p>The migration agent wrote a detailed anomaly report to its VFS before pausing. That report survives the restore — it's in the agent's <code>/logs/</code> directory which is part of the VFS snapshot:</p>
+
+<pre><code>kaos read migration-agent /logs/anomaly.md
+
+## Anomaly Report: subscription_tier NULL at 7.6%
+
+**First NULL detected**: user_id 8,042,183 (batch 84 of 205)
+**Pattern**: All NULL users share a creation date before 2021-03-15
+
+**Root cause**: Legacy users who registered before the subscriptions
+table existed have no row in the `subscriptions` table.
+The JOIN returns NULL for these users.
+
+The UPDATE query:
+  UPDATE users SET subscription_tier = s.tier
+  FROM subscriptions s
+  WHERE users.id = s.user_id
+
+Returns NULL subscription_tier for any user_id not in subscriptions.
+
+**Fix**: Use COALESCE to default unmatched users to 'free':
+  UPDATE users
+  SET subscription_tier = COALESCE(s.tier, 'free')
+  FROM subscriptions s
+  WHERE users.id = s.user_id
+
+**Estimated affected rows**: ~156,000 legacy users (pre-2021-03-15)</code></pre>
+
+<p>The root cause: ~156,000 legacy users predate the subscriptions table. The JOIN produces NULL for them. The fix is one word: <code>COALESCE</code>.</p>
+
+<h2>Retry — 2 Million Rows, 0 NULLs</h2>
+
+<p>Apply the fix to the migration script and run Phase 2 again from the pre-backfill checkpoint state:</p>
+
+<pre><code># Fixed backfill query
+UPDATE users
+SET subscription_tier = COALESCE(s.tier, 'free')
+FROM subscriptions s
+WHERE users.id = s.user_id</code></pre>
+
+<pre><code>[backfill]  500,000 rows   NULL count: 0  (0.0%)  ✓
+[backfill]  1,000,000 rows NULL count: 0  (0.0%)  ✓
+[backfill]  1,500,000 rows NULL count: 0  (0.0%)  ✓
+[backfill]  2,000,000 rows NULL count: 0  (0.0%)  ✓
+[backfill]  2,041,847 rows NULL count: 0  (0.0%)  ✓ COMPLETE
+
+[phase 3]  ALTER TABLE users ALTER COLUMN subscription_tier SET NOT NULL
+[phase 3]  SUCCESS — constraint enforced on 2,041,847 rows
+
+Migration complete. Duration: 47m total (including rollback + retry).</code></pre>
+
+<h2>The Audit Trail</h2>
+
+<p>Every phase, every checkpoint, the anomaly, the rollback, the fix, and the successful retry — all in SQL:</p>
+
+<pre><code>kaos --json query "
+SELECT timestamp, event_type, phase, rows_processed, null_count, notes
+FROM migration_events
+WHERE agent_id = 'migration-agent'
+ORDER BY timestamp"</code></pre>
+
+<table class="result-table">
+  <thead>
+    <tr><th>Time</th><th>Event</th><th>Phase</th><th>Rows</th><th>NULLs</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>01:33:08</td><td>spawn</td><td>—</td><td>—</td><td>—</td><td>agent initialized</td></tr>
+    <tr><td>01:33:11</td><td class="good">checkpoint</td><td>pre-schema</td><td>0</td><td>0</td><td>label: pre-schema</td></tr>
+    <tr><td>01:33:14</td><td>schema</td><td>schema_change</td><td>0</td><td>0</td><td class="good">ALTER TABLE: success</td></tr>
+    <tr><td>01:33:16</td><td class="good">checkpoint</td><td>pre-backfill</td><td>0</td><td>0</td><td>label: pre-backfill</td></tr>
+    <tr><td>01:33:18</td><td>backfill</td><td>backfill</td><td>847,412</td><td>64,412</td><td class="bad">anomaly: 7.6% NULL</td></tr>
+    <tr><td>01:34:01</td><td class="warn">restore</td><td>—</td><td>0</td><td>0</td><td>restored to pre-backfill (0.31s)</td></tr>
+    <tr><td>01:34:04</td><td>fix</td><td>—</td><td>—</td><td>—</td><td>COALESCE applied to query</td></tr>
+    <tr><td>01:34:06</td><td>backfill</td><td>backfill</td><td>2,041,847</td><td>0</td><td class="good">full backfill: 0 NULLs</td></tr>
+    <tr><td>02:21:14</td><td>constraint</td><td>enforce_constraint</td><td>2,041,847</td><td>0</td><td class="good">NOT NULL enforced</td></tr>
+    <tr><td>02:21:17</td><td class="good">checkpoint</td><td>complete</td><td>2,041,847</td><td>0</td><td>migration complete</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<p>2 million rows migrated safely. The anomaly was caught at row 847K — before any corruption reached production or the constraint enforcement step. Other operations never noticed. The rollback took 0.3 seconds. The total time including the rollback and retry was 47 minutes. Without anomaly detection, you'd have found the NULL data from a user report, probably the next morning.</p>
+
+<p style="color:var(--fg2);font-size:.9rem"><em>KAOS is MIT-licensed and runs entirely locally. No data leaves your machine.</em></p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>
