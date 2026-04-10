@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 Security Agents, 1 PR, Zero Conflicts. — KAOS Blog</title>
+<meta name="description" content="Running specialized security agents in parallel — SQL injection, secrets, auth bypass, unsafe deserialization — each isolated, results aggregated via SQL.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+/* Article layout */
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+
+/* Header */
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+/* Body */
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+
+/* Code */
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body pre code{color:var(--fg2)}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+
+/* Callout box */
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+/* Pivot block highlight */
+.pivot-block{background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:1.2rem 1.5rem;font-family:var(--mono);font-size:.82rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem;overflow-x:auto}
+
+/* Demo GIF */
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+
+/* Result table */
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(108,92,231,.05)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+/* Tier cards */
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.tier-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.2rem;border-top:3px solid var(--accent)}
+.tier-card:nth-child(2){border-top-color:var(--cyan)}
+.tier-card:nth-child(3){border-top-color:var(--green)}
+.tier-card h4{font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--fg)}
+.tier-card p{font-size:.82rem;color:var(--fg2);line-height:1.55;margin:0}
+
+/* Paper pills */
+.paper-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 1.5rem}
+.paper-pill{font-family:var(--mono);font-size:.72rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);border:1px solid rgba(255,255,255,.07);color:var(--fg2);text-decoration:none;transition:border-color .2s}
+.paper-pill:hover{border-color:var(--accent2);color:var(--accent2);text-decoration:none}
+
+/* Footer */
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+
+@media(max-width:768px){
+  .tier-grid{grid-template-columns:1fr}
+  .post-header h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">← Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<header class="post-header">
+  <span class="post-tag">Security &mdash; April 12, 2026</span>
+  <h1>4 Security Agents, 1 PR,<br><em>Zero Conflicts.</em></h1>
+  <p class="post-subtitle">Running specialized security agents in parallel — SQL injection, secrets, auth bypass, unsafe deserialization — each isolated, results aggregated via SQL.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item"><span class="dot"></span>7 min read</span>
+    <span class="post-meta-item"><span class="dot"></span>security</span>
+    <span class="post-meta-item"><span class="dot"></span>parallel agents</span>
+    <span class="post-meta-item"><span class="dot"></span>isolation</span>
+  </div>
+</header>
+
+<article class="post-body">
+
+<p>Security review is serialized by default. One person, one angle, one pass. They check for SQL injection. Then they switch context to look for secrets. Then auth. Then deserialization. Each context switch costs focus. Most reviewers only catch what they were last thinking about.</p>
+
+<p>KAOS makes it parallel. One agent per attack surface, all at once, results aggregated via SQL when they're done.</p>
+
+<hr>
+
+<div class="demo-gif">
+  <img src="../docs/demos/kaos_uc_security.gif" alt="KAOS security swarm demo — 4 parallel agents scanning PR-2847, SQL aggregation of findings" loading="lazy">
+</div>
+<p class="demo-gif-caption">4 agents spawn simultaneously, each scans one attack surface, findings aggregate in SQL. 20 minutes total instead of 80.</p>
+
+<hr>
+
+<h2>The Problem With Sequential Security Reviews</h2>
+
+<p>A single reviewer cannot hold all attack surfaces in mind simultaneously. The cognitive cost of context-switching between SQL injection patterns, hardcoded credentials, authentication bypasses, and deserialization vulnerabilities is real — and it produces gaps.</p>
+
+<ul>
+  <li><strong>Context switching</strong> between SQLi → auth → secrets → deserialization loses the mental model each time</li>
+  <li><strong>Anchoring bias</strong> — once you find one issue, you tend to look for similar issues, missing orthogonal vulnerabilities</li>
+  <li><strong>Fatigue</strong> — the fourth pass over 400 lines of code is less thorough than the first</li>
+</ul>
+
+<p>The KAOS solution: one agent per attack surface, each with no knowledge of what the others found. No anchoring. No fatigue. Full focus on one threat model each.</p>
+
+<h2>Spawning 4 Specialized Agents</h2>
+
+<p>Each agent gets its own isolated VFS copy of the PR code. They run simultaneously and cannot see each other's findings — full VFS isolation by design.</p>
+
+<pre><code>kaos parallel \
+  "spawn sqli-scanner    --from ./pr-2847 --task sqli_audit" \
+  "spawn secrets-scanner --from ./pr-2847 --task secrets_audit" \
+  "spawn auth-scanner    --from ./pr-2847 --task auth_audit" \
+  "spawn deser-scanner   --from ./pr-2847 --task deser_audit"
+
+# [sqli-scanner]    spawned  vfs_id=sqli-4a1b  status=running
+# [secrets-scanner] spawned  vfs_id=sec-9c2d   status=running
+# [auth-scanner]    spawned  vfs_id=auth-3e4f   status=running
+# [deser-scanner]   spawned  vfs_id=desr-7g8h   status=running
+#
+# 4 agents running in parallel</code></pre>
+
+<p>All 4 agents are scanning simultaneously. They each have a complete, independent copy of the PR code in their own VFS. They cannot modify each other's view of the code. They cannot read each other's findings.</p>
+
+<h2>Agent 1: SQL Injection Scan</h2>
+
+<p>The SQL injection agent works through <code>api/users.py</code>, <code>api/search.py</code>, and the database layer. It finds the vulnerability in 4 minutes:</p>
+
+<pre><code># api/search.py — FINDING: SQL injection via f-string interpolation
+
+@app.route('/search')
+def search_users():
+    query = request.args.get('q', '')
+    # CRITICAL: direct string interpolation into SQL
+    sql = f"SELECT * FROM users WHERE name LIKE '%{query}%'"
+    results = db.execute(sql)
+    return jsonify(results)</code></pre>
+
+<p>The agent writes its finding to its own VFS at <code>/findings/sqli_001.md</code> with severity, file, line number, and the parameterized fix:</p>
+
+<pre><code># Proposed fix — parameterized query
+@app.route('/search')
+def search_users():
+    query = request.args.get('q', '')
+    sql = "SELECT * FROM users WHERE name LIKE ?"
+    results = db.execute(sql, (f'%{query}%',))
+    return jsonify(results)</code></pre>
+
+<p>Isolation matters here: this agent only sees the code. It doesn't know the secrets agent found a hardcoded key. No anchoring — it stays focused on injection patterns throughout its entire pass.</p>
+
+<h2>Agent 2: Secrets &amp; API Keys Scan</h2>
+
+<p>The secrets agent scans for hardcoded credentials, API keys, tokens, and SSRF vectors. Two findings in 6 minutes:</p>
+
+<pre><code># config/settings.py — line 47
+# CRITICAL: hardcoded production API key
+
+OPENAI_API_KEY = "sk-prod-[REDACTED-IN-AUDIT]"
+STRIPE_SECRET  = "sk_live_[REDACTED-IN-AUDIT]"
+
+# This key is now in git history forever.</code></pre>
+
+<pre><code># api/webhooks.py — line 83
+# MEDIUM: SSRF risk — unvalidated URL from user input
+
+def fetch_webhook_payload(url: str):
+    # No URL validation — attacker can point at internal services
+    response = requests.get(url, timeout=5)
+    return response.json()</code></pre>
+
+<p>The agent flags both with severity, file, and line. The hardcoded key is CRITICAL — it's in git history regardless of whether it gets rotated.</p>
+
+<h2>Agent 3 &amp; 4: Auth + Deserialization</h2>
+
+<p>The auth agent works through all authentication middleware, JWT handling, and session management. Clean result after 18 minutes — no bypass vectors found in this PR.</p>
+
+<p>The deserialization agent checks all <code>pickle.loads()</code>, <code>yaml.load()</code>, and <code>eval()</code> call sites. Also clean — the PR doesn't touch deserialization paths.</p>
+
+<pre><code># kaos ls --json | jq '.[] | {name, status, findings_count}'
+
+[
+  {"name": "sqli-scanner",    "status": "complete", "findings_count": 1},
+  {"name": "secrets-scanner", "status": "complete", "findings_count": 2},
+  {"name": "auth-scanner",    "status": "complete", "findings_count": 0},
+  {"name": "deser-scanner",   "status": "complete", "findings_count": 0}
+]</code></pre>
+
+<h2>Aggregating with SQL</h2>
+
+<p>All four agents have written their findings to their individual VFS stores. Now aggregate across all of them with a single query:</p>
+
+<pre><code>kaos --json query "
+SELECT agent_name, severity, finding_type, file_path, line_no, summary
+FROM vfs_findings
+WHERE pr = 'PR-2847'
+ORDER BY
+  CASE severity
+    WHEN 'CRITICAL' THEN 1
+    WHEN 'HIGH'     THEN 2
+    WHEN 'MEDIUM'   THEN 3
+    ELSE 4
+  END"</code></pre>
+
+<table class="result-table">
+  <thead>
+    <tr><th>Agent</th><th>Severity</th><th>Type</th><th>File</th><th>Line</th><th>Summary</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>sqli-scanner</td>
+      <td class="bad">CRITICAL</td>
+      <td>sql_injection</td>
+      <td>api/search.py</td>
+      <td>14</td>
+      <td>f-string interpolation into SQL query</td>
+    </tr>
+    <tr>
+      <td>secrets-scanner</td>
+      <td class="bad">CRITICAL</td>
+      <td>hardcoded_secret</td>
+      <td>config/settings.py</td>
+      <td>47</td>
+      <td>Production API key in source code</td>
+    </tr>
+    <tr>
+      <td>secrets-scanner</td>
+      <td class="warn">MEDIUM</td>
+      <td>ssrf</td>
+      <td>api/webhooks.py</td>
+      <td>83</td>
+      <td>Unvalidated URL passed to requests.get()</td>
+    </tr>
+    <tr>
+      <td>auth-scanner</td>
+      <td class="good">CLEAN</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>No auth bypass vectors found</td>
+    </tr>
+    <tr>
+      <td>deser-scanner</td>
+      <td class="good">CLEAN</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>No unsafe deserialization found</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>2 CRITICAL, 1 MEDIUM, 2 clean passes. The full picture in one query.</p>
+
+<h2>Verifying Isolation</h2>
+
+<p>The power of this approach depends on isolation being real. Verify it directly:</p>
+
+<pre><code>kaos --json query "
+SELECT a.name, COUNT(e.id) as shared_events
+FROM agents a
+LEFT JOIN vfs_events e ON e.agent_id = a.id
+  AND e.event_type = 'cross_agent_read'
+WHERE a.name IN ('sqli-scanner','secrets-scanner','auth-scanner','deser-scanner')
+GROUP BY a.name"
+
+# [{"name": "sqli-scanner",    "shared_events": 0},
+#  {"name": "secrets-scanner", "shared_events": 0},
+#  {"name": "auth-scanner",    "shared_events": 0},
+#  {"name": "deser-scanner",   "shared_events": 0}]</code></pre>
+
+<p>Zero cross-agent reads. Each agent worked in complete isolation. The findings are independent. No anchoring is possible because no agent could observe what the others found.</p>
+
+<div class="callout">
+  <strong>Why isolation matters for security reviews:</strong> If Agent 2 could see that Agent 1 found a SQL injection issue, it might start looking for similar injection patterns — and miss the hardcoded key it was supposed to find. KAOS makes it structurally impossible for agents to influence each other's findings.
+</div>
+
+<h2>The Speed Math</h2>
+
+<p>Sequential security review: 4 reviewers or passes × 20 minutes each = 80 minutes. You also can't run them truly in parallel with one human — it's usually serial.</p>
+
+<p>KAOS parallel: <code>max(sqli=18min, secrets=19min, auth=20min, deser=16min)</code> = <strong>20 minutes total</strong>. Same findings, 4× faster.</p>
+
+<table class="result-table">
+  <thead><tr><th>Approach</th><th>Time</th><th>Findings</th><th>Anchoring Risk</th></tr></thead>
+  <tbody>
+    <tr><td>Sequential (1 reviewer)</td><td class="bad">80 min</td><td>Variable</td><td class="bad">High</td></tr>
+    <tr><td>Sequential (4 reviewers)</td><td class="warn">20 min wall clock</td><td>Better</td><td class="warn">Medium</td></tr>
+    <tr><td>KAOS parallel agents</td><td class="good">20 min wall clock</td><td class="good">Consistent</td><td class="good">None</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<p>The SQL injection and the hardcoded key would have taken two separate human passes to find. The SSRF might have been missed entirely — it's an easy one to overlook when you're already mentally categorizing credentials. KAOS found all three in 20 minutes, in parallel, with a full audit trail and zero cross-agent contamination.</p>
+
+<p style="color:var(--fg2);font-size:.9rem"><em>KAOS is MIT-licensed and runs entirely locally. No data leaves your machine.</em></p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>
