@@ -1,0 +1,1857 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: 'KAOS — Meta-Harness: Code Review Classification (48% → 83%)'
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mKAOS Meta-Harness\e[0m  \e[90m—\e[0m  \e[37mEnd-to-End Research\
+    \ Demo\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mFrom problem definition to solved harness, nothing skipped\e[0m\r\
+    \n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mResearch problem:\e[0m  \e[93mCode Review Comment Severity Classification\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mLabels:\e[0m          \e[32mBLOCKER\e[0m  \e[33mIMPORTANT\e[0m\
+    \  \e[34mSTYLE\e[0m  \e[35mPRAISE\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mBaseline:\e[0m        ~48% accuracy (zero-shot GPT)\r\n"
+- delay: 55
+  content: "  \e[90mGoal:\e[0m            Find the best harness automatically\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 2200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 1 — Define the benchmark (benchmarks/code_review.py)\
+    \               \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 68
+  content: c
+- delay: 73
+  content: a
+- delay: 59
+  content: t
+- delay: 72
+  content: ' '
+- delay: 53
+  content: b
+- delay: 56
+  content: e
+- delay: 72
+  content: n
+- delay: 67
+  content: c
+- delay: 75
+  content: h
+- delay: 55
+  content: m
+- delay: 63
+  content: a
+- delay: 62
+  content: r
+- delay: 75
+  content: k
+- delay: 64
+  content: s
+- delay: 63
+  content: /
+- delay: 69
+  content: c
+- delay: 61
+  content: o
+- delay: 60
+  content: d
+- delay: 64
+  content: e
+- delay: 75
+  content: _
+- delay: 57
+  content: r
+- delay: 72
+  content: e
+- delay: 76
+  content: v
+- delay: 65
+  content: i
+- delay: 74
+  content: e
+- delay: 64
+  content: w
+- delay: 68
+  content: .
+- delay: 70
+  content: p
+- delay: 68
+  content: y
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[90m\"\"\"Code Review Comment Severity Benchmark\e[0m\r\n"
+- delay: 55
+  content: "\e[90mClassify a GitHub PR review comment into: BLOCKER | IMPORTANT |\
+    \ STYLE | PRAISE\e[0m\r\n"
+- delay: 55
+  content: "\e[90m\"\"\"\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[35mLABELS\e[0m = [\e[32m\"BLOCKER\"\e[0m, \e[32m\"IMPORTANT\"\e[0m,\
+    \ \e[32m\"STYLE\"\e[0m, \e[32m\"PRAISE\"\e[0m]\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[35mEXAMPLES\e[0m = [\r\n"
+- delay: 55
+  content: "  {\"comment\": \e[32m\"SQL query is vulnerable to injection — must fix\
+    \ before merge\"\e[0m,\r\n"
+- delay: 55
+  content: "   \e[32m\"label\"\e[0m: \e[32m\"BLOCKER\"\e[0m},\r\n"
+- delay: 55
+  content: "  {\"comment\": \e[32m\"This N+1 query will cause issues at scale\"\e\
+    [0m,\r\n"
+- delay: 55
+  content: "   \e[32m\"label\"\e[0m: \e[32m\"IMPORTANT\"\e[0m},\r\n"
+- delay: 55
+  content: "  {\"comment\": \e[32m\"Variable name `x` is not descriptive\"\e[0m,\r\
+    \n"
+- delay: 55
+  content: "   \e[32m\"label\"\e[0m: \e[32m\"STYLE\"\e[0m},\r\n"
+- delay: 55
+  content: "  {\"comment\": \e[32m\"Nice use of early returns here, much cleaner!\"\
+    \e[0m,\r\n"
+- delay: 55
+  content: "   \e[32m\"label\"\e[0m: \e[32m\"PRAISE\"\e[0m},\r\n"
+- delay: 55
+  content: "  \e[90m# ... 196 more examples\e[0m\r\n"
+- delay: 55
+  content: "]\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[36mdef\e[0m \e[92mevaluate\e[0m(harness_fn, examples=EXAMPLES):\r\n"
+- delay: 55
+  content: "    \e[90m\"\"\"Run harness on all examples, return accuracy + per-label\
+    \ F1\"\"\"\e[0m\r\n"
+- delay: 55
+  content: "    predictions = [harness_fn(e[\e[32m\"comment\"\e[0m]) \e[36mfor\e[0m\
+    \ e \e[36min\e[0m examples]\r\n"
+- delay: 55
+  content: "    correct = sum(p == e[\e[32m\"label\"\e[0m] \e[36mfor\e[0m p, e \e\
+    [36min\e[0m zip(predictions, examples))\r\n"
+- delay: 55
+  content: "    \e[36mreturn\e[0m {\r\n"
+- delay: 55
+  content: "        \e[32m\"accuracy\"\e[0m: correct / len(examples),\r\n"
+- delay: 55
+  content: "        \e[32m\"n_correct\"\e[0m: correct,\r\n"
+- delay: 55
+  content: "        \e[32m\"n_total\"\e[0m: len(examples),\r\n"
+- delay: 55
+  content: "    }\r\n"
+- delay: 1800
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 2 — Initialize KAOS database         \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 65
+  content: k
+- delay: 53
+  content: a
+- delay: 64
+  content: o
+- delay: 67
+  content: s
+- delay: 74
+  content: ' '
+- delay: 72
+  content: i
+- delay: 76
+  content: n
+- delay: 71
+  content: i
+- delay: 70
+  content: t
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Initialized \e[34mkaos.db\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Schema v4 applied (agents, tool_calls, vfs_files, events,\
+    \ blobs)\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Knowledge agent spawned  \e[90m[kaos-knowledge]\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Ready\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 54
+  content: c
+- delay: 69
+  content: a
+- delay: 63
+  content: t
+- delay: 54
+  content: ' '
+- delay: 55
+  content: k
+- delay: 67
+  content: a
+- delay: 73
+  content: o
+- delay: 63
+  content: s
+- delay: 71
+  content: .
+- delay: 76
+  content: y
+- delay: 76
+  content: a
+- delay: 60
+  content: m
+- delay: 75
+  content: l
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[35mprovider\e[0m: \e[32mclaude_code\e[0m   \e[90m# uses your CC subscription,\
+    \ zero API cost\e[0m\r\n"
+- delay: 55
+  content: "\e[35mmodel\e[0m:    \e[32mclaude-sonnet-4-6\e[0m\r\n"
+- delay: 55
+  content: "\e[35mcompaction_level\e[0m: \e[93m5\e[0m     \e[90m# default: 57% savings,\
+    \ 100% quality\e[0m\r\n"
+- delay: 55
+  content: "\e[35mstagnation_threshold\e[0m: \e[93m4\e[0m  \e[90m# CORAL pivot after\
+    \ 4 non-improving iters\e[0m\r\n"
+- delay: 55
+  content: "\e[35mconsolidation_every\e[0m: \e[93m6\e[0m   \e[90m# CORAL consolidation\
+    \ heartbeat\e[0m\r\n"
+- delay: 1500
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 3 — Launch Meta-Harness search (15 iterations)\
+    \                     \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 67
+  content: k
+- delay: 63
+  content: a
+- delay: 57
+  content: o
+- delay: 67
+  content: s
+- delay: 77
+  content: ' '
+- delay: 69
+  content: m
+- delay: 62
+  content: h
+- delay: 60
+  content: ' '
+- delay: 53
+  content: s
+- delay: 59
+  content: e
+- delay: 56
+  content: a
+- delay: 52
+  content: r
+- delay: 62
+  content: c
+- delay: 72
+  content: h
+- delay: 78
+  content: ' '
+- delay: 66
+  content: '-'
+- delay: 57
+  content: b
+- delay: 73
+  content: ' '
+- delay: 65
+  content: c
+- delay: 61
+  content: o
+- delay: 58
+  content: d
+- delay: 71
+  content: e
+- delay: 57
+  content: _
+- delay: 65
+  content: r
+- delay: 58
+  content: e
+- delay: 68
+  content: v
+- delay: 53
+  content: i
+- delay: 52
+  content: e
+- delay: 76
+  content: w
+- delay: 52
+  content: ' '
+- delay: 72
+  content: '-'
+- delay: 56
+  content: n
+- delay: 52
+  content: ' '
+- delay: 75
+  content: '1'
+- delay: 78
+  content: '5'
+- delay: 71
+  content: ' '
+- delay: 78
+  content: '-'
+- delay: 68
+  content: k
+- delay: 69
+  content: ' '
+- delay: 69
+  content: '3'
+- delay: 65
+  content: ' '
+- delay: 65
+  content: '-'
+- delay: 53
+  content: '-'
+- delay: 77
+  content: b
+- delay: 54
+  content: a
+- delay: 73
+  content: c
+- delay: 55
+  content: k
+- delay: 74
+  content: g
+- delay: 69
+  content: r
+- delay: 68
+  content: o
+- delay: 61
+  content: u
+- delay: 72
+  content: n
+- delay: 62
+  content: d
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Benchmark loaded: \e[93mcode_review\e[0m  \e[90m(200 examples,\
+    \ 4 labels)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Search agent spawned  \e[90m[01JMHSRCH-code-review]\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Worker process started  \e[90mPID 14832\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m───────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[36mPhase 1:\e[0m  Evaluating \e[93m3 seed harnesses\e[0m in parallel...\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 700
+  content: ''
+- delay: 80
+  content: "  \e[90m[seed 1/3]\e[0m  zero_shot         \e[90mevaluating...\e[0m\r\n"
+- delay: 400
+  content: ''
+- delay: 55
+  content: "  \e[90m[seed 1/3]\e[0m  zero_shot         \e[32macc=0.48\e[0m  cost=12.4\
+    \  \e[90m96/200 ✓\e[0m\r\n"
+- delay: 200
+  content: ''
+- delay: 80
+  content: "  \e[90m[seed 2/3]\e[0m  few_shot_2        \e[90mevaluating...\e[0m\r\n"
+- delay: 500
+  content: ''
+- delay: 55
+  content: "  \e[90m[seed 2/3]\e[0m  few_shot_2        \e[32macc=0.54\e[0m  cost=18.7\
+    \  \e[90m108/200 ✓\e[0m\r\n"
+- delay: 200
+  content: ''
+- delay: 80
+  content: "  \e[90m[seed 3/3]\e[0m  cot_basic         \e[90mevaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[90m[seed 3/3]\e[0m  cot_basic         \e[32macc=0.61\e[0m  cost=24.1\
+    \  \e[90m122/200 ✓\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[92mSeed evaluation complete.\e[0m  Initial frontier: \e[93m3\e[0m\
+    \ points\r\n"
+- delay: 55
+  content: "  \e[90mBest seed: \e[0m\e[32mcot_basic\e[0m \e[90m(acc=0.61)\e[0m  \e\
+    [90m─\e[0m  Search begins from here\r\n"
+- delay: 1200
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mSearch Loop\e[0m  \e[90m─ proposer reads traces → proposes\
+    \ harness → evaluate → frontier\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 600
+  content: ''
+- delay: 90
+  content: "  \e[93m[iter 1/15]\e[0m  \e[90mProposer reading archive digest...\e[0m\r\
+    \n"
+- delay: 500
+  content: ''
+- delay: 55
+  content: "  \e[90m           Archive: 3 harnesses  │  compacted to 57% (AAAK notation)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m           Best: cot_basic acc=0.61  ERR: BLOCKER↔IMPORTANT confusion\
+    \ (34×)\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 1/15]\e[0m  \e[90mProposing...\e[0m  \e[32mrole_engineer\e\
+    [0m  \e[90m'act as senior SWE reviewing a PR'\e[0m\r\n"
+- delay: 400
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 1/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 1/15]\e[0m  \e[32mrole_engineer\e[0m    acc=\e[32m0.67\e\
+    [0m  cost=21.3  \e[32m+0.06 ↑  IMPROVED\e[0m  \e[90m134/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier updated: [\e[0m\e[32m0.67\e[0m\e[90m, 0.61,\
+    \ 0.54, 0.48]\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 2/15]\e[0m  \e[90mProposing...\e[0m  \e[32mrole_engineer_v2\e\
+    [0m  \e[90m'triage nurse role + severity rubric'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 2/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 2/15]\e[0m  \e[32mrole_engineer_v2\e[0m acc=\e[32m0.71\e\
+    [0m  cost=26.8  \e[32m+0.04 ↑  IMPROVED\e[0m  \e[90m142/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier: [\e[0m\e[32m0.71\e[0m\e[90m, 0.67, 0.61]\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 3/15]\e[0m  \e[90mProposing...\e[0m  \e[32mrubric_detailed\e\
+    [0m  \e[90m'explicit 4-tier rubric with examples per tier'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 3/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 3/15]\e[0m  \e[31mrubric_detailed\e[0m  acc=\e[33m0.69\e\
+    [0m  cost=34.2  \e[33m─  regression vs best\e[0m  \e[90m138/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier unchanged.  stagnant_iters=1\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 4/15]\e[0m  \e[90mProposing...\e[0m  \e[32mfew_shot_balanced\e\
+    [0m  \e[90m'1 example per class, explicit contrast'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 4/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 4/15]\e[0m  \e[32mfew_shot_balanced\e[0m acc=\e[32m0.74\e\
+    [0m  cost=29.1  \e[32m+0.03 ↑  IMPROVED\e[0m  \e[90m148/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier: [\e[0m\e[32m0.74\e[0m\e[90m, 0.71, 0.67]\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 800
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 5/15]\e[0m  \e[90mProposing...\e[0m  \e[32mfew_shot_4x\e\
+    [0m  \e[90m'4 examples per class'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 5/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 5/15]\e[0m  \e[31mfew_shot_4x\e[0m      acc=\e[33m0.73\e\
+    [0m  cost=48.9  \e[33m─  marginally worse, higher cost\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mstagnant_iters=2\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 6/15]\e[0m  \e[90mProposing...\e[0m  \e[32mchain_contrast\e\
+    [0m  \e[90m'CoT with explicit BLOCKER vs IMPORTANT contrast'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 6/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 6/15]\e[0m  \e[31mchain_contrast\e[0m   acc=\e[33m0.74\e\
+    [0m  cost=31.4  \e[33m─  matches best, no improvement\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mstagnant_iters=3  (threshold=4)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 7/15]\e[0m  \e[90mProposing...\e[0m  \e[32mfew_shot_role_merge\e\
+    [0m  \e[90m'role + few-shot merged'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 7/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 7/15]\e[0m  \e[31mfew_shot_role_merge\e[0m acc=\e[33m0.74\e\
+    [0m  \e[33m─  no improvement\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mstagnant_iters=4  ──\e[0m  \e[91mPLATEAU DETECTED\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: ''
+- delay: 600
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[91m⚠  CORAL PIVOT REQUIRED\e[0m  \e[90m(stagnant_iters=4 ≥ threshold=4)\e\
+    [0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mThe proposer archive digest now includes a PIVOT block:\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[35m╔══════════════════════════════════════════════════════════════════╗\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[91mPIVOT REQUIRED\e[0m  \e[90m─\e[0m  stagnant=4  best=0.74\
+    \                      \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m                                                       \
+    \           \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[33mExhausted approaches:\e[0m                     \
+    \                    \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • Role-playing (engineer/reviewer) — ceiling at\
+    \ 0.74\e[0m          \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • Few-shot examples — 1-4 per class, diminishing\
+    \ returns\e[0m       \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • CoT with contrast — matched best but did not\
+    \ improve\e[0m         \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m                                                       \
+    \           \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[32mRequired:\e[0m propose an \e[1morthogonal direction\e\
+    [0m.  Ideas:              \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • Two-step classification (blocker? → if not,\
+    \ style or praise?)\e[0m  \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • Structured attribute extraction before classifying\e\
+    [0m             \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m║\e[0m  \e[90m  • Confidence calibration + abstain on ambiguous\
+    \ cases\e[0m            \e[35m║\e[0m\r\n"
+- delay: 55
+  content: "  \e[35m╚══════════════════════════════════════════════════════════════════╝\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1800
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 8/15]\e[0m  \e[90mProposing...\e[0m  \e[32mtwo_step_chain\e\
+    [0m  \e[90m'step 1: safety? → step 2: severity'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 8/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 800
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 8/15]\e[0m  \e[32mtwo_step_chain\e[0m  acc=\e[32m0.78\e\
+    [0m  cost=33.2  \e[32m+0.04 ↑  IMPROVED\e[0m  \e[90m156/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier: [\e[0m\e[32m0.78\e[0m\e[90m, 0.74, 0.71]\
+    \  stagnant_iters=0 (reset)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 9/15]\e[0m  \e[90mProposing...\e[0m  \e[32mattr_extract\e\
+    [0m  \e[90m'extract: impact, scope, fixability → then classify'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 9/15]\e[0m  \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 9/15]\e[0m  \e[32mattr_extract\e[0m    acc=\e[32m0.79\e\
+    [0m  cost=38.7  \e[32m+0.01 ↑  IMPROVED\e[0m  \e[90m158/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier: [\e[0m\e[32m0.79\e[0m\e[90m, 0.78, 0.74]\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 10/15]\e[0m \e[90m⟳ CORAL Consolidation heartbeat\e[0m \
+    \ \e[90m(every 6 iters)\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mDistilling reusable skills from 10 iterations...\e\
+    [0m\r\n"
+- delay: 500
+  content: ''
+- delay: 55
+  content: "             \e[32mSkill written:\e[0m  \e[90mtwo_step_decomposition —\
+    \ split safety check from severity\e[0m\r\n"
+- delay: 55
+  content: "             \e[32mSkill written:\e[0m  \e[90mattr_grounding — extract\
+    \ impact+scope before labeling\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 10/15]\e[0m \e[90mProposing...\e[0m  \e[32mtwo_step_attr_merged\e\
+    [0m  \e[90m'combine both skills'\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 80
+  content: "  \e[93m[iter 10/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 800
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 10/15]\e[0m \e[32mtwo_step_attr_merged\e[0m acc=\e[32m0.83\e\
+    [0m cost=41.5 \e[32m+0.04 ↑  IMPROVED\e[0m \e[90m166/200 ✓\e[0m\r\n"
+- delay: 55
+  content: "             \e[90mFrontier: [\e[0m\e[32m0.83\e[0m\e[90m, 0.79, 0.78]\e\
+    [0m  \e[92mNew best!\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 11/15]\e[0m \e[90mProposing...\e[0m  \e[32mtwo_step_calibrated\e\
+    [0m  \e[90m'+ confidence threshold for borderline cases'\e[0m\r\n"
+- delay: 250
+  content: ''
+- delay: 70
+  content: "  \e[93m[iter 11/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 11/15]\e[0m \e[31mtwo_step_calibrated\e[0m acc=\e[33m0.82\e\
+    [0m \e[33m─  marginally worse\e[0m  stagnant=1\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 12/15]\e[0m \e[90mProposing...\e[0m  \e[32mattr_with_examples\e\
+    [0m  \e[90m'attr extraction + 2 examples per label'\e[0m\r\n"
+- delay: 250
+  content: ''
+- delay: 70
+  content: "  \e[93m[iter 12/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 12/15]\e[0m \e[32mattr_with_examples\e[0m acc=\e[32m0.83\e\
+    [0m \e[90m─  matches best\e[0m  stagnant=2\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 13/15]\e[0m \e[90mProposing...\e[0m  \e[32mblocker_specialist\e\
+    [0m  \e[90m'specialized BLOCKER detector first pass'\e[0m\r\n"
+- delay: 250
+  content: ''
+- delay: 70
+  content: "  \e[93m[iter 13/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 700
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 13/15]\e[0m \e[31mblocker_specialist\e[0m  acc=\e[33m0.81\e\
+    [0m \e[33m─  regression\e[0m  stagnant=3\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 14/15]\e[0m \e[90mProposing...\e[0m  \e[32mtwo_step_attr_v2\e\
+    [0m   \e[90m'refined scope definition, cleaner prompt'\e[0m\r\n"
+- delay: 250
+  content: ''
+- delay: 70
+  content: "  \e[93m[iter 14/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 14/15]\e[0m \e[32mtwo_step_attr_v2\e[0m   acc=\e[32m0.83\e\
+    [0m \e[90m─  matches best\e[0m  stagnant=4\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m[iter 15/15]\e[0m \e[90mProposing...\e[0m  \e[32mensemble_vote\e\
+    [0m      \e[90m'majority vote: 3 harnesses on each sample'\e[0m\r\n"
+- delay: 250
+  content: ''
+- delay: 70
+  content: "  \e[93m[iter 15/15]\e[0m \e[90mEvaluating...\e[0m\r\n"
+- delay: 800
+  content: ''
+- delay: 55
+  content: "  \e[93m[iter 15/15]\e[0m \e[31mensemble_vote\e[0m       acc=\e[33m0.82\e\
+    [0m \e[33m─  cost 3× worse, no gain\e[0m  stagnant=5\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 600
+  content: ''
+- delay: 700
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[92mSearch complete.\e[0m  15 iterations  │  \e[32m83% accuracy\e\
+    [0m  │  \e[90m+35 points from baseline\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 4 — View the Pareto frontier         \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 67
+  content: k
+- delay: 64
+  content: a
+- delay: 70
+  content: o
+- delay: 63
+  content: s
+- delay: 57
+  content: ' '
+- delay: 57
+  content: m
+- delay: 75
+  content: h
+- delay: 54
+  content: ' '
+- delay: 64
+  content: f
+- delay: 59
+  content: r
+- delay: 54
+  content: o
+- delay: 74
+  content: n
+- delay: 62
+  content: t
+- delay: 71
+  content: i
+- delay: 57
+  content: e
+- delay: 65
+  content: r
+- delay: 72
+  content: ' '
+- delay: 71
+  content: c
+- delay: 54
+  content: o
+- delay: 78
+  content: d
+- delay: 59
+  content: e
+- delay: 56
+  content: _
+- delay: 75
+  content: r
+- delay: 56
+  content: e
+- delay: 56
+  content: v
+- delay: 53
+  content: i
+- delay: 60
+  content: e
+- delay: 75
+  content: w
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1mPareto Frontier\e[0m  \e[90m─  code_review benchmark\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mrank  harness_id              accuracy  cost   n_correct\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m────  ──────────────────────  ────────  ─────  ─────────\e[0m\r\
+    \n"
+- delay: 55
+  content: "   \e[32m★ 1\e[0m   two_step_attr_merged    \e[32m0.830\e[0m    41.5 \
+    \  166/200  \e[90m← best accuracy\e[0m\r\n"
+- delay: 55
+  content: "     \e[33m2\e[0m   attr_with_examples      \e[32m0.830\e[0m    44.2 \
+    \  166/200  \e[90m← same acc, higher cost\e[0m\r\n"
+- delay: 55
+  content: "     \e[34m3\e[0m   attr_extract            0.790    38.7   158/200  \e\
+    [90m← best cost-to-acc tradeoff\e[0m\r\n"
+- delay: 55
+  content: "     4   two_step_chain          0.780    33.2   156/200\r\n"
+- delay: 55
+  content: "     5   few_shot_balanced       0.740    29.1   148/200  \e[90m← best\
+    \ cheap option\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1400
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 5 — Knowledge compounding (persists across\
+    \ searches)               \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 78
+  content: k
+- delay: 65
+  content: a
+- delay: 57
+  content: o
+- delay: 62
+  content: s
+- delay: 74
+  content: ' '
+- delay: 58
+  content: m
+- delay: 73
+  content: h
+- delay: 65
+  content: ' '
+- delay: 77
+  content: k
+- delay: 61
+  content: n
+- delay: 59
+  content: o
+- delay: 58
+  content: w
+- delay: 69
+  content: l
+- delay: 70
+  content: e
+- delay: 70
+  content: d
+- delay: 59
+  content: g
+- delay: 75
+  content: e
+- delay: 65
+  content: ' '
+- delay: 57
+  content: c
+- delay: 63
+  content: o
+- delay: 64
+  content: d
+- delay: 78
+  content: e
+- delay: 78
+  content: _
+- delay: 73
+  content: r
+- delay: 67
+  content: e
+- delay: 77
+  content: v
+- delay: 77
+  content: i
+- delay: 54
+  content: e
+- delay: 78
+  content: w
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1mKnowledge Base\e[0m  \e[90m─  code_review  (persists across all\
+    \ future searches)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m[skill]\e[0m  two_step_decomposition\r\n"
+- delay: 55
+  content: "  \e[90m  Split the classification into two sequential questions:\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m  1. \"Does this comment identify a correctness/security problem?\"\
+    \e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  2. If yes → BLOCKER or IMPORTANT. If no → STYLE or PRAISE.\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  Discovered at iteration 8. Broke plateau at 0.74.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m[skill]\e[0m  attr_grounding\r\n"
+- delay: 55
+  content: "  \e[90m  Before classifying, extract: impact (high/med/low),\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  scope (blocking merge / should fix / nice to have), fixability.\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  Ground label in extracted attributes, not free-form reasoning.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m[winner]\e[0m two_step_attr_merged  \e[90macc=0.83\e[0m  \e[90m(combining\
+    \ both skills)\e[0m\r\n"
+- delay: 1600
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 6 — Winning harness code (ready to deploy)\
+    \                         \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 74
+  content: k
+- delay: 52
+  content: a
+- delay: 57
+  content: o
+- delay: 68
+  content: s
+- delay: 70
+  content: ' '
+- delay: 64
+  content: m
+- delay: 73
+  content: h
+- delay: 64
+  content: ' '
+- delay: 75
+  content: e
+- delay: 59
+  content: x
+- delay: 54
+  content: p
+- delay: 73
+  content: o
+- delay: 70
+  content: r
+- delay: 77
+  content: t
+- delay: 77
+  content: ' '
+- delay: 68
+  content: c
+- delay: 60
+  content: o
+- delay: 64
+  content: d
+- delay: 65
+  content: e
+- delay: 73
+  content: _
+- delay: 75
+  content: r
+- delay: 54
+  content: e
+- delay: 61
+  content: v
+- delay: 56
+  content: i
+- delay: 65
+  content: e
+- delay: 58
+  content: w
+- delay: 58
+  content: ' '
+- delay: 65
+  content: '-'
+- delay: 67
+  content: '-'
+- delay: 69
+  content: w
+- delay: 76
+  content: i
+- delay: 75
+  content: n
+- delay: 72
+  content: n
+- delay: 55
+  content: e
+- delay: 67
+  content: r
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[90m# two_step_attr_merged — generated by Meta-Harness search\e[0m\r\
+    \n"
+- delay: 55
+  content: "\e[90m# accuracy: 0.83  iterations: 15  search_time: ~12 min\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[35mSYSTEM_PROMPT\e[0m = \e[32m'''You are a senior software engineer\
+    \ reviewing a PR.\e[0m\r\n"
+- delay: 55
+  content: "\e[32mClassify the review comment below using a two-step process:\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[32mSTEP 1 — Extract attributes:\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  impact:       high | medium | low\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  scope:        blocks-merge | should-fix | nice-to-have | positive\e\
+    [0m\r\n"
+- delay: 55
+  content: "\e[32m  correctness:  yes (bug/security/logic error) | no\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[32mSTEP 2 — Apply classification rules:\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  If correctness=yes AND impact=high  →  BLOCKER\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  If correctness=yes AND impact<high  →  IMPORTANT\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  If scope=nice-to-have               →  STYLE\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  If scope=positive                   →  PRAISE\e[0m\r\n"
+- delay: 55
+  content: "\e[32m  Default ambiguous to IMPORTANT.'''\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "\e[36mdef\e[0m \e[92mharness\e[0m(comment: str) -> str:\r\n"
+- delay: 55
+  content: "    response = \e[92mllm\e[0m(SYSTEM_PROMPT, comment)\r\n"
+- delay: 55
+  content: "    \e[36mreturn\e[0m \e[92mextract_label\e[0m(response, valid=\e[35mLABELS\e\
+    [0m)\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1800
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 7 — Full audit trail (SQL over every iteration)\
+    \                    \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 60
+  content: k
+- delay: 72
+  content: a
+- delay: 74
+  content: o
+- delay: 70
+  content: s
+- delay: 78
+  content: ' '
+- delay: 68
+  content: '-'
+- delay: 52
+  content: '-'
+- delay: 67
+  content: j
+- delay: 53
+  content: s
+- delay: 73
+  content: o
+- delay: 59
+  content: n
+- delay: 69
+  content: ' '
+- delay: 77
+  content: q
+- delay: 61
+  content: u
+- delay: 58
+  content: e
+- delay: 69
+  content: r
+- delay: 77
+  content: y
+- delay: 62
+  content: ' '
+- delay: 65
+  content: '"'
+- delay: 64
+  content: S
+- delay: 76
+  content: E
+- delay: 75
+  content: L
+- delay: 64
+  content: E
+- delay: 73
+  content: C
+- delay: 52
+  content: T
+- delay: 74
+  content: ' '
+- delay: 72
+  content: i
+- delay: 68
+  content: t
+- delay: 58
+  content: e
+- delay: 67
+  content: r
+- delay: 71
+  content: a
+- delay: 67
+  content: t
+- delay: 55
+  content: i
+- delay: 64
+  content: o
+- delay: 76
+  content: n
+- delay: 68
+  content: ','
+- delay: 71
+  content: ' '
+- delay: 55
+  content: h
+- delay: 69
+  content: a
+- delay: 57
+  content: r
+- delay: 57
+  content: n
+- delay: 61
+  content: e
+- delay: 66
+  content: s
+- delay: 66
+  content: s
+- delay: 56
+  content: _
+- delay: 67
+  content: i
+- delay: 54
+  content: d
+- delay: 54
+  content: ','
+- delay: 56
+  content: ' '
+- delay: 55
+  content: s
+- delay: 56
+  content: c
+- delay: 73
+  content: o
+- delay: 54
+  content: r
+- delay: 57
+  content: e
+- delay: 60
+  content: s
+- delay: 62
+  content: '-'
+- delay: 55
+  content: '>'
+- delay: 61
+  content: '>'
+- delay: 52
+  content: ''''
+- delay: 58
+  content: a
+- delay: 64
+  content: c
+- delay: 52
+  content: c
+- delay: 57
+  content: u
+- delay: 52
+  content: r
+- delay: 76
+  content: a
+- delay: 74
+  content: c
+- delay: 76
+  content: y
+- delay: 53
+  content: ''''
+- delay: 70
+  content: ' '
+- delay: 67
+  content: a
+- delay: 56
+  content: s
+- delay: 54
+  content: ' '
+- delay: 61
+  content: a
+- delay: 66
+  content: c
+- delay: 58
+  content: c
+- delay: 73
+  content: ','
+- delay: 74
+  content: ' '
+- delay: 54
+  content: s
+- delay: 69
+  content: t
+- delay: 62
+  content: a
+- delay: 53
+  content: t
+- delay: 77
+  content: u
+- delay: 52
+  content: s
+- delay: 55
+  content: ' '
+- delay: 70
+  content: F
+- delay: 75
+  content: R
+- delay: 54
+  content: O
+- delay: 77
+  content: M
+- delay: 53
+  content: ' '
+- delay: 67
+  content: m
+- delay: 69
+  content: h
+- delay: 53
+  content: _
+- delay: 59
+  content: a
+- delay: 63
+  content: t
+- delay: 71
+  content: t
+- delay: 62
+  content: e
+- delay: 54
+  content: m
+- delay: 73
+  content: p
+- delay: 69
+  content: t
+- delay: 68
+  content: s
+- delay: 77
+  content: ' '
+- delay: 58
+  content: W
+- delay: 70
+  content: H
+- delay: 53
+  content: E
+- delay: 73
+  content: R
+- delay: 65
+  content: E
+- delay: 71
+  content: ' '
+- delay: 53
+  content: b
+- delay: 74
+  content: e
+- delay: 53
+  content: n
+- delay: 54
+  content: c
+- delay: 66
+  content: h
+- delay: 60
+  content: m
+- delay: 76
+  content: a
+- delay: 52
+  content: r
+- delay: 67
+  content: k
+- delay: 56
+  content: '='
+- delay: 52
+  content: ''''
+- delay: 71
+  content: c
+- delay: 74
+  content: o
+- delay: 70
+  content: d
+- delay: 77
+  content: e
+- delay: 58
+  content: _
+- delay: 77
+  content: r
+- delay: 54
+  content: e
+- delay: 66
+  content: v
+- delay: 75
+  content: i
+- delay: 75
+  content: e
+- delay: 53
+  content: w
+- delay: 57
+  content: ''''
+- delay: 56
+  content: ' '
+- delay: 62
+  content: O
+- delay: 67
+  content: R
+- delay: 63
+  content: D
+- delay: 70
+  content: E
+- delay: 52
+  content: R
+- delay: 66
+  content: ' '
+- delay: 67
+  content: B
+- delay: 66
+  content: Y
+- delay: 52
+  content: ' '
+- delay: 76
+  content: i
+- delay: 61
+  content: t
+- delay: 68
+  content: e
+- delay: 65
+  content: r
+- delay: 65
+  content: a
+- delay: 57
+  content: t
+- delay: 60
+  content: i
+- delay: 63
+  content: o
+- delay: 59
+  content: n
+- delay: 66
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  iter  harness_id              acc    status\r\n"
+- delay: 55
+  content: "  ────  ──────────────────────  ─────  ─────────\r\n"
+- delay: 50
+  content: "     1   zero_shot               0.480  \e[90mseed\e[0m\r\n"
+- delay: 50
+  content: "     2   few_shot_2              0.540  \e[90mseed\e[0m\r\n"
+- delay: 50
+  content: "     3   cot_basic               0.610  \e[90mseed\e[0m\r\n"
+- delay: 50
+  content: "     4   role_engineer           0.670  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "     5   role_engineer_v2        0.710  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "     6   rubric_detailed         0.690  \e[31mregression\e[0m\r\n"
+- delay: 50
+  content: "     7   few_shot_balanced       0.740  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "     8   few_shot_4x             0.730  \e[31mregression\e[0m\r\n"
+- delay: 50
+  content: "     9   chain_contrast          0.740  \e[90mneutral\e[0m\r\n"
+- delay: 50
+  content: "    10   few_shot_role_merge     0.740  \e[90mneutral\e[0m\r\n"
+- delay: 50
+  content: "    11   two_step_chain          0.780  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "    12   attr_extract            0.790  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "  ★ 13   two_step_attr_merged    0.830  \e[32mimproved\e[0m\r\n"
+- delay: 50
+  content: "    14   attr_with_examples      0.830  \e[90mneutral\e[0m\r\n"
+- delay: 50
+  content: "    15   two_step_attr_v2        0.830  \e[90mneutral\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: ''
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 78
+  content: k
+- delay: 73
+  content: a
+- delay: 57
+  content: o
+- delay: 66
+  content: s
+- delay: 52
+  content: ' '
+- delay: 73
+  content: '-'
+- delay: 69
+  content: '-'
+- delay: 71
+  content: j
+- delay: 70
+  content: s
+- delay: 68
+  content: o
+- delay: 75
+  content: n
+- delay: 69
+  content: ' '
+- delay: 76
+  content: q
+- delay: 54
+  content: u
+- delay: 58
+  content: e
+- delay: 72
+  content: r
+- delay: 60
+  content: y
+- delay: 76
+  content: ' '
+- delay: 56
+  content: '"'
+- delay: 69
+  content: S
+- delay: 55
+  content: E
+- delay: 61
+  content: L
+- delay: 73
+  content: E
+- delay: 70
+  content: C
+- delay: 74
+  content: T
+- delay: 64
+  content: ' '
+- delay: 73
+  content: S
+- delay: 58
+  content: U
+- delay: 55
+  content: M
+- delay: 68
+  content: (
+- delay: 56
+  content: t
+- delay: 74
+  content: o
+- delay: 52
+  content: k
+- delay: 67
+  content: e
+- delay: 56
+  content: n
+- delay: 63
+  content: s
+- delay: 72
+  content: )
+- delay: 69
+  content: ' '
+- delay: 74
+  content: a
+- delay: 63
+  content: s
+- delay: 68
+  content: ' '
+- delay: 57
+  content: t
+- delay: 67
+  content: o
+- delay: 64
+  content: t
+- delay: 55
+  content: a
+- delay: 69
+  content: l
+- delay: 60
+  content: _
+- delay: 66
+  content: t
+- delay: 63
+  content: o
+- delay: 70
+  content: k
+- delay: 60
+  content: e
+- delay: 66
+  content: n
+- delay: 63
+  content: s
+- delay: 68
+  content: ','
+- delay: 57
+  content: ' '
+- delay: 75
+  content: C
+- delay: 78
+  content: O
+- delay: 70
+  content: U
+- delay: 62
+  content: N
+- delay: 65
+  content: T
+- delay: 54
+  content: (
+- delay: 76
+  content: '*'
+- delay: 59
+  content: )
+- delay: 57
+  content: ' '
+- delay: 53
+  content: a
+- delay: 63
+  content: s
+- delay: 68
+  content: ' '
+- delay: 62
+  content: c
+- delay: 68
+  content: a
+- delay: 58
+  content: l
+- delay: 76
+  content: l
+- delay: 62
+  content: s
+- delay: 59
+  content: ' '
+- delay: 66
+  content: F
+- delay: 69
+  content: R
+- delay: 71
+  content: O
+- delay: 75
+  content: M
+- delay: 70
+  content: ' '
+- delay: 58
+  content: t
+- delay: 64
+  content: o
+- delay: 56
+  content: o
+- delay: 72
+  content: l
+- delay: 57
+  content: _
+- delay: 72
+  content: c
+- delay: 57
+  content: a
+- delay: 61
+  content: l
+- delay: 70
+  content: l
+- delay: 74
+  content: s
+- delay: 70
+  content: ' '
+- delay: 72
+  content: W
+- delay: 56
+  content: H
+- delay: 78
+  content: E
+- delay: 58
+  content: R
+- delay: 54
+  content: E
+- delay: 60
+  content: ' '
+- delay: 77
+  content: a
+- delay: 75
+  content: g
+- delay: 73
+  content: e
+- delay: 78
+  content: n
+- delay: 56
+  content: t
+- delay: 76
+  content: _
+- delay: 71
+  content: i
+- delay: 54
+  content: d
+- delay: 60
+  content: ' '
+- delay: 70
+  content: L
+- delay: 62
+  content: I
+- delay: 57
+  content: K
+- delay: 54
+  content: E
+- delay: 53
+  content: ' '
+- delay: 72
+  content: ''''
+- delay: 52
+  content: '%'
+- delay: 54
+  content: c
+- delay: 71
+  content: o
+- delay: 52
+  content: d
+- delay: 53
+  content: e
+- delay: 68
+  content: '-'
+- delay: 72
+  content: r
+- delay: 75
+  content: e
+- delay: 53
+  content: v
+- delay: 70
+  content: i
+- delay: 64
+  content: e
+- delay: 67
+  content: w
+- delay: 77
+  content: '%'
+- delay: 68
+  content: ''''
+- delay: 69
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  total_tokens   calls\r\n"
+- delay: 55
+  content: "  ────────────   ─────\r\n"
+- delay: 55
+  content: "  \e[93m48,291\e[0m         \e[93m82\e[0m    \e[90m← ~$0.14 at claude-sonnet\
+    \ rates ($3/Mtok)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 700
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mResult — From research problem to production\
+    \ harness                    \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mBaseline (zero-shot):\e[0m    \e[31m48%\e[0m  accuracy\r\n"
+- delay: 55
+  content: "  \e[90mAfter Meta-Harness:\e[0m      \e[32m83%\e[0m  accuracy  \e[90m(+35\
+    \ points)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mIterations used:\e[0m         15\r\n"
+- delay: 55
+  content: "  \e[90mSearch time:\e[0m             ~12 minutes\r\n"
+- delay: 55
+  content: "  \e[90mAPI cost:\e[0m                ~$0.14\r\n"
+- delay: 55
+  content: "  \e[90mKey insight discovered:\e[0m  two-step decomposition breaks BLOCKER/IMPORTANT\
+    \ confusion\r\n"
+- delay: 55
+  content: "  \e[90mSkills saved:\e[0m            2 reusable patterns → next search\
+    \ starts from here\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32mWinning harness:\e[0m  \e[93mtwo_step_attr_merged\e[0m  \e[90mexported\
+    \ to harnesses/code_review_winner.py\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mNext step:\e[0m  plug winner back into your CI pipeline or run\
+    \ co-evolution:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  kaos mh search -b code_review -n 10\e[0m   \e[90m# continue\
+    \ from this knowledge\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  kaos mh spawn-coevolution -b code_review -n 3\e[0m   \e[90m#\
+    \ CORAL multi-agent\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3000
+  content: ''
