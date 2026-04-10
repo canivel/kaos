@@ -30,6 +30,19 @@ Three tiers of CORAL-inspired improvements to the Meta-Harness.
 - Hub structure: `/best_per_agent/agent_N/`, `/shared_skills/`, `/shared_attempts/`
 - Cross-agent harnesses appear in next digest and Pareto frontier
 
+### Demo Use Cases
+
+Six end-to-end demonstrations published alongside v0.6.0:
+
+- **[SDLC Self-Healing](https://canivel.github.io/kaos/blog/kaos-sdlc-self-healing.html)** — Payment service wrong-fix detected, checkpoint restore in 0.3s, root cause from audit trail, correct fix applied without human intervention
+- **[Security Audit Swarm](https://canivel.github.io/kaos/blog/kaos-security-swarm.html)** — 4 parallel isolated agents audit a PR (SQLi, secrets, auth, deserialization); findings aggregated via SQL query across VFS
+- **[DB Migration Rollback](https://canivel.github.io/kaos/blog/kaos-migration-rollback.html)** — 2M-row backfill hits anomaly at row 847,412; surgical per-agent restore in 0.3s; analytics agents untouched
+- **[Incident Response](https://canivel.github.io/kaos/blog/kaos-incident-response.html)** — 23% HTTP 500 rate; event journal query finds 847 ConnectionPoolErrors; root cause traced to config change 47 min prior; post-mortem auto-written
+- **[ML Research Lab](https://canivel.github.io/kaos/blog/kaos-ml-research-lab.html)** — 4 parallel hypothesis agents (LoRA, Lion, batch scaling, dropout); winner val_loss=1.89 (-19.2% vs baseline); inspired by Karpathy autoresearch
+- **[Regression Guard](https://canivel.github.io/kaos/blog/kaos-regression-guard.html)** — Model swap drops code_review 0.83→0.76; CI gate blocks deploy; 5-iteration Meta-Harness repair restores 0.83 automatically
+
+---
+
 ## [0.5.3] - 2026-04-07
 
 ### ARC-AGI-3 Benchmark + Search Hang Fix

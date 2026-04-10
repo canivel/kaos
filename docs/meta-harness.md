@@ -528,3 +528,124 @@ for point in result.frontier.points:
 - [Customer Lifetime Value (CLV/LTV)](../examples/meta_harness_clv_prediction.py) — Optimize CLV predictions with segment-aware prompting and churn-first reasoning
 - [CRM Campaign Messages](../examples/meta_harness_crm_campaigns.py) — Find the best tone, CTA, and personalization strategy per customer segment
 - [Fraud Detection](../examples/meta_harness_fraud_detection.py) — Improve fraud recall and precision with red-flag checklists and contrastive examples
+
+---
+
+## CORAL: Stagnation Detection + Multi-Agent Co-Evolution (v0.6.0)
+
+The core weakness of iterative search: plateau stagnation. The proposer converges on local optima and keeps generating variations without exploring new directions.
+
+CORAL ([arXiv:2604.01658](https://arxiv.org/abs/2604.01658)) addresses this with three integrated mechanisms.
+
+### Tier 1 — Stagnation Detection + Pivot Prompts
+
+After `stagnation_threshold` consecutive non-improving iterations (default 3), KAOS injects a `PIVOT REQUIRED` block into the next digest:
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  PIVOT REQUIRED  —  stagnant=4  best=0.74                        ║
+║                                                                  ║
+║  Exhausted approaches:                                           ║
+║    • Role-playing (engineer/reviewer) — ceiling at 0.74          ║
+║    • Few-shot examples — 1-4 per class, diminishing returns       ║
+║    • CoT with contrast — matched best but did not improve         ║
+║                                                                  ║
+║  Required: propose an orthogonal direction.                      ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+The proposer cannot submit another role-playing variant. It must change the fundamental approach.
+
+Configure in `kaos.yaml`:
+```yaml
+search:
+  stagnation_threshold: 4    # default 3 — pivot fires after N non-improving iters
+  consolidation_every: 6     # default 5 — skills heartbeat every K iters
+```
+
+Or in `SearchConfig`:
+```python
+config = SearchConfig(
+    benchmark="code_review",
+    stagnation_threshold=4,
+    consolidation_interval=6,
+)
+```
+
+### Tier 2 — Three-Tier Memory
+
+The search archive gains three structured directories:
+
+| Directory | Contents | Purpose |
+|---|---|---|
+| `/attempts/` | `{id, scores, status}` per harness | Fast proposer scanning without loading full source |
+| `/notes/` | Per-iteration markdown observations | Injected into next digest so proposer builds on its own reasoning |
+| `/skills/` | Reusable patterns distilled from notes | Persisted to knowledge agent — available as seeds for future searches |
+
+Writing skills via MCP:
+```python
+# From Claude Code during a search session
+mh_write_skill(
+    search_agent_id=search_id,
+    name="two_step_decomposition",
+    description="Split classification: 'correctness problem?' then severity routing",
+    code_template="""
+STEP 1 — Extract: correctness (yes/no), impact (high/medium/low)
+STEP 2 — Route: correctness=yes+high → BLOCKER, correctness=yes → IMPORTANT, etc.
+"""
+)
+```
+
+Skills written today compound into seeds for tomorrow's search. `kaos mh knowledge <benchmark>` shows all accumulated skills.
+
+### Tier 3 — Concurrent Multi-Agent Co-Evolution
+
+Multiple search agents explore the same benchmark from different starting points, sharing discoveries via a central hub:
+
+```bash
+# Launch co-evolution (MCP tool or Python API)
+mh_spawn_coevolution(benchmark="code_review", n_agents=3)
+```
+
+Each agent:
+1. Runs independently with its own proposer loop
+2. Auto-syncs with the hub every `hub_sync_interval` iterations (default 2)
+3. Pulls other agents' best harnesses + skills into its own archive
+4. Cross-agent harnesses appear in its Pareto frontier and next digest
+
+Hub structure:
+```
+Hub VFS:
+  /best_per_agent/agent_0/   ← best from each agent
+  /best_per_agent/agent_1/
+  /best_per_agent/agent_2/
+  /shared_skills/            ← skills any agent has written
+  /shared_attempts/          ← compact summaries from all agents
+```
+
+CORAL paper results: **3-10× higher improvement rates** vs single-agent search. 36% of cross-agent attempts build directly on another agent's work, at 17% improvement rate vs 9% overall.
+
+### CLI
+
+```bash
+# Check stagnation state of a running search
+kaos mh status <search-agent-id>
+# → stagnant_iterations: 3, last_pivot_at: iter 7
+
+# View accumulated skills for a benchmark
+kaos mh knowledge code_review
+
+# Write a skill from CLI
+kaos mh write-skill <search-agent-id> --name "two_step" --description "..."
+```
+
+### Full Demo
+
+The code review 48%→83% demo shows all three CORAL tiers in a single 15-iteration search:
+- Iters 1-7: role-playing + few-shot approaches plateau at 0.74
+- Iter 7: `stagnant_iters=4` → CORAL pivot injected
+- Iter 8: two-step decomposition breaks plateau (+0.04)
+- Iter 10: consolidation heartbeat → skills written to knowledge agent
+- Iter 10: two_step_attr_merged → 0.83 final score
+
+**[$0.14, 12 minutes, 35-point improvement.](https://canivel.github.io/kaos/blog/kaos-v060.html)**

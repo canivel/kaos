@@ -402,6 +402,163 @@ db.query("""
 db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [agent_id])
 ```
 
+### SDLC Self-Healing: Fix a Breaking Change Without Human Intervention
+
+A payment service test fails after a refactor. One agent applies the wrong fix — cascading 4 new failures. KAOS detects the regression, restores from the pre-refactor checkpoint in 0.3 seconds, traces the root cause from the audit trail, and applies the correct fix:
+
+```python
+# Checkpoint before every attempted fix
+cp = db.checkpoint(qa_agent, label="before-fix-attempt")
+
+# Wrong fix applied — 4 tests now fail
+result = await ccr.run_agent(qa_agent, "Fix the failing test")
+if result.tests_failed > 0:
+    db.restore(qa_agent, cp)  # roll back just this agent, no other agent affected
+
+# Root cause from the audit trail
+root_cause = db.read(qa_agent, "/qa/failure_report.md")
+# → "Decimal precision lost via float(amount) — use Decimal(str(amount)).quantize(Decimal('0.01'))"
+```
+
+![SDLC Self-Healing — wrong fix detected, checkpoint restore in 0.3s, correct fix applied](docs/demos/kaos_uc_sdlc.gif)
+
+[Full blog post: Self-Healing CI walkthrough](https://canivel.github.io/kaos/blog/kaos-sdlc-self-healing.html)
+
+---
+
+### Security Audit Swarm: 4 Parallel Agents, 1 PR, 0 Vulnerabilities Shipped
+
+4 specialized agents audit a PR simultaneously — SQL injection, secrets leakage, auth flaws, deserialization. Each runs in full VFS isolation. Findings are aggregated via a single SQL query across agent filesystems:
+
+```python
+# Spawn 4 auditors in parallel
+agents = await ccr.run_parallel([
+    {"name": "sqli-agent",   "prompt": f"Find SQL injection vulnerabilities:\n{diff}"},
+    {"name": "secrets-agent","prompt": f"Find hardcoded secrets and API keys:\n{diff}"},
+    {"name": "auth-agent",   "prompt": f"Find auth bypass flaws:\n{diff}"},
+    {"name": "deser-agent",  "prompt": f"Find unsafe deserialization:\n{diff}"},
+])
+
+# Aggregate findings across all agent VFS files
+findings = db.query("""
+    SELECT agent_name, severity, finding
+    FROM vfs_findings WHERE pr='PR-2847'
+    ORDER BY severity
+""")
+# CRITICAL: SQL injection (f-string interpolation), hardcoded production key
+# MEDIUM: SSRF risk on unvalidated webhook URL
+```
+
+![Security Swarm — 4 parallel agents, SQL aggregation, CRITICAL blocks merge](docs/demos/kaos_uc_security.gif)
+
+[Full blog post: Security Swarm walkthrough](https://canivel.github.io/kaos/blog/kaos-security-swarm.html)
+
+---
+
+### DB Migration Rollback: Instant Surgical Restore at Row 847,412
+
+A 2M-row backfill hits 7.6% unexpected NULLs at row 847,412. KAOS restores the migration agent's pre-backfill checkpoint in 0.3 seconds — while 3 analytics agents keep running on untouched data:
+
+```python
+# Pre-backfill checkpoint taken before migration starts
+cp = db.checkpoint(migration_agent, label="pre-backfill")
+
+# Anomaly detected mid-migration
+if null_rate > 0.05:
+    # Surgical restore — only this agent rolls back
+    db.restore(migration_agent, cp)
+    # Analytics agents unaffected — they have separate VFS
+    print("Migration rolled back. Analytics agents still running.")
+
+# Root cause from audit trail
+db.read(migration_agent, "/analysis/anomaly_report.md")
+# → "subscription_tier NULL rate 7.6% — use COALESCE(subscription_tier, 'free')"
+```
+
+![DB Migration Rollback — anomaly at row 847k, surgical restore, analytics unaffected](docs/demos/kaos_uc_migration.gif)
+
+[Full blog post: Migration Rollback walkthrough](https://canivel.github.io/kaos/blog/kaos-migration-rollback.html)
+
+---
+
+### 2am Incident Response: Root Cause in 90 Seconds
+
+23% HTTP 500 rate at 2am. An agent queries the event journal, finds 847 ConnectionPoolErrors, traces them to a config change 47 minutes ago, and writes the post-mortem:
+
+```python
+# Query the event journal for error patterns
+errors = db.query("""
+    SELECT event_type, payload, timestamp
+    FROM events
+    WHERE event_type = 'error'
+      AND timestamp > datetime('now', '-2 hours')
+    ORDER BY timestamp DESC
+    LIMIT 20
+""")
+# → 847 ConnectionPoolErrors, all after 01:17 UTC
+
+# What changed at 01:17?
+db.query("""
+    SELECT path, old_content, new_content, timestamp
+    FROM file_changes
+    WHERE timestamp BETWEEN '01:10' AND '01:20'
+""")
+# → config/db.yaml: pool_size changed from 5 to 2
+```
+
+![Incident Response — 23% 500s, event journal query, 1-line config fix, post-mortem](docs/demos/kaos_uc_incident.gif)
+
+[Full blog post: Incident Response walkthrough](https://canivel.github.io/kaos/blog/kaos-incident-response.html)
+
+---
+
+### ML Research Lab: 4 Agents, -19.2% val_loss in One Run
+
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch): 4 agents explore orthogonal dimensions simultaneously — LoRA, Lion optimizer, batch scaling, and dropout regularization. Each writes its results to its own VFS. The winner (LoRA, val_loss=1.89) is checkpointed and the research compendium writes itself:
+
+```python
+# Each agent explores a different direction
+results = await ccr.run_parallel([
+    {"name": "arch-explorer",  "prompt": "Apply LoRA to transformer blocks and measure val_loss"},
+    {"name": "optim-explorer", "prompt": "Try Lion optimizer vs AdamW at same LR"},
+    {"name": "scale-explorer", "prompt": "Scale batch size from 32 to 128, measure throughput+quality"},
+    {"name": "reg-explorer",   "prompt": "Test dropout 0.1 → 0.3, measure generalization"},
+])
+
+# Winner: arch-explorer val_loss=1.89 (-19.2% vs baseline 2.34)
+winner = min(results, key=lambda r: r.scores["val_loss"])
+db.checkpoint(winner.agent_id, label="winning-experiment")
+```
+
+![ML Research Lab — 4 parallel hypothesis agents, winner val_loss=1.89, compendium](docs/demos/kaos_uc_mllab.gif)
+
+[Full blog post: ML Research Lab walkthrough](https://canivel.github.io/kaos/blog/kaos-ml-research-lab.html)
+
+---
+
+### Model Regression Guard: CI Catches -8.4% Before It Ships
+
+A model swap drops code_review accuracy from 0.83 to 0.76. The CI gate catches it, blocks the deploy, and triggers a 5-iteration Meta-Harness re-run that restores 0.83 automatically:
+
+```python
+# Regression detected after model swap
+results = await run_benchmarks_vs_baseline(new_model)
+regressions = [r for r in results if r.delta < -0.05]
+
+if regressions:
+    print(f"REGRESSION DETECTED: {regressions[0].benchmark} dropped {regressions[0].delta:.1%}")
+    # CI blocks the deploy — automatically triggers Meta-Harness repair
+    search = MetaHarnessSearch(db, router, bench, SearchConfig(max_iterations=5))
+    repair = await search.run()
+    # 5 iterations → 0.83 restored. Deploy proceeds.
+```
+
+![Regression Guard — 5 benchmarks vs baseline, -8.4% blocked, Meta-Harness repair](docs/demos/kaos_uc_regression.gif)
+
+[Full blog post: Regression Guard walkthrough](https://canivel.github.io/kaos/blog/kaos-regression-guard.html)
+
+---
+
 ### Export & Share Agent State
 
 ```python
@@ -610,6 +767,57 @@ kaos mh resume <search-agent-id>
 # Query the search with SQL
 kaos query "SELECT SUM(token_count) FROM tool_calls"
 ```
+
+### CORAL: Stagnation Detection + Multi-Agent Co-Evolution (v0.6.0)
+
+The biggest weakness of iterative search: when you hit a local maximum, the proposer keeps generating variations on the same dead-end approach — wasting iterations without exploring new directions.
+
+CORAL ([arXiv:2604.01658](https://arxiv.org/abs/2604.01658)) fixes this with three tiers integrated in v0.6.0:
+
+**Tier 1 — Stagnation Detection + Pivot Prompts**
+
+After N consecutive non-improving iterations (`stagnation_threshold`, default 3), the proposer receives a `PIVOT REQUIRED` block listing exhausted approaches and demanding a structurally different direction. The proposer cannot submit another variation — it must change the fundamental approach.
+
+```yaml
+# kaos.yaml
+search:
+  stagnation_threshold: 4    # pivot fires after 4 non-improving iters
+  consolidation_every: 6     # skills heartbeat every 6 iters
+```
+
+**Tier 2 — Three-Tier Memory (attempts / notes / skills)**
+
+The search archive gains three directories:
+- `/attempts/` — compact `{id, scores, status}` summaries of every eval (fast proposer scanning)
+- `/notes/` — per-iteration observations written by the proposer
+- `/skills/` — reusable patterns distilled every `consolidation_every` iterations, persisted to the knowledge agent across searches
+
+```python
+# Write a skill discovered during search
+mh_write_skill(
+    search_agent_id=search_id,
+    name="two_step_decomposition",
+    description="Split classification: 'correctness problem?' then severity",
+    code_template="..."
+)
+# This skill becomes a seed for every future search on this benchmark
+```
+
+**Tier 3 — Concurrent Multi-Agent Co-Evolution**
+
+```python
+# Launch 3 agents exploring the same benchmark from different angles
+result = mh_spawn_coevolution(benchmark="code_review", n_agents=3)
+
+# Each agent runs independently, auto-syncing every 2 iterations
+mh_hub_sync(agent_0_id)   # push your best, pull theirs
+```
+
+Results from the paper: **3-10× higher improvement rates** vs single-agent search. 36% of successful attempts build directly on another agent's discoveries.
+
+The full end-to-end demo (code review 48%→83% in 15 iterations) shows the CORAL pivot moment in action: [Blog post](https://canivel.github.io/kaos/blog/kaos-v060.html)
+
+---
 
 **[Full docs and walkthrough](docs/meta-harness.md)** | **[Example: Support ticket classifier](examples/meta_harness_support_tickets.py)** | **[Original paper & code](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact)**
 
