@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From 48% to 83%: How KAOS v0.6.0 Automates Multi-Agent ML Research — KAOS Blog</title>
+<meta name="description" content="A live demo of Meta-Harness finding the winning prompt strategy automatically, in 15 iterations, for $0.14. KAOS v0.6.0 with CORAL co-evolution.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+/* Article layout */
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+
+/* Header */
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+/* Body */
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+
+/* Code */
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body pre code{color:var(--fg2)}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+
+/* Callout box */
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+/* Pivot block highlight */
+.pivot-block{background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:10px;padding:1.2rem 1.5rem;font-family:var(--mono);font-size:.82rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem;overflow-x:auto}
+
+/* Demo GIF */
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+
+/* Result table */
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(108,92,231,.05)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+/* Tier cards */
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.tier-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.2rem;border-top:3px solid var(--accent)}
+.tier-card:nth-child(2){border-top-color:var(--cyan)}
+.tier-card:nth-child(3){border-top-color:var(--green)}
+.tier-card h4{font-size:.9rem;font-weight:700;margin-bottom:.5rem;color:var(--fg)}
+.tier-card p{font-size:.82rem;color:var(--fg2);line-height:1.55;margin:0}
+
+/* Paper pills */
+.paper-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 1.5rem}
+.paper-pill{font-family:var(--mono);font-size:.72rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);border:1px solid rgba(255,255,255,.07);color:var(--fg2);text-decoration:none;transition:border-color .2s}
+.paper-pill:hover{border-color:var(--accent2);color:var(--accent2);text-decoration:none}
+
+/* Footer */
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+
+@media(max-width:768px){
+  .tier-grid{grid-template-columns:1fr}
+  .post-header h1{font-size:1.8rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">← Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<!-- Post header -->
+<header class="post-header">
+  <span class="post-tag">Blog &mdash; April 10, 2026</span>
+  <h1>From 48% to 83%: How KAOS v0.6.0<br>Automates <em>Multi-Agent ML Research</em></h1>
+  <p class="post-subtitle">A live demo of Meta-Harness finding the winning prompt strategy — automatically, in 15 iterations, for $0.14.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item"><span class="dot"></span>KAOS v0.6.0</span>
+    <span class="post-meta-item"><span class="dot"></span>10 min read</span>
+    <span class="post-meta-item"><span class="dot"></span><a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a></span>
+  </div>
+</header>
+
+<!-- Post body -->
+<article class="post-body">
+
+<p>You've spent three days hand-crafting the perfect prompt for your classifier. You tried chain-of-thought. Then few-shot examples. Then a "senior engineer" persona. You're at 74% accuracy and stuck. You run another variant. Still 74%. Another. 74%.</p>
+
+<p>This is the <strong>plateau problem</strong> — and it's invisible until you're already trapped in it.</p>
+
+<p>KAOS v0.6.0 solves it. Here's how.</p>
+
+<hr>
+
+<h2>What Is KAOS?</h2>
+
+<p><a href="https://github.com/canivel/kaos">KAOS</a> is an open-source, local-first multi-agent orchestration framework. Every agent gets an isolated virtual filesystem backed by a single SQLite file. Full audit trail. Checkpoint and restore. Zero cloud dependency.</p>
+
+<p>The headline feature is <strong>Meta-Harness</strong>: an automated search loop that finds the best prompt strategy for any LLM task by treating prompt engineering as an optimization problem. Define your task. Give it some data. Run <code>kaos mh search</code>. Come back to a ranked Pareto frontier of harnesses.</p>
+
+<p>v0.6.0 adds <strong>CORAL</strong> — three tiers of co-evolutionary improvements that make the search dramatically smarter, especially when it gets stuck.</p>
+
+<hr>
+
+<h2>The Research Foundation</h2>
+
+<p>KAOS v0.6.0 integrates four peer-reviewed research contributions:</p>
+
+<div class="paper-pills">
+  <a href="https://arxiv.org/abs/2603.28052" class="paper-pill">Meta-Harness arXiv:2603.28052</a>
+  <a href="https://github.com/milla-jovovich/mempalace" class="paper-pill">MemPalace github</a>
+  <a href="https://arxiv.org/abs/2604.01658" class="paper-pill">CORAL arXiv:2604.01658</a>
+  <a href="https://arxiv.org/abs/2604.01687" class="paper-pill">EvoSkills arXiv:2604.01687</a>
+</div>
+
+<ul>
+  <li><strong><a href="https://arxiv.org/abs/2603.28052">Meta-Harness</a></strong> (Stanford/MIT/KRAFTON) — the search loop itself: evolutionary proposer reads full execution traces and proposes structurally better harnesses</li>
+  <li><strong><a href="https://github.com/milla-jovovich/mempalace">MemPalace</a></strong> — AAAK compact notation that compresses the proposer's context by 57% with zero quality loss</li>
+  <li><strong><a href="https://arxiv.org/abs/2604.01658">CORAL</a></strong> — stagnation detection, heartbeat reflection, and multi-agent co-evolution achieving 3–10× higher improvement rates</li>
+  <li><strong><a href="https://arxiv.org/abs/2604.01687">EvoSkills</a></strong> — Surrogate Verifier: informationally isolated failure diagnostics that give the proposer "why it failed + how to fix it"</li>
+</ul>
+
+<p>This isn't a thin wrapper around a model API. It's a ground-up implementation of the most effective multi-agent search techniques from 2025–2026, running entirely locally.</p>
+
+<hr>
+
+<h2>The Demo: Code Review Severity Classification</h2>
+
+<p>Let's walk through the full Meta-Harness workflow on a real research problem.</p>
+
+<p><strong>Task:</strong> Classify a GitHub PR review comment into one of four severity levels: <code>BLOCKER</code>, <code>IMPORTANT</code>, <code>STYLE</code>, <code>PRAISE</code>.</p>
+
+<p><strong>Dataset:</strong> 200 labeled PR review comments. Baseline zero-shot accuracy: <strong>48%</strong>.</p>
+
+<div class="demo-gif">
+  <img src="../docs/demos/kaos_mh_full_demo.gif" alt="Full Meta-Harness demo — code review 48%→83% in 15 iterations" loading="lazy">
+</div>
+<p class="demo-gif-caption">Full recording: benchmark setup → seed eval → 15 iterations → CORAL pivot → winning harness. Nothing skipped.</p>
+
+<h3>Step 1: Define the Benchmark</h3>
+
+<pre><code># benchmarks/code_review.py
+LABELS = ["BLOCKER", "IMPORTANT", "STYLE", "PRAISE"]
+
+EXAMPLES = [
+    {"comment": "SQL query is vulnerable to injection — must fix before merge",
+     "label": "BLOCKER"},
+    {"comment": "This N+1 query will cause issues at scale",
+     "label": "IMPORTANT"},
+    {"comment": "Variable name `x` is not descriptive",
+     "label": "STYLE"},
+    {"comment": "Nice use of early returns here, much cleaner!",
+     "label": "PRAISE"},
+    # ... 196 more examples
+]
+
+def evaluate(harness_fn, examples=EXAMPLES):
+    predictions = [harness_fn(e["comment"]) for e in examples]
+    correct = sum(p == e["label"] for p, e in zip(predictions, examples))
+    return {"accuracy": correct / len(examples)}</code></pre>
+
+<p>That's the full benchmark contract. KAOS needs a callable that takes input and returns a score dict. The search loop handles everything else.</p>
+
+<h3>Step 2: Initialize and Launch</h3>
+
+<pre><code>kaos init
+kaos mh search -b code_review -n 15 -k 3 --background</code></pre>
+
+<p>The <code>--background</code> flag spawns a detached worker process. Parent terminal dies, search continues. Configure CORAL parameters in <code>kaos.yaml</code>:</p>
+
+<pre><code>provider: claude_code        # uses your CC subscription, zero API cost
+stagnation_threshold: 4      # CORAL pivot after 4 non-improving iters
+consolidation_every: 6       # CORAL skills heartbeat</code></pre>
+
+<h3>Step 3: Seed Evaluation</h3>
+
+<pre><code>[seed 1/3]  zero_shot      acc=0.48   96/200 ✓
+[seed 2/3]  few_shot_2     acc=0.54  108/200 ✓
+[seed 3/3]  cot_basic      acc=0.61  122/200 ✓
+
+Best seed: cot_basic (acc=0.61)  —  Search begins from here</code></pre>
+
+<p>Chain-of-thought already beats zero-shot by 13 points. The proposer now has three execution traces to learn from, compressed to 57% of their original size by AAAK notation.</p>
+
+<h3>Step 4: The Search Loop Hits a Plateau</h3>
+
+<pre><code>[iter 1/15]  role_engineer       acc=0.67  +0.06 ↑  IMPROVED
+[iter 2/15]  role_engineer_v2    acc=0.71  +0.04 ↑  IMPROVED
+[iter 3/15]  rubric_detailed     acc=0.69  —  regression
+[iter 4/15]  few_shot_balanced   acc=0.74  +0.03 ↑  IMPROVED
+[iter 5/15]  few_shot_4x         acc=0.73  —  marginally worse
+[iter 6/15]  chain_contrast      acc=0.74  —  no improvement
+[iter 7/15]  few_shot_role_merge acc=0.74  —  stagnant_iters=4</code></pre>
+
+<p>Four iterations at 74%. The proposer keeps generating variations on the same theme: role-playing, few-shot combinations, explicit contrast. All converging on the same ceiling. This is exactly the plateau CORAL was designed to break.</p>
+
+<hr>
+
+<h2>The CORAL Pivot</h2>
+
+<p>When <code>stagnant_iters</code> reaches the threshold, KAOS injects a <code>PIVOT REQUIRED</code> block into the proposer's digest:</p>
+
+<div class="pivot-block">╔══════════════════════════════════════════════════════════════════╗
+║  PIVOT REQUIRED  —  stagnant=4  best=0.74                        ║
+║                                                                  ║
+║  Exhausted approaches:                                           ║
+║    • Role-playing (engineer/reviewer) — ceiling at 0.74          ║
+║    • Few-shot examples — 1-4 per class, diminishing returns       ║
+║    • CoT with contrast — matched best but did not improve         ║
+║                                                                  ║
+║  Required: propose an orthogonal direction.  Ideas:              ║
+║    • Two-step classification (blocker? → severity?)              ║
+║    • Structured attribute extraction before classifying           ║
+║    • Confidence calibration + abstain on ambiguous cases          ║
+╚══════════════════════════════════════════════════════════════════╝</div>
+
+<p>The proposer cannot submit another role-playing variant. It must change the fundamental approach. This is CORAL's <em>stagnation-triggered redirection</em> — the difference between a search that circles the same local maximum forever and one that actually explores the space.</p>
+
+<h3>The Breakthrough</h3>
+
+<pre><code>[iter  8/15]  two_step_chain        acc=0.78  +0.04 ↑  IMPROVED  (pivot worked)
+[iter  9/15]  attr_extract          acc=0.79  +0.01 ↑  IMPROVED
+[iter 10/15]  ⟳ CORAL Consolidation heartbeat (every 6 iters)
+              Skill written: two_step_decomposition
+              Skill written: attr_grounding
+              two_step_attr_merged  acc=0.83  +0.04 ↑  IMPROVED  ← New best</code></pre>
+
+<p>The two-step approach breaks the plateau immediately. Instead of asking "what severity is this?", it first asks "does this identify a correctness/security problem?" and routes accordingly. The confusion matrix clears.</p>
+
+<p>At iteration 10, the CORAL consolidation heartbeat fires — distilling reusable skills that persist to the knowledge agent for future searches.</p>
+
+<h3>The Winning Harness</h3>
+
+<pre><code>SYSTEM_PROMPT = '''You are a senior software engineer reviewing a PR.
+Classify the comment using a two-step process:
+
+STEP 1 — Extract attributes:
+  impact:       high | medium | low
+  scope:        blocks-merge | should-fix | nice-to-have | positive
+  correctness:  yes (bug/security/logic error) | no
+
+STEP 2 — Apply rules:
+  If correctness=yes AND impact=high  →  BLOCKER
+  If correctness=yes AND impact<high  →  IMPORTANT
+  If scope=nice-to-have               →  STYLE
+  If scope=positive                   →  PRAISE
+  Default ambiguous to IMPORTANT.'''
+
+def harness(comment: str) -> str:
+    response = llm(SYSTEM_PROMPT, comment)
+    return extract_label(response, valid=LABELS)</code></pre>
+
+<p>No embeddings. No retrieval. No fine-tuning. Just a structurally better prompt — the kind of thing an expert might land on after days of iteration. Meta-Harness found it in 15 automated steps.</p>
+
+<hr>
+
+<h2>The Full Picture</h2>
+
+<table class="result-table">
+  <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Baseline (zero-shot)</td><td class="bad">48% accuracy</td></tr>
+    <tr><td>After Meta-Harness</td><td class="good">83% accuracy (+35 points)</td></tr>
+    <tr><td>Iterations used</td><td>15</td></tr>
+    <tr><td>Search time</td><td>~12 minutes</td></tr>
+    <tr><td>API cost</td><td class="good">~$0.14</td></tr>
+    <tr><td>Key insight</td><td>Two-step decomposition breaks BLOCKER/IMPORTANT confusion</td></tr>
+    <tr><td>Skills saved</td><td>2 reusable patterns for future searches</td></tr>
+  </tbody>
+</table>
+
+<p>The full audit trail is queryable via SQL — every iteration, every score, every failure pattern, in your local SQLite file forever:</p>
+
+<pre><code>kaos --json query "SELECT iteration, harness_id,
+  scores->>'accuracy' as acc, status
+FROM mh_attempts WHERE benchmark='code_review'
+ORDER BY iteration"</code></pre>
+
+<hr>
+
+<h2>What's New in v0.6.0: CORAL Three Tiers</h2>
+
+<div class="tier-grid">
+  <div class="tier-card">
+    <h4>Tier 1 — Stagnation + Pivot</h4>
+    <p>After N non-improving iterations, inject <code>PIVOT REQUIRED</code> into the proposer digest. No more incremental tweaks on a stuck frontier.</p>
+  </div>
+  <div class="tier-card">
+    <h4>Tier 2 — Three-Tier Memory</h4>
+    <p><code>/attempts/</code> compact summaries · <code>/notes/</code> iteration observations · <code>/skills/</code> reusable patterns persisted across searches.</p>
+  </div>
+  <div class="tier-card">
+    <h4>Tier 3 — Co-Evolution</h4>
+    <p>N agents explore the same benchmark in parallel, auto-syncing best harnesses and skills via a shared hub every 2 iterations.</p>
+  </div>
+</div>
+
+<pre><code># Launch 3 co-evolving agents
+result = mh_spawn_coevolution(benchmark="code_review", n_agents=3)
+
+# Hub auto-syncs every 2 iterations — or sync manually
+mh_hub_sync(agent_0_id)   # push your best, pull theirs</code></pre>
+
+<div class="callout">
+  <strong>CORAL paper result:</strong> 3–10× higher improvement rates vs single-agent search. 36% of successful attempts build directly on another agent's discoveries. Kernel engineering record: 1363 → 1103 cycles with 4 agents. Source: <a href="https://arxiv.org/abs/2604.01658">arXiv:2604.01658</a>.
+</div>
+
+<hr>
+
+<h2>Knowledge Compounds Across Searches</h2>
+
+<p>Every search deposits its best harnesses and extracted skills into a persistent knowledge agent. The next search on the same benchmark automatically loads them as seeds:</p>
+
+<pre><code>kaos mh knowledge code_review
+
+# [skill]  two_step_decomposition
+#   Split classification into: "correctness problem?" then severity.
+#   Discovered at iteration 8. Broke plateau at 0.74.
+#
+# [skill]  attr_grounding
+#   Extract impact+scope before labeling.
+#   Ground label in structured attributes, not free-form reasoning.
+#
+# [winner] two_step_attr_merged  acc=0.83</code></pre>
+
+<p>You're not starting over each time. You're compounding.</p>
+
+<hr>
+
+<h2>Getting Started</h2>
+
+<pre><code>git clone https://github.com/canivel/kaos.git
+cd kaos
+uv sync
+uv run kaos init
+uv run kaos mh search -b text_classify -n 10</code></pre>
+
+<p>For the collaborative mode — Claude Code drives the search directly from your IDE via MCP, with no extra cost:</p>
+
+<pre><code>// .claude/settings.json
+{
+  "mcpServers": {
+    "kaos": {
+      "command": "uv",
+      "args": ["run", "kaos", "mcp"],
+      "cwd": "/path/to/kaos"
+    }
+  }
+}</code></pre>
+
+<p>Then from Claude Code: <em>"Use the kaos MCP tools to run a meta-harness search on my sentiment benchmark and propose 5 iterations."</em> No API key. No extra cost. Your CC subscription is the inference engine.</p>
+
+<hr>
+
+<p style="color:var(--fg2);font-size:.9rem">
+  <em>KAOS is MIT-licensed and runs entirely locally. No data leaves your machine.</em><br><br>
+  Research credits:
+  <a href="https://arxiv.org/abs/2603.28052">Meta-Harness</a> &middot;
+  <a href="https://github.com/milla-jovovich/mempalace">MemPalace</a> &middot;
+  <a href="https://arxiv.org/abs/2604.01658">CORAL</a> &middot;
+  <a href="https://arxiv.org/abs/2604.01687">EvoSkills</a> &middot;
+  <a href="https://github.com/karpathy/autoresearch">Karpathy's autoresearch</a>
+</p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>
