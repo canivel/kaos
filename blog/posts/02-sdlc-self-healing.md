@@ -1,8 +1,8 @@
-# Your Agent Broke the Build. KAOS Fixed It While You Slept.
+# Why `git reset --hard` Is the Wrong Tool for Agent Pipelines
 
 *Code Quality · April 11, 2026 · 8 min read*
 
-*How isolated VFS + surgical checkpoints turn a cascading test failure into a self-correcting pipeline — with a full SQL audit of every step.*
+*When one bad fix cascades to four failures, a repo-wide reset blows up every other agent's work. Per-agent VFS checkpoints roll back in 0.3 seconds — surgically, without touching anything else.*
 
 ---
 
