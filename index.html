@@ -1071,8 +1071,8 @@ kaos import snapshot.db
         <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 11, 2026</span>
         <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
       </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">Self-Healing CI: How KAOS Rolls Back a Bad Fix Before It Reaches Production</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A payment service breaks after a refactor. One agent applies the wrong fix and cascades 4 new failures. KAOS detects the regression, restores from checkpoint in 0.3s, finds the root cause from the audit trail, and ships the correct decimal-precision fix — all without human intervention.</p>
+      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">Why <code style="font-size:.95em;color:inherit">git reset --hard</code> Is the Wrong Tool for Agent Pipelines</h3>
+      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">One bad fix cascades to four failures. A repo-wide reset would blow up every other agent's work. KAOS rolls back one agent's VFS in 0.3 seconds — surgically — while the rest of the pipeline keeps running.</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">checkpoint</span>
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">restore</span>
