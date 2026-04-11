@@ -473,12 +473,10 @@ const S = {
   feedFilter: 'all',
   feedRows: [],
   sseSource: null,
-  graphSvg: null,
-  graphSim: null,
-  graphZoom: null,
-  graphTransform: d3.zoomIdentity,
+  expandedRoles: new Set(),
+  explorerFilter: '',
+  statusFilter: 'all',
   filePath: '/',
-  agentNodeMap: {},  // agent_id → DOM node
 };
 
 // ── Colors ────────────────────────────────────────────────────────────────
@@ -613,10 +611,6 @@ async function loadStats() {
 }
 
 // ── Explorer ──────────────────────────────────────────────────────────────
-
-S.expandedRoles = new Set();
-S.explorerFilter = '';
-S.statusFilter = 'all';
 
 function agentRole(a) {
   return (a.config && a.config.role) || a.name.replace(/-[0-9A-Z]{8,}$/i, '') || 'agent';
