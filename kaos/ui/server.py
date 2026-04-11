@@ -10,11 +10,23 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import sqlite3
 import time
 from pathlib import Path
 from typing import AsyncGenerator
+
+
+class _SuppressConnReset(logging.Filter):
+    """Filter out Windows [WinError 10054] ConnectionResetError noise from uvicorn."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        return "WinError 10054" not in msg and "ConnectionResetError" not in msg
+
+
+_conn_reset_filter = _SuppressConnReset()
 
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
@@ -435,12 +447,14 @@ async def api_events_stream(request: Request) -> StreamingResponse:
     db = _db_path(request)
 
     async def generator():
-        # Send initial ping
-        yield b"data: {\"type\": \"connected\"}\n\n"
-        async for chunk in _event_generator(db):
-            if await request.is_disconnected():
-                break
-            yield chunk
+        try:
+            yield b"data: {\"type\": \"connected\"}\n\n"
+            async for chunk in _event_generator(db):
+                if await request.is_disconnected():
+                    break
+                yield chunk
+        except (ConnectionResetError, GeneratorExit, asyncio.CancelledError):
+            pass  # client disconnected — normal on Windows (WinError 10054)
 
     return StreamingResponse(
         generator(),
@@ -500,6 +514,9 @@ def run(host: str = "127.0.0.1", port: int = 8765, db: str = "./kaos.db") -> Non
         _save_projects(projects)
 
     print(f"  KAOS UI  →  http://{host}:{port}/?db={db_abs}")
+    # Suppress Windows [WinError 10054] noise from client disconnects
+    for _lgr in ("uvicorn", "uvicorn.error", "uvicorn.access", "asyncio"):
+        logging.getLogger(_lgr).addFilter(_conn_reset_filter)
     try:
         uvicorn.run(app, host=host, port=port, log_level="warning")
     except KeyboardInterrupt:
