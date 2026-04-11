@@ -232,11 +232,12 @@ The hub isn't magic. It's a structured shared memory: discovered patterns with c
 
 | Item | Tokens | Cost |
 |---|---|---|
-| LLM inference — migration (gross, pre-AAAK) | ~8.15M input | $24.46 |
-| LLM inference — test analysis (gross, pre-AAAK) | ~0.43M input | $1.29 |
-| AAAK compression savings | -2,451,063 tokens | -$7.35 |
+| LLM inference — migration | ~5.8M input | $17.40 |
+| LLM inference — test analysis | ~0.33M input | $1.00 |
 | Blob storage overhead | — | $0 (local) |
-| **Total (actual paid)** | | **$18.40** |
+| **Total** | | **$18.40** |
+
+*AAAK compression saved $7.35 (2,451,063 tokens, 28.5%) — without it this job would have cost $25.75.*
 
 **Time Comparison:**
 
