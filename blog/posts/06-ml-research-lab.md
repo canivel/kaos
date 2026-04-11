@@ -98,12 +98,16 @@ WHERE run_id = 'overnight-2026-04-15'
 ORDER BY final_val_loss ASC
 ```
 
-| Agent | val_loss | Improvement | Time | Finding |
-|---|---|---|---|---|
-| arch-explorer | **1.89** | **-19.2%** | 347 min | LoRA + cosine LR schedule |
-| optim-explorer | 2.19 | -6.4% | 191 min | Lion optimizer outperforms AdamW |
-| scale-explorer | 2.21 | -5.6% | 74 min | batch=128 stabilizes convergence |
-| reg-explorer | 2.28 | -2.6% | 182 min | dropout=0.3 marginal improvement |
+```
+Agent            val_loss  Improvement  Time    Finding
+---------------  --------  -----------  ------  ----------------------------------
+arch-explorer    1.89 *    -19.2% *     347min  LoRA + cosine LR schedule
+optim-explorer   2.19      -6.4%        191min  Lion optimizer outperforms AdamW
+scale-explorer   2.21      -5.6%        74min   batch=128 stabilizes convergence
+reg-explorer     2.28      -2.6%        182min  dropout=0.3 marginal improvement
+
+* winner
+```
 
 `arch-explorer` wins by a wide margin. val_loss 1.89 — a 19.2% improvement over baseline. The LoRA + cosine LR combination is the clear path forward. Lion optimizer is worth combining with the LoRA result.
 
@@ -161,10 +165,12 @@ The next search doesn't start from baseline 2.34. It starts from 1.89, with the 
 
 ## The Cost
 
-| Approach | Wall Time | Engineer Time | Hypotheses Tested |
-|---|---|---|---|
-| Sequential (human-driven) | 4 nights | 4 × setup + analysis | 4 |
-| KAOS parallel overnight | 1 night | 30 min setup + 15 min review | 4 |
+```
+Approach                   Wall Time  Engineer Time               Hypotheses Tested
+-------------------------  ---------  --------------------------  -----------------
+Sequential (human-driven)  4 nights   4 × setup + analysis        4
+KAOS parallel overnight    1 night    30 min setup + 15min review  4
+```
 
 Same 4 hypotheses. One night instead of four. No wasted hypotheses — even the weaker results are real data that inform the next search. The machine ran the experiments. You read the results.
 

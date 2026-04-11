@@ -187,18 +187,20 @@ Migration complete. Duration: 47m total (including rollback + retry).
 
 ## The Audit Trail
 
-| Time | Event | Phase | Rows | NULLs | Notes |
-|---|---|---|---|---|---|
-| 01:33:08 | spawn | — | — | — | agent initialized |
-| 01:33:11 | checkpoint | pre-schema | 0 | 0 | label: pre-schema |
-| 01:33:14 | schema | schema_change | 0 | 0 | ALTER TABLE: success |
-| 01:33:16 | checkpoint | pre-backfill | 0 | 0 | label: pre-backfill |
-| 01:33:18 | backfill | backfill | 847,412 | 64,412 | anomaly: 7.6% NULL |
-| 01:34:01 | restore | — | 0 | 0 | restored to pre-backfill (0.31s) |
-| 01:34:04 | fix | — | — | — | COALESCE applied to query |
-| 01:34:06 | backfill | backfill | 2,041,847 | 0 | full backfill: 0 NULLs |
-| 02:21:14 | constraint | enforce_constraint | 2,041,847 | 0 | NOT NULL enforced |
-| 02:21:17 | checkpoint | complete | 2,041,847 | 0 | migration complete |
+```
+Time      Event       Phase               Rows       NULLs   Notes
+--------  ----------  ------------------  ---------  ------  --------------------------------
+01:33:08  spawn       —                   —          —       agent initialized
+01:33:11  checkpoint  pre-schema          0          0       label: pre-schema
+01:33:14  schema      schema_change       0          0       ALTER TABLE: success
+01:33:16  checkpoint  pre-backfill        0          0       label: pre-backfill
+01:33:18  backfill    backfill            847,412    64,412  anomaly: 7.6% NULL
+01:34:01  restore     —                   0          0       restored to pre-backfill (0.31s)
+01:34:04  fix         —                   —          —       COALESCE applied to query
+01:34:06  backfill    backfill            2,041,847  0       full backfill: 0 NULLs
+02:21:14  constraint  enforce_constraint  2,041,847  0       NOT NULL enforced
+02:21:17  checkpoint  complete            2,041,847  0       migration complete
+```
 
 ---
 

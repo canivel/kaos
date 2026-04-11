@@ -210,15 +210,15 @@ No embeddings. No retrieval. No fine-tuning. Just a structurally better prompt �
 
 ## The Full Picture
 
-| | |
-|---|---|
-| Baseline (zero-shot) | 48% accuracy |
-| After Meta-Harness | 83% accuracy (+35 points) |
-| Iterations used | 15 |
-| Search time | ~12 minutes |
-| API cost | ~$0.14 |
-| Key insight | two-step decomposition breaks BLOCKER/IMPORTANT confusion |
-| Skills saved | 2 reusable patterns → next search starts from here |
+```
+Baseline (zero-shot)   48% accuracy
+After Meta-Harness     83% accuracy (+35 points)
+Iterations used        15
+Search time            ~12 minutes
+API cost               ~$0.14
+Key insight            two-step decomposition breaks BLOCKER/IMPORTANT confusion
+Skills saved           2 reusable patterns → next search starts from here
+```
 
 The audit trail is fully queryable:
 

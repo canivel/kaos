@@ -122,13 +122,15 @@ ORDER BY
   END
 ```
 
-| Agent | Severity | Type | File | Line | Summary |
-|---|---|---|---|---|---|
-| sqli-scanner | **CRITICAL** | sql_injection | api/search.py | 14 | f-string interpolation into SQL query |
-| secrets-scanner | **CRITICAL** | hardcoded_secret | config/settings.py | 47 | Production API key in source code |
-| secrets-scanner | MEDIUM | ssrf | api/webhooks.py | 83 | Unvalidated URL passed to requests.get() |
-| auth-scanner | CLEAN | — | — | — | No auth bypass vectors found |
-| deser-scanner | CLEAN | — | — | — | No unsafe deserialization found |
+```
+Agent            Severity  Type              File                Line  Summary
+---------------  --------  ----------------  ------------------  ----  ----------------------------------------
+sqli-scanner     CRITICAL  sql_injection     api/search.py       14    f-string interpolation into SQL query
+secrets-scanner  CRITICAL  hardcoded_secret  config/settings.py  47    Production API key in source code
+secrets-scanner  MEDIUM    ssrf              api/webhooks.py     83    Unvalidated URL passed to requests.get()
+auth-scanner     CLEAN     —                 —                   —     No auth bypass vectors found
+deser-scanner    CLEAN     —                 —                   —     No unsafe deserialization found
+```
 
 2 CRITICAL, 1 MEDIUM, 2 clean passes. The full picture in one query.
 
@@ -157,11 +159,13 @@ Zero cross-agent reads. Each agent worked in complete isolation. No anchoring is
 
 ## The Speed Math
 
-| Approach | Time | Anchoring Risk |
-|---|---|---|
-| Sequential (1 reviewer) | 80 min | High |
-| Sequential (4 reviewers) | 20 min wall clock | Medium |
-| KAOS parallel agents | 20 min wall clock | None |
+```
+Approach                   Time               Anchoring Risk
+-------------------------  -----------------  --------------
+Sequential (1 reviewer)    80 min             High
+Sequential (4 reviewers)   20 min wall clock  Medium
+KAOS parallel agents       20 min wall clock  None
+```
 
 Same findings. 4× faster when parallelized against a single reviewer. Zero anchoring risk regardless.
 

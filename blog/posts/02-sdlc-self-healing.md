@@ -188,17 +188,19 @@ All 47 tests pass.
 
 Every event in this sequence is recorded in the KAOS SQLite journal:
 
-| Timestamp | Event | File | Notes |
-|---|---|---|---|
-| 02:14:29 | spawn | — | agent created, VFS initialized |
-| 02:14:31 | tool_call | — | pytest run: 1 fail, 46 pass |
-| 02:14:33 | checkpoint | — | label: pre-fix-attempt |
-| 02:14:41 | write | payment/models.py | attempt: float() cast |
-| 02:14:43 | tool_call | — | pytest: 4 fail — cascade |
-| 02:14:44 | write | /qa/failure_report.md | root cause diagnosed |
-| 02:14:45 | restore | — | restored to pre-fix-attempt |
-| 02:14:52 | write | payment/models.py | Decimal.quantize() fix applied |
-| 02:14:54 | tool_call | — | pytest: 47 pass |
+```
+Timestamp  Event       File                   Notes
+---------  ----------  ---------------------  --------------------------------
+02:14:29   spawn       —                      agent created, VFS initialized
+02:14:31   tool_call   —                      pytest run: 1 fail, 46 pass
+02:14:33   checkpoint  —                      label: pre-fix-attempt
+02:14:41   write       payment/models.py      attempt: float() cast
+02:14:43   tool_call   —                      pytest: 4 fail — cascade
+02:14:44   write       /qa/failure_report.md  root cause diagnosed
+02:14:45   restore     —                      restored to pre-fix-attempt
+02:14:52   write       payment/models.py      Decimal.quantize() fix applied
+02:14:54   tool_call   —                      pytest: 47 pass
+```
 
 Every write. Every restore. Every test run. Timestamped, queryable, permanent. `git log` tells you what changed. The KAOS event journal tells you *what happened*.
 

@@ -60,13 +60,15 @@ If any benchmark regresses more than 5%, CI fails. The deploy is blocked.
 
 The regression suite runs in 12 minutes:
 
-| Benchmark | v4-5 Score | v4-6 Score | Delta | Status |
-|---|---|---|---|---|
-| text_classify | 0.87 | 0.87 | 0.0% | NO CHANGE |
-| tool_calling | 0.88 | **0.91** | **+3.4%** | IMPROVED |
-| math_qa | 0.74 | **0.76** | **+2.7%** | IMPROVED |
-| sentiment | 0.83 | 0.81 | -2.4% | REGRESSION |
-| code_review | 0.83 | **0.76** | **-8.4%** | **CRITICAL REGRESSION** |
+```
+Benchmark      v4-5  v4-6  Delta   Status
+-------------  ----  ----  ------  -------------------
+text_classify  0.87  0.87   0.0%   NO CHANGE
+tool_calling   0.88  0.91  +3.4%   IMPROVED
+math_qa        0.74  0.76  +2.7%   IMPROVED
+sentiment      0.83  0.81  -2.4%   REGRESSION
+code_review    0.83  0.76  -8.4%   CRITICAL REGRESSION  ← blocked
+```
 
 Two regressions. `sentiment` is within tolerable range (-2.4%). `code_review` is not — 8.4% is a CRITICAL regression on a benchmark that directly maps to user-visible quality.
 

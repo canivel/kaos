@@ -22,13 +22,15 @@ The KAOS answer is a SQL query. It takes 12 seconds.
 
 ## Traditional Incident Response vs KAOS
 
-| Traditional | KAOS |
-|---|---|
-| grep application logs (10 min) | SQL query over event journal (<1s) |
-| check deploy system (5 min) | included in the same query |
-| read git commits (5 min) | every VFS write is timestamped |
-| ask the team (20 min) | not needed |
-| correlate timelines (15 min) | ORDER BY timestamp ASC |
+```
+Traditional                        KAOS
+---------------------------------  -----------------------------------------
+grep application logs (10 min)     SQL query over event journal (<1s)
+check deploy system (5 min)        included in the same query
+read git commits (5 min)           every VFS write is timestamped
+ask the team (20 min)              not needed
+correlate timelines (15 min)       ORDER BY timestamp ASC
+```
 
 ---
 

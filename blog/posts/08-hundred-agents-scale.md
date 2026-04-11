@@ -117,17 +117,19 @@ At level 5 (ultra), it achieves ~95% token reduction on the digest. Here's what 
 
 **Single agent, single turn:**
 
-| What | Uncompressed | Compressed (L5) | Saved |
-|---|---|---|---|
-| Context digest | 6,100 tokens | 305 tokens | 5,795 tokens (95%) |
+```
+What             Uncompressed  Compressed (L5)  Saved
+---------------  ------------  ---------------  ------------------
+Context digest   6,100 tokens  305 tokens       5,795 tokens (95%)
+```
 
 **Cumulative across 847 agents, avg 3.4 turns each:**
 
-| Metric | Value |
-|---|---|
-| Total agent-turns | 2,880 |
-| Tokens saved per turn | ~850 avg (varies by file) |
-| **Total tokens eliminated** | **2,451,063** |
+```
+Total agent-turns          2,880
+Tokens saved per turn      ~850 avg (varies by file)
+Total tokens eliminated    2,451,063
+```
 
 Without AAAK, the job would have consumed 8.58M tokens. With AAAK L5, it ran on 6.13M — 2.45M tokens that never needed to be sent. The agents produce identical migrations either way. The compression is purely a context digest optimization; it doesn't touch working state.
 
@@ -218,39 +220,45 @@ The hub isn't magic. It's a structured shared memory: discovered patterns with c
 
 **Outcome Summary:**
 
-| Outcome | Count | % |
-|---|---|---|
-| succeeded | 809 | 95.5% |
-| rolled_back | 31 | 3.7% |
-| failed | 7 | 0.8% |
-| **total** | **847** | **100%** |
+```
+Outcome      Count    %
+-----------  -----  -----
+succeeded    809    95.5%
+rolled_back  31      3.7%
+failed       7       0.8%
+total        847   100.0%
+```
 
 **AAAK Compression Impact:**
 
-| Metric | Without AAAK | With AAAK L5 |
-|---|---|---|
-| Total inference tokens | ~8.58M | ~6.13M |
-| Context digest (per turn) | 6,100 tokens | 305 tokens (20×) |
-| Tokens eliminated | — | 2,451,063 |
-| Migration quality | — | 100% — 0 regressions |
+```
+Metric                      Without AAAK  With AAAK L5
+--------------------------  ------------  ---------------------------
+Total inference tokens       ~8.58M        ~6.13M
+Context digest (per turn)   6,100 tokens  305 tokens (20×)
+Tokens eliminated           —             2,451,063
+Migration quality           —             100% — 0 regressions
+```
 
 **Time Comparison:**
 
-| Approach | Time | Notes |
-|---|---|---|
-| KAOS parallel (847 agents) | 8m 47s | 17 batches of 50 |
-| Sequential AI (1 agent) | ~4.2h | no parallelism |
-| Human engineers (estimate) | ~18 days | 1 file per 30min × 847 |
+```
+Approach                    Time      Notes
+--------------------------  --------  -------------------------
+KAOS parallel (847 agents)  8m 47s    17 batches of 50
+Sequential AI (1 agent)     ~4.2h     no parallelism
+Human engineers (estimate)  ~18 days  1 file per 30min × 847
+```
 
 **Hub Coordination Impact:**
 
-| Metric | Value |
-|---|---|
-| Patterns discovered | 12 |
-| Agents notified | 147 total (across all patterns) |
-| Estimated regressions prevented | ~180 |
-| Agent failure rate without hub guidance | 22.1% |
-| Agent failure rate with hub guidance | 3.8% |
+```
+Patterns discovered                12
+Agents notified                    147 total (across all patterns)
+Estimated regressions prevented    ~180
+Agent failure rate without hub     22.1%
+Agent failure rate with hub         3.8%
+```
 
 **0 test regressions shipped.** Every agent that would have shipped a regression either caught it and rolled back (31 agents), or received a hub pattern that prevented the failure pre-emptively (~180 cases). The 7 outright failures were unresolvable ambiguities — files with Python 2 constructs that had no safe automatic migration path and were flagged for human review.
 
