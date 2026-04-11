@@ -604,7 +604,13 @@ async function loadStats() {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function agentRole(a) {
-  return (a.config && a.config.role) || a.name.replace(/-[0-9A-Z]{8,}$/i, '') || 'agent';
+  if (a.config && a.config.role) return a.config.role;
+  // Strip ULID suffix, iteration numbers, trailing hyphens/underscores
+  return a.name
+    .replace(/-[0-9A-Z]{8,}$/i, '')   // strip ULID (e.g. -01KNYEPV)
+    .replace(/[-_]\d+[-_]?$/, '')      // strip trailing -0, -1, _2 etc
+    .replace(/[-_]+$/, '')             // strip trailing separators
+    || 'agent';
 }
 function shortTask(desc, maxLen = 80) {
   if (!desc) return '';
@@ -626,14 +632,22 @@ function setGFilter(el, f) {
 }
 function onGraphSearch(v) { S.gSearch = v.toLowerCase(); drawSwimlane(S.agents); }
 
-// ── Swimlane ──────────────────────────────────────────────────────────────
-const LANE_H   = 90;   // height per role lane
-const LANE_PAD = 18;   // vertical padding inside lane
-const LABEL_W  = 120;  // left gutter for role label
-const DOT_AREA_H = LANE_H - LANE_PAD * 2;  // ~54px for dots
-const MIN_R = 4, MAX_R = 12;
+// ── Dot grid layout ───────────────────────────────────────────────────────
+const LABEL_W = 150;
+const DOT_R   = 6;
+const DOT_GAP = 3;
+const DOT_STEP = DOT_R * 2 + DOT_GAP;
+const LANE_PAD_V = 10;
+const ROLE_COLORS = ['#6c5ce7','#00cec9','#fd79a8','#e17055','#fdcb6e','#55efc4','#74b9ff','#fab1a0','#a29bfe','#81ecec'];
 
-function swimlaneLayout(agents) {
+function drawSwimlane(allAgents) {
+  if (!allAgents.length) return;
+
+  // Filter
+  let agents = allAgents;
+  if (S.gFilter !== 'all') agents = agents.filter(a => a.status === S.gFilter);
+  const q = S.gSearch;
+
   // Group by role, sort each group by creation time
   const roleMap = new Map();
   agents.forEach(a => {
@@ -642,51 +656,33 @@ function swimlaneLayout(agents) {
     roleMap.get(r).push(a);
   });
   roleMap.forEach(arr => arr.sort((a, b) => (a.created_at||'') < (b.created_at||'') ? -1 : 1));
-
-  // Sort roles by size descending
+  // Sort roles: biggest first
   const roles = [...roleMap.entries()].sort((a, b) => b[1].length - a[1].length);
 
-  // Global time scale across all agents
-  const allTimes = agents.map(a => new Date(a.created_at).getTime()).filter(Boolean);
-  const tMin = allTimes.length ? Math.min(...allTimes) : 0;
-  const tMax = allTimes.length ? Math.max(...allTimes) : 1;
-  const tRange = tMax - tMin || 1;
+  // Compute dot grid positions per lane
+  // Available dot width = container width - LABEL_W - padding
+  const wrap = document.getElementById('graph-svg-wrap');
+  const VW = (wrap ? wrap.clientWidth : 900) - 24;
+  const dotAreaW = Math.max(300, VW - LABEL_W - 16);
+  const dotsPerRow = Math.max(1, Math.floor(dotAreaW / DOT_STEP));
 
-  // Max event count for radius scale
-  const maxEv = Math.max(1, ...agents.map(a => a.event_count || 0));
+  // Build per-role layout: rows of dots
+  const laneLayouts = roles.map(([role, roleAgents]) => {
+    const rows = Math.ceil(roleAgents.length / dotsPerRow);
+    const laneH = rows * DOT_STEP + LANE_PAD_V * 2;
+    return { role, roleAgents, rows, laneH };
+  });
 
-  return { roles, roleMap, tMin, tRange, maxEv };
-}
-
-function nodeRadius(a, maxEv) {
-  return MIN_R + (MAX_R - MIN_R) * Math.sqrt((a.event_count || 0) / maxEv);
-}
-
-function drawSwimlane(allAgents) {
-  if (!allAgents.length) return;
-
-  // Apply filter
-  let agents = allAgents;
-  if (S.gFilter !== 'all') agents = agents.filter(a => a.status === S.gFilter);
-  if (S.gSearch) agents = agents.filter(a =>
-    a.name.toLowerCase().includes(S.gSearch) ||
-    (a.task_description || '').toLowerCase().includes(S.gSearch) ||
-    agentRole(a).toLowerCase().includes(S.gSearch)
-  );
-
-  const { roles, roleMap, tMin, tRange, maxEv } = swimlaneLayout(agents);
-  const svgEl = document.getElementById('graph-svg');
-  const VW = svgEl.clientWidth || 900;
-  const totalH = roles.length * LANE_H + 20;
-  const drawW = Math.max(VW, 600);
-  const xW = drawW - LABEL_W - 20;  // drawable x width
+  // Total SVG height
+  const totalH = laneLayouts.reduce((s, l) => s + l.laneH, 0) + 20;
+  const drawW = VW + 24;
 
   const svg = d3.select('#graph-svg');
   svg.selectAll('*').remove();
   svg.attr('width', drawW).attr('height', totalH);
 
   const zoomBehavior = d3.zoom()
-    .scaleExtent([0.1, 8])
+    .scaleExtent([0.2, 6])
     .on('zoom', e => { S.graphTransform = e.transform; g.attr('transform', e.transform); });
   svg.call(zoomBehavior);
   if (S.graphTransform) svg.call(zoomBehavior.transform, S.graphTransform);
@@ -694,127 +690,87 @@ function drawSwimlane(allAgents) {
   S.graphSvg = svg;
   S.graphW = drawW; S.graphH = totalH;
 
-  // Defs: arrow marker
-  const defs = svg.append('defs');
-  defs.append('marker').attr('id','arrow')
-    .attr('viewBox','0 -3 7 6').attr('refX',16).attr('refY',0)
-    .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-3L7,0L0,3').attr('fill','rgba(162,155,254,.7)');
-
   const g = svg.append('g');
-
-  // Build id→position map for edges
-  const posMap = new Map();  // agent_id → {cx, cy}
-  roles.forEach(([role, roleAgents], ri) => {
-    const laneY = ri * LANE_H + 10;
-    const cy = laneY + LANE_PAD + DOT_AREA_H / 2;
-    roleAgents.forEach((a, i) => {
-      const t = new Date(a.created_at).getTime();
-      const frac = tRange > 0 ? (t - tMin) / tRange : 0.5;
-      const cx = LABEL_W + 10 + frac * (xW - 20);
-      posMap.set(a.agent_id, { cx, cy });
-    });
-  });
-
-  // ── Draw parent→child edges ────────────────────────────────────────────
-  const edgeG = g.append('g');
-  agents.forEach(a => {
-    if (!a.parent_id) return;
-    const src = posMap.get(a.parent_id);
-    const tgt = posMap.get(a.agent_id);
-    if (!src || !tgt) return;
-    const mx = (src.cx + tgt.cx) / 2;
-    edgeG.append('path')
-      .attr('d', `M${src.cx},${src.cy} C${mx},${src.cy} ${mx},${tgt.cy} ${tgt.cx},${tgt.cy}`)
-      .attr('fill', 'none')
-      .attr('stroke', 'rgba(162,155,254,.35)')
-      .attr('stroke-width', 1.2)
-      .attr('marker-end', 'url(#arrow)');
-  });
-
-  // ── Draw lanes ─────────────────────────────────────────────────────────
-  const ROLE_COLORS = ['#6c5ce7','#00cec9','#fd79a8','#e17055','#fdcb6e','#55efc4','#74b9ff','#fab1a0'];
-
   S.nodeMap = new Map();
 
-  roles.forEach(([role, roleAgents], ri) => {
-    const laneY = ri * LANE_H + 10;
-    const cy = laneY + LANE_PAD + DOT_AREA_H / 2;
+  let laneY = 8;
+  laneLayouts.forEach(({ role, roleAgents, rows, laneH }, ri) => {
     const rColor = ROLE_COLORS[ri % ROLE_COLORS.length];
 
-    // Lane background stripe
+    // Lane background
     g.append('rect')
       .attr('x', 0).attr('y', laneY)
-      .attr('width', drawW).attr('height', LANE_H - 2)
-      .attr('fill', ri % 2 === 0 ? 'rgba(255,255,255,.018)' : 'rgba(255,255,255,.008)')
-      .attr('rx', 4);
+      .attr('width', drawW).attr('height', laneH - 1)
+      .attr('fill', ri % 2 === 0 ? 'rgba(255,255,255,.016)' : 'rgba(0,0,0,.08)')
+      .attr('rx', 0);
 
-    // Left border accent
-    g.append('rect')
-      .attr('x', 0).attr('y', laneY)
-      .attr('width', 3).attr('height', LANE_H - 2)
-      .attr('fill', rColor).attr('rx', 1);
+    // Left accent bar
+    g.append('rect').attr('x', 0).attr('y', laneY)
+      .attr('width', 3).attr('height', laneH - 1).attr('fill', rColor);
 
-    // Role label
-    const labelGroup = g.append('g').attr('transform', `translate(8, ${laneY + LANE_H/2})`);
-    labelGroup.append('text')
-      .attr('font-family', 'SFMono-Regular,Consolas,monospace')
-      .attr('font-size', 11).attr('font-weight', '700')
-      .attr('fill', rColor).attr('dominant-baseline', 'central')
-      .text(role.length > 14 ? role.slice(0,13)+'…' : role);
-    labelGroup.append('text')
-      .attr('font-family', 'SFMono-Regular,Consolas,monospace')
-      .attr('font-size', 9).attr('fill', 'rgba(255,255,255,.3)')
-      .attr('dominant-baseline', 'central').attr('dy', 14)
+    // Role label: name + count + status summary
+    const counts = {};
+    roleAgents.forEach(a => { counts[a.status] = (counts[a.status]||0)+1; });
+    const labelG = g.append('g').attr('transform', `translate(10, ${laneY + laneH/2 - 10})`);
+    labelG.append('text')
+      .attr('font-family','SFMono-Regular,Consolas,monospace').attr('font-size',11).attr('font-weight','700')
+      .attr('fill', rColor).attr('dominant-baseline','middle')
+      .text(role.length > 16 ? role.slice(0,15)+'…' : role);
+    labelG.append('text')
+      .attr('dy', 15).attr('font-family','SFMono-Regular,Consolas,monospace').attr('font-size',9)
+      .attr('fill','rgba(255,255,255,.35)').attr('dominant-baseline','middle')
       .text(roleAgents.length + ' agents');
+    // Mini status pills
+    let pillX = 0;
+    [['completed','#00e676'],['failed','#ff5252'],['running','#6c5ce7'],['killed','#636e72']].forEach(([st, c]) => {
+      if (!counts[st]) return;
+      const txt = counts[st] + '';
+      labelG.append('rect').attr('x', pillX).attr('y', 26).attr('width', txt.length*6+8).attr('height', 12)
+        .attr('rx', 4).attr('fill', c+'22').attr('stroke', c+'66').attr('stroke-width', 0.5);
+      labelG.append('text').attr('x', pillX+4).attr('y', 32).attr('font-size', 8)
+        .attr('font-family','var(--mono)').attr('fill', c).text(txt);
+      pillX += txt.length*6 + 13;
+    });
 
-    // Divider line
-    g.append('line')
-      .attr('x1', LABEL_W).attr('x2', drawW)
-      .attr('y1', laneY).attr('y2', laneY)
-      .attr('stroke', 'rgba(255,255,255,.05)');
+    // Separator
+    g.append('line').attr('x1',0).attr('x2',drawW).attr('y1',laneY).attr('y2',laneY)
+      .attr('stroke','rgba(255,255,255,.06)');
 
-    // ── Agent dots ──────────────────────────────────────────────────────
-    const nodeG2 = g.append('g');
-    roleAgents.forEach(a => {
-      const pos = posMap.get(a.agent_id);
-      if (!pos) return;
-      const r = nodeRadius(a, maxEv);
+    // Dots
+    const dotG = g.append('g').attr('transform', `translate(${LABEL_W + 8}, ${laneY + LANE_PAD_V + DOT_R})`);
+    roleAgents.forEach((a, i) => {
+      const col = i % dotsPerRow;
+      const row = Math.floor(i / dotsPerRow);
+      const cx = col * DOT_STEP;
+      const cy = row * DOT_STEP;
       const color = STATUS_COLOR[a.status] || '#636e72';
       const isSelected = a.agent_id === S.selectedAgent;
-      const isHighlighted = !S.gSearch || a.name.toLowerCase().includes(S.gSearch) ||
-        (a.task_description||'').toLowerCase().includes(S.gSearch);
+      const matches = !q || a.name.toLowerCase().includes(q) || (a.task_description||'').toLowerCase().includes(q) || agentRole(a).toLowerCase().includes(q);
 
-      const nodeGroup = nodeG2.append('g')
-        .attr('transform', `translate(${pos.cx},${pos.cy})`)
-        .attr('class', 'agent-node')
-        .style('cursor', 'pointer')
-        .on('click', (e) => { e.stopPropagation(); openDetail(a.agent_id); })
-        .on('mouseover', (e) => showTooltip(e, a))
+      const ng = dotG.append('g')
+        .attr('transform', `translate(${cx},${cy})`)
+        .attr('opacity', q && !matches ? 0.12 : 1)
+        .style('cursor','pointer')
+        .on('click', e => { e.stopPropagation(); openDetail(a.agent_id); })
+        .on('mouseover', e => showTooltip(e, a))
         .on('mousemove', moveTooltip)
         .on('mouseout', hideTooltip);
 
-      // Dim non-matching when searching
-      if (S.gSearch && !isHighlighted) nodeGroup.attr('opacity', 0.15);
-
-      // Running pulse ring
       if (a.status === 'running') {
-        nodeGroup.append('circle').attr('r', r + 4)
-          .attr('fill', 'none').attr('stroke', '#6c5ce7')
-          .attr('stroke-width', 1.5).attr('opacity', 0.5);
+        ng.append('circle').attr('r', DOT_R + 3)
+          .attr('fill','none').attr('stroke','#6c5ce7').attr('stroke-width',1.5).attr('opacity',.5);
       }
+      const circle = ng.append('circle').attr('class','node-circle')
+        .attr('r', DOT_R).attr('fill', color).attr('fill-opacity', .9)
+        .attr('stroke', isSelected ? '#18ffff' : 'rgba(0,0,0,.3)')
+        .attr('stroke-width', isSelected ? 2 : .5);
 
-      // Main dot
-      const circle = nodeGroup.append('circle').attr('class', 'node-circle')
-        .attr('r', r).attr('fill', color).attr('fill-opacity', 0.88)
-        .attr('stroke', isSelected ? '#18ffff' : 'rgba(0,0,0,.4)')
-        .attr('stroke-width', isSelected ? 2.5 : 1);
-
-      S.nodeMap.set(a.agent_id, { circle, group: nodeGroup, data: a });
+      S.nodeMap.set(a.agent_id, { circle, ng });
     });
+
+    laneY += laneH;
   });
 
-  // Click canvas to deselect
   svg.on('click', () => closeDetail());
 }
 
@@ -839,16 +795,15 @@ function gFit() {
 
 // ── Tooltip ───────────────────────────────────────────────────────────────
 function showTooltip(e, d) {
-  const role = agentRole(d);
   const task = shortTask(d.task_description, 130);
   const tip = $('tooltip');
   tip.innerHTML = `
-    <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${escHtml(d.name)}</div>
-    <div style="font-size:11px;color:var(--accent2);margin-top:1px">${escHtml(role)}</div>
-    ${task ? `<div style="font-size:11px;color:var(--fg2);margin-top:5px;line-height:1.5">${escHtml(task)}</div>` : ''}
-    <div style="margin-top:5px;font-size:11px;color:var(--fg3)">
+    <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${escHtml(agentRole(d))}</div>
+    <div style="font-size:11px;color:var(--fg3);margin-top:1px;font-family:var(--mono)">${escHtml(d.name)}</div>
+    ${task ? `<div style="font-size:11px;color:var(--fg2);margin-top:6px;line-height:1.5">${escHtml(task)}</div>` : ''}
+    <div style="margin-top:6px;font-size:11px;color:var(--fg3)">
       <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b>
-      · ${d.event_count||0} ev · ${d.file_count||0} files · ${fmt.ts(d.created_at).slice(11)}
+      · ${d.event_count||0} events · ${d.file_count||0} files
     </div>`;
   tip.style.opacity = '1';
   moveTooltip(e);
@@ -880,8 +835,8 @@ async function openDetail(agentId) {
   if (S.nodeMap) {
     S.nodeMap.forEach((n, id) => {
       n.circle
-        .attr('stroke', id === agentId ? '#18ffff' : 'rgba(0,0,0,.4)')
-        .attr('stroke-width', id === agentId ? 2.5 : 1);
+        .attr('stroke', id === agentId ? '#18ffff' : 'rgba(0,0,0,.3)')
+        .attr('stroke-width', id === agentId ? 2 : 0.5);
     });
   }
 
@@ -904,7 +859,7 @@ function closeDetail() {
   S.selectedAgent = null;
   $('detail-pane').classList.remove('open');
   if (S.nodeMap) {
-    S.nodeMap.forEach(n => n.circle.attr('stroke','rgba(0,0,0,.4)').attr('stroke-width', 1));
+    S.nodeMap.forEach(n => n.circle.attr('stroke','rgba(0,0,0,.3)').attr('stroke-width', 0.5));
   }
 }
 
