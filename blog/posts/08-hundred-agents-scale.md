@@ -232,7 +232,8 @@ The hub isn't magic. It's a structured shared memory: discovered patterns with c
 
 | Metric | Value |
 |---|---|
-| Tokens saved | 2,451,063 (28.5%) |
+| Digest compression ratio | 20× per agent turn (6,100 → 305 tokens) |
+| Total tokens eliminated | 2,451,063 across 2,880 agent-turns |
 | Migration quality | 100% — identical output, 0 regressions |
 
 **Time Comparison:**
