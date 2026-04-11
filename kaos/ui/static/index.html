@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KAOS — Agent Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -80,66 +81,34 @@ input{font-family:inherit;font-size:13px}
 /* ── Main split ── */
 #main{display:flex;flex:1;overflow:hidden}
 
-/* ── Explorer pane ── */
-#explorer-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-#explorer-toolbar{
-  display:flex;align-items:center;gap:6px;
-  padding:9px 12px;border-bottom:1px solid var(--bg4);
-  background:var(--bg2);flex-shrink:0;flex-wrap:wrap;
+/* ── Graph pane ── */
+#graph-pane{flex:1;position:relative;overflow:hidden;background:var(--bg)}
+#graph-svg{width:100%;height:100%}
+#graph-controls{
+  position:absolute;top:12px;left:12px;
+  display:flex;flex-direction:column;gap:6px;
 }
-#explorer-search{
-  flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--bg4);
-  border-radius:6px;color:var(--fg);padding:5px 10px;font-size:12px;
-}
-#explorer-search:focus{border-color:var(--accent);outline:none}
-.sf-pill{
-  padding:3px 10px;border-radius:20px;font-size:11px;font-family:var(--mono);
-  background:var(--bg3);border:1px solid var(--bg4);color:var(--fg3);
+.ctrl-btn{
+  width:30px;height:30px;background:var(--bg2);border:1px solid var(--bg4);
+  border-radius:6px;color:var(--fg2);font-size:15px;
+  display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:all .15s;
 }
-.sf-pill:hover{color:var(--fg)}
-.sf-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
-#explorer-body{flex:1;overflow-y:auto}
-.explorer-empty{
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;height:200px;gap:10px;color:var(--fg3);font-size:13px;
+.ctrl-btn:hover{background:var(--bg3);color:var(--fg);border-color:var(--accent)}
+#graph-legend{
+  position:absolute;bottom:12px;left:12px;
+  background:rgba(18,18,26,.92);backdrop-filter:blur(6px);
+  border:1px solid var(--bg4);border-radius:8px;
+  padding:9px 13px;display:flex;flex-direction:column;gap:5px;
 }
-
-/* Role groups */
-.role-group{border-bottom:1px solid var(--bg3)}
-.role-header{
-  display:flex;align-items:center;gap:10px;padding:10px 14px;
-  cursor:pointer;user-select:none;transition:background .12s;
+.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--fg2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+#graph-empty{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  color:var(--fg3);pointer-events:none;
 }
-.role-header:hover{background:var(--bg2)}
-.rh-chevron{font-size:9px;color:var(--fg3);transition:transform .15s;display:inline-block;flex-shrink:0}
-.rh-chevron.open{transform:rotate(90deg)}
-.rh-name{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--fg);min-width:90px}
-.rh-count{
-  font-family:var(--mono);font-size:11px;color:var(--fg3);
-  background:var(--bg3);padding:1px 8px;border-radius:12px;flex-shrink:0;
-}
-.rh-pills{display:flex;gap:8px;flex:1;flex-wrap:wrap}
-.rh-pill{font-size:11px;font-family:var(--mono)}
-.rh-timeline{flex-shrink:0;opacity:.8}
-
-/* Agent rows */
-.role-agents{background:var(--bg)}
-.agent-row{
-  display:flex;align-items:center;gap:10px;
-  padding:7px 14px 7px 34px;cursor:pointer;
-  transition:background .1s;border-top:1px solid rgba(255,255,255,.025);
-}
-.agent-row:hover{background:var(--bg2)}
-.agent-row.selected{background:rgba(108,92,231,.1);border-left:2px solid var(--accent);padding-left:32px}
-.ar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.ar-info{flex:1;min-width:0}
-.ar-name{font-size:12px;font-family:var(--mono);color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ar-task{font-size:11px;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.ar-stats{font-size:11px;font-family:var(--mono);color:var(--fg3);flex-shrink:0;white-space:nowrap}
-.ar-tl{width:80px;flex-shrink:0}
-.ar-tl-track{position:relative;height:4px;background:var(--bg3);border-radius:2px}
-.ar-tl-dot{position:absolute;top:-2px;width:8px;height:8px;border-radius:50%;transform:translateX(-50%)}
+#graph-empty .icon{font-size:48px;opacity:.2}
 
 /* ── Detail panel ── */
 #detail-pane{
@@ -386,18 +355,24 @@ input{font-family:inherit;font-size:13px}
   <!-- Main area -->
   <div id="main">
 
-    <!-- Explorer -->
-    <div id="explorer-pane">
-      <div id="explorer-toolbar">
-        <input id="explorer-search" type="text" placeholder="Search agents, tasks, roles…" oninput="onSearchInput(this.value)">
-        <span class="sf-pill active" onclick="setStatusFilter(this,'all')">all</span>
-        <span class="sf-pill" onclick="setStatusFilter(this,'running')" style="color:var(--accent)">running</span>
-        <span class="sf-pill" onclick="setStatusFilter(this,'completed')" style="color:var(--green)">done</span>
-        <span class="sf-pill" onclick="setStatusFilter(this,'failed')" style="color:var(--red)">failed</span>
-        <span class="sf-pill" onclick="setStatusFilter(this,'killed')" style="color:var(--gray)">killed</span>
+    <!-- Graph -->
+    <div id="graph-pane">
+      <svg id="graph-svg"></svg>
+      <div id="graph-controls">
+        <button class="ctrl-btn" title="Zoom in" onclick="gZoom(1.3)">+</button>
+        <button class="ctrl-btn" title="Zoom out" onclick="gZoom(.77)">−</button>
+        <button class="ctrl-btn" title="Fit" onclick="gFit()" style="font-size:12px">⊡</button>
       </div>
-      <div id="explorer-body">
-        <div class="explorer-empty"><div style="font-size:40px;opacity:.2">◉</div><p>Loading agents…</p></div>
+      <div id="graph-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#6c5ce7"></div>running</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00e676"></div>completed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff5252"></div>failed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff9100"></div>paused</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#636e72"></div>killed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a29bfe"></div>initialized</div>
+      </div>
+      <div id="graph-empty" style="display:none">
+        <div class="icon">◉</div><p>No agents yet.</p>
       </div>
     </div>
 
@@ -473,10 +448,11 @@ const S = {
   feedFilter: 'all',
   feedRows: [],
   sseSource: null,
-  expandedRoles: new Set(),
-  explorerFilter: '',
-  statusFilter: 'all',
   filePath: '/',
+  sim: null,
+  graphSvg: null, graphW: 900, graphH: 600,
+  zoomBehavior: null, graphTransform: null,
+  nodeMap: null,
 };
 
 // ── Colors ────────────────────────────────────────────────────────────────
@@ -610,162 +586,10 @@ async function loadStats() {
   } catch(e) { console.error('loadStats', e); }
 }
 
-// ── Explorer ──────────────────────────────────────────────────────────────
-
+// ── Helpers ───────────────────────────────────────────────────────────────
 function agentRole(a) {
   return (a.config && a.config.role) || a.name.replace(/-[0-9A-Z]{8,}$/i, '') || 'agent';
 }
-
-function groupByRole(agents) {
-  const map = new Map();
-  for (const a of agents) {
-    const r = agentRole(a);
-    if (!map.has(r)) map.set(r, []);
-    map.get(r).push(a);
-  }
-  return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
-}
-
-function countByStatus(agents) {
-  const c = {};
-  for (const a of agents) c[a.status] = (c[a.status] || 0) + 1;
-  return c;
-}
-
-function filterAgents(agents) {
-  let out = agents;
-  if (S.statusFilter !== 'all') out = out.filter(a => a.status === S.statusFilter);
-  const q = (S.explorerFilter || '').toLowerCase().trim();
-  if (q) out = out.filter(a =>
-    a.name.toLowerCase().includes(q) ||
-    (a.task_description || '').toLowerCase().includes(q) ||
-    agentRole(a).toLowerCase().includes(q)
-  );
-  return out;
-}
-
-function globalTimeScale() {
-  const times = S.agents.map(a => new Date(a.created_at).getTime()).filter(Boolean);
-  if (!times.length) return null;
-  const tMin = Math.min(...times);
-  const tMax = Math.max(...times) + 60000;
-  return { tMin, tRange: tMax - tMin || 1 };
-}
-
-function timePct(a, scale) {
-  if (!scale) return 50;
-  const t = new Date(a.created_at).getTime();
-  return Math.max(0, Math.min(98, (t - scale.tMin) / scale.tRange * 100));
-}
-
-function renderMiniTimeline(agents, scale) {
-  const W = 110, H = 12;
-  const dots = agents.map(a => {
-    const x = (timePct(a, scale) / 100 * W).toFixed(1);
-    const c = STATUS_COLOR[a.status] || '#636e72';
-    return `<circle cx="${x}" cy="6" r="2.5" fill="${c}" opacity="0.85"/>`;
-  }).join('');
-  return `<svg width="${W}" height="${H}" style="overflow:visible">${dots}</svg>`;
-}
-
-function renderAgentRow(a, scale) {
-  const color = STATUS_COLOR[a.status] || '#636e72';
-  const task = shortTask(a.task_description, 65);
-  const pct = timePct(a, scale).toFixed(1);
-  const cleanName = a.name.replace(/-[0-9A-Z]{8,}$/i, '') || a.name;
-  const sel = a.agent_id === S.selectedAgent ? ' selected' : '';
-  return `<div class="agent-row${sel}" onclick="openDetail('${a.agent_id}')">
-    <div class="ar-dot" style="background:${color}"></div>
-    <div class="ar-info">
-      <div class="ar-name">${escHtml(cleanName)}</div>
-      ${task ? `<div class="ar-task">${escHtml(task)}</div>` : ''}
-    </div>
-    <div class="ar-stats">${a.event_count || 0}ev</div>
-    <div class="ar-tl"><div class="ar-tl-track"><div class="ar-tl-dot" style="left:${pct}%;background:${color}"></div></div></div>
-  </div>`;
-}
-
-function renderExplorer() {
-  const body = $('explorer-body');
-  if (!body) return;
-
-  const filtered = filterAgents(S.agents);
-  const roles = groupByRole(filtered);
-  const scale = globalTimeScale();
-
-  if (!S.agents.length) {
-    body.innerHTML = `<div class="explorer-empty"><div style="font-size:36px;opacity:.2">◉</div><p>No agents found.</p><p style="font-size:11px">Run <code style="color:var(--accent2)">kaos run --task "…"</code> to spawn one.</p></div>`;
-    return;
-  }
-  if (!filtered.length) {
-    body.innerHTML = `<div class="explorer-empty"><p>No agents match the filter.</p></div>`;
-    return;
-  }
-
-  body.innerHTML = roles.map(([role, roleAgents]) => {
-    const counts = countByStatus(roleAgents);
-    const isExpanded = S.expandedRoles.has(role);
-    const pills = [
-      counts.running   ? `<span class="rh-pill" style="color:var(--accent)">${counts.running} running</span>` : '',
-      counts.completed ? `<span class="rh-pill" style="color:var(--green)">${counts.completed} done</span>` : '',
-      counts.failed    ? `<span class="rh-pill" style="color:var(--red)">${counts.failed} failed</span>` : '',
-      counts.killed    ? `<span class="rh-pill" style="color:var(--gray)">${counts.killed} killed</span>` : '',
-      counts.paused    ? `<span class="rh-pill" style="color:var(--orange)">${counts.paused} paused</span>` : '',
-      counts.initialized ? `<span class="rh-pill" style="color:var(--accent2)">${counts.initialized} init</span>` : '',
-    ].filter(Boolean).join('');
-    return `<div class="role-group">
-      <div class="role-header" onclick="toggleRole(${JSON.stringify(role)})">
-        <span class="rh-chevron${isExpanded ? ' open' : ''}">▶</span>
-        <span class="rh-name">${escHtml(role)}</span>
-        <span class="rh-count">${roleAgents.length}</span>
-        <div class="rh-pills">${pills}</div>
-        <div class="rh-timeline">${renderMiniTimeline(roleAgents, scale)}</div>
-      </div>
-      <div class="role-agents" ${isExpanded ? '' : 'style="display:none"'}>
-        ${roleAgents.map(a => renderAgentRow(a, scale)).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleRole(role) {
-  if (S.expandedRoles.has(role)) S.expandedRoles.delete(role);
-  else S.expandedRoles.add(role);
-  renderExplorer();
-}
-
-function setStatusFilter(el, status) {
-  S.statusFilter = status;
-  document.querySelectorAll('.sf-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  renderExplorer();
-}
-
-function onSearchInput(val) {
-  S.explorerFilter = val;
-  renderExplorer();
-}
-
-// In-place status update — update agent data + re-render its row
-function updateExplorerStatus(agentId, status) {
-  const a = S.agents.find(x => x.agent_id === agentId);
-  if (a) a.status = status;
-  // Update just the dot color + row class if row is visible
-  const rows = document.querySelectorAll('.agent-row');
-  rows.forEach(row => {
-    if (row.getAttribute('onclick') && row.getAttribute('onclick').includes(agentId)) {
-      const dot = row.querySelector('.ar-dot');
-      const tlDot = row.querySelector('.ar-tl-dot');
-      const c = STATUS_COLOR[status] || '#636e72';
-      if (dot) dot.style.background = c;
-      if (tlDot) tlDot.style.background = c;
-    }
-  });
-}
-
-// Legacy alias (used by SSE handler)
-function updateNodeStatus(agentId, status) { updateExplorerStatus(agentId, status); }
-
 
 function shortTask(desc, maxLen = 80) {
   if (!desc) return '';
@@ -775,11 +599,287 @@ function shortTask(desc, maxLen = 80) {
   return s.length > maxLen ? s.slice(0, maxLen) + '…' : s;
 }
 
-// ── Load agents ───────────────────────────────────────────────────────────
-async function loadAgents() {
+// ── Graph ─────────────────────────────────────────────────────────────────
+// Palette for role clusters (cycles if more roles than colors)
+const ROLE_PALETTE = [
+  '#6c5ce7','#00cec9','#fd79a8','#e17055','#fdcb6e',
+  '#55efc4','#74b9ff','#a29bfe','#fab1a0','#81ecec',
+];
+
+function roleColor(role, roles) {
+  const idx = roles.indexOf(role);
+  return ROLE_PALETTE[idx % ROLE_PALETTE.length];
+}
+
+function initGraph(agents) {
+  const svgEl = document.getElementById('graph-svg');
+  const W = svgEl.clientWidth || 900;
+  const H = svgEl.clientHeight || 600;
+
+  // Empty state
+  if (!agents.length) {
+    document.getElementById('graph-empty').style.display = 'flex';
+    return;
+  }
+  document.getElementById('graph-empty').style.display = 'none';
+
+  // ── Role clusters ────────────────────────────────────────────────────────
+  const roleMap = new Map();
+  agents.forEach(a => {
+    const r = agentRole(a);
+    if (!roleMap.has(r)) roleMap.set(r, []);
+    roleMap.get(r).push(a);
+  });
+  const roles = [...roleMap.keys()];
+
+  // Assign each agent a cluster center, arranged in a circle
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(W, H) * (roles.length === 1 ? 0 : 0.30);
+  const clusterCenter = {};
+  roles.forEach((r, i) => {
+    const angle = (i / roles.length) * 2 * Math.PI - Math.PI / 2;
+    clusterCenter[r] = {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    };
+  });
+
+  // ── Nodes & links ────────────────────────────────────────────────────────
+  // Assign initial positions near cluster center
+  agents.forEach(a => {
+    const c = clusterCenter[agentRole(a)];
+    a.x = c.x + (Math.random() - 0.5) * 60;
+    a.y = c.y + (Math.random() - 0.5) * 60;
+  });
+
+  const agentById = new Map(agents.map(a => [a.agent_id, a]));
+
+  // Real parent→child edges only
+  const links = agents
+    .filter(a => a.parent_id && agentById.has(a.parent_id))
+    .map(a => ({ source: a.parent_id, target: a.agent_id }));
+
+  // Node radius: scale by event_count activity
+  const maxEv = Math.max(1, ...agents.map(a => a.event_count || 0));
+  const rScale = d3.scaleSqrt().domain([0, maxEv]).range([5, 18]);
+  const nodeR = a => rScale(a.event_count || 0);
+
+  // ── D3 simulation ────────────────────────────────────────────────────────
+  if (S.sim) S.sim.stop();
+
+  const sim = d3.forceSimulation(agents)
+    .force('link', d3.forceLink(links).id(d => d.agent_id).distance(50).strength(0.8))
+    .force('charge', d3.forceManyBody().strength(-60))
+    .force('cluster', () => {
+      // Pull each node toward its role cluster center
+      agents.forEach(a => {
+        const c = clusterCenter[agentRole(a)];
+        a.vx += (c.x - a.x) * 0.04;
+        a.vy += (c.y - a.y) * 0.04;
+      });
+    })
+    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 4));
+
+  S.sim = sim;
+
+  // ── Draw ─────────────────────────────────────────────────────────────────
+  const svg = d3.select('#graph-svg');
+  svg.selectAll('*').remove();
+
+  const defs = svg.append('defs');
+  // Arrowhead
+  defs.append('marker')
+    .attr('id', 'arrow')
+    .attr('viewBox', '0 -4 8 8').attr('refX', 20).attr('refY', 0)
+    .attr('markerWidth', 6).attr('markerHeight', 6).attr('orient', 'auto')
+    .append('path').attr('d', 'M0,-4L8,0L0,4').attr('fill', 'rgba(162,155,254,.7)');
+
+  const zoomBehavior = d3.zoom()
+    .scaleExtent([0.05, 8])
+    .on('zoom', e => { S.graphTransform = e.transform; g.attr('transform', e.transform); });
+  svg.call(zoomBehavior);
+  if (S.graphTransform) svg.call(zoomBehavior.transform, S.graphTransform);
+  S.zoomBehavior = zoomBehavior;
+  S.graphSvg = svg;
+  S.graphW = W; S.graphH = H;
+
+  const g = svg.append('g');
+
+  // ── Cluster hulls ─────────────────────────────────────────────────────────
+  const hullG = g.append('g').attr('class', 'hulls');
+  const labelG = g.append('g').attr('class', 'cluster-labels');
+  const linkG  = g.append('g').attr('class', 'links');
+  const nodeG  = g.append('g').attr('class', 'nodes');
+
+  // Hull paths (drawn after simulation tick)
+  const hullPaths = hullG.selectAll('path')
+    .data(roles)
+    .join('path')
+    .attr('fill', r => roleColor(r, roles) + '18')
+    .attr('stroke', r => roleColor(r, roles) + '55')
+    .attr('stroke-width', 1.5)
+    .attr('stroke-linejoin', 'round');
+
+  // Cluster label text
+  const clusterLabels = labelG.selectAll('text')
+    .data(roles)
+    .join('text')
+    .attr('text-anchor', 'middle')
+    .attr('font-family', 'SFMono-Regular,Consolas,monospace')
+    .attr('font-size', 11)
+    .attr('font-weight', '700')
+    .attr('fill', r => roleColor(r, roles))
+    .attr('opacity', 0.85)
+    .text(r => r.toUpperCase());
+
+  // Links
+  const link = linkG.selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('stroke', 'rgba(162,155,254,.6)')
+    .attr('stroke-width', 1.5)
+    .attr('marker-end', 'url(#arrow)');
+
+  // Nodes
+  const node = nodeG.selectAll('g')
+    .data(agents, d => d.agent_id)
+    .join('g')
+    .attr('class', 'agent-node')
+    .style('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+    )
+    .on('click', (e, d) => { e.stopPropagation(); openDetail(d.agent_id); })
+    .on('mouseover', showTooltip)
+    .on('mousemove', moveTooltip)
+    .on('mouseout', hideTooltip);
+
+  // Running glow ring
+  node.filter(d => d.status === 'running')
+    .append('circle')
+    .attr('r', d => nodeR(d) + 5)
+    .attr('fill', 'none')
+    .attr('stroke', '#6c5ce7')
+    .attr('stroke-width', 1.5)
+    .attr('opacity', 0.4);
+
+  // Main circle
+  node.append('circle')
+    .attr('class', 'node-circle')
+    .attr('r', d => nodeR(d))
+    .attr('fill', d => STATUS_COLOR[d.status] || '#636e72')
+    .attr('fill-opacity', 0.9)
+    .attr('stroke', d => d.agent_id === S.selectedAgent ? '#18ffff' : 'rgba(0,0,0,.3)')
+    .attr('stroke-width', d => d.agent_id === S.selectedAgent ? 2.5 : 1);
+
+  // Keep node refs for live status updates
+  S.nodeMap = new Map();
+  node.each(function(d) { S.nodeMap.set(d.agent_id, d3.select(this)); });
+
+  // ── Tick ─────────────────────────────────────────────────────────────────
+  sim.on('tick', () => {
+    // Update links
+    link
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+    // Update node positions
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+
+    // Recompute cluster hulls
+    roles.forEach((r, i) => {
+      const pts = (roleMap.get(r) || []).map(a => [a.x, a.y]);
+      if (pts.length < 3) {
+        // Expand single/double points into a fake hull
+        if (pts.length === 1) {
+          const [px, py] = pts[0];
+          pts.push([px-20, py-20],[px+20, py-20],[px+20, py+20],[px-20, py+20]);
+        } else {
+          const mid = [(pts[0][0]+pts[1][0])/2, (pts[0][1]+pts[1][1])/2];
+          pts.push([mid[0]-20,mid[1]-20],[mid[0]+20,mid[1]+20]);
+        }
+      }
+      const hull = d3.polygonHull(pts);
+      if (hull) {
+        // Expand hull outward from centroid
+        const centroid = d3.polygonCentroid(hull);
+        const expanded = hull.map(([px, py]) => {
+          const dx = px - centroid[0], dy = py - centroid[1];
+          const len = Math.sqrt(dx*dx + dy*dy) || 1;
+          return [px + dx/len * 22, py + dy/len * 22];
+        });
+        hullPaths.filter(d => d === r).attr('d', 'M' + expanded.join('L') + 'Z');
+
+        // Label below hull bottom
+        const minY = Math.min(...hull.map(p => p[1]));
+        clusterLabels.filter(d => d === r)
+          .attr('x', centroid[0])
+          .attr('y', minY - 10);
+      }
+    });
+  });
+
+  // Deselect on canvas click
+  svg.on('click', () => closeDetail());
+}
+
+// ── Live status update (no full re-render) ────────────────────────────────
+function updateNodeStatus(agentId, status) {
+  const a = S.agents.find(x => x.agent_id === agentId);
+  if (a) a.status = status;
+  const n = S.nodeMap && S.nodeMap.get(agentId);
+  if (n) n.select('.node-circle').attr('fill', STATUS_COLOR[status] || '#636e72');
+}
+
+// ── Zoom helpers ──────────────────────────────────────────────────────────
+function gZoom(factor) {
+  if (!S.graphSvg || !S.zoomBehavior) return;
+  S.graphSvg.transition().duration(220).call(S.zoomBehavior.scaleBy, factor);
+}
+function gFit() {
+  if (!S.graphSvg || !S.zoomBehavior) return;
+  S.graphSvg.transition().duration(350).call(
+    S.zoomBehavior.transform,
+    d3.zoomIdentity.translate(S.graphW/2, S.graphH/2).scale(0.8)
+  );
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────
+function showTooltip(e, d) {
+  const role = agentRole(d);
+  const task = shortTask(d.task_description, 120);
+  const tip = $('tooltip');
+  tip.innerHTML = `
+    <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${escHtml(d.name)}</div>
+    <div style="font-size:11px;color:var(--accent2);margin-top:1px">${escHtml(role)}</div>
+    ${task ? `<div style="font-size:11px;color:var(--fg2);margin-top:5px;line-height:1.5">${escHtml(task)}</div>` : ''}
+    <div style="margin-top:5px;font-size:11px;color:var(--fg3)">
+      <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b>
+      · ${d.event_count||0} events · ${d.file_count||0} files
+    </div>`;
+  tip.style.opacity = '1';
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tip = $('tooltip');
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top  = (e.clientY - 10) + 'px';
+}
+function hideTooltip() { $('tooltip').style.opacity = '0'; }
+
+// ── Load & render agents ──────────────────────────────────────────────────
+async function loadAgents(forceRedraw = false) {
   try {
-    S.agents = await api('/api/agents');
-    renderExplorer();
+    const fresh = await api('/api/agents');
+    const wasEmpty = !S.agents.length;
+    S.agents = fresh;
+    if (wasEmpty || forceRedraw) {
+      initGraph(S.agents);
+    } else {
+      fresh.forEach(a => updateNodeStatus(a.agent_id, a.status));
+    }
   } catch(e) { console.error('loadAgents', e); }
 }
 
@@ -788,11 +888,14 @@ async function openDetail(agentId) {
   S.selectedAgent = agentId;
   $('detail-pane').classList.add('open');
 
-  // Highlight row in explorer
-  document.querySelectorAll('.agent-row').forEach(r => r.classList.remove('selected'));
-  document.querySelectorAll('.agent-row').forEach(r => {
-    if ((r.getAttribute('onclick')||'').includes(agentId)) r.classList.add('selected');
-  });
+  // Highlight selected node
+  if (S.nodeMap) {
+    S.nodeMap.forEach((n, id) => {
+      n.select('.node-circle')
+        .attr('stroke', id === agentId ? '#18ffff' : 'rgba(0,0,0,.3)')
+        .attr('stroke-width', id === agentId ? 2.5 : 1);
+    });
+  }
 
   try {
     const agent = await api(`/api/agents/${agentId}`);
@@ -812,7 +915,9 @@ async function openDetail(agentId) {
 function closeDetail() {
   S.selectedAgent = null;
   $('detail-pane').classList.remove('open');
-  document.querySelectorAll('.agent-row').forEach(r => r.classList.remove('selected'));
+  if (S.nodeMap) {
+    S.nodeMap.forEach(n => n.select('.node-circle').attr('stroke','rgba(0,0,0,.3)').attr('stroke-width', 1));
+  }
 }
 
 async function switchTab(btn) {
@@ -1090,9 +1195,9 @@ function reconnectSSE() {
   };
 }
 
-// ── Full refresh (Refresh button) ─────────────────────────────────────────
+// ── Full refresh ───────────────────────────────────────────────────────────
 async function fullRefresh() {
-  await Promise.all([loadStats(), loadAgents()]);
+  await Promise.all([loadStats(), loadAgents(true)]);
   await loadRecentEvents();
 }
 
@@ -1110,6 +1215,7 @@ async function init() {
   await fullRefresh();
   reconnectSSE();
 
+  // Periodic stats only — graph updates via SSE
   setInterval(loadStats, 15000);
 }
 
