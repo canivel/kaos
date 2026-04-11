@@ -816,7 +816,14 @@ function renderGraph(agents) {
     .attr('fill','rgba(228,228,239,.75)')
     .attr('font-size', 9)
     .attr('font-family','SFMono-Regular,Consolas,monospace')
-    .text(d => d.name.length > 13 ? d.name.slice(0,12)+'…' : d.name);
+    .text(d => {
+      // Prefer role, else strip trailing ULID-like suffix (e.g. "-01KNYCC8" → clean prefix)
+      const role = d.config?.role;
+      if (role) return role.length > 14 ? role.slice(0,13)+'…' : role;
+      const clean = d.name.replace(/-[0-9A-Z]{8,}$/i, '');
+      const label = clean || d.name;
+      return label.length > 14 ? label.slice(0,13)+'…' : label;
+    });
 
   // Selection highlight
   if (S.selectedAgent) {
@@ -1045,7 +1052,17 @@ function renderOverview(a) {
   const meta = a.metadata || {};
   const cfgStr = Object.keys(cfg).length ? JSON.stringify(cfg, null, 2) : '{}';
   const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '{}';
+  const task = shortTask(a.task_description, 400);
+  const role = cfg.role || '';
   return `
+    ${task ? `
+    <div style="background:var(--bg3);border:1px solid rgba(108,92,231,.25);border-radius:8px;padding:12px 14px;margin-bottom:12px">
+      ${role ? `<div style="font-size:10px;font-family:var(--mono);color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">${escHtml(role)}</div>` : ''}
+      <div style="font-size:12px;color:var(--fg);line-height:1.6">${escHtml(task)}</div>
+    </div>` : role ? `
+    <div style="background:var(--bg3);border:1px solid rgba(108,92,231,.25);border-radius:8px;padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:10px;font-family:var(--mono);color:var(--accent2);text-transform:uppercase;letter-spacing:1px">${escHtml(role)}</div>
+    </div>` : ''}
     <div class="meta-grid">
       <div class="meta-card"><div class="lbl">Status</div><div class="val" style="color:${STATUS_COLOR[a.status]||'#fff'}">${a.status}</div></div>
       <div class="meta-card"><div class="lbl">Files</div><div class="val">${a.file_count}</div></div>

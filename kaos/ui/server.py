@@ -191,7 +191,8 @@ async def api_agent_detail(request: Request) -> JSONResponse:
                 COALESCE(fc.cnt, 0) AS file_count,
                 COALESCE(tc.cnt, 0) AS tool_call_count,
                 COALESCE(tc.tokens, 0) AS token_count,
-                COALESCE(ec.cnt, 0) AS event_count
+                COALESCE(ec.cnt, 0) AS event_count,
+                s.value AS task_description
             FROM agents a
             LEFT JOIN (
                 SELECT agent_id, COUNT(*) as cnt FROM files WHERE deleted=0 GROUP BY agent_id
@@ -203,6 +204,7 @@ async def api_agent_detail(request: Request) -> JSONResponse:
             LEFT JOIN (
                 SELECT agent_id, COUNT(*) as cnt FROM events GROUP BY agent_id
             ) ec ON ec.agent_id = a.agent_id
+            LEFT JOIN state s ON s.agent_id = a.agent_id AND s.key = 'task'
             WHERE a.agent_id = ?
         """, (agent_id,))
         if not row:
