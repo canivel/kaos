@@ -230,11 +230,12 @@ The hub isn't magic. It's a structured shared memory: discovered patterns with c
 
 **AAAK Compression Impact:**
 
-| Metric | Value |
-|---|---|
-| Digest compression ratio | 20× per agent turn (6,100 → 305 tokens) |
-| Total tokens eliminated | 2,451,063 across 2,880 agent-turns |
-| Migration quality | 100% — identical output, 0 regressions |
+| Metric | Without AAAK | With AAAK L5 |
+|---|---|---|
+| Total inference tokens | ~8.58M | ~6.13M |
+| Context digest (per turn) | 6,100 tokens | 305 tokens (20×) |
+| Tokens eliminated | — | 2,451,063 |
+| Migration quality | — | 100% — 0 regressions |
 
 **Time Comparison:**
 

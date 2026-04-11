@@ -450,20 +450,28 @@ hub:
 
 <table class="result-table">
   <thead>
-    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><th>Metric</th><th>Without AAAK</th><th>With AAAK L5</th></tr>
   </thead>
   <tbody>
     <tr>
-      <td>Digest compression ratio</td>
-      <td class="good"><strong>20× per agent turn (6,100 → 305 tokens)</strong></td>
+      <td>Total inference tokens</td>
+      <td>~8.58M</td>
+      <td class="good"><strong>~6.13M</strong></td>
     </tr>
     <tr>
-      <td>Total tokens eliminated</td>
-      <td class="good"><strong>2,451,063 across 2,880 agent-turns</strong></td>
+      <td>Context digest (per turn)</td>
+      <td>6,100 tokens</td>
+      <td class="good"><strong>305 tokens (20×)</strong></td>
+    </tr>
+    <tr>
+      <td>Tokens eliminated</td>
+      <td>—</td>
+      <td class="good"><strong>2,451,063</strong></td>
     </tr>
     <tr>
       <td>Migration quality</td>
-      <td class="good"><strong>100% — identical output, 0 regressions</strong></td>
+      <td>—</td>
+      <td class="good"><strong>100% — 0 regressions</strong></td>
     </tr>
   </tbody>
 </table>
