@@ -1,0 +1,28 @@
+database:
+  path: ./kaos.db
+  wal_mode: true
+  compression: zstd
+
+models:
+  claude-sonnet:
+    provider: claude_code
+    model_id: claude-sonnet-4-6
+    max_context: 200000
+    timeout: 300
+    use_for: [trivial, moderate, complex, critical, code_completion, code_generation, planning]
+
+router:
+  type: gepa
+  fallback_model: claude-sonnet
+  context_compression: true
+  max_retries: 1
+
+ccr:
+  max_iterations: 100
+  checkpoint_interval: 10
+  timeout_seconds: 3600
+  max_parallel_agents: 8
+
+logging:
+  level: INFO
+  file: ./kaos.log

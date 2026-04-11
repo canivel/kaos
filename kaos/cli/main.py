@@ -50,7 +50,7 @@ def _json_err(ctx, msg: str):
 
 
 @click.group()
-@click.version_option(version="0.5.2", prog_name="kaos")
+@click.version_option(version="0.6.0", prog_name="kaos")
 @click.option("--json", "json_output", is_flag=True, default=False,
               help="Output structured JSON (auto-enabled when piped)")
 @click.pass_context
@@ -509,6 +509,32 @@ def dashboard(db: str):
     app = KaosDashboard(afs)
     app.run()
     afs.close()
+
+
+@cli.command()
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--port", default=8765, help="UI server port")
+@click.option("--host", default="127.0.0.1", help="UI server host")
+@click.option("--no-browser", is_flag=True, default=False, help="Don't open browser automatically")
+def ui(db: str, port: int, host: str, no_browser: bool):
+    """Launch the web UI dashboard (agent graph, events, tool calls)."""
+    import threading
+    import time as _time
+    from kaos.ui.server import run as _run_ui
+
+    db_abs = str(Path(db).resolve())
+
+    if not no_browser:
+        def _open():
+            _time.sleep(1.2)
+            import webbrowser
+            webbrowser.open(f"http://{host}:{port}/?db={db_abs}")
+        threading.Thread(target=_open, daemon=True).start()
+
+    console.print(f"[bold cyan]KAOS UI[/bold cyan]  →  [link=http://{host}:{port}/?db={db_abs}]http://{host}:{port}/[/link]")
+    console.print(f"[dim]Project: {db_abs}[/dim]")
+    console.print("[dim]Ctrl+C to stop[/dim]")
+    _run_ui(host=host, port=port, db=db_abs)
 
 
 @cli.command()
