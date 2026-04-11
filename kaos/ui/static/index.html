@@ -81,34 +81,44 @@ input{font-family:inherit;font-size:13px}
 /* ── Main split ── */
 #main{display:flex;flex:1;overflow:hidden}
 
-/* ── Graph pane ── */
-#graph-pane{flex:1;position:relative;overflow:hidden;background:var(--bg)}
-#graph-svg{width:100%;height:100%}
-#graph-controls{
-  position:absolute;top:12px;left:12px;
-  display:flex;flex-direction:column;gap:6px;
+/* ── Swimlane pane ── */
+#graph-pane{flex:1;position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+#graph-toolbar{
+  display:flex;align-items:center;gap:8px;padding:7px 12px;
+  background:var(--bg2);border-bottom:1px solid var(--bg4);flex-shrink:0;
+}
+#graph-search{
+  flex:1;max-width:220px;background:var(--bg3);border:1px solid var(--bg4);
+  border-radius:6px;color:var(--fg);padding:4px 10px;font-size:12px;
+}
+#graph-search:focus{border-color:var(--accent);outline:none}
+.gf-pill{
+  padding:2px 9px;border-radius:12px;font-size:11px;font-family:var(--mono);
+  background:var(--bg3);border:1px solid var(--bg4);color:var(--fg3);cursor:pointer;
+}
+.gf-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.gf-pill:hover:not(.active){color:var(--fg)}
+#graph-svg-wrap{flex:1;overflow:hidden;position:relative}
+#graph-svg{width:100%;height:100%;display:block}
+#graph-legend{
+  position:absolute;bottom:12px;right:12px;
+  background:rgba(18,18,26,.92);backdrop-filter:blur(6px);
+  border:1px solid var(--bg4);border-radius:8px;
+  padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px 12px;max-width:260px;
+}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--fg2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+#graph-zoom{
+  position:absolute;top:10px;right:12px;
+  display:flex;flex-direction:column;gap:5px;
 }
 .ctrl-btn{
-  width:30px;height:30px;background:var(--bg2);border:1px solid var(--bg4);
+  width:28px;height:28px;background:var(--bg2);border:1px solid var(--bg4);
   border-radius:6px;color:var(--fg2);font-size:15px;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:all .15s;
 }
 .ctrl-btn:hover{background:var(--bg3);color:var(--fg);border-color:var(--accent)}
-#graph-legend{
-  position:absolute;bottom:12px;left:12px;
-  background:rgba(18,18,26,.92);backdrop-filter:blur(6px);
-  border:1px solid var(--bg4);border-radius:8px;
-  padding:9px 13px;display:flex;flex-direction:column;gap:5px;
-}
-.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--fg2)}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-#graph-empty{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:12px;
-  color:var(--fg3);pointer-events:none;
-}
-#graph-empty .icon{font-size:48px;opacity:.2}
 
 /* ── Detail panel ── */
 #detail-pane{
@@ -355,24 +365,30 @@ input{font-family:inherit;font-size:13px}
   <!-- Main area -->
   <div id="main">
 
-    <!-- Graph -->
+    <!-- Swimlane graph -->
     <div id="graph-pane">
-      <svg id="graph-svg"></svg>
-      <div id="graph-controls">
-        <button class="ctrl-btn" title="Zoom in" onclick="gZoom(1.3)">+</button>
-        <button class="ctrl-btn" title="Zoom out" onclick="gZoom(.77)">−</button>
-        <button class="ctrl-btn" title="Fit" onclick="gFit()" style="font-size:12px">⊡</button>
+      <div id="graph-toolbar">
+        <input id="graph-search" type="text" placeholder="Search name or task…" oninput="onGraphSearch(this.value)">
+        <span class="gf-pill active" onclick="setGFilter(this,'all')">all</span>
+        <span class="gf-pill" onclick="setGFilter(this,'running')" style="color:var(--accent)">running</span>
+        <span class="gf-pill" onclick="setGFilter(this,'completed')" style="color:var(--green)">done</span>
+        <span class="gf-pill" onclick="setGFilter(this,'failed')" style="color:var(--red)">failed</span>
+        <span class="gf-pill" onclick="setGFilter(this,'killed')" style="color:var(--gray)">killed</span>
       </div>
-      <div id="graph-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#6c5ce7"></div>running</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00e676"></div>completed</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff5252"></div>failed</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff9100"></div>paused</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#636e72"></div>killed</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#a29bfe"></div>initialized</div>
-      </div>
-      <div id="graph-empty" style="display:none">
-        <div class="icon">◉</div><p>No agents yet.</p>
+      <div id="graph-svg-wrap">
+        <svg id="graph-svg"></svg>
+        <div id="graph-zoom">
+          <button class="ctrl-btn" onclick="gZoom(1.3)">+</button>
+          <button class="ctrl-btn" onclick="gZoom(.77)">−</button>
+          <button class="ctrl-btn" onclick="gFit()" style="font-size:11px">⊡</button>
+        </div>
+        <div id="graph-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#6c5ce7"></div>running</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00e676"></div>completed</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff5252"></div>failed</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff9100"></div>paused/killed</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a29bfe"></div>initialized</div>
+        </div>
       </div>
     </div>
 
@@ -590,7 +606,6 @@ async function loadStats() {
 function agentRole(a) {
   return (a.config && a.config.role) || a.name.replace(/-[0-9A-Z]{8,}$/i, '') || 'agent';
 }
-
 function shortTask(desc, maxLen = 80) {
   if (!desc) return '';
   let s = desc;
@@ -599,257 +614,233 @@ function shortTask(desc, maxLen = 80) {
   return s.length > maxLen ? s.slice(0, maxLen) + '…' : s;
 }
 
-// ── Graph ─────────────────────────────────────────────────────────────────
-// Palette for role clusters (cycles if more roles than colors)
-const ROLE_PALETTE = [
-  '#6c5ce7','#00cec9','#fd79a8','#e17055','#fdcb6e',
-  '#55efc4','#74b9ff','#a29bfe','#fab1a0','#81ecec',
-];
+// ── Filter state ──────────────────────────────────────────────────────────
+S.gFilter = 'all';
+S.gSearch = '';
 
-function roleColor(role, roles) {
-  const idx = roles.indexOf(role);
-  return ROLE_PALETTE[idx % ROLE_PALETTE.length];
+function setGFilter(el, f) {
+  S.gFilter = f;
+  document.querySelectorAll('.gf-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  drawSwimlane(S.agents);
 }
+function onGraphSearch(v) { S.gSearch = v.toLowerCase(); drawSwimlane(S.agents); }
 
-function initGraph(agents) {
-  const svgEl = document.getElementById('graph-svg');
-  const W = svgEl.clientWidth || 900;
-  const H = svgEl.clientHeight || 600;
+// ── Swimlane ──────────────────────────────────────────────────────────────
+const LANE_H   = 90;   // height per role lane
+const LANE_PAD = 18;   // vertical padding inside lane
+const LABEL_W  = 120;  // left gutter for role label
+const DOT_AREA_H = LANE_H - LANE_PAD * 2;  // ~54px for dots
+const MIN_R = 4, MAX_R = 12;
 
-  // Empty state
-  if (!agents.length) {
-    document.getElementById('graph-empty').style.display = 'flex';
-    return;
-  }
-  document.getElementById('graph-empty').style.display = 'none';
-
-  // ── Role clusters ────────────────────────────────────────────────────────
+function swimlaneLayout(agents) {
+  // Group by role, sort each group by creation time
   const roleMap = new Map();
   agents.forEach(a => {
     const r = agentRole(a);
     if (!roleMap.has(r)) roleMap.set(r, []);
     roleMap.get(r).push(a);
   });
-  const roles = [...roleMap.keys()];
+  roleMap.forEach(arr => arr.sort((a, b) => (a.created_at||'') < (b.created_at||'') ? -1 : 1));
 
-  // Assign each agent a cluster center, arranged in a circle
-  const cx = W / 2, cy = H / 2;
-  const radius = Math.min(W, H) * (roles.length === 1 ? 0 : 0.30);
-  const clusterCenter = {};
-  roles.forEach((r, i) => {
-    const angle = (i / roles.length) * 2 * Math.PI - Math.PI / 2;
-    clusterCenter[r] = {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
-    };
-  });
+  // Sort roles by size descending
+  const roles = [...roleMap.entries()].sort((a, b) => b[1].length - a[1].length);
 
-  // ── Nodes & links ────────────────────────────────────────────────────────
-  // Assign initial positions near cluster center
-  agents.forEach(a => {
-    const c = clusterCenter[agentRole(a)];
-    a.x = c.x + (Math.random() - 0.5) * 60;
-    a.y = c.y + (Math.random() - 0.5) * 60;
-  });
+  // Global time scale across all agents
+  const allTimes = agents.map(a => new Date(a.created_at).getTime()).filter(Boolean);
+  const tMin = allTimes.length ? Math.min(...allTimes) : 0;
+  const tMax = allTimes.length ? Math.max(...allTimes) : 1;
+  const tRange = tMax - tMin || 1;
 
-  const agentById = new Map(agents.map(a => [a.agent_id, a]));
-
-  // Real parent→child edges only
-  const links = agents
-    .filter(a => a.parent_id && agentById.has(a.parent_id))
-    .map(a => ({ source: a.parent_id, target: a.agent_id }));
-
-  // Node radius: scale by event_count activity
+  // Max event count for radius scale
   const maxEv = Math.max(1, ...agents.map(a => a.event_count || 0));
-  const rScale = d3.scaleSqrt().domain([0, maxEv]).range([5, 18]);
-  const nodeR = a => rScale(a.event_count || 0);
 
-  // ── D3 simulation ────────────────────────────────────────────────────────
-  if (S.sim) S.sim.stop();
+  return { roles, roleMap, tMin, tRange, maxEv };
+}
 
-  const sim = d3.forceSimulation(agents)
-    .force('link', d3.forceLink(links).id(d => d.agent_id).distance(50).strength(0.8))
-    .force('charge', d3.forceManyBody().strength(-60))
-    .force('cluster', () => {
-      // Pull each node toward its role cluster center
-      agents.forEach(a => {
-        const c = clusterCenter[agentRole(a)];
-        a.vx += (c.x - a.x) * 0.04;
-        a.vy += (c.y - a.y) * 0.04;
-      });
-    })
-    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 4));
+function nodeRadius(a, maxEv) {
+  return MIN_R + (MAX_R - MIN_R) * Math.sqrt((a.event_count || 0) / maxEv);
+}
 
-  S.sim = sim;
+function drawSwimlane(allAgents) {
+  if (!allAgents.length) return;
 
-  // ── Draw ─────────────────────────────────────────────────────────────────
+  // Apply filter
+  let agents = allAgents;
+  if (S.gFilter !== 'all') agents = agents.filter(a => a.status === S.gFilter);
+  if (S.gSearch) agents = agents.filter(a =>
+    a.name.toLowerCase().includes(S.gSearch) ||
+    (a.task_description || '').toLowerCase().includes(S.gSearch) ||
+    agentRole(a).toLowerCase().includes(S.gSearch)
+  );
+
+  const { roles, roleMap, tMin, tRange, maxEv } = swimlaneLayout(agents);
+  const svgEl = document.getElementById('graph-svg');
+  const VW = svgEl.clientWidth || 900;
+  const totalH = roles.length * LANE_H + 20;
+  const drawW = Math.max(VW, 600);
+  const xW = drawW - LABEL_W - 20;  // drawable x width
+
   const svg = d3.select('#graph-svg');
   svg.selectAll('*').remove();
-
-  const defs = svg.append('defs');
-  // Arrowhead
-  defs.append('marker')
-    .attr('id', 'arrow')
-    .attr('viewBox', '0 -4 8 8').attr('refX', 20).attr('refY', 0)
-    .attr('markerWidth', 6).attr('markerHeight', 6).attr('orient', 'auto')
-    .append('path').attr('d', 'M0,-4L8,0L0,4').attr('fill', 'rgba(162,155,254,.7)');
+  svg.attr('width', drawW).attr('height', totalH);
 
   const zoomBehavior = d3.zoom()
-    .scaleExtent([0.05, 8])
+    .scaleExtent([0.1, 8])
     .on('zoom', e => { S.graphTransform = e.transform; g.attr('transform', e.transform); });
   svg.call(zoomBehavior);
   if (S.graphTransform) svg.call(zoomBehavior.transform, S.graphTransform);
   S.zoomBehavior = zoomBehavior;
   S.graphSvg = svg;
-  S.graphW = W; S.graphH = H;
+  S.graphW = drawW; S.graphH = totalH;
+
+  // Defs: arrow marker
+  const defs = svg.append('defs');
+  defs.append('marker').attr('id','arrow')
+    .attr('viewBox','0 -3 7 6').attr('refX',16).attr('refY',0)
+    .attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-3L7,0L0,3').attr('fill','rgba(162,155,254,.7)');
 
   const g = svg.append('g');
 
-  // ── Cluster hulls ─────────────────────────────────────────────────────────
-  const hullG = g.append('g').attr('class', 'hulls');
-  const labelG = g.append('g').attr('class', 'cluster-labels');
-  const linkG  = g.append('g').attr('class', 'links');
-  const nodeG  = g.append('g').attr('class', 'nodes');
-
-  // Hull paths (drawn after simulation tick)
-  const hullPaths = hullG.selectAll('path')
-    .data(roles)
-    .join('path')
-    .attr('fill', r => roleColor(r, roles) + '18')
-    .attr('stroke', r => roleColor(r, roles) + '55')
-    .attr('stroke-width', 1.5)
-    .attr('stroke-linejoin', 'round');
-
-  // Cluster label text
-  const clusterLabels = labelG.selectAll('text')
-    .data(roles)
-    .join('text')
-    .attr('text-anchor', 'middle')
-    .attr('font-family', 'SFMono-Regular,Consolas,monospace')
-    .attr('font-size', 11)
-    .attr('font-weight', '700')
-    .attr('fill', r => roleColor(r, roles))
-    .attr('opacity', 0.85)
-    .text(r => r.toUpperCase());
-
-  // Links
-  const link = linkG.selectAll('line')
-    .data(links)
-    .join('line')
-    .attr('stroke', 'rgba(162,155,254,.6)')
-    .attr('stroke-width', 1.5)
-    .attr('marker-end', 'url(#arrow)');
-
-  // Nodes
-  const node = nodeG.selectAll('g')
-    .data(agents, d => d.agent_id)
-    .join('g')
-    .attr('class', 'agent-node')
-    .style('cursor', 'pointer')
-    .call(d3.drag()
-      .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-      .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
-      .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
-    )
-    .on('click', (e, d) => { e.stopPropagation(); openDetail(d.agent_id); })
-    .on('mouseover', showTooltip)
-    .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip);
-
-  // Running glow ring
-  node.filter(d => d.status === 'running')
-    .append('circle')
-    .attr('r', d => nodeR(d) + 5)
-    .attr('fill', 'none')
-    .attr('stroke', '#6c5ce7')
-    .attr('stroke-width', 1.5)
-    .attr('opacity', 0.4);
-
-  // Main circle
-  node.append('circle')
-    .attr('class', 'node-circle')
-    .attr('r', d => nodeR(d))
-    .attr('fill', d => STATUS_COLOR[d.status] || '#636e72')
-    .attr('fill-opacity', 0.9)
-    .attr('stroke', d => d.agent_id === S.selectedAgent ? '#18ffff' : 'rgba(0,0,0,.3)')
-    .attr('stroke-width', d => d.agent_id === S.selectedAgent ? 2.5 : 1);
-
-  // Keep node refs for live status updates
-  S.nodeMap = new Map();
-  node.each(function(d) { S.nodeMap.set(d.agent_id, d3.select(this)); });
-
-  // ── Tick ─────────────────────────────────────────────────────────────────
-  sim.on('tick', () => {
-    // Update links
-    link
-      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-
-    // Update node positions
-    node.attr('transform', d => `translate(${d.x},${d.y})`);
-
-    // Recompute cluster hulls
-    roles.forEach((r, i) => {
-      const pts = (roleMap.get(r) || []).map(a => [a.x, a.y]);
-      if (pts.length < 3) {
-        // Expand single/double points into a fake hull
-        if (pts.length === 1) {
-          const [px, py] = pts[0];
-          pts.push([px-20, py-20],[px+20, py-20],[px+20, py+20],[px-20, py+20]);
-        } else {
-          const mid = [(pts[0][0]+pts[1][0])/2, (pts[0][1]+pts[1][1])/2];
-          pts.push([mid[0]-20,mid[1]-20],[mid[0]+20,mid[1]+20]);
-        }
-      }
-      const hull = d3.polygonHull(pts);
-      if (hull) {
-        // Expand hull outward from centroid
-        const centroid = d3.polygonCentroid(hull);
-        const expanded = hull.map(([px, py]) => {
-          const dx = px - centroid[0], dy = py - centroid[1];
-          const len = Math.sqrt(dx*dx + dy*dy) || 1;
-          return [px + dx/len * 22, py + dy/len * 22];
-        });
-        hullPaths.filter(d => d === r).attr('d', 'M' + expanded.join('L') + 'Z');
-
-        // Label below hull bottom
-        const minY = Math.min(...hull.map(p => p[1]));
-        clusterLabels.filter(d => d === r)
-          .attr('x', centroid[0])
-          .attr('y', minY - 10);
-      }
+  // Build id→position map for edges
+  const posMap = new Map();  // agent_id → {cx, cy}
+  roles.forEach(([role, roleAgents], ri) => {
+    const laneY = ri * LANE_H + 10;
+    const cy = laneY + LANE_PAD + DOT_AREA_H / 2;
+    roleAgents.forEach((a, i) => {
+      const t = new Date(a.created_at).getTime();
+      const frac = tRange > 0 ? (t - tMin) / tRange : 0.5;
+      const cx = LABEL_W + 10 + frac * (xW - 20);
+      posMap.set(a.agent_id, { cx, cy });
     });
   });
 
-  // Deselect on canvas click
+  // ── Draw parent→child edges ────────────────────────────────────────────
+  const edgeG = g.append('g');
+  agents.forEach(a => {
+    if (!a.parent_id) return;
+    const src = posMap.get(a.parent_id);
+    const tgt = posMap.get(a.agent_id);
+    if (!src || !tgt) return;
+    const mx = (src.cx + tgt.cx) / 2;
+    edgeG.append('path')
+      .attr('d', `M${src.cx},${src.cy} C${mx},${src.cy} ${mx},${tgt.cy} ${tgt.cx},${tgt.cy}`)
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(162,155,254,.35)')
+      .attr('stroke-width', 1.2)
+      .attr('marker-end', 'url(#arrow)');
+  });
+
+  // ── Draw lanes ─────────────────────────────────────────────────────────
+  const ROLE_COLORS = ['#6c5ce7','#00cec9','#fd79a8','#e17055','#fdcb6e','#55efc4','#74b9ff','#fab1a0'];
+
+  S.nodeMap = new Map();
+
+  roles.forEach(([role, roleAgents], ri) => {
+    const laneY = ri * LANE_H + 10;
+    const cy = laneY + LANE_PAD + DOT_AREA_H / 2;
+    const rColor = ROLE_COLORS[ri % ROLE_COLORS.length];
+
+    // Lane background stripe
+    g.append('rect')
+      .attr('x', 0).attr('y', laneY)
+      .attr('width', drawW).attr('height', LANE_H - 2)
+      .attr('fill', ri % 2 === 0 ? 'rgba(255,255,255,.018)' : 'rgba(255,255,255,.008)')
+      .attr('rx', 4);
+
+    // Left border accent
+    g.append('rect')
+      .attr('x', 0).attr('y', laneY)
+      .attr('width', 3).attr('height', LANE_H - 2)
+      .attr('fill', rColor).attr('rx', 1);
+
+    // Role label
+    const labelGroup = g.append('g').attr('transform', `translate(8, ${laneY + LANE_H/2})`);
+    labelGroup.append('text')
+      .attr('font-family', 'SFMono-Regular,Consolas,monospace')
+      .attr('font-size', 11).attr('font-weight', '700')
+      .attr('fill', rColor).attr('dominant-baseline', 'central')
+      .text(role.length > 14 ? role.slice(0,13)+'…' : role);
+    labelGroup.append('text')
+      .attr('font-family', 'SFMono-Regular,Consolas,monospace')
+      .attr('font-size', 9).attr('fill', 'rgba(255,255,255,.3)')
+      .attr('dominant-baseline', 'central').attr('dy', 14)
+      .text(roleAgents.length + ' agents');
+
+    // Divider line
+    g.append('line')
+      .attr('x1', LABEL_W).attr('x2', drawW)
+      .attr('y1', laneY).attr('y2', laneY)
+      .attr('stroke', 'rgba(255,255,255,.05)');
+
+    // ── Agent dots ──────────────────────────────────────────────────────
+    const nodeG2 = g.append('g');
+    roleAgents.forEach(a => {
+      const pos = posMap.get(a.agent_id);
+      if (!pos) return;
+      const r = nodeRadius(a, maxEv);
+      const color = STATUS_COLOR[a.status] || '#636e72';
+      const isSelected = a.agent_id === S.selectedAgent;
+      const isHighlighted = !S.gSearch || a.name.toLowerCase().includes(S.gSearch) ||
+        (a.task_description||'').toLowerCase().includes(S.gSearch);
+
+      const nodeGroup = nodeG2.append('g')
+        .attr('transform', `translate(${pos.cx},${pos.cy})`)
+        .attr('class', 'agent-node')
+        .style('cursor', 'pointer')
+        .on('click', (e) => { e.stopPropagation(); openDetail(a.agent_id); })
+        .on('mouseover', (e) => showTooltip(e, a))
+        .on('mousemove', moveTooltip)
+        .on('mouseout', hideTooltip);
+
+      // Dim non-matching when searching
+      if (S.gSearch && !isHighlighted) nodeGroup.attr('opacity', 0.15);
+
+      // Running pulse ring
+      if (a.status === 'running') {
+        nodeGroup.append('circle').attr('r', r + 4)
+          .attr('fill', 'none').attr('stroke', '#6c5ce7')
+          .attr('stroke-width', 1.5).attr('opacity', 0.5);
+      }
+
+      // Main dot
+      const circle = nodeGroup.append('circle').attr('class', 'node-circle')
+        .attr('r', r).attr('fill', color).attr('fill-opacity', 0.88)
+        .attr('stroke', isSelected ? '#18ffff' : 'rgba(0,0,0,.4)')
+        .attr('stroke-width', isSelected ? 2.5 : 1);
+
+      S.nodeMap.set(a.agent_id, { circle, group: nodeGroup, data: a });
+    });
+  });
+
+  // Click canvas to deselect
   svg.on('click', () => closeDetail());
 }
 
-// ── Live status update (no full re-render) ────────────────────────────────
+// ── Live status update ────────────────────────────────────────────────────
 function updateNodeStatus(agentId, status) {
   const a = S.agents.find(x => x.agent_id === agentId);
   if (a) a.status = status;
   const n = S.nodeMap && S.nodeMap.get(agentId);
-  if (n) n.select('.node-circle').attr('fill', STATUS_COLOR[status] || '#636e72');
+  if (n) n.circle.attr('fill', STATUS_COLOR[status] || '#636e72');
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
 function gZoom(factor) {
-  if (!S.graphSvg || !S.zoomBehavior) return;
-  S.graphSvg.transition().duration(220).call(S.zoomBehavior.scaleBy, factor);
+  if (!S.graphSvg) return;
+  S.graphSvg.transition().duration(200).call(S.zoomBehavior.scaleBy, factor);
 }
 function gFit() {
-  if (!S.graphSvg || !S.zoomBehavior) return;
-  S.graphSvg.transition().duration(350).call(
-    S.zoomBehavior.transform,
-    d3.zoomIdentity.translate(S.graphW/2, S.graphH/2).scale(0.8)
-  );
+  if (!S.graphSvg) return;
+  S.graphTransform = null;
+  S.graphSvg.transition().duration(300).call(S.zoomBehavior.transform, d3.zoomIdentity);
 }
 
 // ── Tooltip ───────────────────────────────────────────────────────────────
 function showTooltip(e, d) {
   const role = agentRole(d);
-  const task = shortTask(d.task_description, 120);
+  const task = shortTask(d.task_description, 130);
   const tip = $('tooltip');
   tip.innerHTML = `
     <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${escHtml(d.name)}</div>
@@ -857,7 +848,7 @@ function showTooltip(e, d) {
     ${task ? `<div style="font-size:11px;color:var(--fg2);margin-top:5px;line-height:1.5">${escHtml(task)}</div>` : ''}
     <div style="margin-top:5px;font-size:11px;color:var(--fg3)">
       <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b>
-      · ${d.event_count||0} events · ${d.file_count||0} files
+      · ${d.event_count||0} ev · ${d.file_count||0} files · ${fmt.ts(d.created_at).slice(11)}
     </div>`;
   tip.style.opacity = '1';
   moveTooltip(e);
@@ -869,17 +860,14 @@ function moveTooltip(e) {
 }
 function hideTooltip() { $('tooltip').style.opacity = '0'; }
 
-// ── Load & render agents ──────────────────────────────────────────────────
+// ── Load & render ─────────────────────────────────────────────────────────
 async function loadAgents(forceRedraw = false) {
   try {
     const fresh = await api('/api/agents');
     const wasEmpty = !S.agents.length;
     S.agents = fresh;
-    if (wasEmpty || forceRedraw) {
-      initGraph(S.agents);
-    } else {
-      fresh.forEach(a => updateNodeStatus(a.agent_id, a.status));
-    }
+    if (wasEmpty || forceRedraw) drawSwimlane(S.agents);
+    else fresh.forEach(a => updateNodeStatus(a.agent_id, a.status));
   } catch(e) { console.error('loadAgents', e); }
 }
 
@@ -891,8 +879,8 @@ async function openDetail(agentId) {
   // Highlight selected node
   if (S.nodeMap) {
     S.nodeMap.forEach((n, id) => {
-      n.select('.node-circle')
-        .attr('stroke', id === agentId ? '#18ffff' : 'rgba(0,0,0,.3)')
+      n.circle
+        .attr('stroke', id === agentId ? '#18ffff' : 'rgba(0,0,0,.4)')
         .attr('stroke-width', id === agentId ? 2.5 : 1);
     });
   }
@@ -916,7 +904,7 @@ function closeDetail() {
   S.selectedAgent = null;
   $('detail-pane').classList.remove('open');
   if (S.nodeMap) {
-    S.nodeMap.forEach(n => n.select('.node-circle').attr('stroke','rgba(0,0,0,.3)').attr('stroke-width', 1));
+    S.nodeMap.forEach(n => n.circle.attr('stroke','rgba(0,0,0,.4)').attr('stroke-width', 1));
   }
 }
 
@@ -1197,6 +1185,7 @@ function reconnectSSE() {
 
 // ── Full refresh ───────────────────────────────────────────────────────────
 async function fullRefresh() {
+  S.graphTransform = null;  // reset zoom on manual refresh
   await Promise.all([loadStats(), loadAgents(true)]);
   await loadRecentEvents();
 }
