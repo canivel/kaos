@@ -133,7 +133,8 @@ async def api_agents(request: Request) -> JSONResponse:
                 COALESCE(tc.cnt, 0) AS tool_call_count,
                 COALESCE(tc.tokens, 0) AS token_count,
                 COALESCE(ec.cnt, 0) AS event_count,
-                strftime('%Y-%m-%dT%H:%M', a.created_at) AS batch_minute
+                strftime('%Y-%m-%dT%H:%M', a.created_at) AS batch_minute,
+                COALESCE(st.value, '') AS task_description
             FROM agents a
             LEFT JOIN (
                 SELECT agent_id, COUNT(*) as cnt
@@ -150,6 +151,10 @@ async def api_agents(request: Request) -> JSONResponse:
                 FROM events
                 GROUP BY agent_id
             ) ec ON ec.agent_id = a.agent_id
+            LEFT JOIN (
+                SELECT agent_id, value
+                FROM state WHERE key = 'task'
+            ) st ON st.agent_id = a.agent_id
             ORDER BY a.created_at DESC
         """)
         # Parse JSON fields
@@ -493,4 +498,7 @@ def run(host: str = "127.0.0.1", port: int = 8765, db: str = "./kaos.db") -> Non
         _save_projects(projects)
 
     print(f"  KAOS UI  →  http://{host}:{port}/?db={db_abs}")
-    uvicorn.run(app, host=host, port=port, log_level="warning")
+    try:
+        uvicorn.run(app, host=host, port=port, log_level="warning")
+    except KeyboardInterrupt:
+        pass

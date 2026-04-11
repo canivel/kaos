@@ -534,7 +534,10 @@ def ui(db: str, port: int, host: str, no_browser: bool):
     console.print(f"[bold cyan]KAOS UI[/bold cyan]  →  [link=http://{host}:{port}/?db={db_abs}]http://{host}:{port}/[/link]")
     console.print(f"[dim]Project: {db_abs}[/dim]")
     console.print("[dim]Ctrl+C to stop[/dim]")
-    _run_ui(host=host, port=port, db=db_abs)
+    try:
+        _run_ui(host=host, port=port, db=db_abs)
+    except KeyboardInterrupt:
+        console.print("\n[dim]Stopped.[/dim]")
 
 
 @cli.command()

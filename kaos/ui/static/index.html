@@ -850,21 +850,37 @@ function graphFit() {
   );
 }
 
+function shortTask(desc, maxLen = 80) {
+  if (!desc) return '';
+  let s = desc;
+  try { s = JSON.parse(desc); } catch(e) {}
+  s = String(s).replace(/\s+/g, ' ').trim();
+  return s.length > maxLen ? s.slice(0, maxLen) + '…' : s;
+}
+
 function showTooltip(e, d) {
   const tip = $('tooltip');
   if (d.isBatch) {
+    // Show what the batch agents were working on (collect from member agents)
+    const members = S.agents.filter(a => a.batch_id === d.batch_id);
+    const roles = [...new Set(members.map(a => a.config?.role || '').filter(Boolean))];
+    const tasks = [...new Set(members.map(a => shortTask(a.task_description)).filter(Boolean))].slice(0,2);
     tip.innerHTML = `
-      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a29bfe">Batch</div>
-      <div style="font-size:11px;color:var(--fg2);margin-top:3px">${d.batch_id}</div>
-      <div style="font-size:11px;color:var(--fg3);margin-top:3px">${d.batchSize} agents spawned together</div>`;
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a29bfe">Parallel Batch · ${d.batchSize} agents</div>
+      <div style="font-size:11px;color:var(--fg3);margin-top:2px">${d.batch_id}</div>
+      ${roles.length ? `<div style="font-size:11px;color:var(--fg2);margin-top:4px">Roles: ${roles.join(', ')}</div>` : ''}
+      ${tasks.length ? `<div style="font-size:11px;color:var(--fg2);margin-top:3px;line-height:1.4">${tasks.map(t=>'→ '+t).join('<br>')}</div>` : ''}`;
   } else {
+    const task = shortTask(d.task_description, 120);
+    const role = d.config?.role || '';
     tip.innerHTML = `
       <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${d.name}</div>
-      <div style="color:var(--fg3);font-size:11px;margin-top:2px">${(d.agent_id||'').slice(0,16)}…</div>
-      <div style="margin-top:5px;font-size:11px;display:flex;flex-direction:column;gap:2px">
-        <div>Status: <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b></div>
-        <div>Events: ${d.event_count||0} · Files: ${d.file_count||0} · Calls: ${d.tool_call_count||0}</div>
-        <div style="color:var(--fg3)">${fmt.ts(d.created_at)}</div>
+      ${role ? `<div style="font-size:11px;color:var(--accent2);margin-top:1px">${role}</div>` : ''}
+      ${task ? `<div style="font-size:11px;color:var(--fg2);margin-top:5px;line-height:1.5;max-width:220px">${escHtml(task)}</div>` : ''}
+      <div style="margin-top:5px;font-size:11px;display:flex;flex-direction:column;gap:2px;color:var(--fg3)">
+        <div>Status: <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b> · Events: ${d.event_count||0}</div>
+        <div>Files: ${d.file_count||0} · Calls: ${d.tool_call_count||0} · Tokens: ${fmt.num(d.token_count||0)}</div>
+        <div>${fmt.ts(d.created_at)}</div>
       </div>`;
   }
   tip.style.opacity = '1';
@@ -901,10 +917,18 @@ function updateNodeStatus(agentId, status) {
 }
 
 // ── Load agents + graph ───────────────────────────────────────────────────
-async function loadAgents() {
+async function loadAgents(forceRedraw = false) {
   try {
-    S.agents = await api('/api/agents');
-    renderGraph(S.agents);
+    const fresh = await api('/api/agents');
+    const wasEmpty = !S.agents.length;
+    S.agents = fresh;
+    // Only render if graph is empty (first load) or explicitly forced via Refresh button
+    if (wasEmpty || forceRedraw) {
+      renderGraph(S.agents);
+    } else {
+      // Just update node colors in-place without disturbing layout
+      fresh.forEach(a => updateNodeStatus(a.agent_id, a.status));
+    }
   } catch(e) { console.error('loadAgents', e); }
 }
 
@@ -1213,9 +1237,9 @@ function reconnectSSE() {
   };
 }
 
-// ── Full refresh ──────────────────────────────────────────────────────────
+// ── Full refresh (Refresh button) — redraws graph ─────────────────────────
 async function fullRefresh() {
-  await Promise.all([loadStats(), loadAgents()]);
+  await Promise.all([loadStats(), loadAgents(true)]);  // forceRedraw=true
   await loadRecentEvents();
 }
 
@@ -1236,12 +1260,8 @@ async function init() {
   renderGraph(S.agents);
   reconnectSSE();
 
-  // Periodic refresh of stats every 10s
-  setInterval(loadStats, 10000);
-  // Periodic graph refresh every 15s (SSE handles real-time, this is fallback)
-  setInterval(async () => {
-    await loadAgents();
-  }, 15000);
+  // Periodic stats refresh only — graph does NOT auto-reload (SSE handles status updates)
+  setInterval(loadStats, 15000);
 }
 
 // Handle window resize
