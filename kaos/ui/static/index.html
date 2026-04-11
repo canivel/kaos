@@ -378,6 +378,7 @@ input{font-family:inherit;font-size:13px}
         <button class="ctrl-btn" title="Zoom in" onclick="graphZoom(1.3)">+</button>
         <button class="ctrl-btn" title="Zoom out" onclick="graphZoom(0.77)">−</button>
         <button class="ctrl-btn" title="Fit to view" onclick="graphFit()" style="font-size:13px">⊡</button>
+        <button class="ctrl-btn" id="btn-toggle-batches" title="Toggle batch groups" onclick="toggleBatches()" style="font-size:11px;font-family:var(--mono)">B</button>
       </div>
       <div id="graph-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#6c5ce7"></div>running</div>
@@ -611,7 +612,7 @@ function initGraph() {
   const H = svg.node().clientHeight || 600;
 
   gZoomBehavior = d3.zoom()
-    .scaleExtent([0.1, 4])
+    .scaleExtent([0.05, 6])
     .on('zoom', e => {
       S.graphTransform = e.transform;
       g.attr('transform', e.transform);
@@ -619,21 +620,31 @@ function initGraph() {
 
   svg.call(gZoomBehavior);
 
-  // Defs: arrow marker + glow filter
+  // Defs
   const defs = svg.append('defs');
+
+  // Arrow for parent→child edges
   defs.append('marker')
-    .attr('id','arrow')
-    .attr('viewBox','0 -4 8 8')
+    .attr('id','arrow-parent')
+    .attr('viewBox','0 -5 10 10')
+    .attr('refX',22).attr('refY',0)
+    .attr('markerWidth',7).attr('markerHeight',7)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','#a29bfe');
+
+  // Arrow for batch→agent edges
+  defs.append('marker')
+    .attr('id','arrow-batch')
+    .attr('viewBox','0 -5 10 10')
     .attr('refX',18).attr('refY',0)
     .attr('markerWidth',6).attr('markerHeight',6)
     .attr('orient','auto')
-    .append('path')
-    .attr('d','M0,-4L8,0L0,4')
-    .attr('fill','rgba(162,155,254,.5)');
+    .append('path').attr('d','M0,-5L10,0L0,5').attr('fill','rgba(108,92,231,.6)');
 
-  defs.append('filter').attr('id','glow')
-    .append('feGaussianBlur')
-    .attr('stdDeviation','3').attr('result','blur');
+  // Glow filter
+  const glow = defs.append('filter').attr('id','glow');
+  glow.append('feGaussianBlur').attr('stdDeviation','4').attr('result','blur');
+  glow.append('feComposite').attr('in','SourceGraphic').attr('in2','blur').attr('operator','over');
 
   const g = svg.append('g').attr('id','graph-root');
 
@@ -658,106 +669,173 @@ function renderGraph(agents) {
   }
   $('graph-empty').style.display = 'none';
 
-  // Build links from parent_id
-  const idSet = new Set(agents.map(a => a.agent_id));
-  const links = agents
-    .filter(a => a.parent_id && idSet.has(a.parent_id))
-    .map(a => ({source: a.parent_id, target: a.agent_id}));
+  // ── Build nodes + links ────────────────────────────────────────────────
+  const agentIdSet = new Set(agents.map(a => a.agent_id));
 
-  // Node radius by activity
-  const maxCalls = Math.max(1, ...agents.map(a => a.tool_call_count || 0));
-  const rScale = d3.scaleSqrt().domain([0, maxCalls]).range([10, 28]);
+  // 1. Parent→child edges (real hierarchy)
+  const parentLinks = agents
+    .filter(a => a.parent_id && agentIdSet.has(a.parent_id))
+    .map(a => ({source: a.parent_id, target: a.agent_id, type: 'parent'}));
 
-  // Stop old simulation
+  // 2. Batch grouping: agents with same batch_id → virtual hub node
+  const batchMap = {};  // batch_id → [agent_ids]
+  agents.forEach(a => {
+    if (a.batch_id) {
+      if (!batchMap[a.batch_id]) batchMap[a.batch_id] = [];
+      batchMap[a.batch_id].push(a.agent_id);
+    }
+  });
+
+  // Create virtual batch hub nodes
+  const batchNodes = Object.entries(batchMap).map(([bid, members]) => ({
+    agent_id: 'batch:' + bid,
+    name: bid.slice(11,16),  // HH:MM from the timestamp
+    status: 'batch',
+    isBatch: true,
+    batchSize: members.length,
+    batch_id: bid,
+    x: W/2 + (Math.random()-.5)*200,
+    y: H/2 + (Math.random()-.5)*200,
+  }));
+
+  // Batch hub → member edges
+  const batchLinks = [];
+  Object.entries(batchMap).forEach(([bid, members]) => {
+    // Only add batch hub if agent has no parent_id (avoid double-connecting)
+    members.forEach(aid => {
+      const agent = agents.find(a => a.agent_id === aid);
+      if (agent && !agent.parent_id) {
+        batchLinks.push({source: 'batch:' + bid, target: aid, type: 'batch'});
+      }
+    });
+  });
+
+  // All nodes
+  const allNodes = [...batchNodes, ...agents];
+  const allLinks = [...parentLinks, ...batchLinks];
+
+  // Node radius scale — use event_count as activity proxy (more reliable than tool_call_count)
+  const maxEvents = Math.max(1, ...agents.map(a => a.event_count || 0));
+  const rScale = d3.scaleSqrt().domain([0, maxEvents]).range([7, 22]);
+  const agentR = d => d.isBatch ? 14 : rScale(d.event_count || 0);
+
+  // ── Simulation ─────────────────────────────────────────────────────────
   if (S.graphSim) S.graphSim.stop();
 
-  const sim = d3.forceSimulation(agents)
-    .force('link', d3.forceLink(links).id(d => d.agent_id).distance(90).strength(0.6))
-    .force('charge', d3.forceManyBody().strength(-300))
-    .force('center', d3.forceCenter(W/2, H/2))
-    .force('collision', d3.forceCollide().radius(d => rScale(d.tool_call_count||0)+14));
+  const sim = d3.forceSimulation(allNodes)
+    .force('link', d3.forceLink(allLinks)
+      .id(d => d.agent_id)
+      .distance(d => d.type === 'batch' ? 55 : 80)
+      .strength(d => d.type === 'batch' ? 0.5 : 0.7))
+    .force('charge', d3.forceManyBody()
+      .strength(d => d.isBatch ? -200 : -80))
+    .force('center', d3.forceCenter(W/2, H/2).strength(0.05))
+    .force('collision', d3.forceCollide().radius(d => agentR(d) + 8));
 
   S.graphSim = sim;
 
-  // Clear old
-  g.selectAll('.link,.node-g').remove();
+  // ── Draw ───────────────────────────────────────────────────────────────
+  g.selectAll('.links-layer,.nodes-layer').remove();
 
-  // Links
-  const link = g.append('g')
-    .selectAll('line')
-    .data(links)
+  // Links layer
+  const linkG = g.append('g').attr('class','links-layer');
+
+  const link = linkG.selectAll('line')
+    .data(allLinks)
     .join('line')
-    .attr('class','link')
-    .attr('stroke','rgba(162,155,254,.3)')
-    .attr('stroke-width',1.5)
-    .attr('marker-end','url(#arrow)');
+    .attr('stroke', d => d.type === 'parent' ? '#a29bfe' : 'rgba(108,92,231,.45)')
+    .attr('stroke-width', d => d.type === 'parent' ? 2 : 1.5)
+    .attr('stroke-dasharray', d => d.type === 'batch' ? '4,3' : null)
+    .attr('marker-end', d => d.type === 'parent' ? 'url(#arrow-parent)' : 'url(#arrow-batch)');
 
-  // Nodes
-  const node = g.append('g')
-    .selectAll('g')
-    .data(agents)
+  // Nodes layer
+  const nodeG = g.append('g').attr('class','nodes-layer');
+
+  const node = nodeG.selectAll('g')
+    .data(allNodes)
     .join('g')
-    .attr('class','node-g')
-    .style('cursor','pointer')
+    .attr('class', d => d.isBatch ? 'node-g batch-node' : 'node-g agent-node')
+    .style('cursor', d => d.isBatch ? 'default' : 'pointer')
     .call(d3.drag()
       .on('start', (e,d) => { if(!e.active) sim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; })
       .on('drag',  (e,d) => { d.fx=e.x; d.fy=e.y; })
       .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
     )
-    .on('click', (e,d) => { e.stopPropagation(); openDetail(d.agent_id); })
+    .on('click', (e,d) => { if(!d.isBatch){ e.stopPropagation(); openDetail(d.agent_id); } })
     .on('mouseover', (e,d) => showTooltip(e, d))
     .on('mouseout', hideTooltip);
 
-  // Outer glow ring for running agents
-  node.filter(d => d.status === 'running')
+  // ── Batch hub nodes (hexagon shape) ────────────────────────────────────
+  const batchNode = node.filter(d => d.isBatch);
+
+  batchNode.append('circle')
+    .attr('r', 14)
+    .attr('fill', 'rgba(108,92,231,.15)')
+    .attr('stroke', '#6c5ce7')
+    .attr('stroke-width', 2)
+    .attr('stroke-dasharray', '5,3');
+
+  batchNode.append('text')
+    .attr('text-anchor','middle').attr('dy','0.35em')
+    .attr('fill','#a29bfe').attr('font-size', 9)
+    .attr('font-family','var(--mono)').attr('font-weight','700')
+    .text(d => d.name);
+
+  batchNode.append('text')
+    .attr('text-anchor','middle').attr('dy', 22)
+    .attr('fill','rgba(162,155,254,.5)').attr('font-size', 8)
+    .attr('font-family','var(--mono)')
+    .text(d => d.batchSize + ' agents');
+
+  // ── Agent nodes ─────────────────────────────────────────────────────────
+  const agentNode = node.filter(d => !d.isBatch);
+
+  // Glow ring for running
+  agentNode.filter(d => d.status === 'running')
     .append('circle')
-    .attr('r', d => rScale(d.tool_call_count||0)+5)
-    .attr('fill','none')
-    .attr('stroke', d => STATUS_COLOR[d.status]||'#636e72')
-    .attr('stroke-width',1.5)
-    .attr('stroke-opacity',.35)
-    .attr('filter','url(#glow)');
+    .attr('r', d => agentR(d) + 6)
+    .attr('fill', 'none')
+    .attr('stroke', '#6c5ce7')
+    .attr('stroke-width', 2)
+    .attr('stroke-opacity', .4)
+    .attr('filter', 'url(#glow)');
 
   // Main circle
-  node.append('circle')
-    .attr('r', d => rScale(d.tool_call_count||0))
-    .attr('fill', d => STATUS_COLOR[d.status]||'#636e72')
-    .attr('fill-opacity',.85)
-    .attr('stroke', d => STATUS_COLOR[d.status]||'#636e72')
-    .attr('stroke-width',2)
-    .attr('stroke-opacity',.9);
+  agentNode.append('circle')
+    .attr('r', d => agentR(d))
+    .attr('fill', d => STATUS_COLOR[d.status] || '#636e72')
+    .attr('fill-opacity', .88)
+    .attr('stroke', d => STATUS_COLOR[d.status] || '#636e72')
+    .attr('stroke-width', 1.5)
+    .attr('stroke-opacity', 1);
 
-  // Label
-  node.append('text')
+  // Label below node
+  agentNode.append('text')
     .attr('text-anchor','middle')
-    .attr('dy', d => rScale(d.tool_call_count||0)+13)
-    .attr('fill','#e4e4ef')
-    .attr('font-size',10)
+    .attr('dy', d => agentR(d) + 11)
+    .attr('fill','rgba(228,228,239,.75)')
+    .attr('font-size', 9)
     .attr('font-family','SFMono-Regular,Consolas,monospace')
-    .text(d => d.name.length>14 ? d.name.slice(0,13)+'…' : d.name);
+    .text(d => d.name.length > 13 ? d.name.slice(0,12)+'…' : d.name);
 
-  // Selected highlight
+  // Selection highlight
   if (S.selectedAgent) {
-    node.filter(d => d.agent_id === S.selectedAgent)
+    agentNode.filter(d => d.agent_id === S.selectedAgent)
       .select('circle')
-      .attr('stroke','#18ffff')
-      .attr('stroke-width',3);
+      .attr('stroke','#18ffff').attr('stroke-width', 3);
   }
 
-  // Click on bg to deselect
-  S.graphSvg.on('click', () => { /* don't close on bg click */ });
-
-  // Tick
+  // ── Tick ─────────────────────────────────────────────────────────────────
   sim.on('tick', () => {
     link
       .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
       .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-    node.attr('transform', d => `translate(${d.x},${d.y})`);
+    node.attr('transform', d => `translate(${d.x||0},${d.y||0})`);
   });
 
-  // Keep node map for status updates
+  // Keep node map for live status updates (only agent nodes)
   S.agentNodeMap = {};
-  node.each(function(d) { S.agentNodeMap[d.agent_id] = d3.select(this); });
+  agentNode.each(function(d) { S.agentNodeMap[d.agent_id] = d3.select(this); });
 }
 
 function graphZoom(factor) {
@@ -766,24 +844,50 @@ function graphZoom(factor) {
 }
 function graphFit() {
   if (!S.graphSvg) return;
-  S.graphSvg.transition().duration(400).call(gZoomBehavior.transform, d3.zoomIdentity.translate(S.graphW/2, S.graphH/2).scale(0.9));
+  S.graphSvg.transition().duration(400).call(
+    gZoomBehavior.transform,
+    d3.zoomIdentity.translate(S.graphW/2, S.graphH/2).scale(0.75)
+  );
 }
 
 function showTooltip(e, d) {
   const tip = $('tooltip');
-  tip.innerHTML = `
-    <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${d.name}</div>
-    <div style="color:var(--fg3);font-size:11px;margin-top:2px">${d.agent_id.slice(0,16)}…</div>
-    <div style="margin-top:5px;font-size:11px;display:flex;flex-direction:column;gap:2px">
-      <div>Status: <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b></div>
-      <div>Files: ${d.file_count} · Calls: ${d.tool_call_count} · Tokens: ${fmt.num(d.token_count)}</div>
-      <div style="color:var(--fg3)">${fmt.ts(d.created_at)}</div>
-    </div>`;
+  if (d.isBatch) {
+    tip.innerHTML = `
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#a29bfe">Batch</div>
+      <div style="font-size:11px;color:var(--fg2);margin-top:3px">${d.batch_id}</div>
+      <div style="font-size:11px;color:var(--fg3);margin-top:3px">${d.batchSize} agents spawned together</div>`;
+  } else {
+    tip.innerHTML = `
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${STATUS_COLOR[d.status]||'#fff'}">${d.name}</div>
+      <div style="color:var(--fg3);font-size:11px;margin-top:2px">${(d.agent_id||'').slice(0,16)}…</div>
+      <div style="margin-top:5px;font-size:11px;display:flex;flex-direction:column;gap:2px">
+        <div>Status: <b style="color:${STATUS_COLOR[d.status]}">${d.status}</b></div>
+        <div>Events: ${d.event_count||0} · Files: ${d.file_count||0} · Calls: ${d.tool_call_count||0}</div>
+        <div style="color:var(--fg3)">${fmt.ts(d.created_at)}</div>
+      </div>`;
+  }
   tip.style.opacity = '1';
   tip.style.left = (e.clientX+12)+'px';
   tip.style.top  = (e.clientY-10)+'px';
 }
 function hideTooltip() { $('tooltip').style.opacity = '0'; }
+
+// Toggle batch hub nodes on/off
+S.showBatches = true;
+function toggleBatches() {
+  S.showBatches = !S.showBatches;
+  const btn = $('btn-toggle-batches');
+  btn.style.background = S.showBatches ? 'var(--accent)' : 'var(--bg2)';
+  btn.style.color = S.showBatches ? '#fff' : 'var(--fg2)';
+  if (S.graphRoot) {
+    S.graphRoot.selectAll('.batch-node').style('display', S.showBatches ? null : 'none');
+    S.graphRoot.selectAll('.links-layer line').style('display', function(d) {
+      if (!S.showBatches && d.type === 'batch') return 'none';
+      return null;
+    });
+  }
+}
 
 // Update just a node's color without re-rendering
 function updateNodeStatus(agentId, status) {

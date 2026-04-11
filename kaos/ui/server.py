@@ -131,7 +131,9 @@ async def api_agents(request: Request) -> JSONResponse:
                 a.last_heartbeat,
                 COALESCE(fc.cnt, 0) AS file_count,
                 COALESCE(tc.cnt, 0) AS tool_call_count,
-                COALESCE(tc.tokens, 0) AS token_count
+                COALESCE(tc.tokens, 0) AS token_count,
+                COALESCE(ec.cnt, 0) AS event_count,
+                strftime('%Y-%m-%dT%H:%M', a.created_at) AS batch_minute
             FROM agents a
             LEFT JOIN (
                 SELECT agent_id, COUNT(*) as cnt
@@ -143,6 +145,11 @@ async def api_agents(request: Request) -> JSONResponse:
                 FROM tool_calls
                 GROUP BY agent_id
             ) tc ON tc.agent_id = a.agent_id
+            LEFT JOIN (
+                SELECT agent_id, COUNT(*) as cnt
+                FROM events
+                GROUP BY agent_id
+            ) ec ON ec.agent_id = a.agent_id
             ORDER BY a.created_at DESC
         """)
         # Parse JSON fields
@@ -153,6 +160,15 @@ async def api_agents(request: Request) -> JSONResponse:
                         r[field] = json.loads(r[field])
                     except Exception:
                         r[field] = {}
+
+        # Compute batch_id: group agents by same-minute creation into batches of size >= 2
+        from collections import Counter
+        minute_counts = Counter(r["batch_minute"] for r in rows if r.get("batch_minute"))
+        batch_minutes = {m for m, n in minute_counts.items() if n >= 2}
+        for r in rows:
+            m = r.get("batch_minute")
+            r["batch_id"] = m if m in batch_minutes else None
+
         return _json(rows)
     except Exception as e:
         return _err(str(e), 500)
