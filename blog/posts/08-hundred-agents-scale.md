@@ -1,14 +1,14 @@
-# 847 KAOS AI Agents. One Codebase. $18.40. Here's the Receipt.
+# 847 KAOS AI Agents. 847 Files. 8 Minutes. Zero Regressions.
 
 *MLOps · April 17, 2026 · 10 min read*
 
-*How VFS isolation, AAAK compression, and per-agent rollback make hundred-agent pipelines cheaper and safer than you'd expect.*
+*How 847 isolated AI agents ran a full Python 2→3 migration in parallel — coordinated, self-healing, and 2.45M tokens leaner than they had to be.*
 
 ---
 
 ![847 KAOS AI agents — Python 2→3 migration at scale](https://canivel.github.io/kaos/docs/demos/kaos_uc_scale.gif)
 
-*847 agents spawn in 17 batches. 809 complete. 31 roll back. 0 regressions shipped. $18.40 total.*
+*847 agents spawn in 17 batches. 809 complete. 31 roll back. 0 regressions shipped. 2.45M tokens saved.*
 
 ---
 
@@ -20,7 +20,7 @@ Most people who think about multi-agent systems at scale focus on the obvious ha
 
 Every shared filesystem is a race condition waiting to happen. Agent 312 writes to `utils/compat.py` while agent 447 is reading it to determine whether to apply its own patch. The result isn't a merge conflict — it's a silent corruption. The kind you find three days later when tests start failing for reasons that look unrelated to anything you changed.
 
-Every shared context window is a cost explosion. Naive multi-agent frameworks pool context across agents. At 100 agents, you're paying for 100x the context. The agents aren't smarter — they're just expensive.
+Every shared context window is a token explosion. Naive multi-agent frameworks pool context across agents. At 100 agents, you're sending 100× the context tokens. The agents aren't smarter — they're just bloated.
 
 The boring truth: **isolation is not a feature at scale. It's a prerequisite.**
 
@@ -76,7 +76,7 @@ hub:
   broadcast_on_discover: true
 ```
 
-`aaak_level: 5` is the key setting here. It activates KAOS ultra compression — 95% token reduction on each agent's context digest. We'll see what that means in dollars.
+`aaak_level: 5` is the key setting here. It activates KAOS ultra compression — 95% token reduction on each agent's context digest. We'll see what that means in tokens.
 
 ---
 
@@ -119,8 +119,7 @@ At level 5 (ultra), it achieves ~95% token reduction on the digest. Here's what 
 
 | What | Uncompressed | Compressed (L5) | Saved |
 |---|---|---|---|
-| Context digest | 6,100 tokens | 305 tokens | 5,795 tokens |
-| Per API call cost | $0.0183 | $0.00092 | $0.01742 |
+| Context digest | 6,100 tokens | 305 tokens | 5,795 tokens (95%) |
 
 **Cumulative across 847 agents, avg 3.4 turns each:**
 
@@ -128,11 +127,9 @@ At level 5 (ultra), it achieves ~95% token reduction on the digest. Here's what 
 |---|---|
 | Total agent-turns | 2,880 |
 | Tokens saved per turn | ~850 avg (varies by file) |
-| Total tokens saved | 2,451,063 |
-| Cost per 1M input tokens | $3.00 |
-| **Total dollars saved** | **$7.35** |
+| **Total tokens eliminated** | **2,451,063** |
 
-The full job cost $18.40. Without AAAK compression it would have cost $25.75 — a 28.5% increase for no benefit in output quality. The agents don't produce better migrations with a larger uncompressed context. They produce identical migrations, faster, cheaper.
+Without AAAK, the job would have consumed 8.58M tokens. With AAAK L5, it ran on 6.13M — 2.45M tokens that never needed to be sent. The agents produce identical migrations either way. The compression is purely a context digest optimization; it doesn't touch working state.
 
 Level 5 is aggressive. The compression loses some nuance in the digest — it's a lossy representation of state, not a lossless one. For a migration task where each file is independent, that's fine. For tasks where agents need rich cross-turn memory (e.g., complex refactoring decisions that reference earlier analysis), level 3 or 4 is usually the right tradeoff. The setting is one line in `kaos.yaml`.
 
@@ -215,9 +212,9 @@ The hub isn't magic. It's a structured shared memory: discovered patterns with c
 
 ---
 
-## The Final Receipt
+## The Final Numbers
 
-847 files. 8 minutes 47 seconds. $18.40.
+847 files. 8 minutes 47 seconds. 0 regressions shipped.
 
 **Outcome Summary:**
 
@@ -305,20 +302,19 @@ iteritems_generator_consumed   4            core/registry.py, core/handlers.py..
 ```
 
 ```sql
--- Cost analysis: what AAAK saved across all agents
+-- Token savings: what AAAK eliminated across all agents
 SELECT
   SUM(tokens_uncompressed) AS total_uncompressed,
-  SUM(tokens_compressed) AS total_compressed,
-  SUM(tokens_uncompressed - tokens_compressed) AS tokens_saved,
-  ROUND(SUM(tokens_uncompressed - tokens_compressed) / 1e6 * 3.00, 2) AS dollars_saved
+  SUM(tokens_compressed)   AS total_compressed,
+  SUM(tokens_uncompressed - tokens_compressed) AS tokens_saved
 FROM aaak_compression_log
 WHERE run_id = 'py2to3-migration';
 ```
 
 ```
-total_uncompressed  total_compressed  tokens_saved  dollars_saved
-------------------  ----------------  ------------  -------------
-4,949,663           2,498,600         2,451,063     7.35
+total_uncompressed  total_compressed  tokens_saved
+------------------  ----------------  ------------
+4,949,663           2,498,600         2,451,063
 ```
 
 ```sql
@@ -334,7 +330,7 @@ WHERE run_id = 'py2to3-migration'
 ORDER BY estimated_regressions_prevented DESC;
 ```
 
-One query. Every agent's complete behavior. Every failure pattern. Every dollar spent and saved. The 214MB SQLite file is the complete audit trail — not a summary, not logs, but a structured, queryable record of everything that happened during the run.
+One query. Every agent's complete behavior. Every failure pattern. Every token sent and saved. The 214MB SQLite file is the complete audit trail — not a summary, not logs, but a structured, queryable record of everything that happened during the run.
 
 ---
 
@@ -361,9 +357,9 @@ The architecture was designed for honest local-first operation. It runs on a Mac
 
 ---
 
-The codebase migrated in 8 minutes 47 seconds. The bill was $18.40. The audit trail lives in a 214MB SQLite file. Every agent's decision — every write, every rollback, every test failure, every hub pattern received — is queryable forever.
+847 agents. 809 files migrated. 31 rolled back cleanly. 0 regressions shipped. 8 minutes 47 seconds. And 2.45M tokens they never had to send — the cherry on top.
 
-That's the receipt.
+The audit trail lives in a 214MB SQLite file. Every agent's decision — every write, every rollback, every test failure, every hub pattern received — queryable forever.
 
 *KAOS is MIT-licensed and runs entirely locally. No data leaves your machine.*
 

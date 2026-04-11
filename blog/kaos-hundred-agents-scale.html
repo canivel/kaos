@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>847 KAOS AI Agents. One Codebase. $18.40. Here's the Receipt. — KAOS Blog</title>
-<meta name="description" content="847 KAOS agents ran a Python 2→3 migration in parallel. 809 succeeded. 31 rolled back. 0 regressions shipped. $18.40 total. Here's exactly how VFS isolation, AAAK compression, and hub coordination made it possible.">
+<title>847 KAOS AI Agents. 847 Files. 8 Minutes. Zero Regressions. — KAOS Blog</title>
+<meta name="description" content="847 KAOS agents ran a full Python 2→3 migration in parallel. 809 succeeded. 31 rolled back cleanly. 0 regressions shipped. 2.45M tokens saved. Here's how VFS isolation, AAAK compression, and hub coordination made it possible.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -122,8 +122,8 @@ footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem
 
 <header class="post-header">
   <span class="post-tag">MLOps &mdash; April 17, 2026</span>
-  <h1>847 KAOS AI Agents. One Codebase.<br><em>$18.40. Here's the Receipt.</em></h1>
-  <p class="post-subtitle">How VFS isolation, AAAK compression, and per-agent rollback make hundred-agent pipelines cheaper and safer than you'd expect.</p>
+  <h1>847 KAOS AI Agents. 847 Files.<br><em>8 Minutes. Zero Regressions.</em></h1>
+  <p class="post-subtitle">How 847 isolated AI agents ran a full Python 2→3 migration in parallel — coordinated, self-healing, and 2.45M tokens leaner than they had to be.</p>
   <div class="post-meta">
     <span class="post-meta-item">Danilo Canivel</span>
     <span class="post-meta-item"><span class="dot"></span>10 min read</span>
@@ -135,16 +135,16 @@ footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem
 
 <article class="post-body">
 
-<p>The job: migrate a 847-file Python 2 codebase to Python 3.11. One agent per file. 8 minutes 47 seconds. $18.40.</p>
+<p>The job: migrate a 847-file Python 2 codebase to Python 3.11. One agent per file. 8 minutes 47 seconds. Zero regressions shipped.</p>
 
-<p>Here's the receipt — what happened, why nothing blew up, and which numbers actually matter.</p>
+<p>Here's how 847 agents worked together — and what they accomplished that no single agent ever could.</p>
 
 <hr>
 
 <div class="demo-gif">
   <img src="../docs/demos/kaos_uc_scale.gif" alt="847 KAOS AI agents — Python 2→3 migration at scale" loading="lazy">
 </div>
-<p class="demo-gif-caption">847 agents spawn in 17 batches. 809 complete. 31 roll back. 0 regressions shipped. $18.40 total.</p>
+<p class="demo-gif-caption">847 agents spawn in 17 batches. 809 complete. 31 roll back. 0 regressions shipped. 2.45M tokens saved.</p>
 
 <hr>
 
@@ -156,7 +156,7 @@ footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem
 
 <p>Every shared filesystem is a race condition. Agent 312 writes to <code>utils/compat.py</code> while agent 447 is reading it to decide whether to apply its own patch. The result isn't a merge conflict — it's a silent corruption. The kind you discover three days later when tests start failing for reasons that look entirely unrelated.</p>
 
-<p>Every shared context window is a cost explosion. Naive multi-agent frameworks pool context across agents. At 100 agents, you're paying for 100× the context. The agents don't produce better results. They're just expensive.</p>
+<p>Every shared context window is a token explosion. Naive multi-agent frameworks pool context across agents. At 100 agents, you're sending 100× the context tokens. The agents don't produce better results. They're just bloated.</p>
 
 <p>The boring truth: <strong>isolation is not a feature at scale. It's a prerequisite.</strong> This is the run where that became undeniable.</p>
 
@@ -206,7 +206,7 @@ hub:
   min_confidence: 0.85
   broadcast_on_discover: true</code></pre>
 
-<p><code>aaak_level: 5</code> is the key compression setting — ultra mode, 95% token reduction on each agent's context digest. We'll see what that means in dollars. The <code>hub.enabled: true</code> activates CORAL coordination, where agents share patterns discovered from failures. Both are single lines in config.</p>
+<p><code>aaak_level: 5</code> is the key compression setting — ultra mode, 95% token reduction on each agent's context digest. We'll see what that means in tokens. The <code>hub.enabled: true</code> activates CORAL coordination, where agents share patterns discovered from failures. Both are single lines in config.</p>
 
 <hr>
 
@@ -271,12 +271,6 @@ hub:
       <td class="good">305 tokens</td>
       <td class="good">5,795 tokens</td>
     </tr>
-    <tr>
-      <td>Per API call cost</td>
-      <td>$0.0183</td>
-      <td class="good">$0.00092</td>
-      <td class="good">$0.01742</td>
-    </tr>
   </tbody>
 </table>
 
@@ -288,15 +282,12 @@ hub:
   </thead>
   <tbody>
     <tr><td>Total agent-turns</td><td>2,880</td></tr>
-    <tr><td>Digest tokens (uncompressed)</td><td>4,949,663</td></tr>
-    <tr><td>Digest tokens (compressed)</td><td>2,498,600</td></tr>
-    <tr><td>Total tokens saved</td><td class="good">2,451,063</td></tr>
-    <tr><td>Cost per 1M input tokens</td><td>$3.00</td></tr>
-    <tr><td><strong>Total dollars saved</strong></td><td class="good"><strong>$7.35</strong></td></tr>
+    <tr><td>Tokens saved per turn (avg)</td><td class="good">~850</td></tr>
+    <tr><td><strong>Total tokens eliminated</strong></td><td class="good"><strong>2,451,063</strong></td></tr>
   </tbody>
 </table>
 
-<p>The full job cost $18.40. Without AAAK compression it would have been $25.75 — a 28.5% premium for no change in output quality. The agents produce identical migrations with the compressed context. The compression is lossy on the digest representation, not on the agent's working state.</p>
+<p>Without AAAK, the job would have consumed 8.58M tokens. With AAAK L5, it ran on 6.13M — 2.45M tokens that never needed to be sent. The agents produce identical migrations either way. The compression is purely a context digest optimization; it doesn't touch working state.</p>
 
 <p>Level 5 is aggressive and right for this task. For jobs where agents need richer cross-turn memory — complex refactoring decisions that reference earlier analysis — level 3 or 4 is usually the better tradeoff. It's one line in <code>kaos.yaml</code>.</p>
 
@@ -408,9 +399,9 @@ hub:
 
 <hr>
 
-<h2>The Final Receipt</h2>
+<h2>The Final Numbers</h2>
 
-<p>847 files. 8 minutes 47 seconds. $18.40. 0 regressions shipped.</p>
+<p>847 files. 8 minutes 47 seconds. 0 regressions shipped.</p>
 
 <h3>Outcome Summary</h3>
 
@@ -539,21 +530,19 @@ print_function_side_effect     6            scripts/report.py, ...
 unicode_bytes_ambiguity        5            api/serializers.py, ...
 iteritems_generator_consumed   4            core/registry.py, ...</code></pre>
 
-<pre><code>-- AAAK compression savings across all agents
+<pre><code>-- Token savings: what AAAK eliminated across all agents
 SELECT
-  SUM(tokens_uncompressed)                              AS total_uncompressed,
-  SUM(tokens_compressed)                               AS total_compressed,
-  SUM(tokens_uncompressed - tokens_compressed)         AS tokens_saved,
-  ROUND(SUM(tokens_uncompressed - tokens_compressed)
-        / 1e6 * 3.00, 2)                              AS dollars_saved
+  SUM(tokens_uncompressed) AS total_uncompressed,
+  SUM(tokens_compressed)   AS total_compressed,
+  SUM(tokens_uncompressed - tokens_compressed) AS tokens_saved
 FROM aaak_compression_log
 WHERE run_id = 'py2to3-migration';</code></pre>
 
-<pre><code>total_uncompressed  total_compressed  tokens_saved  dollars_saved
-------------------  ----------------  ------------  -------------
-4,949,663           2,498,600         2,451,063     7.35</code></pre>
+<pre><code>total_uncompressed  total_compressed  tokens_saved
+------------------  ----------------  ------------
+4,949,663           2,498,600         2,451,063</code></pre>
 
-<p>One query. Every agent's complete behavior. Every failure pattern. Every dollar spent and saved. The 214MB SQLite file is not a summary — it's a structured, queryable record of everything that happened during the run. Every write, every rollback, every tool call, every hub broadcast, timestamped to the millisecond.</p>
+<p>One query. Every agent's complete behavior. Every failure pattern. Every token sent and saved. The 214MB SQLite file is not a summary — it's a structured, queryable record of everything that happened during the run. Every write, every rollback, every tool call, every hub broadcast, timestamped to the millisecond.</p>
 
 <hr>
 
@@ -584,9 +573,9 @@ WHERE run_id = 'py2to3-migration';</code></pre>
 
 <hr>
 
-<p>The codebase migrated in 8 minutes 47 seconds. The bill was $18.40. The audit trail lives in a 214MB SQLite file. Every agent's decision — every write, every rollback, every test failure, every hub pattern received — is queryable forever.</p>
+<p>847 agents. 809 files migrated. 31 rolled back cleanly. 0 regressions shipped. 8 minutes 47 seconds. And 2.45M tokens they never had to send — the cherry on top.</p>
 
-<p>That's the receipt.</p>
+<p>The audit trail lives in a 214MB SQLite file. Every agent's decision — every write, every rollback, every test failure, every hub pattern received — queryable forever.</p>
 
 <p style="color:var(--fg2);font-size:.9rem"><em>KAOS is MIT-licensed and runs entirely locally. No data leaves your machine. <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a></em></p>
 
