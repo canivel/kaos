@@ -541,6 +541,150 @@ def ui(db: str, port: int, host: str, no_browser: bool):
 
 
 @cli.command()
+@click.option("--port", default=8765, help="UI server port")
+@click.option("--host", default="127.0.0.1", help="UI server host")
+@click.option("--no-browser", is_flag=True, default=False, help="Don't open browser automatically")
+def demo(port: int, host: str, no_browser: bool):
+    """Seed a demo database and open the live dashboard.
+
+    Creates demo.db with realistic agent data (code review swarm, parallel
+    refactors, failed migrations) so you can explore the UI without running
+    real agents.
+    """
+    import random
+    import threading
+    import time as _time
+    from kaos.ui.server import run as _run_ui
+
+    demo_db = str(Path("./demo.db").resolve())
+
+    # ── Seed demo data ────────────────────────────────────────────────────
+    console.print("[bold cyan]KAOS Demo[/bold cyan]  Seeding demo.db…")
+
+    if Path(demo_db).exists():
+        Path(demo_db).unlink()
+
+    db_obj = Kaos(db_path=demo_db)
+
+    waves = [
+        {
+            "goal": "Code review swarm: security + perf + style analysis of payments module",
+            "agents": [
+                ("security-reviewer", "completed", 4, 18,
+                 "Scan payments module for SQL injection, auth bypass, and hardcoded secrets"),
+                ("perf-reviewer", "completed", 3, 12,
+                 "Profile payments module for N+1 queries, missing indexes, and slow loops"),
+                ("style-reviewer", "completed", 3, 10,
+                 "Enforce PEP 8, naming conventions, and docstring coverage"),
+                ("test-writer", "completed", 5, 22,
+                 "Write pytest unit tests for all payment endpoints"),
+                ("doc-writer", "completed", 4, 8,
+                 "Generate API reference docs from code and write usage examples"),
+            ],
+        },
+        {
+            "goal": "Parallel refactor: auth module + legacy parser + API redesign",
+            "agents": [
+                ("auth-refactor", "completed", 6, 28,
+                 "Refactor auth.py to use JWT tokens, remove session-based auth"),
+                ("legacy-parser", "failed", 2, 9,
+                 "Parse legacy CSV format and migrate to Parquet — fails on encoding edge cases"),
+                ("api-redesign", "running", 4, 20,
+                 "Redesign REST API to follow OpenAPI 3.1 spec with versioned endpoints"),
+                ("migration-agent", "running", 3, 15,
+                 "Run database migration: add user_preferences table, backfill defaults"),
+            ],
+        },
+        {
+            "goal": "Post-deploy triage: investigate prod anomaly in checkout flow",
+            "agents": [
+                ("log-analyst", "completed", 2, 6,
+                 "Parse production logs from last 2 hours, find spike in 500 errors"),
+                ("runaway-agent", "killed", 1, 5,
+                 "Attempt auto-rollback — terminated after exceeding 30-minute budget"),
+                ("data-pipeline", "paused", 3, 11,
+                 "Backfill missing orders from cache into PostgreSQL — paused awaiting approval"),
+            ],
+        },
+    ]
+
+    tool_names = ["fs_read", "fs_write", "fs_ls", "shell_exec", "state_set", "state_get", "fs_mkdir"]
+    total_agents = 0
+
+    for wave in waves:
+        for name, target_status, num_files, num_calls, task in wave["agents"]:
+            aid = db_obj.spawn(name)
+            db_obj.set_state(aid, "task", task)
+
+            db_obj.write(aid, "/src/main.py",
+                         f"# {name}\n\ndef main():\n    pass\n".encode())
+            db_obj.write(aid, "/README.md", f"# {name}\n\n{task}\n".encode())
+            if "reviewer" in name:
+                db_obj.write(aid, "/review.md",
+                             f"# Review by {name}\n\n## Findings\n- Issue 1: SQL injection risk\n".encode())
+            if "test" in name:
+                db_obj.write(aid, "/tests/test_main.py",
+                             b"import pytest\n\ndef test_basic():\n    assert True\n")
+            for i in range(max(0, num_files - 2)):
+                db_obj.write(aid, f"/src/module_{i}.py", f"# module {i}\n".encode())
+
+            db_obj.set_state(aid, "progress",
+                             100 if target_status == "completed" else random.randint(15, 70))
+            db_obj.set_state(aid, "iteration", random.randint(5, 50))
+
+            for i in range(num_calls):
+                tool = random.choice(tool_names)
+                call_id = db_obj.log_tool_call(aid, tool, {"path": f"/src/file_{i}.py"})
+                db_obj.start_tool_call(call_id)
+                if target_status == "failed" and i >= num_calls - 2:
+                    db_obj.complete_tool_call(
+                        call_id, {"error": "ConnectionError"},
+                        status="error", error_message="ConnectionError",
+                        token_count=random.randint(50, 300),
+                    )
+                else:
+                    db_obj.complete_tool_call(
+                        call_id, {"result": "ok"},
+                        status="success", token_count=random.randint(400, 4500),
+                    )
+
+            db_obj.checkpoint(aid, label=f"{name}-initial")
+            if target_status == "completed":
+                db_obj.checkpoint(aid, label=f"{name}-final")
+                db_obj.complete(aid)
+            elif target_status == "running":
+                db_obj.set_status(aid, "running", pid=12345)
+                db_obj.heartbeat(aid)
+            elif target_status == "failed":
+                db_obj.fail(aid, error="ConnectionError: endpoint unreachable")
+            elif target_status == "killed":
+                db_obj.kill(aid)
+            elif target_status == "paused":
+                db_obj.set_status(aid, "running", pid=12345)
+                db_obj.pause(aid)
+
+            total_agents += 1
+
+    db_obj.close()
+    console.print(f"[green]✓[/green] Seeded {total_agents} agents across {len(waves)} execution waves")
+
+    # ── Open UI ───────────────────────────────────────────────────────────
+    if not no_browser:
+        def _open():
+            _time.sleep(1.2)
+            import webbrowser
+            webbrowser.open(f"http://{host}:{port}/?db={demo_db}")
+        threading.Thread(target=_open, daemon=True).start()
+
+    console.print(f"[bold cyan]Dashboard[/bold cyan]  →  [link=http://{host}:{port}/]http://{host}:{port}/[/link]")
+    console.print("[dim]Ctrl+C to stop[/dim]\n")
+    try:
+        _run_ui(host=host, port=port, db=demo_db)
+    except KeyboardInterrupt:
+        console.print("\n[dim]Stopped.[/dim]")
+
+
+@cli.command()
 @click.argument("agent_id")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.pass_context

@@ -1,1165 +1,156 @@
 # KAOS
 
-**Kernel for Agent Orchestration & Sandboxing**
-
-> Your agents share filesystems, lose state on crash, and you have no idea what they did. KAOS fixes that. Every agent gets an isolated virtual filesystem inside a single SQLite file — with full history, checkpoint/restore, and SQL-queryable audit trails.
-
-![KAOS — Isolated agent runtimes around a central SQLite database](image-2.png)
-
-> **See it in action** — animated demos of every feature below, or jump to [Use Cases](#real-world-examples).
+**Runtime infrastructure for multi-agent AI.** Every agent gets its own isolated filesystem, automatic checkpointing, a full audit trail, and a live dashboard — all in a single SQLite file.
 
 [![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
-[![Tests](https://img.shields.io/badge/tests-157%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
-[![Dependencies](https://img.shields.io/badge/deps-44%20total-lightgrey)]()
-[![Website](https://img.shields.io/badge/website-canivel.github.io%2Fkaos-blueviolet)](https://canivel.github.io/kaos/)
 
 ---
 
-## The Problem
-
-You're running multiple AI agents. Maybe they're reviewing code, refactoring modules, or writing tests in parallel. Here's what goes wrong:
-
-**Agents step on each other.** Two agents write to the same file. One overwrites the other's work. You don't find out until production.
-
-**An agent goes rogue and you can't debug it.** It made 47 tool calls, modified 12 files, and now the codebase is broken. What did it actually do? In what order? Good luck with `git log`.
-
-**You can't roll back a single agent.** The refactor agent broke everything. You `git reset --hard` and lose the work of the 3 other agents that were fine.
-
-**State vanishes.** Agent crashes mid-task. Its progress, findings, intermediate files — all gone. Start over.
-
-**You can't inspect anything.** How many tokens did each agent use? Which tool calls failed? What files did agent X touch? You're `grep`-ing through logs, if you even have logs.
-
-## How KAOS Solves This
-
-```python
-from kaos import Kaos
-
-db = Kaos("project.db")
-
-# Each agent is isolated — they literally cannot see each other's files
-agent_a = db.spawn("refactorer")
-agent_b = db.spawn("test-writer")
-
-db.write(agent_a, "/src/auth.py", b"# refactored auth module")
-db.write(agent_b, "/src/auth.py", b"# test stubs for auth")
-# Both wrote to "/src/auth.py" — no conflict. Each has their own copy.
-
-# Checkpoint before risky operations
-cp = db.checkpoint(agent_a, label="before-database-migration")
-# ... agent does something dangerous ...
-db.restore(agent_a, cp)  # roll back just this agent, others untouched
-
-# What exactly did it do? Query the audit trail.
-db.query("SELECT event_type, payload FROM events WHERE agent_id = ?", [agent_a])
-```
-
-**Everything lives in one `.db` file.** Copy it to back up. Send it to a teammate. Query it with any SQLite client. That's the entire runtime — files, state, tool calls, events, checkpoints.
-
----
-
-## Why Not Just Use LangChain / CrewAI / AutoGen?
-
-Those frameworks focus on **prompt chaining and agent communication**. KAOS focuses on the **runtime infrastructure** underneath — the part they all skip:
-
-| Problem | LangChain / CrewAI / AutoGen | KAOS |
-|---|---|---|
-| Agent isolation | Shared filesystem | Enforced per-agent VFS (SQL-scoped) |
-| Audit trail | DIY logging | Append-only event journal, every operation |
-| Rollback one agent | Not possible | `db.restore(agent, checkpoint)` |
-| Debug a failed agent | Read logs, hope for the best | `SELECT * FROM events WHERE agent_id = ?` |
-| Portable runtime | Cloud-dependent / in-memory | Single `.db` file, works anywhere |
-| State persistence | Framework-specific, often lost on crash | SQLite — survives crashes by design |
-| Token/cost tracking | Varies, often manual | `SELECT SUM(token_count) FROM tool_calls` |
-
-KAOS isn't a replacement for those frameworks — it's the **runtime layer they're missing**. You can use KAOS underneath LangChain, or use it standalone with local LLMs.
-
----
-
-## Quick Start
+## Install
 
 ```bash
 git clone https://github.com/canivel/kaos.git && cd kaos
 uv sync
-kaos setup          # interactive wizard — picks a preset, generates kaos.yaml,
-                    # auto-installs MCP server into Claude Code, auto-inits DB
+kaos setup
 ```
 
-![Getting Started — init, spawn, write, isolate](docs/demos/kaos_01_getting_started.gif)
+> Need `uv`? → `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-### As a Python library (no infrastructure needed)
-
-```python
-from kaos import Kaos
-
-db = Kaos("my-project.db")
-
-# Spawn agents with isolated filesystems
-researcher = db.spawn("researcher", config={"team": "backend"})
-writer = db.spawn("doc-writer", config={"team": "docs"})
-
-# Each agent has its own virtual filesystem
-db.write(researcher, "/findings.md", b"# Bug Report\nFound SQL injection in auth.py")
-db.write(writer, "/draft.md", b"# API Docs v2\n...")
-
-# Isolation is enforced — not just a convention
-db.read(researcher, "/findings.md")   # works
-# db.read(writer, "/findings.md")     # FileNotFoundError — isolated!
-
-# KV state per agent (survives crashes)
-db.set_state(researcher, "progress", 75)
-db.set_state(researcher, "findings", ["SQL injection in auth", "missing rate limit"])
-
-# Checkpoint before risky work
-cp1 = db.checkpoint(researcher, label="pre-refactor")
-# ... agent does risky stuff ...
-cp2 = db.checkpoint(researcher, label="post-refactor")
-
-# Something went wrong? Roll back.
-db.restore(researcher, cp1)  # back to safety
-
-# Or diff two checkpoints — what exactly changed?
-diff = db.diff_checkpoints(researcher, cp1, cp2)
-# → files added/removed/modified, state changes, tool calls between checkpoints
-
-# Query anything with SQL
-db.query("SELECT name, status FROM agents")
-db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [researcher])
-
-db.close()
-```
-
-### With local LLMs (fully autonomous agents)
-
-Point KAOS at local vLLM instances — including your own finetuned models:
+**Try the demo instantly (no API keys needed):**
 
 ```bash
-# Start your models (any OpenAI-compatible endpoint)
-vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --port 8000
-vllm serve deepseek-ai/DeepSeek-R1-70B --port 8002
+kaos demo
 ```
 
+Opens a live dashboard with 3 example execution waves so you can see what KAOS looks like before writing any code.
+
+---
+
+## Use with Claude Code / Cursor / any AI coding tool
+
+After `kaos setup`, KAOS registers itself as an MCP server. Then just ask your AI assistant:
+
+```
+with kaos, review my payments module — run a security agent and a test-writing agent in parallel
+```
+
+```
+with kaos, refactor auth.py — three agents in parallel: implement, test, and document
+```
+
+```
+with kaos, why did the last run fail? show me the agent that errored and its tool calls
+```
+
+KAOS handles isolation, checkpointing, and the dashboard automatically.
+
+---
+
+## What it does
+
+| Problem | Without KAOS | With KAOS |
+|---|---|---|
+| Two agents write the same file | One overwrites the other | Each has its own copy — enforced at the SQL level |
+| Agent crashes mid-task | Progress lost | Auto-checkpointed, resume from last snapshot |
+| Agent breaks everything | `git reset --hard`, lose all other work | `db.restore(agent, checkpoint)` — only that agent rolls back |
+| What did it actually do? | Read logs, if you have them | `SELECT * FROM events WHERE agent_id = ?` |
+| Cost tracking | Manual | `SELECT SUM(token_count) FROM tool_calls` |
+
+---
+
+## Run agents
+
+**CLI:**
+```bash
+kaos run "refactor auth.py" -n auth-agent        # single agent
+kaos parallel \
+  -t security "find vulnerabilities" \
+  -t tests    "write unit tests" \
+  -t docs     "update API docs"                   # parallel agents
+```
+
+**Python:**
 ```python
-import asyncio
 from kaos import Kaos
 from kaos.ccr import ClaudeCodeRunner
 from kaos.router import GEPARouter
 
-db = Kaos("project.db")
-router = GEPARouter.from_config("kaos.yaml")
-ccr = ClaudeCodeRunner(db, router)
+db     = Kaos("project.db")
+ccr    = ClaudeCodeRunner(db, GEPARouter.from_config("kaos.yaml"))
 
-# GEPA router auto-classifies task complexity and picks the right model:
-#   trivial → 7B (fast, cheap)    complex → 70B (powerful)
 results = asyncio.run(ccr.run_parallel([
-    {"name": "tests",  "prompt": "Write unit tests for the payments module"},
-    {"name": "impl",   "prompt": "Refactor payments to use Stripe SDK v3"},
-    {"name": "docs",   "prompt": "Update the payment API documentation"},
+    {"name": "security", "prompt": "Find vulnerabilities in auth.py"},
+    {"name": "tests",    "prompt": "Write unit tests for auth.py"},
 ]))
-
-# Every agent ran in parallel, fully isolated, with auto-checkpointing.
-# Query what happened:
-stats = db.query("""
-    SELECT a.name,
-           COUNT(tc.call_id) as tool_calls,
-           SUM(tc.token_count) as tokens
-    FROM agents a LEFT JOIN tool_calls tc ON a.agent_id = tc.agent_id
-    GROUP BY a.agent_id
-""")
 ```
 
-### As an MCP Server (Claude Code integration)
+---
+
+## Inspect & debug
 
 ```bash
-kaos serve --transport stdio
+kaos ls                            # list all agents + status
+kaos logs <id>                     # conversation + event log
+kaos read <id> /path/to/file       # read a file from the agent's VFS
+kaos checkpoint <id> -l "safe"     # snapshot agent state
+kaos restore <id> --checkpoint X   # roll back to that snapshot
+kaos diff <id> --from X --to Y     # what changed between checkpoints?
+kaos query "SELECT * FROM events"  # raw SQL on everything
+kaos ui                            # open the web dashboard
 ```
 
-Add to `~/.claude/settings.json`:
-```json
-{
-  "mcpServers": {
-    "kaos": {
-      "command": "kaos",
-      "args": ["serve", "--transport", "stdio"]
-    }
-  }
-}
-```
+---
 
-Now Claude Code can spawn agents, read/write to their filesystems, create checkpoints, and query the database — all as native tool calls.
-
-### Via the CLI
+## Dashboard
 
 ```bash
-kaos setup                             # Interactive setup wizard (6 presets)
-kaos init                              # Create database
-kaos run "refactor auth module" -n auth # Run a single agent
-kaos parallel \
-    -t tests "write tests" \
-    -t impl "refactor code" \
-    -t docs "update docs"              # Run agents in parallel
-kaos ls                                # List agents
-kaos status <agent-id>                 # Agent details
-kaos read <agent-id> /path/to/file     # Read VFS files
-kaos logs <agent-id>                   # View conversation + event log
-kaos logs <agent-id> --tail 20         # Last 20 events
-kaos checkpoint <agent-id> -l "safe"   # Snapshot agent state
-kaos restore <agent-id> --checkpoint X # Roll back
-kaos diff <agent-id> --from X --to Y   # What changed between checkpoints?
-kaos query "SELECT * FROM events"      # SQL queries
-kaos dashboard                         # Live TUI monitor
-kaos search "TF-IDF retrieval"         # Full-text search across all agents
-kaos index <agent-id>                  # Build /index.md for agent VFS
-kaos mh search -b text_classify -n 10 --background  # Background worker
-kaos mh search -b text_classify --dry-run            # Seeds only, no proposer
-kaos mh status <search-agent-id>       # Poll search progress
-kaos mh lint <search-agent-id>         # Health-check search archive
-kaos mh knowledge                      # View persistent knowledge base
-kaos mh resume <search-agent-id>       # Resume interrupted search
-kaos export <agent-id> -o backup.db    # Export a single agent
-
-# JSON output — composable with any agent framework
-kaos --json ls                         # Structured JSON to stdout
-kaos --json search "keyword"           # Search results as JSON
-kaos --json mh knowledge | jq .benchmarks
+kaos ui        # web dashboard — Gantt timeline, live events, agent inspector
+kaos dashboard # terminal TUI
+kaos demo      # demo data + open dashboard
 ```
 
-### Parallel Agents + GEPA Router
-
-Run multiple agents simultaneously — GEPA classifies task complexity and auto-routes each to the right model tier.
-
-![Parallel agents — GEPA routing, simultaneous execution, SQL cost summary](docs/demos/kaos_03_parallel_agents.gif)
-
-### MCP Server — Claude Code Integration
-
-18 tools over MCP. Claude spawns agents, reads VFS files, queries the database — all from a conversation.
-
-![MCP server — kaos setup, 18 tools, Claude Code connected](docs/demos/kaos_04_mcp_server.gif)
-
-### Audit Trail & SQL Queries
-
-Every operation recorded. Query token cost, find failures, full-text search across all agents.
-
-![Audit trail — kaos logs, SQL queries, kaos search](docs/demos/kaos_05_audit_trail.gif)
-
-### Live Dashboard
-
-Monitor all agents in real time — status, files, tool calls, token usage, and a streaming event log. The dashboard includes a dedicated **Meta-Harness panel** (purple border) showing active searches with status, current iteration, harness count, and frontier size — auto-refreshes every 5 seconds.
-
-```bash
-kaos dashboard
-```
-
-![KAOS Dashboard — real-time agent monitoring](image-1.png)
+The web dashboard shows each execution wave as a **Gantt timeline**: one horizontal bar per agent, colored by status (green = done, purple = running, red = failed). Click any bar to inspect tool calls, files, checkpoints, and events.
 
 ---
 
-## Key Capabilities
-
-### Enforced Agent Isolation
-
-Not convention-based. Every VFS operation is SQL-scoped with `WHERE agent_id = ?`. It's physically impossible for one agent to access another's files through the API. Optional FUSE tier (Linux) adds OS-level mount + namespace isolation with cgroup resource limits.
-
-### Append-Only Audit Trail
-
-Every operation is recorded: file reads, writes, deletes, tool calls (with timing and token counts), state changes, lifecycle events. 14 event types total. Query any agent's complete history with SQL.
-
-```sql
--- What did this agent do in the last hour?
-SELECT timestamp, event_type, payload FROM events
-WHERE agent_id = 'auth-refactor'
-  AND timestamp > datetime('now', '-1 hour')
-ORDER BY timestamp;
-```
-
-### Checkpoint / Restore / Diff
-
-Snapshot an agent's files + state at any point. Restore to any checkpoint. Diff two checkpoints to see exactly what changed — files added/removed/modified, state changes, and tool calls between them. Auto-checkpoints every N iterations as a safety net.
+## Python library
 
 ```python
-cp1 = db.checkpoint(agent, label="before-migration")
-# ... agent works ...
-cp2 = db.checkpoint(agent, label="after-migration")
-
-diff = db.diff_checkpoints(agent, cp1, cp2)
-# diff.files.added, diff.files.modified, diff.state.changed, diff.tool_calls
-```
-
-![Checkpoints — snapshot, diff, surgical restore](docs/demos/kaos_02_checkpoints.gif)
-
-### Content-Addressable Blob Store
-
-Files are stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with garbage collection keeps storage lean — even with hundreds of agents.
-
-### Intelligent Model Routing (GEPA)
-
-The **G**eneralized **E**xecution **P**lanning & **A**llocation router classifies task complexity (via LLM or heuristic fallback) and routes to the optimal model tier. Trivial formatting task? Send it to a local 7B. Complex architecture decision? Route to Claude or GPT-4o. Works across all three providers (local, OpenAI, Anthropic) and any OpenAI-compatible endpoint.
-
-### Single-File Portability
-
-The entire runtime is one `.db` file. Back it up with `cp`. Send it to a colleague. Open it on another machine. Query it with DBeaver, DataGrip, or the `sqlite3` CLI. No cloud, no server, no Docker.
-
----
-
-## Real-World Examples
-
-### Code Review Swarm
-
-Four agents review the same code from different angles — security, performance, style, and test coverage — all running in parallel with full isolation:
-
-```python
-# examples/code_review_swarm.py
-results = await ccr.run_parallel([
-    {"name": "security",    "prompt": f"Find security vulnerabilities:\n{code}",
-     "config": {"force_model": "deepseek-r1-70b"}},
-    {"name": "performance", "prompt": f"Find performance issues:\n{code}"},
-    {"name": "style",       "prompt": f"Review style and best practices:\n{code}"},
-    {"name": "test-gaps",   "prompt": f"What test cases are missing?\n{code}"},
-])
-# Each agent's findings are in its own VFS — combine, compare, or query with SQL.
-```
-
-![Code Review Swarm — 4 parallel agents, findings, SQL token summary](docs/demos/kaos_uc01_code_review_swarm.gif)
-
-### Self-Healing Agent
-
-Checkpoint before risky operations, automatically restore on failure:
-
-```python
-# examples/self_healing_agent.py
-cp = db.checkpoint(agent, label="pre-migration")
-try:
-    result = await ccr.run_agent(agent, "Migrate the database schema to v3")
-except Exception:
-    db.restore(agent, cp)  # roll back just this agent
-    # other agents keep running, unaffected
-```
-
-![Self-Healing Agent — checkpoint, migration fails, auto-restore, audit log](docs/demos/kaos_uc02_self_healing_agent.gif)
-
-### Parallel Refactor: Tests + Implementation + Docs
-
-Three tasks, three agents, one third of the time — with full isolation so none can corrupt the others:
-
-![Parallel Refactor — GEPA routing, 3 agents, real test output](docs/demos/kaos_uc05_parallel_refactor.gif)
-
-### Autonomous Research Lab (autoresearch pattern)
-
-Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch): run N research agents in parallel, each exploring a different ML hypothesis — architecture, optimizer, scaling, regularization — all isolated and SQL-queryable:
-
-```python
-# examples/autonomous_research_lab.py
-# Each agent gets its own isolated copy of train.py
-for direction in ["architecture", "optimizer", "scaling", "regularization"]:
-    agent = db.spawn(f"{direction}-explorer")
-    db.write(agent, "/train.py", BASE_TRAIN_PY.encode())
-    db.checkpoint(agent, label="baseline")
-
-# Run all 4 in parallel — modify train.py, run experiments, keep/discard
-results = await ccr.run_parallel(RESEARCH_DIRECTIONS)
-
-# Query results across ALL agents with SQL
-db.query("""
-    SELECT a.name, COUNT(tc.call_id) as experiments, SUM(tc.token_count) as tokens
-    FROM agents a JOIN tool_calls tc ON a.agent_id = tc.agent_id
-    GROUP BY a.agent_id ORDER BY tokens DESC
-""")
-```
-
-autoresearch uses git commit/reset — KAOS uses formal checkpoints with diff. autoresearch tracks results in a TSV — KAOS gives you SQL. autoresearch is 1 agent — KAOS runs N in parallel, isolated.
-
-![Autonomous Research Lab — 4 hypothesis agents, SQL results comparison](docs/demos/kaos_uc07_autonomous_research.gif)
-
-**Multi-GPU orchestration** is also supported: run 6 agents across 3 GPUs, each assigned to a model tier via GEPA `force_model`. For example, GPU 0 runs a 7B for sweeps, GPU 1 a 32B for architecture exploration, and GPU 2 a 70B for novel research. See `examples/multi_gpu_research.py` for the full setup. [Full tutorial](docs/tutorial-autoresearch.md)
-
-### Post-Mortem Debugging
-
-An agent broke something. Figure out exactly what happened:
-
-![Post-Mortem — kaos logs, SQL failure queries, search, diff, restore](docs/demos/kaos_uc03_post_mortem_debug.gif)
-
-```python
-# examples/post_mortem.py
-# What files did it touch?
-db.query("SELECT path, version FROM files WHERE agent_id = ?", [agent_id])
-
-# What tool calls failed?
-db.query("""
-    SELECT tool_name, error, duration_ms
-    FROM tool_calls
-    WHERE agent_id = ? AND status = 'error'
-    ORDER BY timestamp
-""", [agent_id])
-
-# Full event timeline
-db.query("""
-    SELECT timestamp, event_type, payload FROM events
-    WHERE agent_id = ? ORDER BY timestamp
-""", [agent_id])
-
-# How much did it cost?
-db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [agent_id])
-```
-
-### SDLC Self-Healing: Fix a Breaking Change Without Human Intervention
-
-A payment service test fails after a refactor. One agent applies the wrong fix — cascading 4 new failures. KAOS detects the regression, restores from the pre-refactor checkpoint in 0.3 seconds, traces the root cause from the audit trail, and applies the correct fix:
-
-```python
-# Checkpoint before every attempted fix
-cp = db.checkpoint(qa_agent, label="before-fix-attempt")
-
-# Wrong fix applied — 4 tests now fail
-result = await ccr.run_agent(qa_agent, "Fix the failing test")
-if result.tests_failed > 0:
-    db.restore(qa_agent, cp)  # roll back just this agent, no other agent affected
-
-# Root cause from the audit trail
-root_cause = db.read(qa_agent, "/qa/failure_report.md")
-# → "Decimal precision lost via float(amount) — use Decimal(str(amount)).quantize(Decimal('0.01'))"
-```
-
-![SDLC Self-Healing — wrong fix detected, checkpoint restore in 0.3s, correct fix applied](docs/demos/kaos_uc_sdlc.gif)
-
-[Full blog post: Self-Healing CI walkthrough](https://canivel.github.io/kaos/blog/kaos-sdlc-self-healing.html)
-
----
-
-### Security Audit Swarm: 4 Parallel Agents, 1 PR, 0 Vulnerabilities Shipped
-
-4 specialized agents audit a PR simultaneously — SQL injection, secrets leakage, auth flaws, deserialization. Each runs in full VFS isolation. Findings are aggregated via a single SQL query across agent filesystems:
-
-```python
-# Spawn 4 auditors in parallel
-agents = await ccr.run_parallel([
-    {"name": "sqli-agent",   "prompt": f"Find SQL injection vulnerabilities:\n{diff}"},
-    {"name": "secrets-agent","prompt": f"Find hardcoded secrets and API keys:\n{diff}"},
-    {"name": "auth-agent",   "prompt": f"Find auth bypass flaws:\n{diff}"},
-    {"name": "deser-agent",  "prompt": f"Find unsafe deserialization:\n{diff}"},
-])
-
-# Aggregate findings across all agent VFS files
-findings = db.query("""
-    SELECT agent_name, severity, finding
-    FROM vfs_findings WHERE pr='PR-2847'
-    ORDER BY severity
-""")
-# CRITICAL: SQL injection (f-string interpolation), hardcoded production key
-# MEDIUM: SSRF risk on unvalidated webhook URL
-```
-
-![Security Swarm — 4 parallel agents, SQL aggregation, CRITICAL blocks merge](docs/demos/kaos_uc_security.gif)
-
-[Full blog post: Security Swarm walkthrough](https://canivel.github.io/kaos/blog/kaos-security-swarm.html)
-
----
-
-### DB Migration Rollback: Instant Surgical Restore at Row 847,412
-
-A 2M-row backfill hits 7.6% unexpected NULLs at row 847,412. KAOS restores the migration agent's pre-backfill checkpoint in 0.3 seconds — while 3 analytics agents keep running on untouched data:
-
-```python
-# Pre-backfill checkpoint taken before migration starts
-cp = db.checkpoint(migration_agent, label="pre-backfill")
-
-# Anomaly detected mid-migration
-if null_rate > 0.05:
-    # Surgical restore — only this agent rolls back
-    db.restore(migration_agent, cp)
-    # Analytics agents unaffected — they have separate VFS
-    print("Migration rolled back. Analytics agents still running.")
-
-# Root cause from audit trail
-db.read(migration_agent, "/analysis/anomaly_report.md")
-# → "subscription_tier NULL rate 7.6% — use COALESCE(subscription_tier, 'free')"
-```
-
-![DB Migration Rollback — anomaly at row 847k, surgical restore, analytics unaffected](docs/demos/kaos_uc_migration.gif)
-
-[Full blog post: Migration Rollback walkthrough](https://canivel.github.io/kaos/blog/kaos-migration-rollback.html)
-
----
-
-### 2am Incident Response: Root Cause in 90 Seconds
-
-23% HTTP 500 rate at 2am. An agent queries the event journal, finds 847 ConnectionPoolErrors, traces them to a config change 47 minutes ago, and writes the post-mortem:
-
-```python
-# Query the event journal for error patterns
-errors = db.query("""
-    SELECT event_type, payload, timestamp
-    FROM events
-    WHERE event_type = 'error'
-      AND timestamp > datetime('now', '-2 hours')
-    ORDER BY timestamp DESC
-    LIMIT 20
-""")
-# → 847 ConnectionPoolErrors, all after 01:17 UTC
-
-# What changed at 01:17?
-db.query("""
-    SELECT path, old_content, new_content, timestamp
-    FROM file_changes
-    WHERE timestamp BETWEEN '01:10' AND '01:20'
-""")
-# → config/db.yaml: pool_size changed from 5 to 2
-```
-
-![Incident Response — 23% 500s, event journal query, 1-line config fix, post-mortem](docs/demos/kaos_uc_incident.gif)
-
-[Full blog post: Incident Response walkthrough](https://canivel.github.io/kaos/blog/kaos-incident-response.html)
-
----
-
-### ML Research Lab: 4 Agents, -19.2% val_loss in One Run
-
-Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch): 4 agents explore orthogonal dimensions simultaneously — LoRA, Lion optimizer, batch scaling, and dropout regularization. Each writes its results to its own VFS. The winner (LoRA, val_loss=1.89) is checkpointed and the research compendium writes itself:
-
-```python
-# Each agent explores a different direction
-results = await ccr.run_parallel([
-    {"name": "arch-explorer",  "prompt": "Apply LoRA to transformer blocks and measure val_loss"},
-    {"name": "optim-explorer", "prompt": "Try Lion optimizer vs AdamW at same LR"},
-    {"name": "scale-explorer", "prompt": "Scale batch size from 32 to 128, measure throughput+quality"},
-    {"name": "reg-explorer",   "prompt": "Test dropout 0.1 → 0.3, measure generalization"},
-])
-
-# Winner: arch-explorer val_loss=1.89 (-19.2% vs baseline 2.34)
-winner = min(results, key=lambda r: r.scores["val_loss"])
-db.checkpoint(winner.agent_id, label="winning-experiment")
-```
-
-![ML Research Lab — 4 parallel hypothesis agents, winner val_loss=1.89, compendium](docs/demos/kaos_uc_mllab.gif)
-
-[Full blog post: ML Research Lab walkthrough](https://canivel.github.io/kaos/blog/kaos-ml-research-lab.html)
-
----
-
-### Model Regression Guard: CI Catches -8.4% Before It Ships
-
-A model swap drops code_review accuracy from 0.83 to 0.76. The CI gate catches it, blocks the deploy, and triggers a 5-iteration Meta-Harness re-run that restores 0.83 automatically:
-
-```python
-# Regression detected after model swap
-results = await run_benchmarks_vs_baseline(new_model)
-regressions = [r for r in results if r.delta < -0.05]
-
-if regressions:
-    print(f"REGRESSION DETECTED: {regressions[0].benchmark} dropped {regressions[0].delta:.1%}")
-    # CI blocks the deploy — automatically triggers Meta-Harness repair
-    search = MetaHarnessSearch(db, router, bench, SearchConfig(max_iterations=5))
-    repair = await search.run()
-    # 5 iterations → 0.83 restored. Deploy proceeds.
-```
-
-![Regression Guard — 5 benchmarks vs baseline, -8.4% blocked, Meta-Harness repair](docs/demos/kaos_uc_regression.gif)
-
-[Full blog post: Regression Guard walkthrough](https://canivel.github.io/kaos/blog/kaos-regression-guard.html)
-
----
-
-### Export & Share Agent State
-
-```python
-# examples/export_share.py
-# Export a single agent's complete state to a standalone file
-# kaos export <agent-id> -o agent-snapshot.db
-
-# Send to teammate, they import it:
-# kaos import agent-snapshot.db
-
-# Or just copy the whole database:
-# cp kaos.db full-backup.db
-```
-
-### Meta-Harness in Action: 45% → 87% Accuracy
-
-![Meta-Harness classifier — seed eval, iteration traces, 87% frontier](docs/demos/kaos_uc04_meta_harness_classifier.gif)
-
-### Optimize a Support Ticket Classifier (Meta-Harness)
-
-Your LLM classifies support tickets at 45% accuracy. Meta-Harness automatically searches for a better prompt/retrieval strategy by learning from full execution traces:
-
-```python
-# examples/meta_harness_support_tickets.py
 from kaos import Kaos
-from kaos.metaharness import SearchConfig
-from kaos.metaharness.search import MetaHarnessSearch
 
-db = Kaos("search.db")
-router = GEPARouter.from_config("kaos.yaml")
+db = Kaos("project.db")
 
-# Define your benchmark with your data + 3 seed harnesses
-bench = SupportTicketBenchmark()
+# Each agent has its own isolated filesystem
+a = db.spawn("refactorer")
+b = db.spawn("test-writer")
+db.write(a, "/src/auth.py", b"# refactored")
+db.write(b, "/src/auth.py", b"# tests")  # no conflict — separate VFS
 
-# Run the search — KAOS stores every harness, score, and trace
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="support_tickets",
-    max_iterations=10,
-    candidates_per_iteration=2,
-))
-result = await search.run()
+# Checkpoint / restore
+cp = db.checkpoint(a, label="before-migration")
+# ... agent does work ...
+db.restore(a, cp)  # roll back just this agent
 
-# result.frontier has the Pareto-optimal harnesses (best accuracy vs. cost)
-# The whole search is one .db file — inspect, query, or share it
+# Query everything with SQL
+db.query("SELECT name, status FROM agents")
+db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
 ```
-
-What happens inside: seed harnesses are evaluated, then a proposer agent reads ALL prior code + scores + execution traces, identifies failure modes, and proposes better harnesses. After 10 iterations, accuracy goes from 45% to 87%. [Full walkthrough](docs/meta-harness.md)
-
-### Find the Best Math Retrieval Strategy (Meta-Harness)
-
-You have a corpus of 500K solved math problems. Which ones should you retrieve to help solve a new problem? Meta-Harness finds out:
-
-```python
-# examples/meta_harness_math.py
-bench = get_benchmark("math_rag",
-    problems_path="olympiad_problems.jsonl",
-    corpus_path="solved_problems.jsonl",
-)
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="math_rag",
-    max_iterations=15,
-    candidates_per_iteration=2,
-))
-result = await search.run()
-
-# The discovered harness might use domain-aware routing:
-#   geometry → fetch from NuminaMath, combinatorics → fetch from OpenMathReasoning
-# You'd never design this by hand — the proposer found it from the traces
-```
-
-### Optimize an Agentic Coding Harness (Meta-Harness)
-
-Your coding agent solves 60% of tasks. Meta-Harness discovers that gathering an environment snapshot first eliminates 2-4 wasted turns:
-
-```python
-# examples/meta_harness_coding.py
-bench = get_benchmark("agentic_coding",
-    tasks_path="coding_tasks.jsonl",
-)
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="agentic_coding",
-    max_iterations=10,
-    candidates_per_iteration=2,
-    objectives=["+pass_rate"],
-))
-result = await search.run()
-```
-
-### Predict Customer Lifetime Value (Meta-Harness)
-
-Your CLV model gets 40% of predictions within 20% of actual value. Meta-Harness finds the best framing: segment-aware prompting, churn-first reasoning, recency-weighted examples:
-
-```python
-# examples/meta_harness_clv_prediction.py
-bench = CLVBenchmark()  # Your customer data
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="clv_prediction",
-    max_iterations=8,
-    candidates_per_iteration=2,
-    objectives=["+accuracy", "-context_cost"],
-))
-result = await search.run()
-# Discovered: two-step harness (predict churn → then CLV) beats single-step by 25 points
-```
-
-### Optimize CRM Campaign Messages (Meta-Harness)
-
-Your email campaigns get 12% open rate. Meta-Harness learns which tone, CTA style, and customer data to include per segment:
-
-```python
-# examples/meta_harness_crm_campaigns.py
-bench = CRMCampaignBenchmark()  # Your campaign history
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="crm_campaigns",
-    max_iterations=8,
-    objectives=["+relevance", "-context_cost"],
-))
-result = await search.run()
-# Discovered: enterprise wants ROI language, consumers want urgency — different harness per segment
-```
-
-### Optimize Fraud Detection (Meta-Harness)
-
-Your fraud classifier has 65% recall with 30% false positives. Meta-Harness finds a red-flag checklist + contrastive examples approach that improves F1 by 20 points:
-
-```python
-# examples/meta_harness_fraud_detection.py
-bench = FraudDetectionBenchmark()  # Your transaction data
-search = MetaHarnessSearch(db, router, bench, SearchConfig(
-    benchmark="fraud_detection",
-    max_iterations=8,
-    objectives=["+f1_score", "-context_cost"],
-))
-result = await search.run()
-# Pareto frontier: [high recall, more tokens] ↔ [balanced F1, fewer tokens]
-```
-
-![Fraud Detection Meta-Harness — F1 0.58→0.81, pivot prompt, Pareto frontier](docs/demos/kaos_uc06_fraud_detection.gif)
 
 ---
 
-## Meta-Harness: How It Works
+## Examples
 
-> Based on [Meta-Harness (arXiv:2603.28052)](https://yoonholee.com/meta-harness/) — your LLM is only as good as the code wrapping it.
-
-The **harness** is the code wrapping your LLM — the prompt template, example selection, retrieval strategy, memory management. Changing it produces a **6x performance gap** on the same model. But harnesses are designed by hand.
-
-Meta-Harness automates the search. Here's the loop:
-
-```
- Iteration 0: Evaluate seed harnesses (zero-shot, few-shot, retrieval)
-              Store source + scores + full execution traces in KAOS archive
-                                    │
- Iteration 1: Proposer agent reads ─┘ ALL prior code, scores, AND traces
-              Notices: "retrieval fails on unusual wording"
-              Proposes: two-stage verification harness
-              Evaluate → accuracy jumps from 70% to 80%
-                                    │
- Iteration 2: Proposer reads ───────┘ new traces + all prior
-              Notices: "verification fails on ambiguous tickets"
-              Proposes: contrastive examples + cheap variant
-              Pareto frontier: [best accuracy] [cheapest] [balanced]
-                                    │
- Iterations 3-N: Each iteration ────┘ has full history
-              Proposer learns what works, what regresses, and why
-              Makes targeted fixes, not rewrites
-```
-
-**The critical insight** (from the paper's ablation): giving the proposer access to raw execution traces — not summaries, not just scores — improves the final result by 15+ points. KAOS stores these traces as JSONL files in each harness agent's VFS, with richer fields than vanilla Meta-Harness: input preview, expected answer, prompt preview, prediction, correct boolean, and context token count per problem. Per-problem results are also stored separately in `per_problem.jsonl` for detailed analysis.
-
-**Paper-aligned improvements:** The proposer prompt enforces additive changes after regressions, isolates variables (one change per harness), and cross-references iterations. Harness candidates go through **two-stage validation** (AST check for a top-level `run()` function + smoke test) before evaluation. The proposer also has a `mh_grep_archive` tool to search across all files in the archive, making it easy to find which harnesses use a specific technique or which traces contain a failure mode.
-
-**Smart Context Compaction (v0.4.0):** The proposer needs to read all prior harnesses, scores, and traces before proposing improvements. Without compaction, this means 5-10 tool calls per iteration, each replaying the full conversation — causing timeouts with subprocess-based providers. KAOS now pre-builds a structured **archive digest** that extracts error patterns, keeps scores and source code losslessly, and drops noise (correct-problem traces, verbose per-problem details). The proposer reads one digest instead of making 10 tool calls.
-
-```
-Compaction Results (6 diagnostic questions, all levels):
-Level  0 │ 5292 chars ( 22% saved) │ quality=100% │ 6/6 questions answerable
-Level  5 │ 3672 chars ( 46% saved) │ quality=100% │ 6/6 questions answerable ← default
-Level 10 │ 2512 chars ( 63% saved) │ quality=100% │ 6/6 questions answerable
-```
-
-Zero quality loss at any level — structured extraction is actually *better* than raw data because it surfaces patterns explicitly. Configure with `compaction_level` (0-10) in `SearchConfig` or `kaos.yaml`.
-
-**Why KAOS?** Each harness runs in its own isolated VFS. The search is checkpointed every iteration. Every proposer read, every evaluation, every trace is in the SQL-queryable audit trail. The entire search is one portable `.db` file. Knowledge compounds across searches via the persistent knowledge agent.
-
-![Meta-Harness Search — iterations, proposer traces, frontier](docs/demos/kaos_06_meta_harness.gif)
-
-```bash
-# Run a search
-kaos mh search -b text_classify -n 10 -k 2
-
-# Run with paper benchmarks (downloaded from HuggingFace, cached locally)
-kaos mh search -b lawbench -n 20 -k 3
-kaos mh search -b symptom2disease -n 20 -k 3
-kaos mh search -b uspto_50k -n 20 -k 3
-
-# View the Pareto frontier
-kaos mh frontier <search-agent-id>
-
-# Inspect the winning harness (source + scores + traces)
-kaos mh inspect <search-agent-id> <harness-id>
-
-# Resume an interrupted search from its last completed iteration
-kaos mh resume <search-agent-id>
-
-# Query the search with SQL
-kaos query "SELECT SUM(token_count) FROM tool_calls"
-```
-
-### CORAL: Stagnation Detection + Multi-Agent Co-Evolution (v0.6.0)
-
-The biggest weakness of iterative search: when you hit a local maximum, the proposer keeps generating variations on the same dead-end approach — wasting iterations without exploring new directions.
-
-CORAL ([arXiv:2604.01658](https://arxiv.org/abs/2604.01658)) fixes this with three tiers integrated in v0.6.0:
-
-**Tier 1 — Stagnation Detection + Pivot Prompts**
-
-After N consecutive non-improving iterations (`stagnation_threshold`, default 3), the proposer receives a `PIVOT REQUIRED` block listing exhausted approaches and demanding a structurally different direction. The proposer cannot submit another variation — it must change the fundamental approach.
-
-```yaml
-# kaos.yaml
-search:
-  stagnation_threshold: 4    # pivot fires after 4 non-improving iters
-  consolidation_every: 6     # skills heartbeat every 6 iters
-```
-
-**Tier 2 — Three-Tier Memory (attempts / notes / skills)**
-
-The search archive gains three directories:
-- `/attempts/` — compact `{id, scores, status}` summaries of every eval (fast proposer scanning)
-- `/notes/` — per-iteration observations written by the proposer
-- `/skills/` — reusable patterns distilled every `consolidation_every` iterations, persisted to the knowledge agent across searches
-
-```python
-# Write a skill discovered during search
-mh_write_skill(
-    search_agent_id=search_id,
-    name="two_step_decomposition",
-    description="Split classification: 'correctness problem?' then severity",
-    code_template="..."
-)
-# This skill becomes a seed for every future search on this benchmark
-```
-
-**Tier 3 — Concurrent Multi-Agent Co-Evolution**
-
-```python
-# Launch 3 agents exploring the same benchmark from different angles
-result = mh_spawn_coevolution(benchmark="code_review", n_agents=3)
-
-# Each agent runs independently, auto-syncing every 2 iterations
-mh_hub_sync(agent_0_id)   # push your best, pull theirs
-```
-
-Results from the paper: **3-10× higher improvement rates** vs single-agent search. 36% of successful attempts build directly on another agent's discoveries.
-
-The full end-to-end demo (code review 48%→83% in 15 iterations) shows the CORAL pivot moment in action: [Blog post](https://canivel.github.io/kaos/blog/kaos-v060.html)
+See [`examples/`](examples/) for:
+- `code_review_swarm.py` — 4 agents review code in parallel
+- `parallel_refactor.py` — implement + test + document simultaneously
+- `self_healing_agent.py` — auto-restore on failure
+- `autonomous_research_lab.py` — N hypothesis agents, SQL result comparison
+- `meta_harness_*.py` — automated prompt/strategy optimization
 
 ---
 
-**[Full docs and walkthrough](docs/meta-harness.md)** | **[Example: Support ticket classifier](examples/meta_harness_support_tickets.py)** | **[Original paper & code](https://github.com/stanford-iris-lab/meta-harness-tbench2-artifact)**
+## How agents are isolated
 
----
-
-## Architecture
-
-![KAOS Architecture — Interfaces, Orchestration, Meta-Harness, Core VFS Engine, and SQLite storage](image.png)
-
-Five layers, one SQLite file:
-- **Interfaces** — CLI (25+ commands, `--json` output), MCP Server (18 tools), Python SDK, TUI Dashboard
-- **Orchestration** — CCR agent loop, GEPA model router, 4 providers (local/OpenAI/Anthropic/Claude Code)
-- **Meta-Harness** — Search loop, detached worker process, proposer agent, evaluator, Pareto frontier
-- **KAOS Core** — Namespace isolation, blob store, event journal, checkpoints, state KV, tool registry with permissions, context compaction
-- **Storage** — Single SQLite `.db` file: agents, files, blobs, tool_calls, state, events, checkpoints
-
-
-## Setup & Configuration
-
-### `kaos setup` — Interactive Wizard
-
-The fastest way to get started. Run `kaos setup` and answer 3 questions — it generates a `kaos.yaml` tailored to your environment, auto-installs the MCP server into Claude Code settings (project or global), and auto-initializes the database.
-
-```bash
-kaos setup
-```
-
-**6 presets:**
-
-| Preset | What it configures |
-|---|---|
-| `claude-code` | Anthropic Claude via API, optimized for Claude Code MCP integration |
-| `local` | Single local vLLM/ollama/llama.cpp endpoint (default, backward compatible) |
-| `local-multi` | Multiple local models on different ports, GEPA routing by complexity |
-| `anthropic` | Anthropic Claude API only (requires `ANTHROPIC_API_KEY`) |
-| `openai` | OpenAI API only (requires `OPENAI_API_KEY`) |
-| `hybrid` | Mix of local + cloud models, route trivial tasks locally and complex tasks to cloud |
-
-### Multi-Provider Support
-
-KAOS supports five providers:
-
-- **`provider: agent_sdk`** — Claude Agent SDK. No subprocess, no rate limit competition. Works during active Claude Code sessions. *Recommended.*
-- **`provider: claude_code`** — Claude Code CLI subprocess (`claude --print`). Only works when session is idle.
-- **`provider: anthropic`** — Direct Anthropic API via raw httpx. Needs `ANTHROPIC_API_KEY`. Independent quota.
-- **`provider: openai`** — Any OpenAI-compatible cloud endpoint. Needs API key.
-- **`provider: local`** — vLLM, ollama, llama.cpp. Zero cost, needs GPU.
-
-`agent_sdk` and `claude_code` use your Claude Code subscription (no API key). `anthropic` and `openai` need API keys via environment variables.
-
-### Configuration
-
-```yaml
-# kaos.yaml — multi-provider example (hybrid preset)
-database:
-  path: ./kaos.db
-  wal_mode: true
-  compression: zstd
-
-models:
-  claude-sonnet:
-    provider: anthropic
-    model_id: claude-sonnet-4-20250514
-    api_key_env: ANTHROPIC_API_KEY
-    max_context: 200000
-    use_for: [complex, critical]
-  gpt-4o:
-    provider: openai
-    model_id: gpt-4o
-    api_key_env: OPENAI_API_KEY
-    max_context: 128000
-    use_for: [moderate]
-  local-qwen:
-    provider: local
-    endpoint: http://localhost:8000/v1
-    max_context: 32768
-    use_for: [trivial]
-
-router:
-  classifier_model: local-qwen
-  fallback_model: claude-sonnet
-  context_compression: true
-  max_retries: 1             # fail fast — retries handled at search level
-
-ccr:
-  max_iterations: 100
-  checkpoint_interval: 10
-  max_parallel_agents: 8
-
-search:
-  compaction_level: 5        # 0 (no compaction) to 10 (maximum), default 5
-  proposer_timeout: 900      # seconds per proposer iteration
-```
-
-The `provider: local` format is backward compatible with the existing `vllm_endpoint` syntax — existing configs continue to work without changes.
-
-<details>
-<summary>Local-only config (same as before)</summary>
-
-```yaml
-# kaos.yaml — local-only (backward compatible)
-database:
-  path: ./kaos.db
-  wal_mode: true
-  compression: zstd
-
-models:
-  qwen2.5-coder-7b:
-    vllm_endpoint: http://localhost:8000/v1
-    max_context: 32768
-    use_for: [trivial, code_completion]
-  qwen2.5-coder-32b:
-    vllm_endpoint: http://localhost:8001/v1
-    max_context: 131072
-    use_for: [moderate, code_generation]
-  deepseek-r1-70b:
-    vllm_endpoint: http://localhost:8002/v1
-    max_context: 131072
-    use_for: [complex, critical, planning]
-
-router:
-  classifier_model: qwen2.5-coder-7b
-  fallback_model: deepseek-r1-70b
-  context_compression: true
-
-ccr:
-  max_iterations: 100
-  checkpoint_interval: 10
-  max_parallel_agents: 8
-```
-
-</details>
-
-## Project Structure
-
-```
-kaos/
-├── core.py                  # Kaos VFS engine
-├── schema.py                # SQLite schema (8 tables)
-├── blobs.py                 # Content-addressable blob store (SHA-256 + zstd)
-├── events.py                # Append-only event journal (14 event types)
-├── checkpoints.py           # Checkpoint / restore / diff
-├── isolation.py             # Logical isolation + optional FUSE tier
-├── ccr/
-│   ├── runner.py            # Agent execution loop (plan → act → observe)
-│   └── tools.py             # Tool registry (8 built-in tools)
-├── router/
-│   ├── gepa.py              # Intelligent model routing
-│   ├── classifier.py        # LLM + heuristic complexity classifier
-│   ├── context.py           # Multi-stage context compression
-│   ├── vllm_client.py       # Raw httpx client for local endpoints
-│   ├── openai_client.py     # Raw httpx client for OpenAI API
-│   └── anthropic_client.py  # Raw httpx client for Anthropic API
-├── metaharness/
-│   ├── search.py            # Meta-Harness search loop (Algorithm 1)
-│   ├── worker.py            # Detached worker subprocess for background search
-│   ├── proposer.py          # Proposer agent with archive tools (incl. mh_grep_archive)
-│   ├── evaluator.py         # Harness evaluation with trace capture
-│   ├── harness.py           # HarnessCandidate + EvaluationResult
-│   ├── pareto.py            # Pareto frontier computation
-│   └── benchmarks/          # text_classify, math_rag, agentic_coding, paper_datasets
-├── mcp/
-│   └── server.py            # MCP server (18 tools, stdio + SSE)
-└── cli/
-    ├── main.py              # 25+ CLI commands (read, logs, --json, --dry-run)
-    └── dashboard.py         # Live TUI dashboard (Textual)
-```
-
-## Zero Bloat
-
-KAOS has **no AI SDK dependencies**. No `openai`. No `litellm`. No `langchain`. All three providers (local, OpenAI, Anthropic) use raw httpx. Just 44 packages total:
-
-| Package | Why |
-|---|---|
-| `httpx` | Raw HTTP to local, OpenAI, and Anthropic endpoints |
-| `click` | CLI |
-| `rich` + `textual` | Terminal UI + dashboard |
-| `mcp` | MCP server protocol |
-| `pyyaml` | Config |
-| `zstandard` | Blob compression |
-| `ulid-py` | Time-sortable unique IDs |
-
----
-
-## Tutorials & Docs
-
-### Video Demos
-
-| Tutorial | Demo |
-|---|---|
-| Getting Started | ![](docs/demos/kaos_01_getting_started.gif) |
-| Checkpoints & Restore | ![](docs/demos/kaos_02_checkpoints.gif) |
-| Parallel Agents + GEPA | ![](docs/demos/kaos_03_parallel_agents.gif) |
-| MCP Server | ![](docs/demos/kaos_04_mcp_server.gif) |
-| Audit Trail & SQL | ![](docs/demos/kaos_05_audit_trail.gif) |
-| Meta-Harness Search | ![](docs/demos/kaos_06_meta_harness.gif) |
-| CORAL Co-Evolution | ![](docs/demos/kaos_07_coral_coevolution.gif) |
-| Custom Benchmark | ![](docs/demos/kaos_08_custom_benchmark.gif) |
-
-### Written Guides
-
-- **[Run a Free Local Multi-Agent System](docs/tutorial-local-agents.md)** — End-to-end guide: vLLM + KAOS + Claude Code, from zero to running parallel agents on your own GPU at zero cost.
-- **[Meta-Harness: Automated Harness Optimization](docs/meta-harness.md)** — How to automatically find the best prompt/retrieval strategy for your LLM, with full walkthrough.
-- **[Autonomous Research Lab](docs/tutorial-autoresearch.md)** — Run N research agents in parallel, each exploring a different ML hypothesis. Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
-- [MCP Server Integration](docs/mcp-integration.md) — Full reference for all 18 MCP tools.
-- [Architecture](docs/architecture.md) — System design deep dive.
-- [Database Schema](docs/schema.md) — All 8 tables documented.
-
-## What's New in v0.6.0
-
-### CORAL: Autonomous Multi-Agent Evolution (arXiv:2604.01658)
-
-Three tiers of improvements inspired by the CORAL paper, which achieves 3-10× higher improvement rates and set a new kernel engineering record (1363→1103 cycles) using shared persistent memory, heartbeat-driven reflection, and multi-agent co-evolution.
-
-**Tier 1 — Stagnation detection + pivot prompts:** After N non-improving iterations, the proposer receives a `PIVOT REQUIRED` section demanding a structurally different approach. No more incremental tweaks on a stuck frontier.
-
-**Tier 2 — Three-tier memory (attempts / notes / skills):**
-- `/attempts/` — compact summary of every eval for fast proposer scanning
-- `/notes/` — optional iteration observations from Claude Code via `mh_submit_candidate(..., notes="...")`
-- `/skills/` — reusable patterns written via `mh_write_skill(...)`, persisted to knowledge agent across searches
-
-**Tier 3 — Concurrent multi-agent co-evolution:**
-```python
-# Start 3 co-evolving agents sharing a hub
-result = mh_spawn_coevolution(benchmark="text_classify", n_agents=3)
-# Drive agent_0, agent_1, agent_2 independently
-# Every 2 iterations, hub auto-syncs best harnesses across agents
-mh_hub_sync(agent_0_id)   # push yours, pull theirs
-```
-
-![CORAL Co-Evolution — 3 agents, hub sync, shared skills, 0.87 frontier](docs/demos/kaos_uc08_coevolution_coral.gif)
-
-### v0.5.3: ARC-AGI-3 Benchmark + Search Hang Fix
-
-### ARC-AGI-3 Benchmark + Search Hang Fix
-
-New interactive game benchmark for meta-harness optimization. Each problem is an ARC-AGI-3 game; each harness defines `choose_action(grid, available_actions, state)`. Scoring via RHAE (Relative Human Action Efficiency — lower agent actions vs human baseline = higher score).
-
-Root cause of search hanging: `asyncio.wait_for` cannot cancel `run_in_executor` threads. Old defaults (10 games × 120s × 4 seeds) = 80 min per seed eval. Fixed: `time_per_game=25s`, `max_actions=800`, `n_search_games=6` → ~1.5 min for seed eval. `SearchConfig.harness_timeout_seconds` reduced from 300 → 60 (per-problem cap).
-
-```python
-# Start a search on ARC-AGI-3
-result = mh_start_search(benchmark="arc-agi-3", eval_subset=2)
-# Seeds: random, systematic, productive-first, click-objects
-```
-
-### v0.5.2: AAAK Compact Notation (inspired by MemPalace)
-
-Compactor now uses dense shorthand notation that any LLM reads without decoders. 57% savings at default level (was 34% with structured extraction) with 100% quality across all domains.
-
-```
-Before: ## Harness keyword_cls (iteration 2)\n**Scores:** accuracy=1.0000, cost=8.0\n...
-After:  H:keyword_cl|i2|accuracy=1.0000|context_cost=8.0000|8/8✓
-```
-
-Four tiers: L0 verbose → L1 AAAK+source → L2 AAAK+top-3 → L3 ultra (95% savings).
-
-### v0.5.1: Surrogate Verifier (#31, from EvoSkills arXiv:2604.01687)
-
-Every harness evaluation now produces structured failure diagnostics — not just "what went wrong" but "why it failed" and "how to fix it". The verifier is informationally isolated (reads outputs, not source code) to prevent confirmation bias. Integrated into the collaborative flow: `mh_next_iteration` returns the diagnosis alongside the digest.
-
-### v0.5.0: Collaborative Meta-Harness — Claude Code IS the proposer
-
-Three new MCP tools eliminate the subprocess bottleneck entirely. Claude Code drives the search loop — no extra process, no API key, no extra cost:
-
-```
-1. mh_start_search(benchmark="text_classify")  → seeds evaluated, digest returned
-2. YOU read the digest, write a better harness
-3. mh_submit_candidate(search_agent_id, source_code)  → validated, queued
-4. mh_next_iteration(search_agent_id)  → evaluated, frontier updated, new digest
-5. Repeat from step 2
-```
-
-### v0.4.2: Agent SDK Provider
-`provider: agent_sdk` uses the Claude Agent SDK directly — no subprocess, no rate limit competition. Seeds scored **90.6% accuracy** vs 0% with `claude_code`.
-
-```yaml
-models:
-  claude-sonnet:
-    provider: agent_sdk          # uses Claude Agent SDK
-    model_id: claude-sonnet-4-6
-    timeout: 120
-```
-
-### 5 Providers — Pick What Works
-- **`agent_sdk`** — shares session auth, works during active sessions (recommended)
-- **`claude_code`** — `claude --print` subprocess, works when session is idle
-- **`anthropic`** — direct API via httpx, needs API key, independent quota
-- **`openai`** — any OpenAI-compatible endpoint
-- **`local`** — vLLM/ollama/llama.cpp, zero cost
-
-### Other v0.4.x Highlights
-- Cross-search memory, full-text search, VFS index, lint, persistent skills
-- Smart compaction (78% fewer tokens, 100% quality at default)
-- Single-shot proposer, text extraction fallback, max_prior_seeds=5
-
-### v0.3.x Highlights
-- `--json` on all commands, worker subprocess, `provider: claude_code`
-- `kaos read`, `kaos logs`, `kaos mh search --dry-run`
-- Bug fixes: Unicode crash, WAL contention, output truncation, stdout corruption
-
-### Upgrading
-
-```bash
-git pull origin main
-uv sync
-kaos --version  # 0.4.1
-```
-
-If you have the MCP server running (via Claude Code or `kaos serve`), restart it so it picks up the new code:
-
-```bash
-# Option 1: Claude Code restarts the MCP server automatically on next tool call
-# after you close and reopen the session.
-
-# Option 2: If running standalone, kill and restart:
-kaos serve --transport stdio
-```
-
-Any running background workers (`kaos mh search --background`) will continue using the old version until they finish. New workers will use the updated code.
-
-Existing `kaos.yaml` configs and `kaos.db` databases work unchanged across versions. See [CHANGELOG.md](CHANGELOG.md) for full details.
-
-<details>
-<summary>v0.2.0 changes (Meta-Harness & Multi-Provider)</summary>
-
-- Paper-aligned Meta-Harness (arXiv:2603.28052) with 7 improvements
-- `kaos setup` interactive wizard (6 presets)
-- Multi-provider support: `local`, `openai`, `anthropic` (all raw httpx)
-- 18 MCP tools, resume interrupted searches, dashboard Meta-Harness panel
-- Paper benchmark loaders (LawBench, Symptom2Disease, USPTO-50k)
-- Multi-GPU autoresearch orchestration
-</details>
-
-## License
-
-Apache 2.0
-
-## Author
-
-**Danilo Canivel**
-
----
-
-*Built because agents deserve better infrastructure than "just use a temp directory."*
+Each agent's files, state, tool calls, and events are stored in separate rows scoped by `agent_id`. There is no shared filesystem — it's enforced at the query level, not by convention. The entire runtime is one `.db` file you can copy, share, or open in any SQLite client.
