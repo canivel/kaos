@@ -6,6 +6,8 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
 
+![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
+
 ---
 
 ## Install
@@ -137,6 +139,24 @@ db.restore(a, cp)  # roll back just this agent
 db.query("SELECT name, status FROM agents")
 db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
 ```
+
+---
+
+## Documentation
+
+| | |
+|---|---|
+| [Dashboard](docs/dashboard.md) | Gantt timeline, agent inspector, live events |
+| [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
+| [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
+| [CLI Reference](docs/cli-reference.md) | Every command and flag |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 18 tools |
+| [Meta-Harness](docs/meta-harness.md) | Automated prompt/strategy optimization |
+| [Architecture](docs/architecture.md) | Internals, subsystem design |
+| [Schema](docs/schema.md) | All 8 SQLite tables |
+| [Deployment](docs/deployment.md) | vLLM, production config |
+
+Full docs index → [`docs/`](docs/)
 
 ---
 
