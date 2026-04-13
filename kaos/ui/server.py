@@ -395,96 +395,174 @@ async def api_projects_post(request: Request) -> JSONResponse:
 
 # ── Graph API ─────────────────────────────────────────────────────────────
 
-def _short_task(desc: str, max_len: int = 55) -> str:
-    """Trim task description to a short edge label."""
-    if not desc:
-        return ""
+def _wave_title(names: list[str]) -> str:
+    """Derive a human-readable wave title from agent names."""
+    if not names:
+        return "Wave"
+    name_set = set(names)
+    counts: dict[str, int] = {}
+    for n in names:
+        counts[n] = counts.get(n, 0) + 1
+
+    # Pure meta-harness orchestrator
+    if all(n == "meta-harness-search" for n in names):
+        return "Meta-Harness"
+
+    # Proposer iterations
+    proposers = [n for n in names if n.startswith("proposer-iter")]
+    if proposers:
+        iters = sorted({n.rsplit("-", 1)[-1] for n in proposers})
+        return f"Proposer · iter {', '.join(iters)}"
+
+    # Harness (evaluation) waves
+    harnesses = [n for n in names if n.startswith("harness-")]
+    if len(harnesses) == len(names):
+        return f"Eval · {len(names)} harnesses"
+    if harnesses:
+        non_h = [n for n in names if not n.startswith("harness-")]
+        return f"Mixed: {non_h[0] if non_h else ''} + {len(harnesses)} harnesses"
+
+    # Research-role waves
+    research = {"base-architect", "slot-optimizer", "quant-master",
+                "training-optimizer", "innovation-researcher",
+                "compression-expert", "ensemble-master", "researcher"}
+    found = [n for n in names if n in research]
+    if found:
+        return "Research Wave"
+
+    # Dominant single name
+    dominant = max(counts, key=lambda k: counts[k])
+    if counts[dominant] > len(names) // 2:
+        label = dominant.replace("-", " ").title()
+        extra = len(names) - counts[dominant]
+        return label + (f" +{extra}" if extra else "")
+
+    # Generic: list first 2 unique names
+    unique = list(dict.fromkeys(names))[:2]
+    label = " · ".join(n.replace("-", " ") for n in unique)
+    if len(names) > 2:
+        label += f" +{len(names)-2}"
+    return label
+
+
+def _parse_score(scores_json: str) -> float | None:
+    """Extract best accuracy from scores JSON."""
+    if not scores_json:
+        return None
     try:
-        desc = json.loads(desc)
+        sc = json.loads(scores_json)
+        if isinstance(sc, list):
+            vals = [s.get("accuracy") for s in sc if isinstance(s, dict) and s.get("accuracy") is not None]
+            return max(vals) if vals else None
+        if isinstance(sc, dict):
+            return sc.get("accuracy")
     except Exception:
         pass
-    s = str(desc).replace("\n", " ").replace("\r", "").strip()
-    return s[:max_len] + ("…" if len(s) > max_len else "")
+    return None
+
+
+def _parse_tokens(usage_json: str) -> int:
+    if not usage_json:
+        return 0
+    try:
+        u = json.loads(usage_json)
+        return int(u.get("total_tokens") or 0)
+    except Exception:
+        return 0
 
 
 async def api_graph(request: Request) -> JSONResponse:
-    """GET /api/graph?db=PATH — nodes + edges for agent knowledge graph."""
+    """GET /api/graph?db=PATH — nodes + edges for the execution graph."""
     db = _db_path(request)
     try:
         agents = _rows(db, """
             SELECT
                 a.agent_id, a.name, a.parent_id, a.status,
-                a.config, a.created_at,
                 strftime('%Y-%m-%dT%H:%M', a.created_at) AS batch_minute,
-                COALESCE(tc.cnt, 0)    AS tool_call_count,
-                COALESCE(tc.tokens, 0) AS token_count,
-                COALESCE(ec.cnt, 0)    AS event_count,
-                COALESCE(st.value, '') AS task_description
+                COALESCE(tk.value, '') AS task,
+                COALESCE(sc.value, '') AS scores_json,
+                COALESCE(us.value, '') AS usage_json,
+                COALESCE(fw.cnt, 0)    AS file_count,
+                COALESCE(tc.cnt, 0)    AS tool_count
             FROM agents a
+            LEFT JOIN state tk ON tk.agent_id = a.agent_id AND tk.key = 'task'
+            LEFT JOIN state sc ON sc.agent_id = a.agent_id AND sc.key = 'scores'
+            LEFT JOIN state us ON us.agent_id = a.agent_id AND us.key = 'usage'
             LEFT JOIN (
-                SELECT agent_id, COUNT(*) as cnt, COALESCE(SUM(token_count),0) as tokens
-                FROM tool_calls GROUP BY agent_id
+                SELECT agent_id, COUNT(*) cnt FROM events
+                WHERE event_type = 'file_write' GROUP BY agent_id
+            ) fw ON fw.agent_id = a.agent_id
+            LEFT JOIN (
+                SELECT agent_id, COUNT(*) cnt FROM events
+                WHERE event_type = 'tool_call_start' GROUP BY agent_id
             ) tc ON tc.agent_id = a.agent_id
-            LEFT JOIN (
-                SELECT agent_id, COUNT(*) as cnt FROM events GROUP BY agent_id
-            ) ec ON ec.agent_id = a.agent_id
-            LEFT JOIN state st ON st.agent_id = a.agent_id AND st.key = 'task'
             ORDER BY a.created_at ASC
         """)
 
+        # ── Group into waves (batch_minute groups ≥ 2 agents) ────────────
+        from collections import Counter, defaultdict
+        minute_agents: dict[str, list] = defaultdict(list)
         for a in agents:
-            if a.get("config"):
-                try:
-                    a["config"] = json.loads(a["config"])
-                except Exception:
-                    a["config"] = {}
-
-        # ── Identify execution waves (batch_minute groups ≥ 2 agents) ──────
-        from collections import Counter
-        minute_counts = Counter(a["batch_minute"] for a in agents if a.get("batch_minute"))
-        batch_minutes = {m for m, n in minute_counts.items() if n >= 2}
+            if a.get("batch_minute"):
+                minute_agents[a["batch_minute"]].append(a)
+        batch_minutes = {m for m, grp in minute_agents.items() if len(grp) >= 2}
 
         nodes: list[dict] = []
         edges: list[dict] = []
-        wave_ids: dict[str, str] = {}  # batch_minute → wave node id
+        agent_ids = {a["agent_id"] for a in agents}
 
-        # Wave coordinator nodes — represent the execution goal/intent
-        for minute in sorted(batch_minutes):
-            wave_agents = [a for a in agents if a.get("batch_minute") == minute]
-            best_task = max(
-                (a.get("task_description") or "" for a in wave_agents), key=len
-            )
+        # ── Wave nodes ────────────────────────────────────────────────────
+        sorted_minutes = sorted(batch_minutes)
+        wave_node_ids: list[str] = []
+        for minute in sorted_minutes:
+            wave_agents = minute_agents[minute]
+            names = [a["name"] for a in wave_agents]
+            title = _wave_title(names)
+
+            # Best score + completion stats
+            scores = [s for s in (_parse_score(a["scores_json"]) for a in wave_agents) if s is not None]
+            best_score = max(scores) if scores else None
+            n_done = sum(1 for a in wave_agents if a["status"] == "completed")
+            n_fail = sum(1 for a in wave_agents if a["status"] == "failed")
+
             wave_id = f"wave:{minute}"
-            wave_ids[minute] = wave_id
+            wave_node_ids.append(wave_id)
             nodes.append({
                 "id": wave_id,
                 "type": "wave",
-                "label": _short_task(best_task, 50) or f"{len(wave_agents)} agents",
-                "full_label": best_task,
-                "time": minute,
+                "label": title,
+                "timestamp": minute,
                 "agent_count": len(wave_agents),
+                "completed": n_done,
+                "failed": n_fail,
+                "best_score": round(best_score, 3) if best_score is not None else None,
             })
 
-        # Agent nodes
-        agent_ids = {a["agent_id"] for a in agents}
+        # ── Agent nodes ───────────────────────────────────────────────────
         for a in agents:
-            cfg = a.get("config") or {}
-            role = (cfg.get("role") or
-                    a["name"].replace("-", " ").split()[0])
+            score = _parse_score(a["scores_json"])
+            tokens = _parse_tokens(a["usage_json"])
+            task_raw = a.get("task") or ""
+            try:
+                task_raw = json.loads(task_raw)
+            except Exception:
+                pass
+            task_str = str(task_raw).replace("\n", " ").strip()
+
             nodes.append({
                 "id": a["agent_id"],
                 "type": "agent",
-                "label": role,
-                "name": a["name"],
+                "label": a["name"],
                 "status": a["status"],
-                "task": a.get("task_description") or "",
-                "tool_call_count": a["tool_call_count"],
-                "token_count": a["token_count"],
-                "event_count": a["event_count"],
+                "task": task_str[:300],
+                "score": round(score, 3) if score is not None else None,
+                "file_count": int(a["file_count"]),
+                "tool_count": int(a["tool_count"]),
+                "token_count": tokens,
                 "batch_minute": a.get("batch_minute"),
             })
 
-        # Edges: explicit parent → child spawn (real agent delegation)
+        # ── Edges: parent→child spawn ─────────────────────────────────────
         for a in agents:
             pid = a.get("parent_id")
             if pid and pid in agent_ids:
@@ -492,21 +570,28 @@ async def api_graph(request: Request) -> JSONResponse:
                     "id": f"spawn:{pid}:{a['agent_id']}",
                     "source": pid,
                     "target": a["agent_id"],
-                    "label": _short_task(a.get("task_description") or ""),
                     "type": "spawn",
                 })
 
-        # Edges: wave coordinator → member agents (implicit coordination)
+        # ── Edges: wave → member agents ───────────────────────────────────
         for a in agents:
             minute = a.get("batch_minute")
-            if minute and minute in wave_ids:
+            if minute and minute in batch_minutes:
                 edges.append({
-                    "id": f"wave:{minute}:{a['agent_id']}",
-                    "source": wave_ids[minute],
+                    "id": f"wm:{minute}:{a['agent_id']}",
+                    "source": f"wave:{minute}",
                     "target": a["agent_id"],
-                    "label": _short_task(a.get("task_description") or ""),
                     "type": "wave_member",
                 })
+
+        # ── Edges: wave → next wave (temporal flow) ───────────────────────
+        for i in range(len(wave_node_ids) - 1):
+            edges.append({
+                "id": f"wseq:{i}",
+                "source": wave_node_ids[i],
+                "target": wave_node_ids[i + 1],
+                "type": "wave_sequence",
+            })
 
         return _json({"nodes": nodes, "edges": edges})
     except Exception as e:
