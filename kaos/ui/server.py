@@ -393,6 +393,126 @@ async def api_projects_post(request: Request) -> JSONResponse:
     return _json({"ok": True, "projects": projects})
 
 
+# ── Graph API ─────────────────────────────────────────────────────────────
+
+def _short_task(desc: str, max_len: int = 55) -> str:
+    """Trim task description to a short edge label."""
+    if not desc:
+        return ""
+    try:
+        desc = json.loads(desc)
+    except Exception:
+        pass
+    s = str(desc).replace("\n", " ").replace("\r", "").strip()
+    return s[:max_len] + ("…" if len(s) > max_len else "")
+
+
+async def api_graph(request: Request) -> JSONResponse:
+    """GET /api/graph?db=PATH — nodes + edges for agent knowledge graph."""
+    db = _db_path(request)
+    try:
+        agents = _rows(db, """
+            SELECT
+                a.agent_id, a.name, a.parent_id, a.status,
+                a.config, a.created_at,
+                strftime('%Y-%m-%dT%H:%M', a.created_at) AS batch_minute,
+                COALESCE(tc.cnt, 0)    AS tool_call_count,
+                COALESCE(tc.tokens, 0) AS token_count,
+                COALESCE(ec.cnt, 0)    AS event_count,
+                COALESCE(st.value, '') AS task_description
+            FROM agents a
+            LEFT JOIN (
+                SELECT agent_id, COUNT(*) as cnt, COALESCE(SUM(token_count),0) as tokens
+                FROM tool_calls GROUP BY agent_id
+            ) tc ON tc.agent_id = a.agent_id
+            LEFT JOIN (
+                SELECT agent_id, COUNT(*) as cnt FROM events GROUP BY agent_id
+            ) ec ON ec.agent_id = a.agent_id
+            LEFT JOIN state st ON st.agent_id = a.agent_id AND st.key = 'task'
+            ORDER BY a.created_at ASC
+        """)
+
+        for a in agents:
+            if a.get("config"):
+                try:
+                    a["config"] = json.loads(a["config"])
+                except Exception:
+                    a["config"] = {}
+
+        # ── Identify execution waves (batch_minute groups ≥ 2 agents) ──────
+        from collections import Counter
+        minute_counts = Counter(a["batch_minute"] for a in agents if a.get("batch_minute"))
+        batch_minutes = {m for m, n in minute_counts.items() if n >= 2}
+
+        nodes: list[dict] = []
+        edges: list[dict] = []
+        wave_ids: dict[str, str] = {}  # batch_minute → wave node id
+
+        # Wave coordinator nodes — represent the execution goal/intent
+        for minute in sorted(batch_minutes):
+            wave_agents = [a for a in agents if a.get("batch_minute") == minute]
+            best_task = max(
+                (a.get("task_description") or "" for a in wave_agents), key=len
+            )
+            wave_id = f"wave:{minute}"
+            wave_ids[minute] = wave_id
+            nodes.append({
+                "id": wave_id,
+                "type": "wave",
+                "label": _short_task(best_task, 50) or f"{len(wave_agents)} agents",
+                "full_label": best_task,
+                "time": minute,
+                "agent_count": len(wave_agents),
+            })
+
+        # Agent nodes
+        agent_ids = {a["agent_id"] for a in agents}
+        for a in agents:
+            cfg = a.get("config") or {}
+            role = (cfg.get("role") or
+                    a["name"].replace("-", " ").split()[0])
+            nodes.append({
+                "id": a["agent_id"],
+                "type": "agent",
+                "label": role,
+                "name": a["name"],
+                "status": a["status"],
+                "task": a.get("task_description") or "",
+                "tool_call_count": a["tool_call_count"],
+                "token_count": a["token_count"],
+                "event_count": a["event_count"],
+                "batch_minute": a.get("batch_minute"),
+            })
+
+        # Edges: explicit parent → child spawn (real agent delegation)
+        for a in agents:
+            pid = a.get("parent_id")
+            if pid and pid in agent_ids:
+                edges.append({
+                    "id": f"spawn:{pid}:{a['agent_id']}",
+                    "source": pid,
+                    "target": a["agent_id"],
+                    "label": _short_task(a.get("task_description") or ""),
+                    "type": "spawn",
+                })
+
+        # Edges: wave coordinator → member agents (implicit coordination)
+        for a in agents:
+            minute = a.get("batch_minute")
+            if minute and minute in wave_ids:
+                edges.append({
+                    "id": f"wave:{minute}:{a['agent_id']}",
+                    "source": wave_ids[minute],
+                    "target": a["agent_id"],
+                    "label": _short_task(a.get("task_description") or ""),
+                    "type": "wave_member",
+                })
+
+        return _json({"nodes": nodes, "edges": edges})
+    except Exception as e:
+        return _err(str(e), 500)
+
+
 # ── SSE Stream ────────────────────────────────────────────────────────────
 
 async def _event_generator(db: str) -> AsyncGenerator[bytes, None]:
@@ -478,6 +598,7 @@ def create_app() -> Starlette:
         Route("/api/agents/{id}/tool_calls", api_agent_tool_calls),
         Route("/api/agents/{id}/checkpoints", api_agent_checkpoints),
         Route("/api/agents/{id}/files", api_agent_files),
+        Route("/api/graph", api_graph),
         Route("/api/events/stream", api_events_stream),
         Route("/api/projects", api_projects_get, methods=["GET"]),
         Route("/api/projects", api_projects_post, methods=["POST"]),
