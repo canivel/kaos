@@ -680,14 +680,26 @@ async function confirmAddProject() {
   const path = $('modal-path').value.trim();
   const name = $('modal-name').value.trim();
   if (!path) return;
-  await fetch('/api/projects', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({path, name}),
-  });
-  closeAddProject();
-  await loadProjects();
-  switchProject(path);
+  const btn = $('modal-overlay').querySelector('button[onclick*="confirm"]');
+  if (btn) { btn.textContent = 'Scanning…'; btn.disabled = true; }
+  try {
+    const res = await fetch('/api/projects', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({path, name}),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    closeAddProject();
+    await loadProjects();
+    // Use switch_to from server (handles directory → first DB auto-select)
+    const target = data.switch_to || path;
+    switchProject(target);
+  } finally {
+    if (btn) { btn.textContent = 'Add'; btn.disabled = false; }
+  }
 }
 $('modal-path').addEventListener('keydown', e => { if(e.key==='Enter') confirmAddProject(); });
 $('modal-overlay').addEventListener('click', e => { if(e.target===$('modal-overlay')) closeAddProject(); });

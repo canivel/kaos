@@ -40,8 +40,58 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
+def _is_kaos_db(path: str) -> bool:
+    """Return True if file is a valid KAOS database (has agents table)."""
+    try:
+        conn = sqlite3.connect(path)
+        tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        conn.close()
+        return "agents" in tables
+    except Exception:
+        return False
+
+
+def _scan_dbs(directory: str) -> list[dict]:
+    """Scan directory for valid KAOS .db files, sorted by agent count desc."""
+    import glob as _glob
+    results = []
+    for db_file in sorted(_glob.glob(os.path.join(directory, "*.db"))):
+        if not _is_kaos_db(db_file):
+            continue
+        try:
+            conn = sqlite3.connect(db_file)
+            count = conn.execute("SELECT COUNT(*) FROM agents").fetchone()[0]
+            conn.close()
+            results.append({
+                "path": db_file,
+                "name": Path(db_file).stem,
+                "agent_count": count,
+            })
+        except Exception:
+            pass
+    return sorted(results, key=lambda x: -x["agent_count"])
+
+
+def _resolve_db(raw: str) -> str:
+    """Resolve a path that may be a directory to a valid KAOS DB file."""
+    p = Path(raw)
+    if p.is_file():
+        return str(p)
+    if p.is_dir():
+        # Prefer kaos.db if valid, otherwise pick the DB with most agents
+        default = p / "kaos.db"
+        if default.exists() and _is_kaos_db(str(default)):
+            return str(default)
+        dbs = _scan_dbs(str(p))
+        if dbs:
+            return dbs[0]["path"]
+        raise ValueError(f"No valid KAOS database found in '{raw}'. Expected a .db file with an 'agents' table.")
+    return raw  # let downstream give a normal "file not found" error
+
+
 def _db_path(request: Request) -> str:
-    return request.query_params.get("db", "./kaos.db")
+    raw = request.query_params.get("db", "./kaos.db")
+    return _resolve_db(raw)
 
 
 def _conn(db_path: str) -> sqlite3.Connection:
@@ -374,23 +424,55 @@ async def api_projects_get(request: Request) -> JSONResponse:
 
 
 async def api_projects_post(request: Request) -> JSONResponse:
-    """POST /api/projects — add a project. Body: {path: str, name?: str}"""
+    """POST /api/projects — add a project. Body: {path: str, name?: str}
+
+    If path is a directory, scans it for all valid KAOS .db files and adds them all.
+    """
     try:
         body = await request.json()
     except Exception:
         return _err("Invalid JSON body")
-    db_path = body.get("path", "").strip()
-    if not db_path:
+    raw_path = body.get("path", "").strip()
+    if not raw_path:
         return _err("path is required")
-    db_path = str(Path(db_path).resolve())
+
+    p = Path(raw_path).resolve()
     projects = _load_projects()
-    # Deduplicate
-    if any(p["path"] == db_path for p in projects):
-        return _json({"ok": True, "projects": projects})
-    name = body.get("name") or Path(db_path).parent.name or db_path
-    projects.insert(0, {"path": db_path, "name": name, "added_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
-    _save_projects(projects)
-    return _json({"ok": True, "projects": projects})
+    added: list[str] = []
+
+    if p.is_dir():
+        dbs = _scan_dbs(str(p))
+        if not dbs:
+            return _err(
+                f"No valid KAOS databases found in '{p}'. "
+                "Expected one or more .db files with an 'agents' table."
+            )
+        for db in dbs:
+            db_abs = str(Path(db["path"]).resolve())
+            if not any(proj["path"] == db_abs for proj in projects):
+                projects.insert(0, {
+                    "path": db_abs,
+                    "name": db["name"],
+                    "added_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                })
+                added.append(db_abs)
+    else:
+        db_abs = str(p)
+        if not any(proj["path"] == db_abs for proj in projects):
+            name = body.get("name") or p.stem or p.parent.name or db_abs
+            projects.insert(0, {
+                "path": db_abs,
+                "name": name,
+                "added_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            })
+            added.append(db_abs)
+
+    if added:
+        _save_projects(projects)
+
+    # Return the first added path so the frontend can switch to it
+    first = added[0] if added else (projects[0]["path"] if projects else None)
+    return _json({"ok": True, "projects": projects, "added": added, "switch_to": first})
 
 
 # ── Graph API ─────────────────────────────────────────────────────────────
