@@ -8,7 +8,7 @@ models:
     provider: claude_code
     model_id: claude-sonnet-4-6
     max_context: 200000
-    timeout: 300
+    timeout: 1800
     use_for: [trivial, moderate, complex, critical, code_completion, code_generation, planning]
 
 router:

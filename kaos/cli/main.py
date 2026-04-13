@@ -562,7 +562,12 @@ def demo(port: int, host: str, no_browser: bool):
     console.print("[bold cyan]KAOS Demo[/bold cyan]  Seeding demo.db…")
 
     if Path(demo_db).exists():
-        Path(demo_db).unlink()
+        try:
+            Path(demo_db).unlink()
+        except PermissionError:
+            # File locked (old server still running) — use a timestamped name
+            import time as _ts
+            demo_db = str(Path(f"./demo_{int(_ts.time())}.db").resolve())
 
     db_obj = Kaos(db_path=demo_db)
 

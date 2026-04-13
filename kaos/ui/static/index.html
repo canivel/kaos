@@ -377,6 +377,19 @@ input{font-family:inherit;font-size:13px}
   padding:10px 14px;font-size:12px;pointer-events:none;
   opacity:0;transition:opacity .15s;max-width:280px;line-height:1.6;
 }
+#graph-wave-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--bg4);
+  flex-shrink:0;
+}
+.gw-pill{
+  padding:3px 10px;border-radius:14px;font-size:11px;font-family:var(--mono);
+  background:var(--bg3);border:1px solid var(--bg4);color:var(--fg3);
+  cursor:pointer;transition:all .12s;white-space:nowrap;max-width:180px;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.gw-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.gw-pill:hover:not(.active){color:var(--fg);border-color:var(--fg3)}
 
 /* ── Loading / error states ── */
 .loading{color:var(--fg3);font-size:12px;padding:16px;text-align:center}
@@ -834,27 +847,100 @@ function nodeSize(tokenCount, toolCount) {
   return Math.max(18, Math.min(60, 18 + activity * 8));
 }
 
+// Graph state
+S.graphData = null;        // full API response
+S.graphWaveFilter = null;  // wave id to show (null = latest 8)
+
 async function loadGraph() {
   const gp = $('graph-pane');
   if (!gp.classList.contains('visible')) return;
 
+  // Show loading state
+  $('cy').innerHTML = '';
+  const loading = document.createElement('div');
+  loading.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--fg3);font-size:13px;pointer-events:none';
+  loading.textContent = 'Loading graph…';
+  $('cy').appendChild(loading);
+
   try {
-    const data = await api('/api/graph');
-    renderGraph(data);
+    S.graphData = await api('/api/graph');
+    buildGraphToolbar(S.graphData);
+    renderGraph(S.graphData, S.graphWaveFilter);
   } catch(e) {
+    $('cy').innerHTML = `<div style="padding:24px;color:var(--red);font-size:12px">Graph error: ${escHtml(String(e))}</div>`;
     console.error('loadGraph', e);
   }
 }
 
-function renderGraph(data) {
-  // Build Cytoscape elements
+function buildGraphToolbar(data) {
+  // Build wave selector pills above the graph
+  let tb = document.getElementById('graph-wave-bar');
+  if (!tb) {
+    tb = document.createElement('div');
+    tb.id = 'graph-wave-bar';
+    $('graph-pane').prepend(tb);
+  }
+  // Get waves sorted newest first, keep last 12
+  const waves = data.nodes.filter(n => n.type === 'wave')
+    .sort((a, b) => b.time.localeCompare(a.time))
+    .slice(0, 12);
+
+  const pills = waves.map(w => {
+    const label = (w.label && w.label.length > 2 && !w.label.match(/^\d+ agents$/))
+      ? w.label.slice(0, 35) + (w.label.length > 35 ? '…' : '')
+      : w.time || w.id;
+    const active = S.graphWaveFilter === w.id;
+    return `<span class="gw-pill${active ? ' active' : ''}" onclick="selectWave('${escHtml(w.id)}')" title="${escHtml(w.full_label || w.label)}">${escHtml(label)}</span>`;
+  });
+
+  tb.innerHTML = `
+    <span class="gw-pill${!S.graphWaveFilter ? ' active' : ''}" onclick="selectWave(null)">recent</span>
+    ${pills.join('')}`;
+}
+
+function selectWave(waveId) {
+  S.graphWaveFilter = waveId;
+  if (S.graphData) {
+    buildGraphToolbar(S.graphData);
+    renderGraph(S.graphData, waveId);
+  }
+}
+
+function renderGraph(data, waveFilter) {
+  // ── Filter data to a manageable size ─────────────────────────────────
+  let waveIds;
+  if (waveFilter) {
+    waveIds = new Set([waveFilter]);
+  } else {
+    // Show latest 8 waves by default
+    const sortedWaves = data.nodes
+      .filter(n => n.type === 'wave')
+      .sort((a, b) => b.time.localeCompare(a.time))
+      .slice(0, 8);
+    waveIds = new Set(sortedWaves.map(w => w.id));
+  }
+
+  // Agent ids belonging to selected waves
+  const waveEdges = data.edges.filter(e => waveIds.has(e.source));
+  const agentIds = new Set(waveEdges.map(e => e.target));
+
+  const visibleNodes = data.nodes.filter(n =>
+    (n.type === 'wave' && waveIds.has(n.id)) ||
+    (n.type === 'agent' && agentIds.has(n.id))
+  );
+  const visibleEdges = data.edges.filter(e =>
+    waveIds.has(e.source) || agentIds.has(e.source)
+  );
+
+  // ── Build Cytoscape elements ──────────────────────────────────────────
   const elements = [];
 
-  data.nodes.forEach(n => {
+  visibleNodes.forEach(n => {
     if (n.type === 'wave') {
       elements.push({ data: {
         id: n.id, type: 'wave',
-        label: n.label || '',
+        label: (n.label && !n.label.match(/^\d+ agents$/))
+          ? n.label.slice(0, 50) : (n.time || 'wave'),
         full_label: n.full_label || n.label || '',
         time: n.time || '',
         agent_count: n.agent_count || 0,
@@ -876,7 +962,7 @@ function renderGraph(data) {
     }
   });
 
-  data.edges.forEach(e => {
+  visibleEdges.forEach(e => {
     elements.push({ data: {
       id: e.id,
       source: e.source,
@@ -886,42 +972,60 @@ function renderGraph(data) {
     }});
   });
 
-  // Destroy old instance
+  // ── Destroy old instance ──────────────────────────────────────────────
   if (S.cy) { S.cy.destroy(); S.cy = null; }
+  $('cy').innerHTML = '';
 
-  cytoscape.use(cytoscapeFcose);
+  if (!elements.length) {
+    $('cy').innerHTML = '<div style="padding:24px;color:var(--fg3);font-size:13px">No agents found in this wave.</div>';
+    return;
+  }
+
+  // ── Register fcose if available, else fall back to cose ──────────────
+  let layoutName = 'cose';
+  try {
+    if (typeof cytoscapeFcose !== 'undefined') {
+      cytoscape.use(cytoscapeFcose);
+      layoutName = 'fcose';
+    }
+  } catch(e) { /* fcose not loaded, use built-in cose */ }
+
+  const nodeCount = visibleNodes.length;
+  const useFast = nodeCount > 60;
 
   S.cy = cytoscape({
     container: $('cy'),
     elements,
     style: CY_STYLE,
-    layout: {
+    layout: layoutName === 'fcose' ? {
       name: 'fcose',
-      quality: 'default',
-      randomize: false,
-      animate: true,
-      animationDuration: 600,
+      quality: useFast ? 'draft' : 'default',
+      randomize: true,
+      animate: !useFast,
+      animationDuration: 400,
       fit: true,
-      padding: 40,
+      padding: 50,
       nodeDimensionsIncludeLabels: true,
-      uniformNodeDimensions: false,
       packComponents: true,
-      // Tuning
-      nodeRepulsion: () => 6000,
-      idealEdgeLength: () => 120,
+      nodeRepulsion: () => 8000,
+      idealEdgeLength: () => 100,
       edgeElasticity: () => 0.45,
-      nestingFactor: 0.1,
-      numIter: 2500,
-      tilingPaddingVertical: 10,
-      tilingPaddingHorizontal: 10,
-      gravityRangeCompound: 1.5,
-      gravityCompound: 1.0,
+      numIter: useFast ? 500 : 1500,
       gravityRange: 3.8,
+      gravityRangeCompound: 1.5,
+    } : {
+      name: 'cose',
+      animate: false,
+      fit: true,
+      padding: 50,
+      nodeRepulsion: () => 8000,
+      idealEdgeLength: 100,
+      numIter: 500,
     },
     userZoomingEnabled: true,
     userPanningEnabled: true,
     boxSelectionEnabled: false,
-    minZoom: 0.1,
+    minZoom: 0.05,
     maxZoom: 4,
   });
 
