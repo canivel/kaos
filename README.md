@@ -4,7 +4,7 @@
 
 [![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
-[![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![Research](https://img.shields.io/badge/research%20integrations-6-brightgreen)]()
 
 > KAOS doesn't build from scratch — it identifies the best solution to each hard problem in agentic AI and integrates it faithfully. Every capability traces back to a proven paper or open-source project. We add new integrations as we find synergy and reason to include them.
@@ -212,4 +212,4 @@ Earlier KAOS versions integrated ideas from EvoSkills (v0.5.1) and MemPalace (v0
 
 ---
 
-KAOS is open source, Apache-2.0 licensed. Contributions welcome.
+KAOS is open source, MIT licensed. Contributions welcome.

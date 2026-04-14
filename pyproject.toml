@@ -3,7 +3,7 @@ name = "kaos"
 version = "0.6.0"
 description = "KAOS — Kernel for Agent Orchestration & Sandboxing. Isolated, auditable, portable agent runtimes backed by SQLite."
 readme = "README.md"
-license = "Apache-2.0"
+license = "MIT"
 authors = [
     { name = "Danilo Canivel" },
 ]

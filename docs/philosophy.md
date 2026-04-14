@@ -76,7 +76,7 @@ If you know of a paper or project that fits, open an issue or a PR. The criteria
 
 ## Contributing
 
-KAOS is open source, Apache-2.0. The best contributions are:
+KAOS is open source, MIT licensed. The best contributions are:
 
 1. **Research integrations** — a paper you've read and want to implement
 2. **Bug reports with reproduction cases** — especially from production use
