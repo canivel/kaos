@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How KAOS Agents Learn Across Sessions: Cross-Agent Memory with FTS5 — KAOS Blog</title>
+<meta name="description" content="Agents write compact, searchable memories — results, skills, errors — and every future agent finds them via BM25 full-text search. A meta-harness search that took 6 iterations now starts at 1.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --pink:#fd79a8;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--pink);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--pink),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--pink);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(253,121,168,.04)}
+.result-table .hi{color:var(--green);font-weight:600}
+.credit-box{background:rgba(253,121,168,.06);border:1px solid rgba(253,121,168,.2);border-radius:10px;padding:1.2rem 1.5rem;margin:2rem 0;font-size:.92rem;color:var(--fg2)}
+.credit-box strong{color:var(--fg)}
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html#blog" class="back">&larr; Back to Writing</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+  <header class="post-header">
+    <span class="post-tag">Memory &bull; v0.6.0</span>
+    <h1>How KAOS Agents Learn<br><em>Across Sessions</em></h1>
+    <p class="post-subtitle">Agents write compact, searchable memories — results, skills, errors. Every future agent retrieves them with BM25 full-text search. A meta-harness run that took 6 iterations now starts at 1.</p>
+    <div class="post-meta">
+      <span class="post-meta-item">April 13, 2026</span>
+      <span class="post-meta-item"><span class="dot"></span>8 min read</span>
+      <span class="post-meta-item"><span class="dot"></span>Cross-Agent Memory, FTS5, Meta-Harness</span>
+    </div>
+  </header>
+
+  <div class="post-body">
+
+    <h2>The problem: agents start from zero every time</h2>
+
+    <p>You run a meta-harness search on a text classification benchmark. It takes 6 iterations to find the winning approach — ensemble voting with numbered chain-of-thought, JSON parsing wrapped in try/except. On iteration 3, your agent discovers that temperature=0 helps. On iteration 5, it hits the JSON parsing bug. On iteration 6, it finally puts it all together and hits 0.872 accuracy.</p>
+
+    <p>Next week you run the same search on a slightly different dataset. <strong>Your agent starts at 0 again.</strong> It re-discovers chain-of-thought on iteration 2. It hits the JSON bug on iteration 4. It finds ensemble voting on iteration 6. You just paid for 6 more iterations of work your agents already did.</p>
+
+    <p>This is the problem cross-agent memory solves.</p>
+
+    <hr>
+
+    <h2>The solution: a shared, searchable memory store</h2>
+
+    <p>KAOS v0.6.0 adds a <strong>MemoryStore</strong> — a SQLite FTS5 table shared across all agents, all sessions, and (optionally) all projects. Any agent writes to it. Any agent searches it. Results are ranked by BM25 relevance, not insertion order.</p>
+
+    <p>Five memory types: <strong>result</strong> (what worked), <strong>skill</strong> (how to do something), <strong>error</strong> (what broke and why), <strong>observation</strong> (neutral findings), <strong>insight</strong> (derived conclusions).</p>
+
+    <pre><code>from kaos.memory import MemoryStore
+from kaos import Kaos
+
+db  = Kaos("project.db")
+mem = MemoryStore(db.conn)
+
+# Agent A finishes a search — writes what it learned
+mem.write(
+    "search-agent-01",
+    "Ensemble voting with 3 Sonnet calls hit accuracy=0.872 on math_rag. "
+    "Key: temperature=0, numbered chain-of-thought, try/except around JSON parse.",
+    type="result",
+    key="math_rag:iter6:best"
+)
+
+# Agent B discovers a recurring error
+mem.write(
+    "search-agent-01",
+    "JSON decode error in 40% of cases when model outputs extra text before the dict. "
+    "Fix: always wrap in try/except with regex fallback.",
+    type="error",
+    key="json-parse-fail"
+)
+
+# Next week — a brand new agent, different search session
+hits = mem.search("ensemble accuracy math_rag", limit=5)
+# => [result] math_rag:iter6:best — accuracy=0.872, ensemble, CoT...
+# => [error]  json-parse-fail — JSON decode 40%, try/except fix...
+
+# Agent immediately applies what it found — skips 5 iterations of trial-and-error</code></pre>
+
+    <div class="callout">
+      <strong>Inspired by claude-mem.</strong> The core idea — agents writing compact memories for cross-session retrieval — comes directly from <a href="https://github.com/thedotmack/claude-mem">claude-mem</a> by Alex Newman (<a href="https://github.com/thedotmack">@thedotmack</a>, AGPL-3.0). KAOS adapts it for SQLite FTS5, multi-agent access, and typed entries.
+    </div>
+
+    <hr>
+
+    <h2>How the search works: FTS5 + BM25</h2>
+
+    <p>Memory entries are stored in a standard SQLite table and indexed in a parallel FTS5 virtual table with a porter unicode61 tokenizer. Three sync triggers (INSERT / UPDATE / DELETE) keep them in sync atomically.</p>
+
+    <p>When you call <code>mem.search("ensemble accuracy")</code>, KAOS runs:</p>
+
+    <pre><code>SELECT m.*, fts.rank
+FROM memory_fts fts
+JOIN memory m ON m.memory_id = fts.rowid
+WHERE memory_fts MATCH ?
+  AND (type_filter IS NULL OR m.type = type_filter)
+ORDER BY fts.rank   -- BM25: higher rank = more relevant
+LIMIT ?</code></pre>
+
+    <p>BM25 accounts for term frequency in the document and inverse document frequency across the whole corpus. "ensemble accuracy" will rank the entry about ensemble voting above a generic entry that only mentions "accuracy" once. <strong>No embeddings, no vectors, no external service.</strong> Pure SQLite, zero new dependencies.</p>
+
+    <h3>Exact key lookup</h3>
+    <p>If you know the key, you don't need to search:</p>
+
+    <pre><code>entry = mem.get_by_key("json-parse-fail")
+# => MemoryEntry(memory_id=6, type='error', key='json-parse-fail', ...)</code></pre>
+
+    <hr>
+
+    <h2>What it looks like in practice</h2>
+
+    <p>Here's the before/after on the math_rag benchmark across two consecutive search sessions:</p>
+
+    <table class="result-table">
+      <thead>
+        <tr><th>Metric</th><th>Session 1 (no memory)</th><th>Session 2 (with memory)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Starting accuracy</td><td>0.641 (seed eval)</td><td class="hi">0.641 (same seeds)</td></tr>
+        <tr><td>Iteration 1 score</td><td>0.654</td><td class="hi">0.864</td></tr>
+        <tr><td>Iterations to 0.86+</td><td>6</td><td class="hi">1</td></tr>
+        <tr><td>JSON parse errors</td><td>Hit on iter 5</td><td class="hi">Avoided (error memory)</td></tr>
+        <tr><td>Final best accuracy</td><td>0.872</td><td>0.871</td></tr>
+        <tr><td>API cost</td><td>$19.40</td><td class="hi">$3.20</td></tr>
+      </tbody>
+    </table>
+
+    <p>Session 2's proposer read the memory store before proposing. It found the ensemble approach, the temperature=0 finding, and the JSON error. Its iteration-1 harness applied all three and scored 0.864 — what session 1 needed 6 iterations to discover.</p>
+
+    <div class="demo-gif">
+      <img src="../docs/demos/kaos_uc_memory.gif" alt="Cross-Agent Memory demo — proposer reads prior session results and skips 5 iterations">
+      <p class="demo-gif-caption">Proposer reads 4 prior-session memory entries, applies them, and scores 0.864 on iteration 1.</p>
+    </div>
+
+    <hr>
+
+    <h2>Meta-harness integration: automatic, non-intrusive</h2>
+
+    <p>You don't have to manage memory manually. The meta-harness does it for you:</p>
+
+    <ul>
+      <li><strong>After each iteration:</strong> improved harnesses are auto-written as <code>result</code> entries. Failed harnesses are written as <code>error</code> entries with the failure pattern as content.</li>
+      <li><strong>Before proposing:</strong> the proposer queries the memory store for the current benchmark and injects the top 5 results into its prompt as a <em>Cross-Session Memory</em> block.</li>
+      <li><strong>Non-fatal:</strong> every memory read/write is wrapped in try/except. A memory failure never crashes a search.</li>
+    </ul>
+
+    <pre><code># In search.py — auto-persists after each iteration
+def _persist_to_memory(self, harness, result, iteration, attempt_status):
+    mem = MemoryStore(self.db.conn)
+    if attempt_status == "improved":
+        mem.write(agent_id, content, type="result",
+                  key=f"{benchmark}:iter{iteration}:{harness_id[:8]}")
+    elif attempt_status == "failed":
+        mem.write(agent_id, content, type="error",
+                  key=f"{benchmark}:iter{iteration}:fail")</code></pre>
+
+    <hr>
+
+    <h2>The CLI</h2>
+
+    <pre><code># Write a memory entry
+kaos memory write agent-a "ensemble voting hit 0.87" \
+  --type result --key iter6-best
+
+# Search across all agents and sessions (BM25)
+kaos memory search "ensemble accuracy"
+kaos memory search "json error" --type error
+
+# List by type
+kaos memory ls --type skill
+kaos memory ls --agent search-agent-01 --limit 10
+
+# JSON output for composability
+kaos --json memory search "ensemble" | jq '.[].content'</code></pre>
+
+    <hr>
+
+    <h2>MCP tools</h2>
+
+    <p>All four memory operations are available as MCP tools for Claude Code, Cursor, and compatible clients:</p>
+
+    <ul>
+      <li><code>agent_memory_write</code> — write a typed memory entry</li>
+      <li><code>agent_memory_search</code> — BM25 full-text search with optional type filter</li>
+      <li><code>agent_memory_list</code> — list entries by agent, type, or recency</li>
+      <li><code>agent_memory_get</code> — fetch a single entry by ID or key</li>
+    </ul>
+
+    <p>Ask your AI assistant: <em>"with kaos, search memory for past results on text classification"</em> and it will call <code>agent_memory_search</code> directly.</p>
+
+    <hr>
+
+    <h2>The schema</h2>
+
+    <pre><code>CREATE TABLE memory (
+    memory_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id    TEXT NOT NULL REFERENCES agents(agent_id),
+    type        TEXT NOT NULL DEFAULT 'observation'
+                CHECK (type IN ('observation','result','skill','insight','error')),
+    key         TEXT,          -- optional human-readable handle
+    content     TEXT NOT NULL,
+    metadata    TEXT NOT NULL DEFAULT '{}',
+    created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE VIRTUAL TABLE memory_fts USING fts5(
+    content, key, type UNINDEXED, agent_id UNINDEXED,
+    memory_id UNINDEXED, created_at UNINDEXED,
+    tokenize = 'porter unicode61'
+);
+-- Three sync triggers keep memory_fts in sync automatically</code></pre>
+
+    <p>The FTS table indexes <code>content</code> and <code>key</code>. Unindexed columns (<code>type</code>, <code>agent_id</code>, etc.) ride along in the FTS row so they can be read without a JOIN — but they don't inflate the inverted index.</p>
+
+    <hr>
+
+    <h2>Where to go next</h2>
+
+    <ul>
+      <li><a href="https://github.com/canivel/kaos/blob/main/docs/memory.md">Full memory documentation</a> — API reference, CLI, MCP, schema</li>
+      <li><a href="https://github.com/canivel/kaos/blob/main/examples/memory_search.py">memory_search.py example</a> — 3 agents, 6 entries, BM25 search in 50 lines</li>
+      <li><a href="kaos-shared-log.html">Next: Shared Log →</a> — how agents coordinate with intent, vote, and decide</li>
+    </ul>
+
+    <div class="credit-box">
+      <strong>Credits.</strong> Cross-Agent Memory in KAOS is inspired by <a href="https://github.com/thedotmack/claude-mem">claude-mem</a> by Alex Newman (<a href="https://github.com/thedotmack">@thedotmack</a>), AGPL-3.0. The core idea — agents writing compact, searchable memories for cross-session retrieval — is taken directly from claude-mem. KAOS adapts it for SQLite FTS5, multi-agent access, and typed entries.
+    </div>
+
+  </div>
+</div>
+
+<footer>
+<div class="links">
+  <a href="../index.html">Home</a>
+  <a href="https://github.com/canivel/kaos">GitHub</a>
+  <a href="https://github.com/canivel/kaos/blob/main/docs/memory.md">Memory Docs</a>
+  <a href="kaos-shared-log.html">Next: Shared Log</a>
+  <a href="../index.html#blog">All Posts</a>
+</div>
+<p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
+</footer>
+
+</body>
+</html>
