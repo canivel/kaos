@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAOS — Kernel for Agent Orchestration & Sandboxing</title>
-<meta name="description" content="Every AI agent gets an isolated, auditable virtual filesystem inside a single SQLite file. Checkpoint, restore, debug — all locally, all free.">
-<meta property="og:title" content="KAOS — Kernel for Agent Orchestration & Sandboxing">
-<meta property="og:description" content="Isolated, auditable, portable agent runtimes backed by SQLite. Run multi-agent systems locally with zero API costs.">
+<title>KAOS — The Living Synthesis of Agentic AI Research</title>
+<meta name="description" content="Six research breakthroughs unified in one framework: memory that learns, coordination that requires consensus, context that compresses, agents that co-evolve. Safe, reliable, self-improving. All local, all free.">
+<meta property="og:title" content="KAOS — The Living Synthesis of Agentic AI Research">
+<meta property="og:description" content="KAOS doesn't build from scratch — it synthesizes what's best. Six proven research integrations, production-grade by default, constantly improving itself. One SQLite file. Zero cloud.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
@@ -207,6 +207,25 @@ nav a:hover{color:var(--fg)}
 .release li code{background:var(--bg);padding:.1rem .35rem;border-radius:3px;font-size:.8rem;color:var(--accent2)}
 .release-category{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-top:1rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:1px}
 
+/* ── Self-Improving ───────────────────────────────── */
+.self-improving{background:var(--bg2);padding:5rem 0;border-top:1px solid rgba(108,92,231,.12)}
+.si-header{text-align:center;margin-bottom:3.5rem}
+.si-eyebrow{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:.7rem}
+.si-sub{color:var(--fg2);font-size:1rem;max-width:680px;margin:.8rem auto 0;line-height:1.75}
+.si-loop{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:start;gap:.5rem;max-width:1000px;margin:0 auto 3rem}
+.si-arrow{font-size:1.8rem;color:var(--accent);align-self:center;padding-top:1rem;opacity:.5}
+.si-step{background:var(--bg);border:1px solid rgba(108,92,231,.15);border-radius:10px;padding:1.5rem;text-align:center;transition:border-color .2s,transform .2s}
+.si-step:hover{border-color:var(--accent2);transform:translateY(-3px)}
+.si-step-num{font-family:var(--mono);font-size:.7rem;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem;opacity:.7}
+.si-step h3{font-size:1rem;font-weight:700;color:var(--fg);margin-bottom:.4rem}
+.si-step p{color:var(--fg2);font-size:.85rem;line-height:1.55}
+.si-evidence{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;padding-top:2.5rem;border-top:1px solid rgba(255,255,255,.05)}
+.si-ev-item{text-align:center;padding:1rem 1.5rem}
+.si-ev-num{display:block;font-family:var(--mono);font-size:2rem;font-weight:800;color:var(--accent2);line-height:1}
+.si-ev-label{display:block;font-size:.78rem;color:var(--fg2);margin-top:.3rem;text-transform:uppercase;letter-spacing:.5px}
+@media(max-width:900px){.si-loop{grid-template-columns:1fr 1fr;gap:1rem}.si-arrow{display:none}}
+@media(max-width:600px){.si-loop{grid-template-columns:1fr}}
+
 /* ── CTA ──────────────────────────────────────────── */
 .cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
 .cta h2{font-size:2rem;margin-bottom:1rem}
@@ -275,7 +294,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   <div class="logo"><span>K</span>AOS</div>
   <ul>
     <li><a href="#research">Research</a></li>
-    <li><a href="#problem">Problem</a></li>
+    <li><a href="#self-improving">Philosophy</a></li>
     <li><a href="#comparison">vs Others</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#compaction">Compaction</a></li>
@@ -293,8 +312,8 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <section class="hero">
 <div class="wrap">
   <div class="hero-copy">
-    <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-    <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Agents write shared memory, vote on actions, and coordinate safely — without cloud, without frameworks.</p>
+    <h1>The Living Synthesis of<br><span class="highlight">Agentic AI Research</span></h1>
+    <p class="subtitle">Six research breakthroughs — memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously. Unified. Local-first. Self-improving.</p>
     <div class="hero-buttons">
       <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
       <a href="#research" class="btn btn-secondary">See the research &darr;</a>
@@ -305,10 +324,10 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     </div>
     <div class="badges">
       <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
-      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
-      <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
-      <span class="badge">CLI-first + MCP</span>
-      <span class="badge">Zero AI SDK deps</span>
+      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">6 research integrations</span>
+      <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">self-improving</span>
+      <span class="badge">safe by design</span>
+      <span class="badge">local-first</span>
     </div>
   </div>
 </div>
@@ -370,9 +389,9 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
 <section class="research-banner" id="research">
 <div class="wrap">
   <div class="rb-header">
-    <div class="rb-eyebrow">Research Foundation</div>
-    <h2 class="rb-title">Every Breakthrough in Multi-Agent AI,<br>Unified in One Framework</h2>
-    <p class="rb-sub">KAOS doesn&rsquo;t just cite the papers &mdash; it implements them. Six research contributions from 2025&ndash;2026 and the open-source community, production-ready and running locally on your machine.</p>
+    <div class="rb-eyebrow">Research Synthesis</div>
+    <h2 class="rb-title">Not Invented Here.<br>Curated From the Best.</h2>
+    <p class="rb-sub">The best ideas for making AI agents safe, reliable, and capable already exist — they just live in different papers and repositories. KAOS identifies the solution that best addresses each hard problem, implements it faithfully, and makes sure it composes cleanly with everything else. We add new integrations as we find synergy and reason to include them.</p>
   </div>
   <div class="rb-papers">
     <div class="rb-paper">
@@ -424,32 +443,36 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
 <!-- Problem -->
 <section class="problem" id="problem">
 <div class="wrap">
-  <h2>The Problem With Multi-Agent Systems</h2>
-  <p class="lead">You're running multiple AI agents. Here's what goes wrong.</p>
+  <h2>Why Production Agentic Systems Are Still Hard</h2>
+  <p class="lead">The research on every individual problem exists. The problem is nobody has put the pieces together into a coherent, composable system.</p>
   <div class="pain-grid">
     <div class="pain-card">
-      <h3>Agents step on each other</h3>
-      <p>Two agents write to the same file. One overwrites the other's work. You don't find out until production.</p>
+      <h3>Research is scattered</h3>
+      <p>Memory isolation from one paper. Coordination protocols from another. Context compression from a third repo. Each solves one problem — none were designed to work together.</p>
     </div>
     <div class="pain-card">
-      <h3>You can't debug a rogue agent</h3>
-      <p>It made 47 tool calls, modified 12 files, and now the codebase is broken. What did it actually do? In what order? Good luck with <code>git log</code>.</p>
+      <h3>Agents step on each other</h3>
+      <p>Two agents write to the same file. One overwrites the other's work. You don't find out until production. There's a proven solution: enforced per-agent VFS.</p>
+    </div>
+    <div class="pain-card">
+      <h3>Agents repeat past mistakes</h3>
+      <p>Every session starts from zero. The agent hits the same JSON parse error it hit last week. Cross-session memory with FTS5 search is a solved problem — just not integrated anywhere.</p>
+    </div>
+    <div class="pain-card">
+      <h3>Agents act without oversight</h3>
+      <p>An autonomous agent drops a production table. There's an established protocol for consensus-based coordination — intent, vote, decide — but nobody ships it.</p>
     </div>
     <div class="pain-card">
       <h3>You can't roll back one agent</h3>
-      <p>The refactor agent broke everything. You <code>git reset --hard</code> and lose the work of the 3 other agents that were fine.</p>
+      <p>The refactor agent broke everything. You <code>git reset --hard</code> and lose the work of the 3 other agents that were fine. Surgical checkpoint/restore is a solved problem.</p>
     </div>
     <div class="pain-card">
-      <h3>State vanishes on crash</h3>
-      <p>Agent crashes mid-task. Its progress, findings, intermediate files &mdash; all gone. Start over from scratch.</p>
+      <h3>Context explodes, quality doesn't</h3>
+      <p>Agents bloat their context with raw traces. AAAK compact notation cuts 57% at default with zero quality loss — proven across 5 domains — and it sits unused in a GitHub repo.</p>
     </div>
     <div class="pain-card">
-      <h3>You can't inspect anything</h3>
-      <p>How many tokens did each agent use? Which tool calls failed? What files did agent X touch? You're <code>grep</code>-ing through logs &mdash; if you have logs.</p>
-    </div>
-    <div class="pain-card">
-      <h3>Your data leaves your machine</h3>
-      <p>Every agent call hits a cloud API. Your proprietary code, internal docs, and trade secrets travel over the wire to someone else's servers.</p>
+      <h3>You can't debug what happened</h3>
+      <p>47 tool calls, 12 files modified, one broken codebase. An append-only event journal with SQL queries is the right answer. It just needs to be the default.</p>
     </div>
   </div>
 </div>
@@ -458,7 +481,8 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
 <!-- Solution -->
 <section class="solution" id="solution">
 <div class="wrap">
-  <h2>How KAOS Solves This</h2>
+  <h2>One Framework. Every Solved Problem.</h2>
+  <p style="text-align:center;color:var(--fg2);margin-bottom:2rem;font-size:1rem;max-width:620px;margin-left:auto;margin-right:auto">KAOS doesn&rsquo;t solve these problems from scratch. It identifies who already solved them &mdash; and integrates their solutions into a single, composable system.</p>
   <div class="code-block">
     <div class="code-header">
       <span class="code-dot r"></span>
@@ -513,7 +537,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <tr><td>Agents act without consensus</td><td>Each agent is autonomous</td><td>SharedLog: intent &rarr; vote &rarr; decide — nothing moves without approval</td></tr>
     </tbody>
   </table>
-  <p class="comp-note">KAOS isn't a replacement &mdash; it's the runtime layer they're missing. Use it underneath LangChain, or standalone with local LLMs.</p>
+  <p class="comp-note">KAOS is what you get when you ask: what would an agentic framework look like if every capability came from the best available research, instead of being built from scratch? Use it standalone or underneath any orchestration layer.</p>
 </div>
 </section>
 
@@ -721,6 +745,60 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <h2>Architecture</h2>
   <div class="arch-image">
     <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
+  </div>
+</div>
+</section>
+
+<!-- Self-Improving -->
+<section class="self-improving" id="self-improving">
+<div class="wrap">
+  <div class="si-header">
+    <div class="si-eyebrow">Continuously Evolving</div>
+    <h2>A Framework That Improves Itself</h2>
+    <p class="si-sub">KAOS doesn&rsquo;t just run research &mdash; it uses its own tools to get better. The meta-harness optimizes KAOS&rsquo;s own strategies. Memory accumulates what works across runs. The shared log coordinates changes safely before they ship. We add new integrations as we find synergy and reason to include them &mdash; and KAOS makes the case for each one by running it on itself first.</p>
+  </div>
+  <div class="si-loop">
+    <div class="si-step">
+      <div class="si-step-num">01 &mdash; Discover</div>
+      <h3>Find the best solution</h3>
+      <p>A hard problem in agentic AI has already been solved somewhere &mdash; in a paper, an open-source project, or empirical work. Identify it. Read it carefully. Understand what it actually does.</p>
+    </div>
+    <div class="si-arrow">&rarr;</div>
+    <div class="si-step">
+      <div class="si-step-num">02 &mdash; Integrate</div>
+      <h3>Implement faithfully</h3>
+      <p>Build it into KAOS. Wire it into the CLI, MCP server, and Python API so it composes with everything else. Write tests. Credit the source explicitly. No reinvention.</p>
+    </div>
+    <div class="si-arrow">&rarr;</div>
+    <div class="si-step">
+      <div class="si-step-num">03 &mdash; Self-apply</div>
+      <h3>Run it on KAOS itself</h3>
+      <p>Use meta-harness to test new strategies on KAOS&rsquo;s own benchmarks. Store findings in MemoryStore. Coordinate any risky changes through SharedLog before they land.</p>
+    </div>
+    <div class="si-arrow">&rarr;</div>
+    <div class="si-step">
+      <div class="si-step-num">04 &mdash; Compound</div>
+      <h3>Each version enables the next</h3>
+      <p>A more capable KAOS finds better research, integrates it faster, and tests it more rigorously. The framework that improves agents also improves itself &mdash; by the same mechanism.</p>
+    </div>
+  </div>
+  <div class="si-evidence">
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:var(--accent2)">6</span>
+      <span class="si-ev-label">Research integrations and growing</span>
+    </div>
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:var(--green)">219</span>
+      <span class="si-ev-label">Tests, all passing</span>
+    </div>
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:var(--cyan)">25</span>
+      <span class="si-ev-label">MCP tools</span>
+    </div>
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:var(--orange)">v0.1&rarr;v0.6</span>
+      <span class="si-ev-label">6 versions in 2 weeks</span>
+    </div>
   </div>
 </div>
 </section>
@@ -1340,11 +1418,11 @@ kaos log decide refactor-agent --intent 2
 <!-- CTA -->
 <section class="cta">
 <div class="wrap">
-  <h2>Run It All Locally, For Free</h2>
-  <p>Your GPU. Your models. Your data stays on your machine. Zero API costs with local LLMs &mdash; or connect to Claude, OpenAI, or Claude Code when you want to.</p>
+  <h2>Join the Synthesis</h2>
+  <p>KAOS is open source and growing. New research gets integrated as we find it. Every version is more capable than the last &mdash; not by accident, but because KAOS uses its own tools to find what works. Your GPU. Your models. Your data. All local, all free.</p>
   <div class="hero-buttons">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-secondary">Read the Full Tutorial</a>
+    <a href="#self-improving" class="btn btn-secondary">How it improves itself &darr;</a>
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
@@ -1364,7 +1442,7 @@ kaos log decide refactor-agent --intent 2
     <a href="blog/kaos-v060.html">Blog</a>
     <a href="https://github.com/canivel/kaos/blob/main/LICENSE">Apache 2.0</a>
   </div>
-  <p>KAOS &mdash; Kernel for Agent Orchestration & Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
+  <p>KAOS &mdash; The Living Synthesis of Agentic AI Research. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
   <p style="margin-top:.4rem;font-style:italic;color:#636378">Named after the enemy spy agency in Get Smart (1965). Because KAOS is how you control your agents.</p>
 </div>
 </footer>
