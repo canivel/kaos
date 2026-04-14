@@ -17,6 +17,14 @@ kaos demo        # see it in action — no API keys needed
 
 ---
 
+## Philosophy
+
+| | |
+|---|---|
+| [Design Philosophy](philosophy.md) | Why KAOS integrates research rather than inventing solutions, integration criteria, what's next |
+
+---
+
 ## Guides
 
 | Guide | What it covers |
@@ -24,9 +32,11 @@ kaos demo        # see it in action — no API keys needed
 | [Dashboard](dashboard.md) | Gantt timeline, agent inspector, live events, multi-project |
 | [Checkpoints](checkpoints.md) | Snapshot, restore, diff, auto-checkpointing, storage |
 | [Use Cases](use-cases.md) | Code review swarm, parallel refactor, self-healing, post-mortem, incident response, ML research |
-| [MCP Integration](mcp-integration.md) | Claude Code / Cursor setup, all 18 MCP tools |
+| [MCP Integration](mcp-integration.md) | Claude Code / Cursor setup, all 25 MCP tools |
 | [Meta-Harness](meta-harness.md) | Automated prompt/strategy optimization search |
 | [CLI Reference](cli-reference.md) | Every command, every flag |
+| [Cross-Agent Memory](memory.md) | FTS5 searchable memory across agents and sessions |
+| [Shared Log](shared-log.md) | LogAct intent/vote/decide coordination protocol |
 
 ---
 
@@ -34,7 +44,7 @@ kaos demo        # see it in action — no API keys needed
 
 | Reference | What it covers |
 |---|---|
-| [Schema](schema.md) | All 8 SQLite tables, columns, indexes |
+| [Schema](schema.md) | All 10 SQLite tables, columns, indexes |
 | [Architecture](architecture.md) | Internal subsystems, data flow, design decisions |
 | [Deployment](deployment.md) | vLLM setup, production config, Docker |
 

@@ -1,10 +1,13 @@
 # KAOS
 
-**Runtime infrastructure for multi-agent AI.** Every agent gets its own isolated filesystem, automatic checkpointing, a full audit trail, and a live dashboard — all in a single SQLite file.
+**The living synthesis of agentic AI research.** Six research breakthroughs — memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
 
 [![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-orange)]()
+[![Research](https://img.shields.io/badge/research%20integrations-6-brightgreen)]()
+
+> KAOS doesn't build from scratch — it identifies the best solution to each hard problem in agentic AI and integrates it faithfully. Every capability traces back to a proven paper or open-source project. We add new integrations as we find synergy and reason to include them.
 
 ![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
 
@@ -52,13 +55,18 @@ KAOS handles isolation, checkpointing, and the dashboard automatically.
 
 ## What it does
 
-| Problem | Without KAOS | With KAOS |
+Each capability in KAOS comes from a proven source. Nothing is invented that doesn't need to be.
+
+| Problem | Best-in-class solution | Source |
 |---|---|---|
-| Two agents write the same file | One overwrites the other | Each has its own copy — enforced at the SQL level |
-| Agent crashes mid-task | Progress lost | Auto-checkpointed, resume from last snapshot |
-| Agent breaks everything | `git reset --hard`, lose all other work | `db.restore(agent, checkpoint)` — only that agent rolls back |
-| What did it actually do? | Read logs, if you have them | `SELECT * FROM events WHERE agent_id = ?` |
-| Cost tracking | Manual | `SELECT SUM(token_count) FROM tool_calls` |
+| Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) |
+| Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) |
+| Context explodes, quality drops | AAAK compact notation, 57% savings at default | [MemPalace](https://github.com/milla-jovovich/mempalace) |
+| Agents co-evolve poorly | Stagnation detection + skill sharing | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) |
+| Failures are opaque | Surrogate Verifier — isolated failure diagnostics | [EvoSkills arXiv:2604.01687](https://arxiv.org/abs/2604.01687) |
+| Strategies don't improve | Evolutionary proposer reads execution traces | [Meta-Harness arXiv:2603.28052](https://arxiv.org/abs/2603.28052) |
+| Agent isolation is convention | Enforced per-agent VFS + audit trail | KAOS core |
+| Agent crashes lose progress | Checkpoint / restore / diff | KAOS core |
 
 ---
 
@@ -146,14 +154,17 @@ db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
 
 | | |
 |---|---|
+| [Philosophy](docs/philosophy.md) | Why KAOS synthesizes research, integration criteria, what's next |
 | [Dashboard](docs/dashboard.md) | Gantt timeline, agent inspector, live events |
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag |
-| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 18 tools |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 25 tools |
 | [Meta-Harness](docs/meta-harness.md) | Automated prompt/strategy optimization |
+| [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |
+| [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
-| [Schema](docs/schema.md) | All 8 SQLite tables |
+| [Schema](docs/schema.md) | All 10 SQLite tables |
 | [Deployment](docs/deployment.md) | vLLM, production config |
 
 Full docs index → [`docs/`](docs/)
@@ -168,9 +179,37 @@ See [`examples/`](examples/) for:
 - `self_healing_agent.py` — auto-restore on failure
 - `autonomous_research_lab.py` — N hypothesis agents, SQL result comparison
 - `meta_harness_*.py` — automated prompt/strategy optimization
+- `memory_search.py` — cross-agent FTS5 memory write and search
+- `shared_log_coordination.py` — LogAct 4-stage coordination walkthrough
+- `safety_voting.py` — human-in-the-loop safety gate with voting
 
 ---
 
 ## How agents are isolated
 
 Each agent's files, state, tool calls, and events are stored in separate rows scoped by `agent_id`. There is no shared filesystem — it's enforced at the query level, not by convention. The entire runtime is one `.db` file you can copy, share, or open in any SQLite client.
+
+---
+
+## Credits
+
+KAOS builds on ideas from several open-source projects and research papers:
+
+**Cross-Agent Memory** (`kaos/memory.py`, `kaos memory` CLI, `agent_memory_*` MCP tools)
+Inspired by [claude-mem](https://github.com/thedotmack/claude-mem) by Alex Newman ([@thedotmack](https://github.com/thedotmack)), AGPL-3.0.
+The core idea — agents writing compact, searchable memories for cross-session retrieval — is taken directly from claude-mem. KAOS adapts it for SQLite FTS5, multi-agent access, and typed entries.
+
+**Shared Log / LogAct Protocol** (`kaos/shared_log.py`, `kaos log` CLI, `shared_log_*` MCP tools)
+Inspired by **LogAct: Enabling Agentic Reliability via Shared Logs**
+Balakrishnan, Shi, Lu, Goel, Baral, Lyu, Dredze (2026), Meta. [arXiv:2604.07988](https://arxiv.org/abs/2604.07988)
+The intent/vote/decision 4-stage loop and append-only log design are taken directly from LogAct. KAOS adapts it for SQLite WAL mode, adds `policy` and `mail` entry types, and integrates agent_id as a first-class citizen.
+
+**CORAL** (stagnation detection, skill distillation, co-evolution)
+Meta-Harness's CORAL features are independently derived from similar ideas in the evolutionary optimization literature.
+
+**EvoSkills / MemPalace**
+Earlier KAOS versions integrated ideas from EvoSkills (v0.5.1) and MemPalace (v0.5.2).
+
+---
+
+KAOS is open source, Apache-2.0 licensed. Contributions welcome.
