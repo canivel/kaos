@@ -3,21 +3,21 @@ config:
   cwd: null
   env:
     recording: true
-  cols: 110
-  rows: 36
+  cols: 100
+  rows: 30
   repeat: 0
   quality: 100
   frameDelay: auto
   maxIdleTime: 2000
   frameBox:
     type: window
-    title: "KAOS \u2014 Full Engagement: FinPulse Payment Platform"
+    title: "KAOS \u2014 Full Engagement Walkthrough"
     style:
       border: 0px black solid
   cursorStyle: bar
   fontFamily: Consolas, Menlo, monospace
   fontSize: 14
-  lineHeight: 1.3
+  lineHeight: 1.35
   theme:
     background: '#0d1117'
     foreground: '#c9d1d9'
@@ -39,194 +39,188 @@ config:
     brightWhite: '#f0f6fc'
 
 records:
-  # ── Scene 1: The Problem Statement ─────────────────────────────
-  - delay: 600
+  # ── Scene 1: Initialize ─────────────────────────────────────────────────
+  - delay: 500
     content: "\r\n"
   - delay: 80
-    content: "\e[1m\e[96mKAOS \u2014 Full Engagement Demo\e[0m\n"
+    content: "\e[1m\e[96m  KAOS \u2014 Full Engagement Walkthrough\e[0m\n"
   - delay: 60
-    content: "\e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\n"
-  - delay: 400
-    content: "\e[90mFinPulse is replacing their legacy payments monolith.\e[0m\n"
-  - delay: 200
-    content: "\e[90mConsulting firm quoted $3.8M / 14 months / 16 people.\e[0m\n"
+    content: "\e[90m  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\n"
   - delay: 300
-    content: "\e[90mInstead, let's paste the scope into KAOS.\e[0m\n\n"
+    content: "\e[90m  Payment platform modernization \u2014 legacy monolith to microservices\e[0m\n"
+  - delay: 200
+    content: "\e[90m  Scope: async payments, ML fraud, client portal, PCI-DSS, GKE\e[0m\n\n"
   - delay: 800
-    content: "\e[32m$\e[0m \e[1mkaos init --db finpulse.db\e[0m\n"
-  - delay: 400
-    content: "\e[32mInitialized KAOS database:\e[0m finpulse.db\n"
-  - delay: 200
-    content: "  Schema v3 \u2014 10 tables, WAL mode, FTS5 indexes ready\n\n"
+    content: "\e[32m$\e[0m \e[1mkaos init --db payments-demo.db\e[0m\n"
+  - delay: 350
+    content: "\e[32mInitialized KAOS database:\e[0m payments-demo.db\n"
+  - delay: 120
+    content: "\e[90m  Schema v3 \u2014 10 tables \u2014 WAL mode \u2014 FTS5 full-text indexes ready\e[0m\n\n"
 
-  # ── Scene 2: Research agent searches existing skills ───────────
+  # ── Scene 2: Skills search ───────────────────────────────────────────────
   - delay: 1000
-    content: "\e[90m\u2500\u2500\u2500 Wave 1: Discovery \u2014 research-agent loads prior work \u2500\u2500\u2500\e[0m\n\n"
+    content: "\e[90m\u2500\u2500\u2500 Wave 1: research-agent searches the skill library \u2500\u2500\u2500\e[0m\n\n"
   - delay: 400
-    content: "\e[32m$\e[0m \e[1mkaos skills search \"payments fastapi\"\e[0m\n"
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos skills search \"payments fastapi\"\e[0m\n\n"
+  - delay: 600
+    content: "  \e[96m\u25b6\e[0m  \e[1mfastapi-payment-gateway\e[0m\n"
+  - delay: 80
+    content: "     FastAPI gateway \u2014 idempotent handler, webhook delivery,\n"
+  - delay: 80
+    content: "     exponential retry, DLQ, OpenAPI auto-generation\n"
+  - delay: 80
+    content: "     \e[90mtags: [fastapi, payments, webhooks, idempotent]\e[0m\n\n"
   - delay: 700
-    content: "\e[90m# Searching skill library (FTS5/BM25)...\e[0m\n\n"
-  - delay: 300
-    content: "  \e[96m#1\e[0m  \e[1mfastapi-payment-gateway\e[0m\n"
-  - delay: 80
-    content: "       FastAPI gateway \u2014 idempotent handler, JWT auth, webhook delivery, OpenAPI auto-gen\n"
-  - delay: 80
-    content: "       \e[90mtags: [fastapi, payments, webhooks, auth]\e[0m\n\n"
-  - delay: 150
-    content: "  \e[96m#3\e[0m  \e[1mpci-dss-v4-fastapi-postgres\e[0m\n"
-  - delay: 80
-    content: "       Automated PCI-DSS v4.0 evidence \u2014 all 12 requirements, audit-ready\n"
-  - delay: 80
-    content: "       \e[90mtags: [pci-dss, compliance, security, payments]\e[0m\n\n"
-  - delay: 400
-    content: "\e[32m$\e[0m \e[1mkaos skills search \"fraud GBM\"\e[0m\n"
-  - delay: 500
-    content: "\n  \e[96m#4\e[0m  \e[1mfraud-detection-gbm-pipeline\e[0m\n"
-  - delay: 80
-    content: "       GBM fraud classifier \u2014 velocity/geo/network features, SHAP, cold-start fallback, Feast\n"
-  - delay: 80
-    content: "       \e[90mtags: [fraud, ml, gbm, feast, payments]\e[0m\n\n"
-  - delay: 400
-    content: "\e[32m$\e[0m \e[1mkaos skills search \"terraform kubernetes\"\e[0m\n"
-  - delay: 500
-    content: "\n  \e[96m#2\e[0m  \e[1mgke-terraform-microservices\e[0m\n"
-  - delay: 80
-    content: "       Production GKE \u2014 VPC, Cloud SQL, Redis, Kafka \u2014 battle-tested for payment workloads\n"
-  - delay: 80
-    content: "       \e[90mtags: [gke, terraform, kubernetes, payments, infra]\e[0m\n\n"
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos skills search \"fraud detection\"\e[0m\n\n"
   - delay: 600
-    content: "\e[32m\u2714\e[0m \e[1m5 prior skills loaded before Wave 2 begins.\e[0m \e[90mEstimated 8\u201312 iteration savings.\e[0m\n\n"
+    content: "  \e[96m\u25b6\e[0m  \e[1mfraud-detection-gbm-pipeline\e[0m\n"
+  - delay: 80
+    content: "     GBM classifier \u2014 47 features, SHAP explainability, Feast\n"
+  - delay: 80
+    content: "     online store, cold-start fallback, scheduled retraining\n"
+  - delay: 80
+    content: "     \e[90mtags: [fraud, ml, gbm, feast, payments, shap]\e[0m\n\n"
+  - delay: 700
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos skills search \"terraform kubernetes\"\e[0m\n\n"
+  - delay: 600
+    content: "  \e[96m\u25b6\e[0m  \e[1mgke-terraform-microservices\e[0m\n"
+  - delay: 80
+    content: "     GKE \u2014 VPC, Cloud SQL, Redis, Kafka, Helm releases,\n"
+  - delay: 80
+    content: "     HPA + PDB configs, Datadog integration\n"
+  - delay: 80
+    content: "     \e[90mtags: [gke, terraform, kubernetes, payments]\e[0m\n\n"
+  - delay: 500
+    content: "\e[32m\u2714\e[0m \e[1m4 prior skills loaded before Wave 2 writes a line of code.\e[0m\n\n"
 
-  # ── Scene 3: 10 agents in parallel ─────────────────────────────
+  # ── Scene 3: 13 agents all completed ────────────────────────────────────
   - delay: 1200
-    content: "\e[90m\u2500\u2500\u2500 Wave 2: 8 agents building in parallel \u2500\u2500\u2500\e[0m\n\n"
-  - delay: 300
-    content: "\e[32m$\e[0m \e[1mkaos ls\e[0m\n\n"
-  - delay: 600
-    content: "  \e[32m\u25cf\e[0m  \e[1mresearch-agent\e[0m           \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mpayment-engine-agent\e[0m     \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mfraud-agent\e[0m              \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mapi-gateway-agent\e[0m        \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1minfra-agent\e[0m              \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mcompliance-agent\e[0m         \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mtest-agent\e[0m               \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mmigration-agent\e[0m          \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1msecurity-agent\e[0m           \e[32mcompleted\e[0m  2026-04-15T16:38:34\n"
-  - delay: 80
-    content: "  \e[32m\u25cf\e[0m  \e[1mperf-agent\e[0m               \e[32mcompleted\e[0m  2026-04-15T16:38:34\n\n"
-  - delay: 400
-    content: "  \e[90m10 agents \u2014 all completed \u2014 finpulse.db\e[0m\n\n"
+    content: "\e[90m\u2500\u2500\u2500 After all 4 waves: 13 agents \u2500\u2500\u2500\e[0m\n\n"
+  - delay: 350
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos ls\e[0m\n\n"
+  - delay: 500
+    content: "  \e[32m\u25cf\e[0m  \e[1mresearch-agent\e[0m          \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1marchitect-agent\e[0m         \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mpayment-engine-agent\e[0m    \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mfraud-agent\e[0m             \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mapi-gateway-agent\e[0m       \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mcompliance-agent\e[0m        \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1minfra-agent\e[0m             \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mtest-agent\e[0m              \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1msecurity-agent\e[0m          \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mperf-agent\e[0m              \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mcompliance-validator\e[0m    \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mdeploy-agent\e[0m            \e[32mcompleted\e[0m  2026-04-15T17:12\n"
+  - delay: 70
+    content: "  \e[32m\u25cf\e[0m  \e[1mobservability-agent\e[0m     \e[32mcompleted\e[0m  2026-04-15T17:12\n\n"
+  - delay: 350
+    content: "  \e[90m13 agents \u2014 all completed \u2014 payments-demo.db\e[0m\n\n"
 
-  # ── Scene 4: SurrogateVerifier fired ───────────────────────────
-  - delay: 1000
+  # ── Scene 4: SurrogateVerifier ───────────────────────────────────────────
+  - delay: 1200
     content: "\e[90m\u2500\u2500\u2500 Wave 2: SurrogateVerifier auto-diagnosed a failure \u2500\u2500\u2500\e[0m\n\n"
   - delay: 300
-    content: "\e[31m\u2715\e[0m fraud-agent: iteration 2 FAILED\n"
-  - delay: 500
-    content: "  \e[33mSurrogateVerifier analyzing outputs...\e[0m\n\n"
-  - delay: 800
-    content: "  \e[33mRoot cause:\e[0m Feast online store returns empty vector for new\n"
-  - delay: 80
-    content: "             merchant_id on cold start. NaN propagates through GBM\n"
-  - delay: 80
-    content: "             scorer and crashes the pipeline.\n\n"
-  - delay: 400
-    content: "  \e[96mFix:\e[0m Inject global merchant risk percentile (p50) as prior\n"
-  - delay: 80
-    content: "       when feature vector is empty. Pattern from skill #4.\n\n"
+    content: "  \e[31m\u2715\e[0m  fraud-agent  iteration 2  \e[31mFAILED\e[0m\n\n"
   - delay: 600
-    content: "\e[32m\u2714\e[0m fraud-agent: fix applied, retrying iteration 3\e[0m\n"
+    content: "  \e[33mSurrogateVerifier\e[0m analyzing outputs (reads results, not source)\n\n"
+  - delay: 800
+    content: "  \e[33mRoot cause:\e[0m  Feast cold-start returns empty vector for new\n"
+  - delay: 80
+    content: "               merchant_id. NaN propagates through GBM scorer\n"
+  - delay: 80
+    content: "               \u2192 pipeline crash on null input.\n\n"
+  - delay: 500
+    content: "  \e[96mFix proposed:\e[0m  Inject global merchant risk percentile (p50)\n"
+  - delay: 80
+    content: "                as prior when feature vector is empty.\n"
+  - delay: 80
+    content: "                Pattern matches skill: fraud-detection-gbm-pipeline\n\n"
+  - delay: 700
+    content: "  \e[32m\u2714\e[0m  Fix applied. Retrying iteration 3...\n"
   - delay: 400
-    content: "\e[32m\u2714\e[0m fraud-agent: AUC 0.94 on synthetic holdout. \e[0mDone.\n\n"
+    content: "  \e[32m\u2714\e[0m  fraud-agent  AUC 0.94 on synthetic holdout.  Done.\n\n"
 
-  # ── Scene 5: Memory search ──────────────────────────────────────
+  # ── Scene 5: Memory search ───────────────────────────────────────────────
   - delay: 1200
-    content: "\e[90m\u2500\u2500\u2500 After session: agents wrote memories for future projects \u2500\u2500\u2500\e[0m\n\n"
-  - delay: 300
-    content: "\e[32m$\e[0m \e[1mkaos memory search \"cold start Feast\"\e[0m\n\n"
-  - delay: 600
-    content: "  \e[32m[result]\e[0m \e[90mfeast-cold-start-fix \u2014 fraud-agent\e[0m\n"
-  - delay: 80
-    content: "  Feast cold-start fix: inject global merchant risk percentile\n"
-  - delay: 80
-    content: "  (p50) as prior when feature vector empty for new merchant_id.\n"
-  - delay: 80
-    content: "  Prevents NaN propagation in GBM scorer. AUC impact: none at p95.\n\n"
+    content: "\e[90m\u2500\u2500\u2500 Lessons written to cross-agent memory \u2500\u2500\u2500\e[0m\n\n"
   - delay: 400
-    content: "\e[32m$\e[0m \e[1mkaos memory search \"PCI DSS\"\e[0m\n\n"
-  - delay: 500
-    content: "  \e[32m[result]\e[0m \e[90mpci-dss-automation \u2014 compliance-agent\e[0m\n"
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos memory search \"Feast cold start\"\e[0m\n\n"
+  - delay: 650
+    content: "  \e[32m[result]\e[0m  \e[1mfeast-cold-start-fix\e[0m  \e[90m\u2014  fraud-agent\e[0m\n"
   - delay: 80
-    content: "  PCI-DSS v4.0 all 12 requirements automated FastAPI+Postgres.\n"
+    content: "  Feast cold-start: inject global merchant risk percentile (p50)\n"
   - delay: 80
-    content: "  HMAC chain satisfies Req 10.3. HSTS required by Req 4.2.1.\n"
+    content: "  as prior when feature vector is empty. Prevents NaN propagation.\n"
   - delay: 80
-    content: "  Quarterly PDF auto-generated from evidence collector.\n\n"
-
-  # ── Scene 6: New skills saved ───────────────────────────────────
-  - delay: 1000
-    content: "\e[90m\u2500\u2500\u2500 Wave 2 outputs saved as reusable skills \u2500\u2500\u2500\e[0m\n\n"
-  - delay: 300
-    content: "\e[32m$\e[0m \e[1mkaos skills save \\\e[0m\n"
-  - delay: 80
-    content: "    \e[1m--name okta-jwt-fastapi-middleware \\\e[0m\n"
-  - delay: 80
-    content: "    \e[1m--description \"Okta JWT + TOTP middleware for FastAPI\" \\\e[0m\n"
-  - delay: 80
-    content: "    \e[1m--tags \"okta,jwt,auth,fastapi,mfa\"\e[0m\n\n"
+    content: "  AUC impact: none at p95. Resolved in 18s by SurrogateVerifier.\n\n"
   - delay: 600
-    content: "\e[32mSaved skill #7:\e[0m okta-jwt-fastapi-middleware\n\n"
-  - delay: 800
-    content: "\e[32m$\e[0m \e[1mkaos skills ls\e[0m\n\n"
-  - delay: 500
-    content: "  \e[96m#1\e[0m  fastapi-payment-gateway          \e[90m[fastapi, payments, webhooks, auth]\e[0m\n"
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos memory search \"PCI DSS\"\e[0m\n\n"
+  - delay: 650
+    content: "  \e[32m[result]\e[0m  \e[1mpci-dss-v4-automation\e[0m  \e[90m\u2014  compliance-agent\e[0m\n"
   - delay: 80
-    content: "  \e[96m#2\e[0m  gke-terraform-microservices      \e[90m[gke, terraform, kubernetes, payments]\e[0m\n"
+    content: "  PCI-DSS v4.0 all 12 requirements automated. FastAPI + Postgres.\n"
+  - delay: 80
+    content: "  HMAC audit log (Req 10.3), HSTS enforced (Req 4.2.1).\n"
+  - delay: 80
+    content: "  Quarterly PDF evidence report generated in under 90 seconds.\n\n"
+
+  # ── Scene 6: Skills saved ────────────────────────────────────────────────
+  - delay: 1200
+    content: "\e[90m\u2500\u2500\u2500 Session ended: skill library after engagement \u2500\u2500\u2500\e[0m\n\n"
+  - delay: 400
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos skills ls\e[0m\n\n"
+  - delay: 500
+    content: "  \e[96m#1\e[0m  fastapi-payment-gateway          \e[90m[fastapi, payments, webhooks]\e[0m\n"
+  - delay: 80
+    content: "  \e[96m#2\e[0m  gke-terraform-microservices      \e[90m[gke, terraform, kubernetes]\e[0m\n"
   - delay: 80
     content: "  \e[96m#3\e[0m  pci-dss-v4-fastapi-postgres      \e[90m[pci-dss, compliance, security]\e[0m\n"
   - delay: 80
-    content: "  \e[96m#4\e[0m  fraud-detection-gbm-pipeline     \e[90m[fraud, ml, gbm, feast, payments]\e[0m\n"
+    content: "  \e[96m#4\e[0m  fraud-detection-gbm-pipeline     \e[90m[fraud, ml, gbm, feast]\e[0m\n"
   - delay: 80
-    content: "  \e[96m#5\e[0m  zero-downtime-dual-write-migration \e[90m[migration, zero-downtime]\e[0m\n"
+    content: "  \e[96m#5\e[0m  zero-downtime-parallel-run       \e[90m[migration, zero-downtime]\e[0m\n"
   - delay: 80
-    content: "  \e[96m#6\e[0m  go-idempotent-payment-engine     \e[90m[go, payments, grpc, retry]\e[0m\n"
-  - delay: 80
-    content: "  \e[96m#7\e[0m  okta-jwt-fastapi-middleware      \e[90m[okta, jwt, auth, fastapi, mfa]\e[0m\n\n"
-
-  # ── Scene 7: Next project loads skills in 9 seconds ────────────
-  - delay: 1200
-    content: "\e[90m\u2500\u2500\u2500 3 months later: FinPulse BNPL expansion \u2500\u2500\u2500\e[0m\n\n"
-  - delay: 300
-    content: "\e[32m$\e[0m \e[1mkaos skills search \"migration zero downtime\"\e[0m\n\n"
-  - delay: 500
-    content: "  \e[96m#5\e[0m  \e[1mzero-downtime-dual-write-migration\e[0m\n"
-  - delay: 80
-    content: "       Dual-write migration \u2014 result diffing, per-cohort flags, auto-rollback\n"
-  - delay: 80
-    content: "       \e[90muse_count: 1  success_rate: 100%\e[0m\n\n"
+    content: "  \e[96m#6\e[0m  datadog-slo-alerting-pack        \e[90m[datadog, slo, observability]\e[0m\n\n"
   - delay: 400
-    content: "\e[32m$\e[0m \e[1mkaos memory search \"Terraform GKE\"\e[0m\n\n"
-  - delay: 500
-    content: "  \e[32m[result]\e[0m \e[90mgke-perf-baseline \u2014 infra-agent\e[0m\n"
+    content: "  \e[90m6 skills \u2022 5 memories \u2022 13 agents \u2022 all in payments-demo.db\e[0m\n\n"
+
+  # ── Scene 7: Knowledge compounds ────────────────────────────────────────
+  - delay: 1200
+    content: "\e[90m\u2500\u2500\u2500 Follow-on session: knowledge compounds \u2500\u2500\u2500\e[0m\n\n"
+  - delay: 400
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos skills search \"compliance fastapi\"\e[0m\n\n"
+  - delay: 600
+    content: "  \e[96m\u25b6\e[0m  \e[1mpci-dss-v4-fastapi-postgres\e[0m\n"
   - delay: 80
-    content: "  GKE Terraform: 47 resources. Blue/green via GitHub Actions.\n"
+    content: "     Automated PCI-DSS v4.0 \u2014 all 12 requirements, audit-ready\n"
   - delay: 80
-    content: "  23 Datadog alerts. p99 141ms at 50k TPS after index on merchant_id.\n\n"
+    content: "     PDF/CSV export. FastAPI + Postgres.\n"
+  - delay: 80
+    content: "     \e[90mtags: [pci-dss, compliance, security, fastapi, postgres]\e[0m\n\n"
+  - delay: 700
+    content: "\e[32m$\e[0m \e[1mKAOS_DB=payments-demo.db kaos memory search \"load test\"\e[0m\n\n"
+  - delay: 600
+    content: "  \e[32m[result]\e[0m  \e[1mload-test-50k-tps\e[0m  \e[90m\u2014  perf-agent\e[0m\n"
+  - delay: 80
+    content: "  50,312 TPS sustained. p99 141ms after index on merchant_id.\n"
+  - delay: 80
+    content: "  Redis cache hit rate: 94.2%. Kafka consumer lag: 0 at peak.\n\n"
   - delay: 800
-    content: "\e[32m\u2714\e[0m \e[1m7 skills + 5 memories loaded before Wave 1.\e[0m\n"
-  - delay: 300
-    content: "\e[32m\u2714\e[0m \e[1mBNPL expansion completed in 52 minutes.\e[0m\n"
-  - delay: 300
-    content: "\e[32m\u2714\e[0m \e[90mNo re-discovery. No re-explaining the stack.\e[0m\n"
-  - delay: 300
-    content: "\e[32m\u2714\e[0m \e[90mThe next project starts where this one left off.\e[0m\n\n"
+    content: "\e[32m\u2714\e[0m  6 skills + 5 memories loaded before Wave 1 begins.\n"
+  - delay: 250
+    content: "\e[32m\u2714\e[0m  No re-discovery. No re-explaining the stack.\n"
+  - delay: 250
+    content: "\e[32m\u2714\e[0m  Knowledge compounds with every session.\n\n"
   - delay: 2000
     content: ""
