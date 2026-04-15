@@ -86,6 +86,16 @@ nav .back:hover{color:var(--fg);text-decoration:none}
 .agent-card .out .hi{color:var(--green)}
 .agent-card .out .lo{color:var(--red)}
 .agent-card .out .info{color:var(--accent2)}
+.agent-phases{margin-top:.75rem;display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.ap-phase{background:rgba(255,255,255,.025);border-radius:6px;padding:.55rem .75rem;border:1px solid rgba(255,255,255,.04)}
+.ap-label{font-family:var(--mono);font-size:.63rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.35rem}
+.ap-start .ap-label{color:var(--accent2)}
+.ap-done .ap-label{color:var(--green)}
+.ap-phase ul{list-style:none;margin:0;padding:0}
+.ap-phase li{font-size:.77rem;color:var(--fg2);line-height:1.6;padding:.05rem 0;padding-left:1.1rem;position:relative}
+.ap-start li::before{content:'→';position:absolute;left:0;color:var(--accent2)}
+.ap-done li::before{content:'✓';position:absolute;left:0;color:var(--green)}
+@media(max-width:500px){.agent-phases{grid-template-columns:1fr}}
 .gantt-bar{height:14px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:.5rem}
 .wave-section{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.6rem 1.8rem;margin:2rem 0}
 .wave-section .wave-meta{font-size:.82rem;color:var(--fg2);font-family:var(--mono);margin-bottom:1.2rem;display:flex;gap:1.5rem;flex-wrap:wrap}
@@ -158,20 +168,20 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
     <div class="wave-section" style="margin-top:1rem">
       <div style="font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px">Consulting Firm Proposal — Summary</div>
       <ul style="font-size:.92rem;color:var(--fg2);list-style:none;padding:0;margin:0">
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Real-time payment processing engine (async, idempotent)</span><strong style="font-family:var(--mono);color:var(--fg)">$820,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>ML-based fraud detection pipeline</span><strong style="font-family:var(--mono);color:var(--fg)">$740,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Client portal (real-time dashboard, API keys, webhooks)</span><strong style="font-family:var(--mono);color:var(--fg)">$680,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>PCI-DSS &amp; SOC2 compliance automation</span><strong style="font-family:var(--mono);color:var(--fg)">$490,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Infrastructure &amp; deployment (Kubernetes, Terraform, CI/CD)</span><strong style="font-family:var(--mono);color:var(--fg)">$610,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Integration test suite &amp; QA</span><strong style="font-family:var(--mono);color:var(--fg)">$380,000</strong></li>
-        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Migration from legacy monolith</span><strong style="font-family:var(--mono);color:var(--fg)">$480,000</strong></li>
-        <li style="padding:.45rem 0;display:flex;justify-content:space-between"><span>Project management &amp; documentation</span><strong style="font-family:var(--mono);color:var(--fg)">$210,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Real-time payment processing engine (async, idempotent)</span><strong style="font-family:var(--mono);color:var(--fg)">$230,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>ML-based fraud detection pipeline</span><strong style="font-family:var(--mono);color:var(--fg)">$210,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Client portal (real-time dashboard, API keys, webhooks)</span><strong style="font-family:var(--mono);color:var(--fg)">$195,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>PCI-DSS &amp; SOC2 compliance automation</span><strong style="font-family:var(--mono);color:var(--fg)">$140,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Infrastructure &amp; deployment (Kubernetes, Terraform, CI/CD)</span><strong style="font-family:var(--mono);color:var(--fg)">$165,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Integration test suite &amp; QA</span><strong style="font-family:var(--mono);color:var(--fg)">$110,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Migration from legacy monolith</span><strong style="font-family:var(--mono);color:var(--fg)">$135,000</strong></li>
+        <li style="padding:.45rem 0;display:flex;justify-content:space-between"><span>Project management &amp; documentation</span><strong style="font-family:var(--mono);color:var(--fg)">$65,000</strong></li>
       </ul>
       <div style="border-top:2px solid rgba(255,209,102,.3);margin-top:1rem;padding-top:1rem;display:flex;justify-content:space-between;align-items:baseline">
-        <span style="font-size:.9rem;color:var(--fg2)">Total &bull; 16 months &bull; 18 people</span>
-        <span style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--gold)">$4,410,000</span>
+        <span style="font-size:.9rem;color:var(--fg2)">Total &bull; 8 months &bull; 8 people</span>
+        <span style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--gold)">$1,250,000</span>
       </div>
-      <div style="font-size:.78rem;color:var(--fg2);margin-top:.5rem">+ travel, licenses, and "change management" bringing estimated total to <strong style="color:var(--fg)">$5.2M</strong></div>
+      <div style="font-size:.78rem;color:var(--fg2);margin-top:.5rem">+ travel, licenses, and "change management" bringing estimated total to <strong style="color:var(--fg)">$1.4M</strong></div>
     </div>
 
     <p>Instead of signing, open a terminal.</p>
@@ -397,6 +407,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="info">skill_search</span> "zero downtime migration" → 1 hit: zero-downtime-parallel-run-migration<br>
 <span class="hi">→ 4 prior skills loaded as context before wave 2 begins.</span>
       </div>
+      <div class="agent-phases">
+        <div class="ap-phase ap-start">
+          <div class="ap-label">Starts with</div>
+          <ul>
+            <li>Problem statement from intake-agent</li>
+            <li>Empty database (fresh project)</li>
+            <li>4 targeted search queries</li>
+          </ul>
+        </div>
+        <div class="ap-phase ap-done">
+          <div class="ap-label">Produces</div>
+          <ul>
+            <li>4 skills loaded as shared context</li>
+            <li>Skill summary posted to shared_log</li>
+            <li>Wave-2 agents pre-briefed before start</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <span class="tag-pill tp-skills">Skill Library</span>
@@ -416,6 +444,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
    Awaiting vote from: fraud-agent, api-agent, infra-agent"<br>
 <br>
 <span class="hi">Votes: 3/3 approve. Decision recorded. Proceeding.</span>
+      </div>
+      <div class="agent-phases">
+        <div class="ap-phase ap-start">
+          <div class="ap-label">Starts with</div>
+          <ul>
+            <li>research-agent skill summary</li>
+            <li>Problem statement + constraints</li>
+            <li>4 pre-loaded skill templates</li>
+          </ul>
+        </div>
+        <div class="ap-phase ap-done">
+          <div class="ap-label">Produces</div>
+          <ul>
+            <li>Signed ADR on shared_log (3/3 votes)</li>
+            <li>Service boundary diagram (Mermaid)</li>
+            <li>gRPC proto skeleton for payment-engine</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -452,6 +498,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> payment/handler_test.go — 94% coverage<br>
 <span class="info">checkpoint</span> auto-created: "payment-engine-stable"
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>Signed ADR from shared_log</li>
+              <li><code>fastapi-payment-gateway</code> skill (structural template)</li>
+              <li>gRPC proto skeleton from architect-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>4 Go files: engine, retry, proto, tests (94% coverage)</li>
+              <li>Checkpoint: "payment-engine-stable"</li>
+              <li>gRPC service available to api-gateway-agent</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -467,6 +531,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> fraud/explainer.py — SHAP values per transaction, dispute-ready<br>
 <span class="hi">✓</span> fraud/feast_store.py — real-time feature retrieval (&lt;5ms p99)<br>
 <span class="hi">✓</span> fraud/retrain_pipeline.py — scheduled retraining on live feedback
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>ADR + <code>fraud-detection-gbm-pipeline</code> skill</li>
+              <li>47-feature engineering spec from research-agent</li>
+              <li>Feast cluster config from infra-agent (shared_log)</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>5 Python files, AUC 0.94 on synthetic holdout</li>
+              <li>Memory: <code>feast-cold-start-fix</code> (fixed by SurrogateVerifier in 18s)</li>
+              <li>SHAP explainability per transaction, dispute-ready format</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -484,6 +566,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> api/keys.py — API key lifecycle (create/rotate/revoke/scope)<br>
 <span class="hi">✓</span> api/openapi.json — auto-generated, 28 operations documented
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>ADR + <code>fastapi-payment-gateway</code> skill</li>
+              <li>gRPC proto from payment-engine-agent</li>
+              <li>Okta tenant config (from intake-agent answers)</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>28 REST endpoints with full OpenAPI spec</li>
+              <li>Webhook delivery engine (retry + dead-letter queue)</li>
+              <li>API key lifecycle management (scoped, rotatable)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -499,6 +599,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> portal/src/ApiKeys.tsx — key management UI<br>
 <span class="hi">✓</span> portal/src/Webhooks.tsx — endpoint config + delivery log<br>
 <span class="hi">✓</span> portal/src/Analytics.tsx — volume, latency, fraud KPIs
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>OpenAPI spec from api-gateway-agent (shared_log)</li>
+              <li>WebSocket event schema + KPI definitions</li>
+              <li>Okta SSO config (same as api-gateway-agent)</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>5 React components (TypeScript, virtualized feed)</li>
+              <li>Real-time dashboard with 5 chart types</li>
+              <li>API key management + webhook config UI</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -516,6 +634,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> compliance/audit_log.py — append-only log, HMAC integrity chain<br>
 <span class="info">memory_write</span> "PCI-DSS v4.0 requirement mapping for FastAPI + Postgres stack"
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>ADR + <code>pci-dss-v4-fastapi-postgres</code> skill</li>
+              <li>PCI-DSS v4.0 requirement list (12 reqs)</li>
+              <li>FastAPI data flow diagram from architect-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>4 Python files: collector, SOC2, report gen, audit log</li>
+              <li>Memory: <code>pci-dss-v4-automation</code> (reusable for any FastAPI+PG project)</li>
+              <li>Quarterly PDF/CSV generated in &lt;90 seconds</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -531,6 +667,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> .github/workflows/ — CI (test+lint+scan), CD (blue/green deploy)<br>
 <span class="hi">✓</span> infra/helm/ — payment-engine, api-gateway, fraud-service charts<br>
 <span class="hi">✓</span> infra/monitoring/ — Datadog dashboards + 23 alert policies
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>ADR + <code>gke-terraform-microservices</code> skill</li>
+              <li>Existing GKE cluster config (from intake-agent)</li>
+              <li>Service list + port map from architect-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>8 Terraform modules, 14 k8s manifests, CI/CD pipelines</li>
+              <li>Memory: <code>terraform-gke-payment-infra</code> (47 resources, HA config)</li>
+              <li>Helm charts for each service, ready to deploy</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -548,6 +702,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> tests/load/locustfile.py — 50k TPS scenario, configured<br>
 <span class="info">checkpoint</span> auto-created: "test-suite-stable"
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>All wave-2 agent outputs (read via VFS)</li>
+              <li>gRPC proto from payment-engine-agent</li>
+              <li>OpenAPI spec from api-gateway-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>847 unit tests (92.4% coverage), 94 integration scenarios</li>
+              <li>Locust 50k TPS load test, ready for perf-agent</li>
+              <li>Checkpoint: "test-suite-stable"</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -562,6 +734,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> migration/differ.py — result comparison engine, drift alerting<br>
 <span class="hi">✓</span> migration/feature_flags.py — per-client cohort cutover<br>
 <span class="hi">✓</span> migration/rollback.py — automatic trigger on drift &gt; 0.1%
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>ADR + <code>zero-downtime-parallel-run-migration</code> skill</li>
+              <li>Legacy Rails schema + client cohort list</li>
+              <li>payment-engine gRPC interface spec</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>4 Python files: dual-write router, differ, feature flags, rollback</li>
+              <li>Parallel-run active on all cohorts — zero downtime</li>
+              <li>Rollback trigger fires automatically at drift &gt; 0.1%</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -625,6 +815,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">→</span> Auto-patched both. Re-scan: clean.<br>
 <span class="info">shared_log_write</span> "Security: 2 medium fixed. JWT config: compliant. TLS: compliant."
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>All wave-2 VFS outputs (read-only access)</li>
+              <li>OWASP Top 10 checklist + Trivy scan config</li>
+              <li>PCI-DSS Req 4 + 6 checklists from compliance-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>2 patches applied (HSTS header + OPTIONS auth fix)</li>
+              <li>Shared log: finding visible to compliance-validator immediately</li>
+              <li>Memory: <code>security-pass-findings</code> (re-scan: clean)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -640,6 +848,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span style="color:#ffd166">⚠</span> 1 slow query: payment lookup by merchant_id missing index<br>
 <span class="hi">→</span> Added index. Re-test: p99 dropped to 141ms.<br>
 <span class="info">shared_log_write</span> "Perf: 50k TPS at 141ms p99. Index fix applied."
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>Locust load test script from test-agent</li>
+              <li>SLO targets: p99 &lt;200ms, 50k TPS sustained</li>
+              <li>Running GKE cluster from deploy (staging env)</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>50k TPS @ 141ms p99 (after merchant_id index fix)</li>
+              <li>Memory: <code>load-test-50k-tps</code> (Redis 94.2%, Kafka lag 0)</li>
+              <li>Shared log: perf findings visible to integration-agent</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -657,6 +883,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> Audit log: HMAC chain verified. No gaps.<br>
 <span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. FastAPI+Postgres."
         </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>compliance-agent outputs + HMAC audit log</li>
+              <li>Security-agent finding (HSTS) from shared_log</li>
+              <li>PCI-DSS v4.0 Req 4.2.1 mapping</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>12/12 PCI + 61/61 SOC2 controls: all verified</li>
+              <li>HSTS fix counted as satisfying Req 4.2.1 (cross-agent win)</li>
+              <li>Full audit-ready evidence package (PDF + CSV)</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="agent-card" style="margin-top:.8rem">
@@ -671,6 +915,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> Migration parity: new vs legacy diff &lt; 0.002% (target: &lt;0.1%)<br>
 <span class="hi">✓</span> Webhook delivery: 100% in &lt;800ms over 10k test events<br>
 <span class="hi">✓</span> Okta auth: 8/8 token flow scenarios passing
+        </div>
+        <div class="agent-phases">
+          <div class="ap-phase ap-start">
+            <div class="ap-label">Starts with</div>
+            <ul>
+              <li>All wave-2 + wave-3 outputs (read via VFS)</li>
+              <li>Ephemeral testcontainers env (PG, Redis, Kafka, Feast)</li>
+              <li>94 integration test scenarios from test-agent</li>
+            </ul>
+          </div>
+          <div class="ap-phase ap-done">
+            <div class="ap-label">Produces</div>
+            <ul>
+              <li>94/94 integration tests passing (zero flakes)</li>
+              <li>Migration parity confirmed: diff &lt;0.002% vs legacy</li>
+              <li>Wave-4 gate: ✓ all quality checks passed</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -699,6 +961,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> Parallel-run migration: active for all client cohorts<br>
 <span class="info">checkpoint</span> auto-created: "production-stable-v1.0.0"
       </div>
+      <div class="agent-phases">
+        <div class="ap-phase ap-start">
+          <div class="ap-label">Starts with</div>
+          <ul>
+            <li>Wave-3 shared_log: all quality gates ✓</li>
+            <li>Terraform plan from infra-agent + Helm charts</li>
+            <li>Existing GKE cluster credentials (from intake-agent)</li>
+          </ul>
+        </div>
+        <div class="ap-phase ap-done">
+          <div class="ap-label">Produces</div>
+          <ul>
+            <li>47 resources live on GKE (0 destroyed)</li>
+            <li>Checkpoint: "production-stable-v1.0.0"</li>
+            <li>Parallel-run migration active across all cohorts</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="agent-card" style="margin-top:.8rem">
@@ -713,6 +993,24 @@ Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
 <span class="hi">✓</span> 23 alert policies active (PagerDuty integration)<br>
 <span class="hi">✓</span> 5 Datadog dashboards: payments, fraud, infra, compliance, costs<br>
 <span class="hi">✓</span> Runbooks: linked from each alert, auto-generated from agent outputs
+      </div>
+      <div class="agent-phases">
+        <div class="ap-phase ap-start">
+          <div class="ap-label">Starts with</div>
+          <ul>
+            <li><code>datadog-slo-alerting-pack</code> skill from research-agent</li>
+            <li>SLO targets: 99.9% uptime, p99 &lt;200ms, fraud catch &gt;95%</li>
+            <li>All live service endpoints from deploy-agent</li>
+          </ul>
+        </div>
+        <div class="ap-phase ap-done">
+          <div class="ap-label">Produces</div>
+          <ul>
+            <li>3 SLOs, 23 alert policies, 5 dashboards live in Datadog</li>
+            <li>Runbooks auto-generated from wave-2 agent outputs</li>
+            <li>Memory: <code>datadog-slo-alerting-pack</code> saved for future projects</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -883,15 +1181,15 @@ Result diffing, per-cohort feature flags, automatic rollback on drift.",
     <div class="vs-box">
       <div class="vs-side consulting">
         <div class="vs-label red">Consulting firm</div>
-        <h4>$5.2M Engagement</h4>
+        <h4>~$1.4M Engagement</h4>
         <ul>
-          <li><span>Total cost</span><strong>$5,200,000</strong></li>
-          <li><span>Timeline</span><strong>16 months</strong></li>
-          <li><span>Team size</span><strong>18 people</strong></li>
-          <li><span>Discovery phase</span><strong>6 weeks</strong></li>
-          <li><span>First working demo</span><strong>Month 4</strong></li>
+          <li><span>Total cost</span><strong>~$1,400,000</strong></li>
+          <li><span>Timeline</span><strong>8 months</strong></li>
+          <li><span>Team size</span><strong>8 people</strong></li>
+          <li><span>Discovery phase</span><strong>4 weeks</strong></li>
+          <li><span>First working demo</span><strong>Month 3</strong></li>
           <li><span>Knowledge retained after</span><strong>$0</strong></li>
-          <li><span>Next project cost</span><strong>$5.2M again</strong></li>
+          <li><span>Next project cost</span><strong>~$1.4M again</strong></li>
           <li><span>Audit trail</span><strong>Email threads</strong></li>
           <li><span>Rollback capability</span><strong>Git history only</strong></li>
         </ul>
