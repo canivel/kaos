@@ -1,0 +1,1752 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: 'KAOS — 2am Production Incident: SQL Over 50K Events → Root Cause in 12s'
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[91m[ALERT]\e[0m  \e[37mapi.prod.example.com\e[0m  \e[90m—\e\
+    [0m  \e[91mHTTP 500 rate: 23%\e[0m  \e[90m(threshold: 1%)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mTime: 2026-04-10 02:17:43 UTC  │  Severity: P0  │  On-call: Danilo\e\
+    [0m\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mKAOS — 2am Production Incident Response\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mEvent journal: 50,000+ events  │  SQL-queryable in real time\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mTarget: root cause in under 60 seconds\e[0m\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 2000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 1 — Query recent errors from event journal\
+    \                         \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 61
+  content: k
+- delay: 63
+  content: a
+- delay: 52
+  content: o
+- delay: 62
+  content: s
+- delay: 66
+  content: ' '
+- delay: 58
+  content: '-'
+- delay: 65
+  content: '-'
+- delay: 71
+  content: j
+- delay: 74
+  content: s
+- delay: 71
+  content: o
+- delay: 72
+  content: n
+- delay: 62
+  content: ' '
+- delay: 63
+  content: q
+- delay: 78
+  content: u
+- delay: 59
+  content: e
+- delay: 60
+  content: r
+- delay: 58
+  content: y
+- delay: 56
+  content: ' '
+- delay: 74
+  content: '"'
+- delay: 60
+  content: S
+- delay: 77
+  content: E
+- delay: 78
+  content: L
+- delay: 61
+  content: E
+- delay: 70
+  content: C
+- delay: 63
+  content: T
+- delay: 64
+  content: ' '
+- delay: 78
+  content: t
+- delay: 56
+  content: i
+- delay: 52
+  content: m
+- delay: 57
+  content: e
+- delay: 59
+  content: s
+- delay: 76
+  content: t
+- delay: 76
+  content: a
+- delay: 78
+  content: m
+- delay: 72
+  content: p
+- delay: 64
+  content: ','
+- delay: 57
+  content: ' '
+- delay: 76
+  content: a
+- delay: 69
+  content: g
+- delay: 73
+  content: e
+- delay: 78
+  content: n
+- delay: 71
+  content: t
+- delay: 71
+  content: _
+- delay: 71
+  content: i
+- delay: 62
+  content: d
+- delay: 58
+  content: ','
+- delay: 59
+  content: ' '
+- delay: 74
+  content: t
+- delay: 62
+  content: o
+- delay: 77
+  content: o
+- delay: 54
+  content: l
+- delay: 54
+  content: _
+- delay: 52
+  content: n
+- delay: 69
+  content: a
+- delay: 76
+  content: m
+- delay: 53
+  content: e
+- delay: 78
+  content: ','
+- delay: 68
+  content: ' '
+- delay: 69
+  content: e
+- delay: 54
+  content: r
+- delay: 76
+  content: r
+- delay: 76
+  content: o
+- delay: 69
+  content: r
+- delay: 63
+  content: ' '
+- delay: 53
+  content: F
+- delay: 54
+  content: R
+- delay: 55
+  content: O
+- delay: 74
+  content: M
+- delay: 54
+  content: ' '
+- delay: 60
+  content: t
+- delay: 65
+  content: o
+- delay: 54
+  content: o
+- delay: 58
+  content: l
+- delay: 64
+  content: _
+- delay: 60
+  content: c
+- delay: 71
+  content: a
+- delay: 68
+  content: l
+- delay: 77
+  content: l
+- delay: 74
+  content: s
+- delay: 54
+  content: ' '
+- delay: 70
+  content: W
+- delay: 71
+  content: H
+- delay: 53
+  content: E
+- delay: 62
+  content: R
+- delay: 64
+  content: E
+- delay: 77
+  content: ' '
+- delay: 67
+  content: s
+- delay: 52
+  content: t
+- delay: 55
+  content: a
+- delay: 78
+  content: t
+- delay: 70
+  content: u
+- delay: 72
+  content: s
+- delay: 76
+  content: '='
+- delay: 67
+  content: ''''
+- delay: 58
+  content: e
+- delay: 72
+  content: r
+- delay: 65
+  content: r
+- delay: 57
+  content: o
+- delay: 70
+  content: r
+- delay: 67
+  content: ''''
+- delay: 70
+  content: ' '
+- delay: 69
+  content: A
+- delay: 55
+  content: N
+- delay: 76
+  content: D
+- delay: 53
+  content: ' '
+- delay: 53
+  content: t
+- delay: 52
+  content: i
+- delay: 70
+  content: m
+- delay: 72
+  content: e
+- delay: 57
+  content: s
+- delay: 69
+  content: t
+- delay: 63
+  content: a
+- delay: 53
+  content: m
+- delay: 73
+  content: p
+- delay: 55
+  content: ' '
+- delay: 64
+  content: '>'
+- delay: 57
+  content: ' '
+- delay: 65
+  content: N
+- delay: 64
+  content: O
+- delay: 57
+  content: W
+- delay: 64
+  content: (
+- delay: 66
+  content: )
+- delay: 71
+  content: ' '
+- delay: 56
+  content: '-'
+- delay: 53
+  content: ' '
+- delay: 75
+  content: I
+- delay: 67
+  content: N
+- delay: 63
+  content: T
+- delay: 66
+  content: E
+- delay: 66
+  content: R
+- delay: 62
+  content: V
+- delay: 53
+  content: A
+- delay: 72
+  content: L
+- delay: 60
+  content: ' '
+- delay: 67
+  content: ''''
+- delay: 59
+  content: '1'
+- delay: 73
+  content: ' '
+- delay: 60
+  content: h
+- delay: 74
+  content: o
+- delay: 62
+  content: u
+- delay: 65
+  content: r
+- delay: 52
+  content: ''''
+- delay: 76
+  content: ' '
+- delay: 66
+  content: O
+- delay: 68
+  content: R
+- delay: 71
+  content: D
+- delay: 62
+  content: E
+- delay: 57
+  content: R
+- delay: 64
+  content: ' '
+- delay: 64
+  content: B
+- delay: 61
+  content: Y
+- delay: 68
+  content: ' '
+- delay: 66
+  content: t
+- delay: 65
+  content: i
+- delay: 60
+  content: m
+- delay: 60
+  content: e
+- delay: 66
+  content: s
+- delay: 53
+  content: t
+- delay: 64
+  content: a
+- delay: 62
+  content: m
+- delay: 66
+  content: p
+- delay: 60
+  content: ' '
+- delay: 63
+  content: D
+- delay: 55
+  content: E
+- delay: 66
+  content: S
+- delay: 71
+  content: C
+- delay: 57
+  content: ' '
+- delay: 63
+  content: L
+- delay: 59
+  content: I
+- delay: 54
+  content: M
+- delay: 75
+  content: I
+- delay: 72
+  content: T
+- delay: 64
+  content: ' '
+- delay: 74
+  content: '2'
+- delay: 78
+  content: '0'
+- delay: 69
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 300
+  content: "  \e[90mScanning 50,247 events...\e[0m\r\n"
+- delay: 500
+  content: ''
+- delay: 55
+  content: "  \e[90mtimestamp              agent_id       tool_name    error\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m─────────────────────  ─────────────  ───────────  ──────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:41\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:39\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:37\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:35\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:33\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 80
+  content: "  \e[90m2026-04-10 02:17:31\e[0m  \e[33mapi-gateway\e[0m    db_query \
+    \    \e[91mConnectionPoolError: pool exhausted (max=2)\e[0m\r\n"
+- delay: 60
+  content: "  \e[90m...\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m(20 rows, 847 total errors in last hour)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mPattern:\e[0m  \e[91m847 errors in 1 hour, ALL from api-gateway,\
+    \ ALL ConnectionPoolError\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  pool_size is too low — something changed the connection pool\
+    \ config\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1400
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 2 — Correlate with deploy history (VFS\
+    \ event log)                  \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 57
+  content: k
+- delay: 53
+  content: a
+- delay: 78
+  content: o
+- delay: 75
+  content: s
+- delay: 71
+  content: ' '
+- delay: 68
+  content: '-'
+- delay: 58
+  content: '-'
+- delay: 58
+  content: j
+- delay: 71
+  content: s
+- delay: 67
+  content: o
+- delay: 62
+  content: n
+- delay: 60
+  content: ' '
+- delay: 70
+  content: q
+- delay: 70
+  content: u
+- delay: 54
+  content: e
+- delay: 59
+  content: r
+- delay: 66
+  content: y
+- delay: 64
+  content: ' '
+- delay: 68
+  content: '"'
+- delay: 52
+  content: S
+- delay: 71
+  content: E
+- delay: 65
+  content: L
+- delay: 71
+  content: E
+- delay: 77
+  content: C
+- delay: 57
+  content: T
+- delay: 71
+  content: ' '
+- delay: 76
+  content: t
+- delay: 57
+  content: i
+- delay: 73
+  content: m
+- delay: 77
+  content: e
+- delay: 64
+  content: s
+- delay: 59
+  content: t
+- delay: 76
+  content: a
+- delay: 78
+  content: m
+- delay: 77
+  content: p
+- delay: 52
+  content: ','
+- delay: 73
+  content: ' '
+- delay: 58
+  content: a
+- delay: 59
+  content: g
+- delay: 58
+  content: e
+- delay: 76
+  content: n
+- delay: 72
+  content: t
+- delay: 71
+  content: _
+- delay: 72
+  content: i
+- delay: 65
+  content: d
+- delay: 73
+  content: ','
+- delay: 65
+  content: ' '
+- delay: 73
+  content: f
+- delay: 58
+  content: i
+- delay: 60
+  content: l
+- delay: 73
+  content: e
+- delay: 55
+  content: _
+- delay: 61
+  content: p
+- delay: 63
+  content: a
+- delay: 60
+  content: t
+- delay: 65
+  content: h
+- delay: 78
+  content: ','
+- delay: 60
+  content: ' '
+- delay: 53
+  content: c
+- delay: 77
+  content: o
+- delay: 70
+  content: n
+- delay: 76
+  content: t
+- delay: 69
+  content: e
+- delay: 78
+  content: n
+- delay: 61
+  content: t
+- delay: 71
+  content: ' '
+- delay: 52
+  content: F
+- delay: 67
+  content: R
+- delay: 56
+  content: O
+- delay: 70
+  content: M
+- delay: 65
+  content: ' '
+- delay: 52
+  content: v
+- delay: 58
+  content: f
+- delay: 57
+  content: s
+- delay: 66
+  content: _
+- delay: 77
+  content: e
+- delay: 65
+  content: v
+- delay: 69
+  content: e
+- delay: 77
+  content: n
+- delay: 56
+  content: t
+- delay: 60
+  content: s
+- delay: 56
+  content: ' '
+- delay: 67
+  content: W
+- delay: 57
+  content: H
+- delay: 73
+  content: E
+- delay: 59
+  content: R
+- delay: 69
+  content: E
+- delay: 62
+  content: ' '
+- delay: 69
+  content: t
+- delay: 76
+  content: i
+- delay: 67
+  content: m
+- delay: 78
+  content: e
+- delay: 55
+  content: s
+- delay: 72
+  content: t
+- delay: 67
+  content: a
+- delay: 68
+  content: m
+- delay: 70
+  content: p
+- delay: 67
+  content: ' '
+- delay: 76
+  content: '>'
+- delay: 71
+  content: ' '
+- delay: 56
+  content: N
+- delay: 67
+  content: O
+- delay: 64
+  content: W
+- delay: 75
+  content: (
+- delay: 70
+  content: )
+- delay: 67
+  content: ' '
+- delay: 64
+  content: '-'
+- delay: 73
+  content: ' '
+- delay: 55
+  content: I
+- delay: 52
+  content: N
+- delay: 60
+  content: T
+- delay: 70
+  content: E
+- delay: 58
+  content: R
+- delay: 53
+  content: V
+- delay: 78
+  content: A
+- delay: 55
+  content: L
+- delay: 52
+  content: ' '
+- delay: 61
+  content: ''''
+- delay: 59
+  content: '2'
+- delay: 70
+  content: ' '
+- delay: 77
+  content: h
+- delay: 66
+  content: o
+- delay: 63
+  content: u
+- delay: 72
+  content: r
+- delay: 55
+  content: s
+- delay: 73
+  content: ''''
+- delay: 56
+  content: ' '
+- delay: 77
+  content: A
+- delay: 63
+  content: N
+- delay: 68
+  content: D
+- delay: 53
+  content: ' '
+- delay: 56
+  content: e
+- delay: 56
+  content: v
+- delay: 73
+  content: e
+- delay: 74
+  content: n
+- delay: 76
+  content: t
+- delay: 76
+  content: _
+- delay: 63
+  content: t
+- delay: 64
+  content: y
+- delay: 76
+  content: p
+- delay: 77
+  content: e
+- delay: 65
+  content: '='
+- delay: 54
+  content: ''''
+- delay: 64
+  content: w
+- delay: 75
+  content: r
+- delay: 69
+  content: i
+- delay: 66
+  content: t
+- delay: 62
+  content: e
+- delay: 54
+  content: ''''
+- delay: 52
+  content: ' '
+- delay: 77
+  content: O
+- delay: 67
+  content: R
+- delay: 70
+  content: D
+- delay: 52
+  content: E
+- delay: 62
+  content: R
+- delay: 58
+  content: ' '
+- delay: 54
+  content: B
+- delay: 69
+  content: Y
+- delay: 76
+  content: ' '
+- delay: 77
+  content: t
+- delay: 59
+  content: i
+- delay: 52
+  content: m
+- delay: 67
+  content: e
+- delay: 78
+  content: s
+- delay: 68
+  content: t
+- delay: 64
+  content: a
+- delay: 64
+  content: m
+- delay: 65
+  content: p
+- delay: 73
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 300
+  content: "  \e[90mScanning vfs_events...\e[0m\r\n"
+- delay: 400
+  content: ''
+- delay: 55
+  content: "  \e[90mtimestamp              agent_id       file_path\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────  ─────────────  ─────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 00:22:14\e[0m  deploy-runner  config/app.yaml     \
+    \         \e[90m(version bump)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 00:22:16\e[0m  deploy-runner  requirements.txt    \
+    \         \e[90m(deps update)\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m2026-04-10 01:30:51\e[0m  \e[33mdeploy-runner\e[0m  \e[91mconfig/db.yaml\e\
+    [0m               \e[91m← 47 min ago\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 01:30:52\e[0m  deploy-runner  config/cache.yaml   \
+    \         \e[90m(cache ttl)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[91m⚑  Suspicious:\e[0m  \e[93mconfig/db.yaml written 47 minutes ago\e\
+    [0m  \e[90m— error rate spiked at 01:30\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1500
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 3 — Confirm the culprit: diff pre-deploy\
+    \ vs HEAD                   \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 55
+  content: k
+- delay: 67
+  content: a
+- delay: 65
+  content: o
+- delay: 64
+  content: s
+- delay: 70
+  content: ' '
+- delay: 67
+  content: d
+- delay: 74
+  content: i
+- delay: 67
+  content: f
+- delay: 69
+  content: f
+- delay: 69
+  content: ' '
+- delay: 76
+  content: a
+- delay: 74
+  content: p
+- delay: 70
+  content: i
+- delay: 77
+  content: '-'
+- delay: 56
+  content: g
+- delay: 66
+  content: a
+- delay: 63
+  content: t
+- delay: 60
+  content: e
+- delay: 56
+  content: w
+- delay: 58
+  content: a
+- delay: 66
+  content: y
+- delay: 56
+  content: ' '
+- delay: 70
+  content: p
+- delay: 75
+  content: r
+- delay: 53
+  content: e
+- delay: 69
+  content: '-'
+- delay: 78
+  content: d
+- delay: 77
+  content: e
+- delay: 52
+  content: p
+- delay: 62
+  content: l
+- delay: 70
+  content: o
+- delay: 72
+  content: y
+- delay: 59
+  content: ' '
+- delay: 54
+  content: H
+- delay: 78
+  content: E
+- delay: 55
+  content: A
+- delay: 55
+  content: D
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mComparing checkpoint pre-deploy → HEAD  (file: config/db.yaml)\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  config/db.yaml\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  ─────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m    host:       db.prod.internal\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m    port:       5432\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m    database:   app_production\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m  - pool_size: 5\e[0m   \e[90m← pre-deploy value\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  + pool_size: 2\e[0m   \e[90m← current value  ✗  TOO LOW\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m    timeout:    30\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m    max_overflow: 0\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m1 line changed.\e[0m  \e[91mpool_size: 5 → 2\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mError rate timeline:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  01:28  →  0.0%  (nominal)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  01:30  →  0.0%  (deploy begins)\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  01:31  →  8.4%  (pool exhaustion starts)\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  01:35  → 18.2%  (escalating)\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  02:17  → 23.0%  ← NOW\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mRoot cause confirmed:\e[0m  \e[91mpool_size reduced from 5 to\
+    \ 2 by deploy 47 minutes ago.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1800
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 4 — Safe hotfix with checkpoint      \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 56
+  content: k
+- delay: 58
+  content: a
+- delay: 74
+  content: o
+- delay: 67
+  content: s
+- delay: 75
+  content: ' '
+- delay: 73
+  content: c
+- delay: 61
+  content: h
+- delay: 66
+  content: e
+- delay: 52
+  content: c
+- delay: 58
+  content: k
+- delay: 56
+  content: p
+- delay: 69
+  content: o
+- delay: 55
+  content: i
+- delay: 59
+  content: n
+- delay: 56
+  content: t
+- delay: 72
+  content: ' '
+- delay: 76
+  content: a
+- delay: 58
+  content: p
+- delay: 59
+  content: i
+- delay: 57
+  content: '-'
+- delay: 71
+  content: g
+- delay: 55
+  content: a
+- delay: 62
+  content: t
+- delay: 60
+  content: e
+- delay: 78
+  content: w
+- delay: 59
+  content: a
+- delay: 77
+  content: y
+- delay: 55
+  content: ' '
+- delay: 60
+  content: '-'
+- delay: 59
+  content: '-'
+- delay: 73
+  content: l
+- delay: 78
+  content: a
+- delay: 64
+  content: b
+- delay: 59
+  content: e
+- delay: 73
+  content: l
+- delay: 70
+  content: ' '
+- delay: 71
+  content: b
+- delay: 68
+  content: r
+- delay: 76
+  content: o
+- delay: 75
+  content: k
+- delay: 74
+  content: e
+- delay: 72
+  content: n
+- delay: 56
+  content: '-'
+- delay: 64
+  content: s
+- delay: 52
+  content: t
+- delay: 64
+  content: a
+- delay: 70
+  content: t
+- delay: 77
+  content: e
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Checkpoint  \e[90m[broken-state]\e[0m  saved  \e[90m(broken\
+    \ config preserved for post-mortem)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 58
+  content: k
+- delay: 78
+  content: a
+- delay: 62
+  content: o
+- delay: 76
+  content: s
+- delay: 66
+  content: ' '
+- delay: 58
+  content: w
+- delay: 78
+  content: r
+- delay: 68
+  content: i
+- delay: 69
+  content: t
+- delay: 59
+  content: e
+- delay: 76
+  content: ' '
+- delay: 74
+  content: a
+- delay: 65
+  content: p
+- delay: 77
+  content: i
+- delay: 70
+  content: '-'
+- delay: 61
+  content: g
+- delay: 67
+  content: a
+- delay: 53
+  content: t
+- delay: 73
+  content: e
+- delay: 60
+  content: w
+- delay: 72
+  content: a
+- delay: 52
+  content: y
+- delay: 56
+  content: ' '
+- delay: 69
+  content: /
+- delay: 78
+  content: c
+- delay: 61
+  content: o
+- delay: 70
+  content: n
+- delay: 72
+  content: f
+- delay: 58
+  content: i
+- delay: 75
+  content: g
+- delay: 75
+  content: /
+- delay: 57
+  content: d
+- delay: 71
+  content: b
+- delay: 61
+  content: .
+- delay: 70
+  content: y
+- delay: 58
+  content: a
+- delay: 60
+  content: m
+- delay: 54
+  content: l
+- delay: 55
+  content: ' '
+- delay: 59
+  content: p
+- delay: 64
+  content: o
+- delay: 75
+  content: o
+- delay: 70
+  content: l
+- delay: 72
+  content: _
+- delay: 69
+  content: s
+- delay: 68
+  content: i
+- delay: 69
+  content: z
+- delay: 60
+  content: e
+- delay: 65
+  content: '='
+- delay: 59
+  content: '5'
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Written: config/db.yaml  \e[90mpool_size: 2 → 5\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 58
+  content: k
+- delay: 61
+  content: a
+- delay: 59
+  content: o
+- delay: 52
+  content: s
+- delay: 77
+  content: ' '
+- delay: 75
+  content: r
+- delay: 57
+  content: u
+- delay: 74
+  content: n
+- delay: 56
+  content: ' '
+- delay: 65
+  content: a
+- delay: 57
+  content: p
+- delay: 75
+  content: i
+- delay: 69
+  content: '-'
+- delay: 66
+  content: g
+- delay: 73
+  content: a
+- delay: 54
+  content: t
+- delay: 66
+  content: e
+- delay: 59
+  content: w
+- delay: 74
+  content: a
+- delay: 74
+  content: y
+- delay: 74
+  content: ' '
+- delay: 57
+  content: '-'
+- delay: 59
+  content: '-'
+- delay: 63
+  content: ' '
+- delay: 66
+  content: ''''
+- delay: 69
+  content: r
+- delay: 78
+  content: e
+- delay: 63
+  content: l
+- delay: 60
+  content: o
+- delay: 57
+  content: a
+- delay: 63
+  content: d
+- delay: 53
+  content: ' '
+- delay: 53
+  content: c
+- delay: 55
+  content: o
+- delay: 56
+  content: n
+- delay: 77
+  content: f
+- delay: 73
+  content: i
+- delay: 60
+  content: g
+- delay: 75
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[api-gateway]\e[0m  Config reloaded.  pool_size=5 active.\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mError rate monitor:\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  02:17:50  →  23.0%\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 200
+  content: "  \e[33m  02:18:05  →  11.4%  \e[90m(pool draining backlog)\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 200
+  content: "  \e[33m  02:18:20  →   4.8%\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 200
+  content: "  \e[32m  02:18:35  →   0.7%\e[0m\r\n"
+- delay: 300
+  content: ''
+- delay: 200
+  content: "  \e[32m  02:18:50  →   0.0%  \e[92m✓ RESOLVED\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 5 — Post-mortem query: total blast radius\
+    \                          \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 53
+  content: k
+- delay: 71
+  content: a
+- delay: 71
+  content: o
+- delay: 67
+  content: s
+- delay: 54
+  content: ' '
+- delay: 71
+  content: '-'
+- delay: 54
+  content: '-'
+- delay: 72
+  content: j
+- delay: 53
+  content: s
+- delay: 61
+  content: o
+- delay: 55
+  content: n
+- delay: 68
+  content: ' '
+- delay: 54
+  content: q
+- delay: 73
+  content: u
+- delay: 75
+  content: e
+- delay: 67
+  content: r
+- delay: 77
+  content: y
+- delay: 58
+  content: ' '
+- delay: 64
+  content: '"'
+- delay: 64
+  content: S
+- delay: 73
+  content: E
+- delay: 70
+  content: L
+- delay: 56
+  content: E
+- delay: 73
+  content: C
+- delay: 64
+  content: T
+- delay: 67
+  content: ' '
+- delay: 69
+  content: C
+- delay: 76
+  content: O
+- delay: 69
+  content: U
+- delay: 57
+  content: N
+- delay: 59
+  content: T
+- delay: 61
+  content: (
+- delay: 60
+  content: '*'
+- delay: 70
+  content: )
+- delay: 70
+  content: ' '
+- delay: 64
+  content: a
+- delay: 62
+  content: s
+- delay: 72
+  content: ' '
+- delay: 70
+  content: a
+- delay: 69
+  content: f
+- delay: 74
+  content: f
+- delay: 72
+  content: e
+- delay: 78
+  content: c
+- delay: 58
+  content: t
+- delay: 57
+  content: e
+- delay: 71
+  content: d
+- delay: 74
+  content: _
+- delay: 54
+  content: r
+- delay: 77
+  content: e
+- delay: 54
+  content: q
+- delay: 70
+  content: u
+- delay: 75
+  content: e
+- delay: 65
+  content: s
+- delay: 67
+  content: t
+- delay: 55
+  content: s
+- delay: 77
+  content: ','
+- delay: 67
+  content: ' '
+- delay: 73
+  content: M
+- delay: 74
+  content: I
+- delay: 67
+  content: N
+- delay: 55
+  content: (
+- delay: 74
+  content: t
+- delay: 67
+  content: i
+- delay: 64
+  content: m
+- delay: 66
+  content: e
+- delay: 74
+  content: s
+- delay: 66
+  content: t
+- delay: 60
+  content: a
+- delay: 62
+  content: m
+- delay: 75
+  content: p
+- delay: 61
+  content: )
+- delay: 62
+  content: ' '
+- delay: 60
+  content: a
+- delay: 53
+  content: s
+- delay: 54
+  content: ' '
+- delay: 66
+  content: s
+- delay: 63
+  content: t
+- delay: 63
+  content: a
+- delay: 53
+  content: r
+- delay: 63
+  content: t
+- delay: 62
+  content: ','
+- delay: 56
+  content: ' '
+- delay: 66
+  content: M
+- delay: 57
+  content: A
+- delay: 64
+  content: X
+- delay: 53
+  content: (
+- delay: 57
+  content: t
+- delay: 67
+  content: i
+- delay: 72
+  content: m
+- delay: 55
+  content: e
+- delay: 72
+  content: s
+- delay: 78
+  content: t
+- delay: 64
+  content: a
+- delay: 64
+  content: m
+- delay: 62
+  content: p
+- delay: 67
+  content: )
+- delay: 71
+  content: ' '
+- delay: 78
+  content: a
+- delay: 78
+  content: s
+- delay: 53
+  content: ' '
+- delay: 61
+  content: e
+- delay: 69
+  content: n
+- delay: 56
+  content: d
+- delay: 78
+  content: ' '
+- delay: 69
+  content: F
+- delay: 76
+  content: R
+- delay: 65
+  content: O
+- delay: 55
+  content: M
+- delay: 56
+  content: ' '
+- delay: 75
+  content: t
+- delay: 54
+  content: o
+- delay: 78
+  content: o
+- delay: 59
+  content: l
+- delay: 65
+  content: _
+- delay: 60
+  content: c
+- delay: 74
+  content: a
+- delay: 71
+  content: l
+- delay: 53
+  content: l
+- delay: 58
+  content: s
+- delay: 77
+  content: ' '
+- delay: 72
+  content: W
+- delay: 73
+  content: H
+- delay: 67
+  content: E
+- delay: 65
+  content: R
+- delay: 57
+  content: E
+- delay: 67
+  content: ' '
+- delay: 75
+  content: s
+- delay: 71
+  content: t
+- delay: 52
+  content: a
+- delay: 54
+  content: t
+- delay: 57
+  content: u
+- delay: 73
+  content: s
+- delay: 58
+  content: '='
+- delay: 74
+  content: ''''
+- delay: 55
+  content: e
+- delay: 72
+  content: r
+- delay: 52
+  content: r
+- delay: 57
+  content: o
+- delay: 60
+  content: r
+- delay: 59
+  content: ''''
+- delay: 72
+  content: ' '
+- delay: 53
+  content: A
+- delay: 65
+  content: N
+- delay: 65
+  content: D
+- delay: 53
+  content: ' '
+- delay: 69
+  content: a
+- delay: 77
+  content: g
+- delay: 76
+  content: e
+- delay: 65
+  content: n
+- delay: 72
+  content: t
+- delay: 62
+  content: _
+- delay: 65
+  content: i
+- delay: 61
+  content: d
+- delay: 52
+  content: '='
+- delay: 73
+  content: ''''
+- delay: 59
+  content: a
+- delay: 56
+  content: p
+- delay: 62
+  content: i
+- delay: 68
+  content: '-'
+- delay: 71
+  content: g
+- delay: 71
+  content: a
+- delay: 76
+  content: t
+- delay: 52
+  content: e
+- delay: 76
+  content: w
+- delay: 65
+  content: a
+- delay: 54
+  content: y
+- delay: 76
+  content: ''''
+- delay: 57
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 300
+  content: "  \e[90mScanning tool_calls...\e[0m\r\n"
+- delay: 400
+  content: ''
+- delay: 55
+  content: "  \e[90maffected_requests   start                  end\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────   ─────────────────────  ─────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[93m4,847\e[0m               \e[90m2026-04-10 01:31:04\e[0m    \e\
+    [90m2026-04-10 02:18:50\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mDuration:\e[0m   \e[93m47 minutes 46 seconds\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mRequests:\e[0m   \e[93m4,847\e[0m errors  \e[90m(23% of 21,074\
+    \ total requests in window)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mCause:\e[0m      \e[91mpool_size: 5 → 2  (1-line config change\
+    \ in deploy)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mFix:\e[0m        \e[32mpool_size: 2 → 5  (1-line revert)\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90mFix time:\e[0m   \e[32m58 seconds from alert acknowledgement\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1000
+  content: ''
+- delay: 700
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[92mIncident resolved.\e[0m  Root cause identified in \e[1m12 seconds\e\
+    [0m via SQL over event journal.\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAlert received:\e[0m     02:17:43\r\n"
+- delay: 55
+  content: "  \e[90mRoot cause found:\e[0m   02:17:55  \e[32m(12 seconds)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mHotfix applied:\e[0m     02:18:00\r\n"
+- delay: 55
+  content: "  \e[90mError rate → 0%:\e[0m   02:18:50\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mFull audit trail:\e[0m   every query, write, and config change\
+    \ in kaos.db\r\n"
+- delay: 55
+  content: "  \e[90mBlast radius:\e[0m       \e[93m4,847 requests\e[0m  over 47 minutes\r\
+    \n"
+- delay: 55
+  content: "  \e[90mRecovery:\e[0m           \e[32m1 config line reverted, 0 rollback\
+    \ required\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3000
+  content: ''

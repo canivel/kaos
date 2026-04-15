@@ -1,0 +1,1249 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: 'KAOS — Security Audit: 4 Parallel Agents, 1 PR, Zero Conflicts'
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mKAOS — Security Audit Swarm\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m4 parallel agents · isolated VFS · SQL aggregation · zero conflicts\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mPR:\e[0m     \e[93mPR-2847\e[0m  \e[90m—\e[0m  \e[37mfeat: add\
+    \ user search endpoint\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mAuthor:\e[0m dev@company.com   \e[90mopened 2026-04-10 09:30 UTC\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mFiles:\e[0m  routes/users.py  config.py  middleware/auth.py  models/user.py\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAudit plan:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Agent 1 \e[0m\e[31msqli-agent\e[0m    \e[90m— SQL injection\
+    \ vectors\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Agent 2 \e[0m\e[33mssrf-agent\e[0m     \e[90m— secrets, SSRF,\
+    \ unvalidated URLs\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Agent 3 \e[0m\e[91mauth-agent\e[0m     \e[90m— hardcoded credentials,\
+    \ token hygiene\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Agent 4 \e[0m\e[34mdeser-agent\e[0m    \e[90m— unsafe deserialization,\
+    \ schema gaps\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAll agents get isolated VFS copies of the PR.  No shared state.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3200
+  content: ''
+- delay: 2000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 1 — Spawn 4 specialized security agents\
+    \ in parallel                \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 75
+  content: k
+- delay: 68
+  content: a
+- delay: 64
+  content: o
+- delay: 61
+  content: s
+- delay: 57
+  content: ' '
+- delay: 73
+  content: p
+- delay: 61
+  content: a
+- delay: 70
+  content: r
+- delay: 65
+  content: a
+- delay: 73
+  content: l
+- delay: 72
+  content: l
+- delay: 59
+  content: e
+- delay: 78
+  content: l
+- delay: 52
+  content: ' '
+- delay: 77
+  content: '-'
+- delay: 73
+  content: '-'
+- delay: 78
+  content: r
+- delay: 70
+  content: u
+- delay: 56
+  content: n
+- delay: 57
+  content: '-'
+- delay: 78
+  content: i
+- delay: 65
+  content: d
+- delay: 63
+  content: ' '
+- delay: 54
+  content: a
+- delay: 74
+  content: u
+- delay: 61
+  content: d
+- delay: 57
+  content: i
+- delay: 61
+  content: t
+- delay: 64
+  content: '-'
+- delay: 60
+  content: p
+- delay: 55
+  content: r
+- delay: 68
+  content: '-'
+- delay: 74
+  content: '2'
+- delay: 77
+  content: '8'
+- delay: 60
+  content: '4'
+- delay: 53
+  content: '7'
+- delay: 71
+  content: ' '
+- delay: 57
+  content: '"'
+- delay: 54
+  content: s
+- delay: 74
+  content: q
+- delay: 71
+  content: l
+- delay: 74
+  content: i
+- delay: 69
+  content: '-'
+- delay: 53
+  content: a
+- delay: 78
+  content: g
+- delay: 53
+  content: e
+- delay: 67
+  content: n
+- delay: 62
+  content: t
+- delay: 59
+  content: '"'
+- delay: 76
+  content: ' '
+- delay: 76
+  content: '"'
+- delay: 57
+  content: s
+- delay: 71
+  content: s
+- delay: 60
+  content: r
+- delay: 78
+  content: f
+- delay: 76
+  content: '-'
+- delay: 74
+  content: a
+- delay: 75
+  content: g
+- delay: 65
+  content: e
+- delay: 53
+  content: n
+- delay: 64
+  content: t
+- delay: 67
+  content: '"'
+- delay: 53
+  content: ' '
+- delay: 68
+  content: '"'
+- delay: 64
+  content: a
+- delay: 73
+  content: u
+- delay: 74
+  content: t
+- delay: 52
+  content: h
+- delay: 61
+  content: '-'
+- delay: 56
+  content: a
+- delay: 65
+  content: g
+- delay: 54
+  content: e
+- delay: 64
+  content: n
+- delay: 68
+  content: t
+- delay: 77
+  content: '"'
+- delay: 69
+  content: ' '
+- delay: 74
+  content: '"'
+- delay: 54
+  content: d
+- delay: 71
+  content: e
+- delay: 78
+  content: s
+- delay: 55
+  content: e
+- delay: 77
+  content: r
+- delay: 62
+  content: '-'
+- delay: 70
+  content: a
+- delay: 55
+  content: g
+- delay: 58
+  content: e
+- delay: 71
+  content: n
+- delay: 76
+  content: t
+- delay: 65
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Parallel run  \e[90maudit-pr-2847\e[0m  initialized\r\n"
+- delay: 55
+  content: "  \e[90m  Snapshotting PR-2847 code into 4 isolated VFS namespaces...\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 70
+  content: "  \e[32m✓\e[0m  \e[31msqli-agent\e[0m   spawned  \e[90m[01JSEC-SQLI-a3f1]\
+    \  VFS: 6 files, 18.4 KB\e[0m\r\n"
+- delay: 70
+  content: "  \e[32m✓\e[0m  \e[33mssrf-agent\e[0m    spawned  \e[90m[01JSEC-SSRF-b7c2]\
+    \  VFS: 6 files, 18.4 KB\e[0m\r\n"
+- delay: 70
+  content: "  \e[32m✓\e[0m  \e[91mauth-agent\e[0m    spawned  \e[90m[01JSEC-AUTH-c9d4]\
+    \  VFS: 6 files, 18.4 KB\e[0m\r\n"
+- delay: 70
+  content: "  \e[32m✓\e[0m  \e[34mdeser-agent\e[0m   spawned  \e[90m[01JSEC-DESR-e2f6]\
+    \  VFS: 6 files, 18.4 KB\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m4 agents running.  Isolation: logical VFS (separate key namespaces).\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mEach agent writes findings to its own /findings/ directory in\
+    \ VFS.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1600
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 2 — Agents working in parallel       \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[streaming interleaved output from all 4 agents]\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 80
+  content: "  \e[31m[sqli ]\e[0m  \e[90mscanning routes/users.py ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[33m[ssrf ]\e[0m  \e[90mscanning config.py — checking string literals\
+    \ ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[91m[auth ]\e[0m  \e[90mscanning middleware/auth.py — checking token\
+    \ flow ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[34m[deser]\e[0m  \e[90mscanning models/user.py — checking input parsing\
+    \ ...\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: ''
+- delay: 80
+  content: "  \e[31m[sqli ]\e[0m  \e[90manalyzing query construction in search_users()\
+    \ ...\e[0m\r\n"
+- delay: 90
+  content: "  \e[33m[ssrf ]\e[0m  \e[90mfound requests.get() call — checking URL source\
+    \ ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[91m[auth ]\e[0m  \e[90mvalidating JWT middleware — checking secret\
+    \ storage ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[34m[deser]\e[0m  \e[90minspecting pickle / yaml.load / json.loads\
+    \ usage ...\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: ''
+- delay: 80
+  content: "  \e[31m[sqli ]\e[0m  \e[90mchecking parameterization on line 34 ...\e\
+    [0m\r\n"
+- delay: 90
+  content: "  \e[33m[ssrf ]\e[0m  \e[90mURL source: user-controlled parameter — flagging\
+    \ ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[91m[auth ]\e[0m  \e[90mfound string literal matching key pattern\
+    \ in config.py ...\e[0m\r\n"
+- delay: 80
+  content: "  \e[34m[deser]\e[0m  \e[90mschema validation present — checking completeness\
+    \ ...\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 600
+  content: ''
+- delay: 55
+  content: "  \e[31m[sqli ]\e[0m  \e[91mraw f-string interpolated directly into SQL\
+    \ query — flagging\e[0m\r\n"
+- delay: 80
+  content: "  \e[34m[deser]\e[0m  \e[32mpydantic schema covers all input fields —\
+    \ no gaps found\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m[auth ]\e[0m  \e[91mhardcoded API key confirmed: sk-prod-... \
+    \ config.py:47\e[0m\r\n"
+- delay: 80
+  content: "  \e[33m[ssrf ]\e[0m  \e[33munvalidated URL passed to requests.get() —\
+    \ SSRF risk\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: ''
+- delay: 70
+  content: "  \e[31m[sqli ]\e[0m  \e[32mwriting finding to /findings/sqli_001.md\e\
+    [0m\r\n"
+- delay: 70
+  content: "  \e[33m[ssrf ]\e[0m  \e[32mwriting finding to /findings/ssrf_001.md\e\
+    [0m\r\n"
+- delay: 70
+  content: "  \e[91m[auth ]\e[0m  \e[32mwriting finding to /findings/hardcoded_key_001.md\e\
+    [0m\r\n"
+- delay: 70
+  content: "  \e[34m[deser]\e[0m  \e[32mwriting report to /findings/deser_clean.md\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  All 4 agents complete  \e[90min ~43s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 3 — Findings emerge                  \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[91m[CRITICAL]\e[0m  \e[31msqli-agent\e[0m  \e[90m—\e[0m  SQL injection\
+    \ in \e[93m/users/search?q=\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mVulnerable code in routes/users.py:\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  32│\e[0m  \e[36mdef\e[0m \e[92msearch_users\e[0m(q: str):\r\n"
+- delay: 55
+  content: "  \e[90m  33│\e[0m      \e[90m# TODO: add auth later\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m  34│\e[0m      query = \e[91mf\"SELECT * FROM users WHERE name\
+    \ LIKE '%{q}%'\"\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m  35│\e[0m      result = db.execute(\e[91mquery\e[0m)\r\n"
+- delay: 55
+  content: "  \e[90m  36│\e[0m      \e[36mreturn\e[0m jsonify(result.fetchall())\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[91m  Attack: GET /users/search?q=' OR 1=1 --\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  Impact: full users table dump, no authentication required\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1000
+  content: ''
+- delay: 500
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[33m[MEDIUM]   \e[33mssrf-agent\e[0m   \e[90m—\e[0m  Unvalidated URL\
+    \  \e[90m(SSRF risk)\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  routes/users.py:71\e[0m\r\n"
+- delay: 55
+  content: "  \e[33m  avatar_url = request.json.get('avatar_url')\e[0m\r\n"
+- delay: 55
+  content: "  \e[33m  resp = requests.get(avatar_url)   \e[90m# user-supplied, no\
+    \ allowlist\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Impact: attacker can probe internal services via the server\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 900
+  content: ''
+- delay: 500
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[91m[CRITICAL]\e[0m  \e[91mauth-agent\e[0m  \e[90m—\e[0m  Hardcoded\
+    \ API key in config.py\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  config.py:47\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m  ANALYTICS_KEY = \"sk-prod-a8f3d2c1b9e4f7a0d6c3b2e1f4a7d9c0\"\
+    \e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Key is valid and active — production analytics service\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m  Exposed via PR diff — rotate immediately\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1600
+  content: ''
+- delay: 500
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32m[CLEAN]    \e[34mdeser-agent\e[0m  \e[90m—\e[0m  No unsafe deserialization\
+    \ found\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  Pydantic schemas cover all input fields.  json.loads used throughout.\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  No pickle, no yaml.load, no eval.  Input handling is safe.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1600
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 4 — Aggregate via SQL                \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 78
+  content: k
+- delay: 71
+  content: a
+- delay: 57
+  content: o
+- delay: 66
+  content: s
+- delay: 64
+  content: ' '
+- delay: 61
+  content: '-'
+- delay: 54
+  content: '-'
+- delay: 60
+  content: j
+- delay: 56
+  content: s
+- delay: 66
+  content: o
+- delay: 67
+  content: n
+- delay: 56
+  content: ' '
+- delay: 66
+  content: q
+- delay: 78
+  content: u
+- delay: 70
+  content: e
+- delay: 73
+  content: r
+- delay: 52
+  content: y
+- delay: 57
+  content: ' '
+- delay: 52
+  content: '"'
+- delay: 77
+  content: S
+- delay: 71
+  content: E
+- delay: 70
+  content: L
+- delay: 61
+  content: E
+- delay: 54
+  content: C
+- delay: 59
+  content: T
+- delay: 77
+  content: ' '
+- delay: 78
+  content: a
+- delay: 71
+  content: g
+- delay: 68
+  content: e
+- delay: 77
+  content: n
+- delay: 61
+  content: t
+- delay: 70
+  content: _
+- delay: 52
+  content: n
+- delay: 72
+  content: a
+- delay: 77
+  content: m
+- delay: 71
+  content: e
+- delay: 56
+  content: ','
+- delay: 74
+  content: ' '
+- delay: 52
+  content: s
+- delay: 62
+  content: e
+- delay: 73
+  content: v
+- delay: 60
+  content: e
+- delay: 63
+  content: r
+- delay: 57
+  content: i
+- delay: 78
+  content: t
+- delay: 74
+  content: y
+- delay: 73
+  content: ','
+- delay: 52
+  content: ' '
+- delay: 71
+  content: f
+- delay: 61
+  content: i
+- delay: 58
+  content: n
+- delay: 57
+  content: d
+- delay: 55
+  content: i
+- delay: 64
+  content: n
+- delay: 60
+  content: g
+- delay: 78
+  content: ' '
+- delay: 63
+  content: F
+- delay: 61
+  content: R
+- delay: 72
+  content: O
+- delay: 64
+  content: M
+- delay: 76
+  content: ' '
+- delay: 54
+  content: v
+- delay: 55
+  content: f
+- delay: 76
+  content: s
+- delay: 78
+  content: _
+- delay: 68
+  content: f
+- delay: 53
+  content: i
+- delay: 66
+  content: n
+- delay: 53
+  content: d
+- delay: 53
+  content: i
+- delay: 73
+  content: n
+- delay: 62
+  content: g
+- delay: 54
+  content: s
+- delay: 56
+  content: ' '
+- delay: 66
+  content: W
+- delay: 63
+  content: H
+- delay: 57
+  content: E
+- delay: 73
+  content: R
+- delay: 73
+  content: E
+- delay: 57
+  content: ' '
+- delay: 58
+  content: p
+- delay: 67
+  content: r
+- delay: 63
+  content: '='
+- delay: 65
+  content: ''''
+- delay: 62
+  content: P
+- delay: 52
+  content: R
+- delay: 75
+  content: '-'
+- delay: 66
+  content: '2'
+- delay: 54
+  content: '8'
+- delay: 58
+  content: '4'
+- delay: 75
+  content: '7'
+- delay: 71
+  content: ''''
+- delay: 66
+  content: ' '
+- delay: 71
+  content: O
+- delay: 74
+  content: R
+- delay: 53
+  content: D
+- delay: 55
+  content: E
+- delay: 69
+  content: R
+- delay: 53
+  content: ' '
+- delay: 57
+  content: B
+- delay: 61
+  content: Y
+- delay: 72
+  content: ' '
+- delay: 57
+  content: s
+- delay: 74
+  content: e
+- delay: 64
+  content: v
+- delay: 53
+  content: e
+- delay: 77
+  content: r
+- delay: 59
+  content: i
+- delay: 61
+  content: t
+- delay: 67
+  content: y
+- delay: 60
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1magent_name\e[0m    \e[1mseverity\e[0m   \e[1mfinding\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m────────────  ─────────  ─────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 60
+  content: "  \e[31msqli-agent\e[0m    \e[91mCRITICAL\e[0m   SQL injection: raw f-string\
+    \ in SELECT query  \e[90m(routes/users.py:34)\e[0m\r\n"
+- delay: 60
+  content: "  \e[91mauth-agent\e[0m    \e[91mCRITICAL\e[0m   Hardcoded API key in\
+    \ config.py:47  \e[90m(sk-prod-...)\e[0m\r\n"
+- delay: 60
+  content: "  \e[33mssrf-agent\e[0m    \e[33mMEDIUM\e[0m     Unvalidated URL passed\
+    \ to requests.get()  \e[90m(routes/users.py:71)\e[0m\r\n"
+- delay: 60
+  content: "  \e[34mdeser-agent\e[0m   \e[32mCLEAN\e[0m      No unsafe deserialization\
+    \ found\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m4 rows  │  2 CRITICAL  │  1 MEDIUM  │  1 CLEAN\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 5 — Deep dive: the SQLi (agent 1 VFS)\
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 75
+  content: k
+- delay: 63
+  content: a
+- delay: 57
+  content: o
+- delay: 71
+  content: s
+- delay: 73
+  content: ' '
+- delay: 63
+  content: r
+- delay: 71
+  content: e
+- delay: 53
+  content: a
+- delay: 77
+  content: d
+- delay: 68
+  content: ' '
+- delay: 70
+  content: s
+- delay: 54
+  content: q
+- delay: 77
+  content: l
+- delay: 61
+  content: i
+- delay: 78
+  content: '-'
+- delay: 69
+  content: a
+- delay: 76
+  content: g
+- delay: 58
+  content: e
+- delay: 52
+  content: n
+- delay: 68
+  content: t
+- delay: 67
+  content: ' '
+- delay: 75
+  content: /
+- delay: 63
+  content: f
+- delay: 71
+  content: i
+- delay: 52
+  content: n
+- delay: 78
+  content: d
+- delay: 77
+  content: i
+- delay: 76
+  content: n
+- delay: 52
+  content: g
+- delay: 59
+  content: s
+- delay: 76
+  content: /
+- delay: 74
+  content: s
+- delay: 67
+  content: q
+- delay: 67
+  content: l
+- delay: 67
+  content: i
+- delay: 75
+  content: _
+- delay: 77
+  content: '0'
+- delay: 72
+  content: '0'
+- delay: 61
+  content: '1'
+- delay: 69
+  content: .
+- delay: 73
+  content: m
+- delay: 54
+  content: d
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mFinding: SQL Injection — sqli_001\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mSeverity:\e[0m  \e[91mCRITICAL\e[0m\r\n"
+- delay: 55
+  content: "  \e[93mFile:\e[0m      routes/users.py  line 34\r\n"
+- delay: 55
+  content: "  \e[93mPR:\e[0m        PR-2847  feat: add user search endpoint\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mVulnerable code:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  query = \e[0m\e[91mf\"SELECT * FROM users WHERE name LIKE '%{q}%'\"\
+    \e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  result = db.execute(\e[0m\e[91mquery\e[0m\e[90m)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mAttack vector:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  GET /users/search?q=\e[0m\e[91m' OR '1'='1\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Resulting query: SELECT * FROM users WHERE name LIKE '%\e[0m\e\
+    [91m' OR '1'='1\e[0m\e[90m%'\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Returns all rows.  No auth check.  Full table exposure.\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mRecommended fix:\e[0m\r\n"
+- delay: 55
+  content: "  \e[92m  query = \"SELECT * FROM users WHERE name LIKE ?\"\e[0m\r\n"
+- delay: 55
+  content: "  \e[92m  result = db.execute(query, (f\"%{q}%\",))\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Use parameterized queries. Never interpolate user input into\
+    \ SQL.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 6 — Verify isolation (other agents unaffected)\
+    \                     \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 71
+  content: k
+- delay: 58
+  content: a
+- delay: 62
+  content: o
+- delay: 57
+  content: s
+- delay: 54
+  content: ' '
+- delay: 72
+  content: '-'
+- delay: 56
+  content: '-'
+- delay: 64
+  content: j
+- delay: 78
+  content: s
+- delay: 52
+  content: o
+- delay: 59
+  content: n
+- delay: 68
+  content: ' '
+- delay: 77
+  content: q
+- delay: 71
+  content: u
+- delay: 74
+  content: e
+- delay: 72
+  content: r
+- delay: 68
+  content: y
+- delay: 54
+  content: ' '
+- delay: 53
+  content: '"'
+- delay: 76
+  content: S
+- delay: 64
+  content: E
+- delay: 75
+  content: L
+- delay: 73
+  content: E
+- delay: 61
+  content: C
+- delay: 67
+  content: T
+- delay: 73
+  content: ' '
+- delay: 75
+  content: a
+- delay: 72
+  content: g
+- delay: 72
+  content: e
+- delay: 78
+  content: n
+- delay: 57
+  content: t
+- delay: 65
+  content: _
+- delay: 52
+  content: i
+- delay: 53
+  content: d
+- delay: 63
+  content: ','
+- delay: 60
+  content: ' '
+- delay: 77
+  content: f
+- delay: 61
+  content: i
+- delay: 76
+  content: l
+- delay: 63
+  content: e
+- delay: 61
+  content: _
+- delay: 78
+  content: c
+- delay: 66
+  content: o
+- delay: 64
+  content: u
+- delay: 63
+  content: n
+- delay: 55
+  content: t
+- delay: 76
+  content: ','
+- delay: 74
+  content: ' '
+- delay: 76
+  content: s
+- delay: 72
+  content: t
+- delay: 66
+  content: a
+- delay: 63
+  content: t
+- delay: 54
+  content: u
+- delay: 72
+  content: s
+- delay: 68
+  content: ' '
+- delay: 76
+  content: F
+- delay: 76
+  content: R
+- delay: 56
+  content: O
+- delay: 67
+  content: M
+- delay: 77
+  content: ' '
+- delay: 74
+  content: a
+- delay: 62
+  content: g
+- delay: 65
+  content: e
+- delay: 55
+  content: n
+- delay: 57
+  content: t
+- delay: 63
+  content: s
+- delay: 77
+  content: ' '
+- delay: 76
+  content: W
+- delay: 74
+  content: H
+- delay: 65
+  content: E
+- delay: 63
+  content: R
+- delay: 52
+  content: E
+- delay: 76
+  content: ' '
+- delay: 61
+  content: r
+- delay: 57
+  content: u
+- delay: 62
+  content: n
+- delay: 56
+  content: _
+- delay: 54
+  content: i
+- delay: 53
+  content: d
+- delay: 74
+  content: '='
+- delay: 72
+  content: ''''
+- delay: 77
+  content: a
+- delay: 75
+  content: u
+- delay: 74
+  content: d
+- delay: 59
+  content: i
+- delay: 69
+  content: t
+- delay: 69
+  content: '-'
+- delay: 68
+  content: p
+- delay: 68
+  content: r
+- delay: 55
+  content: '-'
+- delay: 55
+  content: '2'
+- delay: 52
+  content: '8'
+- delay: 66
+  content: '4'
+- delay: 63
+  content: '7'
+- delay: 58
+  content: ''''
+- delay: 77
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1magent_id\e[0m      \e[1mfile_count\e[0m   \e[1mstatus\e[0m    \e\
+    [1mrun_id\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m────────────  ──────────   ────────  ─────────────────\e[0m\r\n"
+- delay: 60
+  content: "  \e[31msqli-agent\e[0m     \e[93m7\e[0m            \e[32mcomplete\e[0m\
+    \  audit-pr-2847\r\n"
+- delay: 60
+  content: "  \e[33mssrf-agent\e[0m      \e[93m7\e[0m            \e[32mcomplete\e\
+    [0m  audit-pr-2847\r\n"
+- delay: 60
+  content: "  \e[91mauth-agent\e[0m      \e[93m7\e[0m            \e[32mcomplete\e\
+    [0m  audit-pr-2847\r\n"
+- delay: 60
+  content: "  \e[34mdeser-agent\e[0m     \e[93m7\e[0m            \e[32mcomplete\e\
+    [0m  audit-pr-2847\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m4 rows  │  all complete  │  no shared state  │  VFS namespaces\
+    \ isolated\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mEach agent started from the same snapshot.  Writes by sqli-agent\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m(its findings) are invisible to auth-agent and vice versa.\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90mIsolation tier: logical (separate key namespaces in kaos.db)\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mResult — Security audit complete          \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mPR-2847  \e[0m\e[37mfeat: add user search endpoint\e[0m  \e[90m—\
+    \ audit results:\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[91m[CRITICAL]\e[0m  SQL injection in /users/search — raw f-string\
+    \ in SQL  \e[90mroutes/users.py:34\e[0m\r\n"
+- delay: 55
+  content: "  \e[91m[CRITICAL]\e[0m  Hardcoded production API key exposed in PR diff\
+    \         \e[90mconfig.py:47\e[0m\r\n"
+- delay: 55
+  content: "  \e[33m[MEDIUM]  \e[0m  Unvalidated user URL passed to requests.get()\
+    \          \e[90mroutes/users.py:71\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m[CLEAN]   \e[0m  Deserialization: all inputs schema-validated\
+    \            \e[90mno action needed\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m──────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAgents:\e[0m         \e[93m4\e[0m  \e[90m(sqli, ssrf, auth, deser)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mScan time:\e[0m      \e[93m~43 seconds\e[0m  \e[90m(parallel)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mCRITICAL:\e[0m       \e[91m2\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mMEDIUM:\e[0m         \e[33m1\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mCLEAN:\e[0m          \e[32m1\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mConflicts:\e[0m      \e[32m0\e[0m  \e[90m(VFS isolation — agents\
+    \ never touch each other's data)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mVerdict:\e[0m  \e[91mBlock PR-2847.\e[0m  Rotate ANALYTICS_KEY\
+    \ before anything else.\r\n"
+- delay: 55
+  content: "          \e[90mFix SQLi with parameterized query.  Add URL allowlist\
+    \ for avatar fetch.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3000
+  content: ''
+- delay: 2000
+  content: ''

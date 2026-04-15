@@ -1,0 +1,2144 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: KAOS — Shared Log (LogAct)
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[96mKAOS — Shared Log (LogAct Protocol)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m4 agents coordinate a database migration via intent/vote/decide.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e[0m\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 1 — Supervisor injects a standing safety policy                   \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 72
+  content: k
+- delay: 76
+  content: a
+- delay: 66
+  content: o
+- delay: 72
+  content: s
+- delay: 78
+  content: ' '
+- delay: 57
+  content: l
+- delay: 57
+  content: o
+- delay: 60
+  content: g
+- delay: 70
+  content: ' '
+- delay: 68
+  content: a
+- delay: 78
+  content: p
+- delay: 55
+  content: p
+- delay: 75
+  content: e
+- delay: 52
+  content: n
+- delay: 56
+  content: d
+- delay: 72
+  content: ' '
+- delay: 62
+  content: s
+- delay: 66
+  content: u
+- delay: 70
+  content: p
+- delay: 74
+  content: e
+- delay: 62
+  content: r
+- delay: 65
+  content: v
+- delay: 72
+  content: i
+- delay: 66
+  content: s
+- delay: 66
+  content: o
+- delay: 62
+  content: r
+- delay: 59
+  content: ' '
+- delay: 55
+  content: '-'
+- delay: 58
+  content: '-'
+- delay: 72
+  content: t
+- delay: 78
+  content: y
+- delay: 60
+  content: p
+- delay: 64
+  content: e
+- delay: 63
+  content: ' '
+- delay: 69
+  content: p
+- delay: 67
+  content: o
+- delay: 56
+  content: l
+- delay: 55
+  content: i
+- delay: 78
+  content: c
+- delay: 68
+  content: y
+- delay: 58
+  content: ' '
+- delay: 61
+  content: '-'
+- delay: 77
+  content: '-'
+- delay: 76
+  content: p
+- delay: 71
+  content: a
+- delay: 60
+  content: y
+- delay: 77
+  content: l
+- delay: 78
+  content: o
+- delay: 52
+  content: a
+- delay: 58
+  content: d
+- delay: 73
+  content: ' '
+- delay: 62
+  content: ''''
+- delay: 61
+  content: '{'
+- delay: 75
+  content: '"'
+- delay: 58
+  content: r
+- delay: 69
+  content: u
+- delay: 76
+  content: l
+- delay: 75
+  content: e
+- delay: 72
+  content: '"'
+- delay: 63
+  content: ':'
+- delay: 65
+  content: ' '
+- delay: 66
+  content: '"'
+- delay: 57
+  content: S
+- delay: 73
+  content: c
+- delay: 69
+  content: h
+- delay: 63
+  content: e
+- delay: 75
+  content: m
+- delay: 72
+  content: a
+- delay: 67
+  content: ' '
+- delay: 73
+  content: m
+- delay: 72
+  content: i
+- delay: 55
+  content: g
+- delay: 52
+  content: r
+- delay: 68
+  content: a
+- delay: 66
+  content: t
+- delay: 61
+  content: i
+- delay: 57
+  content: o
+- delay: 74
+  content: n
+- delay: 73
+  content: s
+- delay: 77
+  content: ' '
+- delay: 60
+  content: r
+- delay: 58
+  content: e
+- delay: 56
+  content: q
+- delay: 77
+  content: u
+- delay: 71
+  content: i
+- delay: 54
+  content: r
+- delay: 74
+  content: e
+- delay: 61
+  content: ' '
+- delay: 68
+  content: '2'
+- delay: 69
+  content: ' '
+- delay: 66
+  content: a
+- delay: 62
+  content: p
+- delay: 58
+  content: p
+- delay: 53
+  content: r
+- delay: 55
+  content: o
+- delay: 74
+  content: v
+- delay: 67
+  content: a
+- delay: 61
+  content: l
+- delay: 72
+  content: s
+- delay: 52
+  content: .
+- delay: 59
+  content: '"'
+- delay: 56
+  content: '}'
+- delay: 58
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mposition=0  type=policy  agent=supervisor\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mrule: Schema migrations require 2 approvals.\e[0m\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 2 — data-agent declares migration intent                          \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 56
+  content: k
+- delay: 62
+  content: a
+- delay: 63
+  content: o
+- delay: 60
+  content: s
+- delay: 64
+  content: ' '
+- delay: 67
+  content: l
+- delay: 59
+  content: o
+- delay: 63
+  content: g
+- delay: 58
+  content: ' '
+- delay: 69
+  content: i
+- delay: 69
+  content: n
+- delay: 78
+  content: t
+- delay: 52
+  content: e
+- delay: 68
+  content: n
+- delay: 76
+  content: t
+- delay: 76
+  content: ' '
+- delay: 56
+  content: d
+- delay: 59
+  content: a
+- delay: 60
+  content: t
+- delay: 69
+  content: a
+- delay: 68
+  content: '-'
+- delay: 77
+  content: a
+- delay: 64
+  content: g
+- delay: 55
+  content: e
+- delay: 57
+  content: n
+- delay: 56
+  content: t
+- delay: 54
+  content: ' '
+- delay: 78
+  content: '"'
+- delay: 63
+  content: A
+- delay: 60
+  content: L
+- delay: 59
+  content: T
+- delay: 60
+  content: E
+- delay: 61
+  content: R
+- delay: 58
+  content: ' '
+- delay: 70
+  content: T
+- delay: 55
+  content: A
+- delay: 71
+  content: B
+- delay: 69
+  content: L
+- delay: 55
+  content: E
+- delay: 52
+  content: ' '
+- delay: 71
+  content: e
+- delay: 76
+  content: v
+- delay: 60
+  content: e
+- delay: 71
+  content: n
+- delay: 52
+  content: t
+- delay: 64
+  content: s
+- delay: 68
+  content: ' '
+- delay: 60
+  content: A
+- delay: 53
+  content: D
+- delay: 78
+  content: D
+- delay: 52
+  content: ' '
+- delay: 65
+  content: C
+- delay: 60
+  content: O
+- delay: 58
+  content: L
+- delay: 73
+  content: U
+- delay: 78
+  content: M
+- delay: 52
+  content: N
+- delay: 65
+  content: ' '
+- delay: 61
+  content: b
+- delay: 69
+  content: a
+- delay: 58
+  content: t
+- delay: 68
+  content: c
+- delay: 58
+  content: h
+- delay: 67
+  content: _
+- delay: 72
+  content: i
+- delay: 52
+  content: d
+- delay: 58
+  content: ' '
+- delay: 73
+  content: T
+- delay: 64
+  content: E
+- delay: 75
+  content: X
+- delay: 66
+  content: T
+- delay: 58
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mintent_id=2\e[0m  \e[90mposition=1  agent=data-agent\e[0m\r\n"
+- delay: 55
+  content: "  \e[90maction: ALTER TABLE events ADD COLUMN batch_id TEXT\e[0m\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 3 — Peers cast votes                                              \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[research-agent-A]  reading log...\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 61
+  content: k
+- delay: 76
+  content: a
+- delay: 64
+  content: o
+- delay: 59
+  content: s
+- delay: 54
+  content: ' '
+- delay: 65
+  content: l
+- delay: 62
+  content: o
+- delay: 58
+  content: g
+- delay: 56
+  content: ' '
+- delay: 72
+  content: v
+- delay: 70
+  content: o
+- delay: 53
+  content: t
+- delay: 75
+  content: e
+- delay: 52
+  content: ' '
+- delay: 73
+  content: r
+- delay: 72
+  content: e
+- delay: 55
+  content: s
+- delay: 64
+  content: e
+- delay: 52
+  content: a
+- delay: 58
+  content: r
+- delay: 53
+  content: c
+- delay: 70
+  content: h
+- delay: 72
+  content: '-'
+- delay: 72
+  content: a
+- delay: 65
+  content: g
+- delay: 62
+  content: e
+- delay: 67
+  content: n
+- delay: 74
+  content: t
+- delay: 53
+  content: '-'
+- delay: 64
+  content: A
+- delay: 54
+  content: ' '
+- delay: 66
+  content: '-'
+- delay: 74
+  content: '-'
+- delay: 52
+  content: i
+- delay: 65
+  content: n
+- delay: 56
+  content: t
+- delay: 61
+  content: e
+- delay: 69
+  content: n
+- delay: 69
+  content: t
+- delay: 53
+  content: ' '
+- delay: 58
+  content: '2'
+- delay: 52
+  content: ' '
+- delay: 68
+  content: '-'
+- delay: 58
+  content: '-'
+- delay: 55
+  content: a
+- delay: 62
+  content: p
+- delay: 60
+  content: p
+- delay: 62
+  content: r
+- delay: 60
+  content: o
+- delay: 76
+  content: v
+- delay: 57
+  content: e
+- delay: 64
+  content: ' '
+- delay: 62
+  content: t
+- delay: 62
+  content: r
+- delay: 66
+  content: u
+- delay: 78
+  content: e
+- delay: 66
+  content: ' '
+- delay: 55
+  content: '-'
+- delay: 69
+  content: '-'
+- delay: 62
+  content: r
+- delay: 73
+  content: e
+- delay: 60
+  content: a
+- delay: 75
+  content: s
+- delay: 74
+  content: o
+- delay: 73
+  content: n
+- delay: 54
+  content: ' '
+- delay: 64
+  content: '"'
+- delay: 66
+  content: A
+- delay: 64
+  content: d
+- delay: 64
+  content: d
+- delay: 55
+  content: i
+- delay: 60
+  content: t
+- delay: 69
+  content: i
+- delay: 63
+  content: v
+- delay: 54
+  content: e
+- delay: 55
+  content: ' '
+- delay: 57
+  content: m
+- delay: 65
+  content: i
+- delay: 52
+  content: g
+- delay: 69
+  content: r
+- delay: 61
+  content: a
+- delay: 67
+  content: t
+- delay: 66
+  content: i
+- delay: 76
+  content: o
+- delay: 53
+  content: n
+- delay: 60
+  content: ','
+- delay: 54
+  content: ' '
+- delay: 62
+  content: s
+- delay: 63
+  content: a
+- delay: 54
+  content: f
+- delay: 70
+  content: e
+- delay: 56
+  content: .
+- delay: 65
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32mAPPROVED\e[0m  \e[90mposition=2  research-agent-A  ref=2\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[safety-monitor]  reading log...\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 72
+  content: k
+- delay: 73
+  content: a
+- delay: 56
+  content: o
+- delay: 76
+  content: s
+- delay: 68
+  content: ' '
+- delay: 61
+  content: l
+- delay: 74
+  content: o
+- delay: 54
+  content: g
+- delay: 57
+  content: ' '
+- delay: 65
+  content: v
+- delay: 71
+  content: o
+- delay: 67
+  content: t
+- delay: 59
+  content: e
+- delay: 56
+  content: ' '
+- delay: 72
+  content: s
+- delay: 60
+  content: a
+- delay: 54
+  content: f
+- delay: 70
+  content: e
+- delay: 60
+  content: t
+- delay: 71
+  content: y
+- delay: 77
+  content: '-'
+- delay: 67
+  content: m
+- delay: 54
+  content: o
+- delay: 55
+  content: n
+- delay: 58
+  content: i
+- delay: 78
+  content: t
+- delay: 67
+  content: o
+- delay: 61
+  content: r
+- delay: 66
+  content: ' '
+- delay: 78
+  content: '-'
+- delay: 78
+  content: '-'
+- delay: 52
+  content: i
+- delay: 67
+  content: n
+- delay: 52
+  content: t
+- delay: 59
+  content: e
+- delay: 70
+  content: n
+- delay: 71
+  content: t
+- delay: 57
+  content: ' '
+- delay: 59
+  content: '2'
+- delay: 58
+  content: ' '
+- delay: 62
+  content: '-'
+- delay: 59
+  content: '-'
+- delay: 59
+  content: a
+- delay: 63
+  content: p
+- delay: 67
+  content: p
+- delay: 54
+  content: r
+- delay: 60
+  content: o
+- delay: 64
+  content: v
+- delay: 78
+  content: e
+- delay: 58
+  content: ' '
+- delay: 75
+  content: f
+- delay: 56
+  content: a
+- delay: 63
+  content: l
+- delay: 77
+  content: s
+- delay: 69
+  content: e
+- delay: 58
+  content: ' '
+- delay: 77
+  content: '-'
+- delay: 53
+  content: '-'
+- delay: 53
+  content: r
+- delay: 59
+  content: e
+- delay: 71
+  content: a
+- delay: 53
+  content: s
+- delay: 56
+  content: o
+- delay: 61
+  content: n
+- delay: 70
+  content: ' '
+- delay: 55
+  content: '"'
+- delay: 72
+  content: N
+- delay: 78
+  content: U
+- delay: 76
+  content: L
+- delay: 68
+  content: L
+- delay: 66
+  content: ' '
+- delay: 68
+  content: d
+- delay: 62
+  content: e
+- delay: 54
+  content: f
+- delay: 61
+  content: a
+- delay: 74
+  content: u
+- delay: 76
+  content: l
+- delay: 76
+  content: t
+- delay: 74
+  content: ' '
+- delay: 76
+  content: v
+- delay: 66
+  content: i
+- delay: 72
+  content: o
+- delay: 60
+  content: l
+- delay: 59
+  content: a
+- delay: 52
+  content: t
+- delay: 63
+  content: e
+- delay: 53
+  content: s
+- delay: 59
+  content: ' '
+- delay: 77
+  content: N
+- delay: 60
+  content: O
+- delay: 56
+  content: T
+- delay: 72
+  content: ' '
+- delay: 52
+  content: N
+- delay: 64
+  content: U
+- delay: 60
+  content: L
+- delay: 64
+  content: L
+- delay: 62
+  content: ' '
+- delay: 72
+  content: c
+- delay: 53
+  content: o
+- delay: 77
+  content: n
+- delay: 57
+  content: s
+- delay: 57
+  content: t
+- delay: 66
+  content: r
+- delay: 62
+  content: a
+- delay: 52
+  content: i
+- delay: 77
+  content: n
+- delay: 57
+  content: t
+- delay: 71
+  content: ' '
+- delay: 60
+  content: o
+- delay: 76
+  content: n
+- delay: 57
+  content: ' '
+- delay: 72
+  content: '5'
+- delay: 75
+  content: '0'
+- delay: 59
+  content: M
+- delay: 55
+  content: ' '
+- delay: 70
+  content: r
+- delay: 76
+  content: o
+- delay: 73
+  content: w
+- delay: 61
+  content: s
+- delay: 68
+  content: .
+- delay: 67
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[31mREJECTED\e[0m  \e[90mposition=3  safety-monitor  ref=2\e[0m\r\n"
+- delay: 55
+  content: "  \e[31mreason: NULL default violates NOT NULL constraint on 50M rows.\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 4 — View the vote thread and decide                               \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 68
+  content: k
+- delay: 61
+  content: a
+- delay: 78
+  content: o
+- delay: 69
+  content: s
+- delay: 72
+  content: ' '
+- delay: 71
+  content: l
+- delay: 56
+  content: o
+- delay: 60
+  content: g
+- delay: 69
+  content: ' '
+- delay: 71
+  content: t
+- delay: 71
+  content: a
+- delay: 66
+  content: i
+- delay: 77
+  content: l
+- delay: 54
+  content: ' '
+- delay: 56
+  content: '-'
+- delay: 66
+  content: '-'
+- delay: 75
+  content: n
+- delay: 68
+  content: ' '
+- delay: 71
+  content: '5'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m 0  [POLICY  ]  supervisor\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m       rule: Schema migrations require 2 approvals.\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m 1  [INTENT  ]  data-agent\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m       action: ALTER TABLE events ADD COLUMN batch_id TEXT\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m 2  [VOTE    ]  research-agent-A  ref=2\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m       approve: True  reason: Additive migration, safe.\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m 3  [VOTE    ]  safety-monitor  ref=2\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m       approve: False  reason: NULL default violates NOT NULL constraint...\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mTally for intent #2:\e[0m  approve=1  reject=1  \e[31mpassed=False\e[0m  \e[90m(need 2)\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 74
+  content: k
+- delay: 71
+  content: a
+- delay: 71
+  content: o
+- delay: 67
+  content: s
+- delay: 77
+  content: ' '
+- delay: 59
+  content: l
+- delay: 55
+  content: o
+- delay: 71
+  content: g
+- delay: 76
+  content: ' '
+- delay: 76
+  content: d
+- delay: 72
+  content: e
+- delay: 64
+  content: c
+- delay: 73
+  content: i
+- delay: 74
+  content: d
+- delay: 66
+  content: e
+- delay: 77
+  content: ' '
+- delay: 64
+  content: d
+- delay: 66
+  content: a
+- delay: 76
+  content: t
+- delay: 77
+  content: a
+- delay: 73
+  content: '-'
+- delay: 63
+  content: a
+- delay: 52
+  content: g
+- delay: 75
+  content: e
+- delay: 57
+  content: n
+- delay: 58
+  content: t
+- delay: 64
+  content: ' '
+- delay: 52
+  content: '-'
+- delay: 68
+  content: '-'
+- delay: 63
+  content: i
+- delay: 72
+  content: n
+- delay: 64
+  content: t
+- delay: 70
+  content: e
+- delay: 54
+  content: n
+- delay: 68
+  content: t
+- delay: 52
+  content: ' '
+- delay: 63
+  content: '2'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mposition=4  type=decision  passed=False  (1 approve, 1 reject)\e[0m\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 5 — Agent reads rejection reason, rewrites migration safely       \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[data-agent]  safety-monitor rejected: NULL default violates NOT NULL...\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m[data-agent]  Revision: add DEFAULT '' to satisfy NOT NULL\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 67
+  content: k
+- delay: 71
+  content: a
+- delay: 54
+  content: o
+- delay: 59
+  content: s
+- delay: 64
+  content: ' '
+- delay: 74
+  content: l
+- delay: 55
+  content: o
+- delay: 58
+  content: g
+- delay: 71
+  content: ' '
+- delay: 68
+  content: i
+- delay: 76
+  content: n
+- delay: 62
+  content: t
+- delay: 72
+  content: e
+- delay: 76
+  content: n
+- delay: 57
+  content: t
+- delay: 71
+  content: ' '
+- delay: 60
+  content: d
+- delay: 66
+  content: a
+- delay: 58
+  content: t
+- delay: 66
+  content: a
+- delay: 69
+  content: '-'
+- delay: 60
+  content: a
+- delay: 62
+  content: g
+- delay: 60
+  content: e
+- delay: 63
+  content: n
+- delay: 65
+  content: t
+- delay: 58
+  content: ' '
+- delay: 75
+  content: '"'
+- delay: 54
+  content: A
+- delay: 77
+  content: L
+- delay: 52
+  content: T
+- delay: 57
+  content: E
+- delay: 66
+  content: R
+- delay: 73
+  content: ' '
+- delay: 53
+  content: T
+- delay: 66
+  content: A
+- delay: 73
+  content: B
+- delay: 75
+  content: L
+- delay: 58
+  content: E
+- delay: 78
+  content: ' '
+- delay: 59
+  content: e
+- delay: 53
+  content: v
+- delay: 56
+  content: e
+- delay: 52
+  content: n
+- delay: 59
+  content: t
+- delay: 68
+  content: s
+- delay: 69
+  content: ' '
+- delay: 56
+  content: A
+- delay: 62
+  content: D
+- delay: 71
+  content: D
+- delay: 69
+  content: ' '
+- delay: 60
+  content: C
+- delay: 73
+  content: O
+- delay: 78
+  content: L
+- delay: 74
+  content: U
+- delay: 68
+  content: M
+- delay: 74
+  content: N
+- delay: 71
+  content: ' '
+- delay: 72
+  content: b
+- delay: 58
+  content: a
+- delay: 70
+  content: t
+- delay: 71
+  content: c
+- delay: 70
+  content: h
+- delay: 77
+  content: _
+- delay: 57
+  content: i
+- delay: 78
+  content: d
+- delay: 63
+  content: ' '
+- delay: 64
+  content: T
+- delay: 65
+  content: E
+- delay: 68
+  content: X
+- delay: 57
+  content: T
+- delay: 63
+  content: ' '
+- delay: 54
+  content: N
+- delay: 71
+  content: O
+- delay: 61
+  content: T
+- delay: 74
+  content: ' '
+- delay: 76
+  content: N
+- delay: 78
+  content: U
+- delay: 76
+  content: L
+- delay: 53
+  content: L
+- delay: 59
+  content: ' '
+- delay: 66
+  content: D
+- delay: 68
+  content: E
+- delay: 68
+  content: F
+- delay: 78
+  content: A
+- delay: 78
+  content: U
+- delay: 61
+  content: L
+- delay: 71
+  content: T
+- delay: 61
+  content: ' '
+- delay: 60
+  content: ''''
+- delay: 55
+  content: ''''
+- delay: 54
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mintent_id=6\e[0m  \e[90mposition=5  new intent (revised)\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 58
+  content: k
+- delay: 63
+  content: a
+- delay: 69
+  content: o
+- delay: 66
+  content: s
+- delay: 69
+  content: ' '
+- delay: 70
+  content: l
+- delay: 56
+  content: o
+- delay: 73
+  content: g
+- delay: 60
+  content: ' '
+- delay: 78
+  content: v
+- delay: 74
+  content: o
+- delay: 54
+  content: t
+- delay: 53
+  content: e
+- delay: 71
+  content: ' '
+- delay: 75
+  content: r
+- delay: 61
+  content: e
+- delay: 78
+  content: s
+- delay: 63
+  content: e
+- delay: 62
+  content: a
+- delay: 62
+  content: r
+- delay: 73
+  content: c
+- delay: 70
+  content: h
+- delay: 62
+  content: '-'
+- delay: 57
+  content: a
+- delay: 69
+  content: g
+- delay: 78
+  content: e
+- delay: 57
+  content: n
+- delay: 58
+  content: t
+- delay: 54
+  content: '-'
+- delay: 75
+  content: A
+- delay: 72
+  content: ' '
+- delay: 77
+  content: '-'
+- delay: 68
+  content: '-'
+- delay: 68
+  content: i
+- delay: 56
+  content: n
+- delay: 71
+  content: t
+- delay: 66
+  content: e
+- delay: 64
+  content: n
+- delay: 68
+  content: t
+- delay: 67
+  content: ' '
+- delay: 61
+  content: '6'
+- delay: 54
+  content: ' '
+- delay: 63
+  content: '-'
+- delay: 57
+  content: '-'
+- delay: 76
+  content: a
+- delay: 65
+  content: p
+- delay: 73
+  content: p
+- delay: 55
+  content: r
+- delay: 78
+  content: o
+- delay: 68
+  content: v
+- delay: 72
+  content: e
+- delay: 65
+  content: ' '
+- delay: 61
+  content: t
+- delay: 61
+  content: r
+- delay: 65
+  content: u
+- delay: 72
+  content: e
+- delay: 200
+  content: "\r\n"
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32mAPPROVED\e[0m  \e[90mposition=6\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 59
+  content: k
+- delay: 55
+  content: a
+- delay: 56
+  content: o
+- delay: 67
+  content: s
+- delay: 76
+  content: ' '
+- delay: 76
+  content: l
+- delay: 67
+  content: o
+- delay: 72
+  content: g
+- delay: 67
+  content: ' '
+- delay: 73
+  content: v
+- delay: 73
+  content: o
+- delay: 78
+  content: t
+- delay: 70
+  content: e
+- delay: 61
+  content: ' '
+- delay: 78
+  content: s
+- delay: 75
+  content: a
+- delay: 52
+  content: f
+- delay: 71
+  content: e
+- delay: 60
+  content: t
+- delay: 74
+  content: y
+- delay: 66
+  content: '-'
+- delay: 60
+  content: m
+- delay: 71
+  content: o
+- delay: 53
+  content: n
+- delay: 68
+  content: i
+- delay: 52
+  content: t
+- delay: 56
+  content: o
+- delay: 55
+  content: r
+- delay: 76
+  content: ' '
+- delay: 73
+  content: '-'
+- delay: 53
+  content: '-'
+- delay: 67
+  content: i
+- delay: 68
+  content: n
+- delay: 75
+  content: t
+- delay: 59
+  content: e
+- delay: 73
+  content: n
+- delay: 68
+  content: t
+- delay: 69
+  content: ' '
+- delay: 76
+  content: '6'
+- delay: 78
+  content: ' '
+- delay: 75
+  content: '-'
+- delay: 64
+  content: '-'
+- delay: 73
+  content: a
+- delay: 55
+  content: p
+- delay: 54
+  content: p
+- delay: 59
+  content: r
+- delay: 54
+  content: o
+- delay: 54
+  content: v
+- delay: 55
+  content: e
+- delay: 74
+  content: ' '
+- delay: 56
+  content: t
+- delay: 66
+  content: r
+- delay: 53
+  content: u
+- delay: 74
+  content: e
+- delay: 62
+  content: ' '
+- delay: 53
+  content: '-'
+- delay: 65
+  content: '-'
+- delay: 73
+  content: r
+- delay: 69
+  content: e
+- delay: 63
+  content: a
+- delay: 53
+  content: s
+- delay: 52
+  content: o
+- delay: 57
+  content: n
+- delay: 67
+  content: ' '
+- delay: 59
+  content: ''''
+- delay: 68
+  content: N
+- delay: 59
+  content: O
+- delay: 74
+  content: T
+- delay: 77
+  content: ' '
+- delay: 59
+  content: N
+- delay: 78
+  content: U
+- delay: 61
+  content: L
+- delay: 60
+  content: L
+- delay: 73
+  content: ' '
+- delay: 78
+  content: D
+- delay: 58
+  content: E
+- delay: 58
+  content: F
+- delay: 58
+  content: A
+- delay: 57
+  content: U
+- delay: 75
+  content: L
+- delay: 71
+  content: T
+- delay: 77
+  content: ' '
+- delay: 77
+  content: i
+- delay: 64
+  content: s
+- delay: 70
+  content: ' '
+- delay: 52
+  content: s
+- delay: 71
+  content: a
+- delay: 74
+  content: f
+- delay: 56
+  content: e
+- delay: 63
+  content: .
+- delay: 60
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32mAPPROVED\e[0m  \e[90mposition=7\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 65
+  content: k
+- delay: 61
+  content: a
+- delay: 61
+  content: o
+- delay: 69
+  content: s
+- delay: 58
+  content: ' '
+- delay: 52
+  content: l
+- delay: 64
+  content: o
+- delay: 60
+  content: g
+- delay: 54
+  content: ' '
+- delay: 68
+  content: d
+- delay: 63
+  content: e
+- delay: 71
+  content: c
+- delay: 70
+  content: i
+- delay: 70
+  content: d
+- delay: 77
+  content: e
+- delay: 62
+  content: ' '
+- delay: 69
+  content: d
+- delay: 61
+  content: a
+- delay: 70
+  content: t
+- delay: 67
+  content: a
+- delay: 77
+  content: '-'
+- delay: 54
+  content: a
+- delay: 65
+  content: g
+- delay: 71
+  content: e
+- delay: 53
+  content: n
+- delay: 75
+  content: t
+- delay: 75
+  content: ' '
+- delay: 67
+  content: '-'
+- delay: 57
+  content: '-'
+- delay: 62
+  content: i
+- delay: 65
+  content: n
+- delay: 57
+  content: t
+- delay: 73
+  content: e
+- delay: 55
+  content: n
+- delay: 67
+  content: t
+- delay: 78
+  content: ' '
+- delay: 76
+  content: '6'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[92mposition=8  type=decision  passed=True  (2 approve, 0 reject)\e[0m\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[data-agent]  executing migration...\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 69
+  content: k
+- delay: 58
+  content: a
+- delay: 78
+  content: o
+- delay: 71
+  content: s
+- delay: 78
+  content: ' '
+- delay: 76
+  content: l
+- delay: 61
+  content: o
+- delay: 58
+  content: g
+- delay: 54
+  content: ' '
+- delay: 52
+  content: a
+- delay: 66
+  content: p
+- delay: 60
+  content: p
+- delay: 69
+  content: e
+- delay: 73
+  content: n
+- delay: 67
+  content: d
+- delay: 52
+  content: ' '
+- delay: 55
+  content: d
+- delay: 58
+  content: a
+- delay: 52
+  content: t
+- delay: 74
+  content: a
+- delay: 72
+  content: '-'
+- delay: 75
+  content: a
+- delay: 53
+  content: g
+- delay: 59
+  content: e
+- delay: 61
+  content: n
+- delay: 65
+  content: t
+- delay: 70
+  content: ' '
+- delay: 60
+  content: '-'
+- delay: 76
+  content: '-'
+- delay: 59
+  content: t
+- delay: 70
+  content: y
+- delay: 69
+  content: p
+- delay: 57
+  content: e
+- delay: 60
+  content: ' '
+- delay: 66
+  content: c
+- delay: 57
+  content: o
+- delay: 67
+  content: m
+- delay: 53
+  content: m
+- delay: 64
+  content: i
+- delay: 65
+  content: t
+- delay: 65
+  content: ' '
+- delay: 60
+  content: '-'
+- delay: 54
+  content: '-'
+- delay: 64
+  content: r
+- delay: 75
+  content: e
+- delay: 61
+  content: f
+- delay: 62
+  content: ' '
+- delay: 77
+  content: '6'
+- delay: 73
+  content: ' '
+- delay: 67
+  content: '-'
+- delay: 63
+  content: '-'
+- delay: 73
+  content: p
+- delay: 61
+  content: a
+- delay: 76
+  content: y
+- delay: 71
+  content: l
+- delay: 57
+  content: o
+- delay: 65
+  content: a
+- delay: 75
+  content: d
+- delay: 65
+  content: ' '
+- delay: 67
+  content: ''''
+- delay: 61
+  content: '{'
+- delay: 64
+  content: '"'
+- delay: 77
+  content: s
+- delay: 61
+  content: u
+- delay: 59
+  content: m
+- delay: 68
+  content: m
+- delay: 75
+  content: a
+- delay: 73
+  content: r
+- delay: 65
+  content: y
+- delay: 59
+  content: '"'
+- delay: 59
+  content: ':'
+- delay: 73
+  content: ' '
+- delay: 74
+  content: '"'
+- delay: 77
+  content: A
+- delay: 62
+  content: L
+- delay: 77
+  content: T
+- delay: 57
+  content: E
+- delay: 61
+  content: R
+- delay: 53
+  content: ' '
+- delay: 64
+  content: T
+- delay: 63
+  content: A
+- delay: 74
+  content: B
+- delay: 52
+  content: L
+- delay: 54
+  content: E
+- delay: 76
+  content: ' '
+- delay: 65
+  content: d
+- delay: 65
+  content: o
+- delay: 76
+  content: n
+- delay: 54
+  content: e
+- delay: 57
+  content: .
+- delay: 69
+  content: ' '
+- delay: 73
+  content: '5'
+- delay: 74
+  content: '0'
+- delay: 67
+  content: M
+- delay: 59
+  content: ' '
+- delay: 60
+  content: r
+- delay: 62
+  content: o
+- delay: 53
+  content: w
+- delay: 56
+  content: s
+- delay: 60
+  content: ' '
+- delay: 70
+  content: u
+- delay: 56
+  content: p
+- delay: 69
+  content: d
+- delay: 70
+  content: a
+- delay: 66
+  content: t
+- delay: 64
+  content: e
+- delay: 67
+  content: d
+- delay: 57
+  content: .
+- delay: 56
+  content: '"'
+- delay: 65
+  content: '}'
+- delay: 77
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[92mposition=9  type=commit  ref=6\e[0m\r\n"
+- delay: 55
+  content: "  \e[92msummary: ALTER TABLE done. 50M rows updated.\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 6 — Full immutable audit trail for compliance                     \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 69
+  content: k
+- delay: 53
+  content: a
+- delay: 60
+  content: o
+- delay: 59
+  content: s
+- delay: 68
+  content: ' '
+- delay: 77
+  content: l
+- delay: 73
+  content: o
+- delay: 73
+  content: g
+- delay: 56
+  content: ' '
+- delay: 77
+  content: l
+- delay: 59
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1mShared Log\e[0m  total=10\r\n"
+- delay: 55
+  content: "    commit    1\r\n"
+- delay: 55
+  content: "    decision  2\r\n"
+- delay: 55
+  content: "    intent    2\r\n"
+- delay: 55
+  content: "    policy    1\r\n"
+- delay: 55
+  content: "    vote      4\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 66
+  content: k
+- delay: 69
+  content: a
+- delay: 67
+  content: o
+- delay: 62
+  content: s
+- delay: 62
+  content: ' '
+- delay: 58
+  content: q
+- delay: 74
+  content: u
+- delay: 54
+  content: e
+- delay: 65
+  content: r
+- delay: 64
+  content: y
+- delay: 68
+  content: ' '
+- delay: 78
+  content: '"'
+- delay: 70
+  content: S
+- delay: 53
+  content: E
+- delay: 57
+  content: L
+- delay: 65
+  content: E
+- delay: 73
+  content: C
+- delay: 72
+  content: T
+- delay: 77
+  content: ' '
+- delay: 66
+  content: t
+- delay: 74
+  content: y
+- delay: 72
+  content: p
+- delay: 54
+  content: e
+- delay: 77
+  content: ','
+- delay: 54
+  content: ' '
+- delay: 70
+  content: a
+- delay: 58
+  content: g
+- delay: 58
+  content: e
+- delay: 55
+  content: n
+- delay: 62
+  content: t
+- delay: 72
+  content: _
+- delay: 67
+  content: i
+- delay: 76
+  content: d
+- delay: 57
+  content: ','
+- delay: 67
+  content: ' '
+- delay: 56
+  content: c
+- delay: 56
+  content: r
+- delay: 62
+  content: e
+- delay: 65
+  content: a
+- delay: 73
+  content: t
+- delay: 72
+  content: e
+- delay: 71
+  content: d
+- delay: 54
+  content: _
+- delay: 66
+  content: a
+- delay: 58
+  content: t
+- delay: 63
+  content: ' '
+- delay: 77
+  content: F
+- delay: 53
+  content: R
+- delay: 68
+  content: O
+- delay: 61
+  content: M
+- delay: 68
+  content: ' '
+- delay: 59
+  content: s
+- delay: 75
+  content: h
+- delay: 74
+  content: a
+- delay: 71
+  content: r
+- delay: 62
+  content: e
+- delay: 53
+  content: d
+- delay: 59
+  content: _
+- delay: 73
+  content: l
+- delay: 73
+  content: o
+- delay: 71
+  content: g
+- delay: 66
+  content: ' '
+- delay: 71
+  content: O
+- delay: 60
+  content: R
+- delay: 55
+  content: D
+- delay: 67
+  content: E
+- delay: 60
+  content: R
+- delay: 67
+  content: ' '
+- delay: 55
+  content: B
+- delay: 76
+  content: Y
+- delay: 71
+  content: ' '
+- delay: 67
+  content: p
+- delay: 76
+  content: o
+- delay: 60
+  content: s
+- delay: 68
+  content: i
+- delay: 68
+  content: t
+- delay: 70
+  content: i
+- delay: 73
+  content: o
+- delay: 57
+  content: n
+- delay: 72
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mtype        agent            created_at\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mpolicy      supervisor       2026-04-10T14:00:01\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mintent      data-agent       2026-04-10T14:00:12\e[0m\r\n"
+- delay: 55
+  content: "  \e[32mvote        research-agent-A 2026-04-10T14:00:31\e[0m\r\n"
+- delay: 55
+  content: "  \e[31mvote        safety-monitor   2026-04-10T14:00:44\e[0m\r\n"
+- delay: 55
+  content: "  \e[31mdecision    data-agent       2026-04-10T14:00:55\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mintent      data-agent       2026-04-10T14:01:12\e[0m\r\n"
+- delay: 55
+  content: "  \e[32mvote        research-agent-A 2026-04-10T14:01:28\e[0m\r\n"
+- delay: 55
+  content: "  \e[32mvote        safety-monitor   2026-04-10T14:01:35\e[0m\r\n"
+- delay: 55
+  content: "  \e[92mdecision    data-agent       2026-04-10T14:01:42\e[0m\r\n"
+- delay: 55
+  content: "  \e[92mcommit      data-agent       2026-04-10T14:02:01\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[92mShared Log\e[0m  \e[90m—\e[0m  every agent action voted on, recorded, auditable.\r\n"
+- delay: 55
+  content: "  \e[90mgithub.com/canivel/kaos\e[0m   \e[90m  LogAct: arXiv:2604.07988\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2000
+  content: ''

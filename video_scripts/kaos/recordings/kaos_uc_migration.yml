@@ -1,0 +1,1893 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: KAOS — Migrate 2M Rows, Detect Corruption at Row 847K, Rollback in 0.3s
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mKAOS — Production DB Migration\e[0m  \e[90m—\e[0m  \e[37mCheckpoint,\
+    \ Detect, Rollback\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2M rows  │  3 phases  │  anomaly detected at row 847K  │  rollback\
+    \ in 0.3s\e[0m\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mMigration plan:\e[0m   \e[93mALTER TABLE users ADD COLUMN user_tier\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mBackfill from:\e[0m   \e[32msubscription\e[0m table\r\n"
+- delay: 55
+  content: "  \e[90mRow count:\e[0m       \e[93m2,000,000\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mCheckpoint:\e[0m      before each phase  \e[90m(KAOS VFS snapshot)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mSafety net:\e[0m      analytics agents keep running — isolation\
+    \ guaranteed\e[0m\r\n"
+- delay: 55
+  content: "\r\n"
+- delay: 2200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 1 — Spawn agents: 1 migration + 2 analytics\
+    \ (isolated VFS each)    \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 66
+  content: k
+- delay: 75
+  content: a
+- delay: 72
+  content: o
+- delay: 69
+  content: s
+- delay: 65
+  content: ' '
+- delay: 68
+  content: s
+- delay: 67
+  content: p
+- delay: 68
+  content: a
+- delay: 71
+  content: w
+- delay: 78
+  content: n
+- delay: 54
+  content: ' '
+- delay: 66
+  content: m
+- delay: 54
+  content: i
+- delay: 67
+  content: g
+- delay: 61
+  content: r
+- delay: 59
+  content: a
+- delay: 68
+  content: t
+- delay: 78
+  content: i
+- delay: 68
+  content: o
+- delay: 73
+  content: n
+- delay: 65
+  content: '-'
+- delay: 76
+  content: a
+- delay: 65
+  content: g
+- delay: 61
+  content: e
+- delay: 72
+  content: n
+- delay: 77
+  content: t
+- delay: 56
+  content: ' '
+- delay: 65
+  content: '-'
+- delay: 60
+  content: '-'
+- delay: 69
+  content: t
+- delay: 70
+  content: a
+- delay: 76
+  content: g
+- delay: 77
+  content: ' '
+- delay: 62
+  content: m
+- delay: 74
+  content: i
+- delay: 65
+  content: g
+- delay: 75
+  content: r
+- delay: 61
+  content: a
+- delay: 57
+  content: t
+- delay: 78
+  content: i
+- delay: 54
+  content: o
+- delay: 59
+  content: n
+- delay: 67
+  content: ' '
+- delay: 68
+  content: '-'
+- delay: 62
+  content: '-'
+- delay: 56
+  content: d
+- delay: 58
+  content: b
+- delay: 64
+  content: ' '
+- delay: 59
+  content: p
+- delay: 64
+  content: r
+- delay: 63
+  content: o
+- delay: 70
+  content: d
+- delay: 53
+  content: .
+- delay: 76
+  content: d
+- delay: 61
+  content: b
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Agent spawned   \e[90m[migration-agent]\e[0m  isolation=logical\
+    \  vfs=migration-agent.db\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 61
+  content: k
+- delay: 65
+  content: a
+- delay: 72
+  content: o
+- delay: 66
+  content: s
+- delay: 77
+  content: ' '
+- delay: 52
+  content: s
+- delay: 70
+  content: p
+- delay: 63
+  content: a
+- delay: 70
+  content: w
+- delay: 64
+  content: n
+- delay: 76
+  content: ' '
+- delay: 70
+  content: a
+- delay: 56
+  content: n
+- delay: 67
+  content: a
+- delay: 70
+  content: l
+- delay: 64
+  content: y
+- delay: 77
+  content: t
+- delay: 70
+  content: i
+- delay: 60
+  content: c
+- delay: 73
+  content: s
+- delay: 58
+  content: '-'
+- delay: 57
+  content: a
+- delay: 56
+  content: g
+- delay: 54
+  content: e
+- delay: 69
+  content: n
+- delay: 65
+  content: t
+- delay: 69
+  content: '-'
+- delay: 66
+  content: '1'
+- delay: 73
+  content: ' '
+- delay: 58
+  content: '-'
+- delay: 67
+  content: '-'
+- delay: 57
+  content: t
+- delay: 54
+  content: a
+- delay: 62
+  content: g
+- delay: 76
+  content: ' '
+- delay: 65
+  content: a
+- delay: 78
+  content: n
+- delay: 77
+  content: a
+- delay: 77
+  content: l
+- delay: 72
+  content: y
+- delay: 63
+  content: t
+- delay: 70
+  content: i
+- delay: 74
+  content: c
+- delay: 57
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Agent spawned   \e[90m[analytics-agent-1]\e[0m  isolation=logical\
+    \  vfs=analytics-1.db\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 69
+  content: k
+- delay: 65
+  content: a
+- delay: 74
+  content: o
+- delay: 65
+  content: s
+- delay: 71
+  content: ' '
+- delay: 52
+  content: s
+- delay: 73
+  content: p
+- delay: 73
+  content: a
+- delay: 54
+  content: w
+- delay: 55
+  content: n
+- delay: 53
+  content: ' '
+- delay: 69
+  content: a
+- delay: 66
+  content: n
+- delay: 64
+  content: a
+- delay: 77
+  content: l
+- delay: 67
+  content: y
+- delay: 58
+  content: t
+- delay: 71
+  content: i
+- delay: 64
+  content: c
+- delay: 60
+  content: s
+- delay: 64
+  content: '-'
+- delay: 71
+  content: a
+- delay: 61
+  content: g
+- delay: 57
+  content: e
+- delay: 53
+  content: n
+- delay: 73
+  content: t
+- delay: 59
+  content: '-'
+- delay: 71
+  content: '2'
+- delay: 54
+  content: ' '
+- delay: 77
+  content: '-'
+- delay: 73
+  content: '-'
+- delay: 74
+  content: t
+- delay: 52
+  content: a
+- delay: 69
+  content: g
+- delay: 74
+  content: ' '
+- delay: 57
+  content: a
+- delay: 57
+  content: n
+- delay: 65
+  content: a
+- delay: 65
+  content: l
+- delay: 75
+  content: y
+- delay: 52
+  content: t
+- delay: 78
+  content: i
+- delay: 67
+  content: c
+- delay: 75
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Agent spawned   \e[90m[analytics-agent-2]\e[0m  isolation=logical\
+    \  vfs=analytics-2.db\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 71
+  content: k
+- delay: 59
+  content: a
+- delay: 64
+  content: o
+- delay: 63
+  content: s
+- delay: 63
+  content: ' '
+- delay: 61
+  content: l
+- delay: 63
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90magent_id             status   tag          created\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m───────────────────  ───────  ───────────  ──────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32mmigration-agent\e[0m      running  migration    2026-04-10 02:14:08\r\
+    \n"
+- delay: 55
+  content: "  \e[32manalytics-agent-1\e[0m    running  analytics    2026-04-10 02:14:09\r\
+    \n"
+- delay: 55
+  content: "  \e[32manalytics-agent-2\e[0m    running  analytics    2026-04-10 02:14:10\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mPHASE 1 — Schema change: ALTER TABLE users\
+    \ ADD COLUMN user_tier         \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 65
+  content: k
+- delay: 67
+  content: a
+- delay: 74
+  content: o
+- delay: 72
+  content: s
+- delay: 65
+  content: ' '
+- delay: 54
+  content: r
+- delay: 66
+  content: u
+- delay: 73
+  content: n
+- delay: 62
+  content: ' '
+- delay: 66
+  content: m
+- delay: 69
+  content: i
+- delay: 66
+  content: g
+- delay: 55
+  content: r
+- delay: 71
+  content: a
+- delay: 70
+  content: t
+- delay: 58
+  content: i
+- delay: 75
+  content: o
+- delay: 56
+  content: n
+- delay: 57
+  content: '-'
+- delay: 66
+  content: a
+- delay: 77
+  content: g
+- delay: 72
+  content: e
+- delay: 77
+  content: n
+- delay: 63
+  content: t
+- delay: 72
+  content: ' '
+- delay: 75
+  content: '-'
+- delay: 58
+  content: '-'
+- delay: 71
+  content: ' '
+- delay: 65
+  content: ''''
+- delay: 67
+  content: A
+- delay: 72
+  content: L
+- delay: 62
+  content: T
+- delay: 68
+  content: E
+- delay: 57
+  content: R
+- delay: 60
+  content: ' '
+- delay: 77
+  content: T
+- delay: 66
+  content: A
+- delay: 63
+  content: B
+- delay: 55
+  content: L
+- delay: 77
+  content: E
+- delay: 58
+  content: ' '
+- delay: 71
+  content: u
+- delay: 63
+  content: s
+- delay: 66
+  content: e
+- delay: 57
+  content: r
+- delay: 64
+  content: s
+- delay: 61
+  content: ' '
+- delay: 59
+  content: A
+- delay: 62
+  content: D
+- delay: 64
+  content: D
+- delay: 73
+  content: ' '
+- delay: 65
+  content: C
+- delay: 78
+  content: O
+- delay: 65
+  content: L
+- delay: 77
+  content: U
+- delay: 67
+  content: M
+- delay: 69
+  content: N
+- delay: 77
+  content: ' '
+- delay: 60
+  content: u
+- delay: 63
+  content: s
+- delay: 53
+  content: e
+- delay: 78
+  content: r
+- delay: 56
+  content: _
+- delay: 78
+  content: t
+- delay: 53
+  content: i
+- delay: 65
+  content: e
+- delay: 60
+  content: r
+- delay: 64
+  content: ' '
+- delay: 75
+  content: V
+- delay: 67
+  content: A
+- delay: 60
+  content: R
+- delay: 56
+  content: C
+- delay: 64
+  content: H
+- delay: 66
+  content: A
+- delay: 71
+  content: R
+- delay: 77
+  content: (
+- delay: 55
+  content: '2'
+- delay: 55
+  content: '0'
+- delay: 54
+  content: )
+- delay: 70
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Executing schema change...\r\n"
+- delay: 400
+  content: ''
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  ALTER TABLE users ADD COLUMN user_tier\
+    \ VARCHAR(20)\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Schema change complete  \e[90m(0.04s)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Column added: \e[93muser_tier VARCHAR(20) NULL\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 60
+  content: k
+- delay: 68
+  content: a
+- delay: 61
+  content: o
+- delay: 73
+  content: s
+- delay: 60
+  content: ' '
+- delay: 67
+  content: c
+- delay: 62
+  content: h
+- delay: 62
+  content: e
+- delay: 63
+  content: c
+- delay: 63
+  content: k
+- delay: 65
+  content: p
+- delay: 69
+  content: o
+- delay: 55
+  content: i
+- delay: 53
+  content: n
+- delay: 53
+  content: t
+- delay: 56
+  content: ' '
+- delay: 55
+  content: m
+- delay: 57
+  content: i
+- delay: 70
+  content: g
+- delay: 78
+  content: r
+- delay: 72
+  content: a
+- delay: 60
+  content: t
+- delay: 52
+  content: i
+- delay: 63
+  content: o
+- delay: 71
+  content: n
+- delay: 55
+  content: '-'
+- delay: 57
+  content: a
+- delay: 55
+  content: g
+- delay: 78
+  content: e
+- delay: 73
+  content: n
+- delay: 75
+  content: t
+- delay: 56
+  content: ' '
+- delay: 52
+  content: '-'
+- delay: 73
+  content: '-'
+- delay: 78
+  content: l
+- delay: 67
+  content: a
+- delay: 67
+  content: b
+- delay: 63
+  content: e
+- delay: 63
+  content: l
+- delay: 67
+  content: ' '
+- delay: 52
+  content: p
+- delay: 55
+  content: r
+- delay: 78
+  content: e
+- delay: 55
+  content: '-'
+- delay: 55
+  content: b
+- delay: 59
+  content: a
+- delay: 54
+  content: c
+- delay: 75
+  content: k
+- delay: 74
+  content: f
+- delay: 71
+  content: i
+- delay: 57
+  content: l
+- delay: 74
+  content: l
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Checkpoint created  \e[90m[pre-backfill]\e[0m  \e[90msnapshot_id=ckpt_847a3f\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  VFS state frozen: schema_v2.sql, migration_log.json\r\n"
+- delay: 55
+  content: "  \e[90m  Checkpoint stored in kaos.db blobs  ─  instant restore available\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mPHASE 2 — Backfill: UPDATE users SET user_tier\
+    \ = subscription.tier ...  \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Starting backfill: 2,000,000 rows\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Query: UPDATE users u SET u.user_tier\
+    \ =\r\n"
+- delay: 55
+  content: "  \e[90m                         (SELECT tier FROM subscription s WHERE\
+    \ s.user_id = u.id)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 300
+  content: ''
+- delay: 200
+  content: "  \e[90m[█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  100,000\e[0m /\
+    \ 2,000,000  (5.0%)  \e[90m0.8s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[███░░░░░░░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  200,000\e[0m /\
+    \ 2,000,000  (10.0%)  \e[90m1.7s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[████░░░░░░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  300,000\e[0m /\
+    \ 2,000,000  (15.0%)  \e[90m2.5s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[███████░░░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  500,000\e[0m /\
+    \ 2,000,000  (25.0%)  \e[90m4.1s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[█████████░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  650,000\e[0m /\
+    \ 2,000,000  (32.5%)  \e[90m5.4s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[███████████░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  750,000\e[0m /\
+    \ 2,000,000  (37.5%)  \e[90m6.2s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[████████████░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  800,000\e[0m /\
+    \ 2,000,000  (40.0%)  \e[90m6.6s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[████████████░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  830,000\e[0m /\
+    \ 2,000,000  (41.5%)  \e[90m6.9s\e[0m\r\n"
+- delay: 200
+  content: "  \e[90m[████████████░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  847,000\e[0m /\
+    \ 2,000,000  (42.4%)  \e[90m7.0s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 150
+  content: "  \e[90m[migration-agent]\e[0m  Processing batch at row 847,412...\r\n"
+- delay: 600
+  content: ''
+- delay: 700
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[91m⚠  ANOMALY DETECTED  ─  migration paused\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Integrity check triggered at row 847,412\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[91mNULL count:\e[0m     \e[93m64,412\e[0m / \e[93m847,412\e[0m rows\
+    \  =  \e[91m7.6% NULL\e[0m\r\n"
+- delay: 55
+  content: "  \e[33mExpected:\e[0m       0% NULL  \e[90m(column declared NOT NULL\
+    \ in migration plan)\e[0m\r\n"
+- delay: 55
+  content: "  \e[31mThreshold:\e[0m      1% NULL maximum — \e[91mEXCEEDED by 7.6×\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAnomaly vector:\e[0m  user_tier IS NULL after backfill attempt\r\
+    \n"
+- delay: 55
+  content: "  \e[90mRow range:\e[0m       user_id 14,392 – 14,887  \e[90m(sparse,\
+    \ not sequential)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mSeverity:\e[0m        \e[91mCRITICAL — halting migration, triggering\
+    \ rollback\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSURGICAL ROLLBACK — restore migration-agent\
+    \ only, analytics unaffected  \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 73
+  content: k
+- delay: 68
+  content: a
+- delay: 78
+  content: o
+- delay: 54
+  content: s
+- delay: 56
+  content: ' '
+- delay: 60
+  content: r
+- delay: 73
+  content: e
+- delay: 76
+  content: s
+- delay: 55
+  content: t
+- delay: 66
+  content: o
+- delay: 58
+  content: r
+- delay: 56
+  content: e
+- delay: 67
+  content: ' '
+- delay: 63
+  content: m
+- delay: 60
+  content: i
+- delay: 75
+  content: g
+- delay: 52
+  content: r
+- delay: 64
+  content: a
+- delay: 74
+  content: t
+- delay: 66
+  content: i
+- delay: 71
+  content: o
+- delay: 62
+  content: n
+- delay: 72
+  content: '-'
+- delay: 53
+  content: a
+- delay: 74
+  content: g
+- delay: 54
+  content: e
+- delay: 53
+  content: n
+- delay: 67
+  content: t
+- delay: 67
+  content: ' '
+- delay: 73
+  content: '-'
+- delay: 62
+  content: '-'
+- delay: 65
+  content: l
+- delay: 67
+  content: a
+- delay: 56
+  content: b
+- delay: 65
+  content: e
+- delay: 53
+  content: l
+- delay: 53
+  content: ' '
+- delay: 62
+  content: p
+- delay: 66
+  content: r
+- delay: 73
+  content: e
+- delay: 52
+  content: '-'
+- delay: 60
+  content: b
+- delay: 62
+  content: a
+- delay: 73
+  content: c
+- delay: 59
+  content: k
+- delay: 76
+  content: f
+- delay: 55
+  content: i
+- delay: 66
+  content: l
+- delay: 59
+  content: l
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[kaos]\e[0m  Loading checkpoint \e[90m[pre-backfill]\e[0m  snapshot_id=ckpt_847a3f\r\
+    \n"
+- delay: 55
+  content: "  \e[90m[kaos]\e[0m  Diff vs current state:\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  ─── changes being rolled back ───────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31m  - rows updated:  847,412  (user_tier values — ALL reverted)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31m  - batch_log:     14 entries removed\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m  - vfs write:     /logs/backfill_progress.json\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  ─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32m  + schema:        user_tier column preserved  \e[90m(Phase 1\
+    \ kept)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  + checkpoint:    pre-backfill state restored\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 300
+  content: ''
+- delay: 55
+  content: "  \e[32m✓\e[0m  Rollback complete  \e[90m(0.3s)\e[0m  agent state = pre-backfill\
+    \ snapshot\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 800
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mISOLATION CHECK — analytics agents unaffected\
+    \                           \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 70
+  content: k
+- delay: 75
+  content: a
+- delay: 64
+  content: o
+- delay: 58
+  content: s
+- delay: 53
+  content: ' '
+- delay: 68
+  content: l
+- delay: 56
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90magent_id             status     tag          note\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m───────────────────  ─────────  ───────────  ───────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[33mmigration-agent\e[0m      \e[33mrestored\e[0m   migration    rolled\
+    \ back to pre-backfill\r\n"
+- delay: 55
+  content: "  \e[32manalytics-agent-1\e[0m    \e[32mrunning\e[0m    analytics    \e\
+    [90mSELECT queries, unaffected\e[0m\r\n"
+- delay: 55
+  content: "  \e[32manalytics-agent-2\e[0m    \e[32mrunning\e[0m    analytics    \e\
+    [90mSELECT queries, unaffected\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Isolation confirmed.  analytics-agent-1 and analytics-agent-2\
+    \ never paused.\r\n"
+- delay: 55
+  content: "  \e[90m  KAOS VFS isolation: each agent's writes are fully sandboxed.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mROOT CAUSE ANALYSIS — kaos read migration-agent\
+    \ /logs/anomaly.md        \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 53
+  content: k
+- delay: 62
+  content: a
+- delay: 53
+  content: o
+- delay: 67
+  content: s
+- delay: 67
+  content: ' '
+- delay: 60
+  content: r
+- delay: 64
+  content: e
+- delay: 55
+  content: a
+- delay: 56
+  content: d
+- delay: 52
+  content: ' '
+- delay: 73
+  content: m
+- delay: 75
+  content: i
+- delay: 74
+  content: g
+- delay: 65
+  content: r
+- delay: 59
+  content: a
+- delay: 62
+  content: t
+- delay: 55
+  content: i
+- delay: 61
+  content: o
+- delay: 57
+  content: n
+- delay: 53
+  content: '-'
+- delay: 56
+  content: a
+- delay: 62
+  content: g
+- delay: 75
+  content: e
+- delay: 52
+  content: n
+- delay: 56
+  content: t
+- delay: 66
+  content: ' '
+- delay: 77
+  content: /
+- delay: 60
+  content: l
+- delay: 61
+  content: o
+- delay: 57
+  content: g
+- delay: 60
+  content: s
+- delay: 70
+  content: /
+- delay: 54
+  content: a
+- delay: 77
+  content: n
+- delay: 57
+  content: o
+- delay: 69
+  content: m
+- delay: 58
+  content: a
+- delay: 78
+  content: l
+- delay: 77
+  content: y
+- delay: 75
+  content: .
+- delay: 63
+  content: m
+- delay: 57
+  content: d
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m# Anomaly Report — migration-agent  2026-04-10 02:14:47\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m## Summary\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  64,412 rows returned NULL for user_tier after backfill.\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m  These users have no matching row in the subscription table.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m## Root Cause\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  The subscription table was created in 2021-03. Users who cancelled\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  accounts BEFORE 2021-03 have no subscription record at all.\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  The LEFT JOIN returns NULL rather than a default tier.\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m## Affected User IDs\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Legacy users (created < 2021-03-01):  64,412 accounts\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m  These are cancelled accounts with no active subscription.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m## Fix\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  Use COALESCE: COALESCE(s.tier, 'free')\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  Legacy users without a subscription record → default to 'free'\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1600
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mRETRY WITH FIX — COALESCE(s.tier, 'free') for\
+    \ legacy users              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Updated query:\r\n"
+- delay: 55
+  content: "  \e[32m  UPDATE users u SET u.user_tier =\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m    COALESCE((SELECT tier FROM subscription s WHERE s.user_id\
+    \ = u.id), 'free')\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 57
+  content: k
+- delay: 67
+  content: a
+- delay: 55
+  content: o
+- delay: 76
+  content: s
+- delay: 62
+  content: ' '
+- delay: 57
+  content: r
+- delay: 71
+  content: u
+- delay: 75
+  content: n
+- delay: 69
+  content: ' '
+- delay: 64
+  content: m
+- delay: 78
+  content: i
+- delay: 74
+  content: g
+- delay: 54
+  content: r
+- delay: 71
+  content: a
+- delay: 67
+  content: t
+- delay: 67
+  content: i
+- delay: 64
+  content: o
+- delay: 63
+  content: n
+- delay: 69
+  content: '-'
+- delay: 56
+  content: a
+- delay: 68
+  content: g
+- delay: 69
+  content: e
+- delay: 63
+  content: n
+- delay: 53
+  content: t
+- delay: 64
+  content: ' '
+- delay: 77
+  content: '-'
+- delay: 62
+  content: '-'
+- delay: 66
+  content: ' '
+- delay: 57
+  content: ''''
+- delay: 74
+  content: r
+- delay: 66
+  content: u
+- delay: 75
+  content: n
+- delay: 78
+  content: ' '
+- delay: 65
+  content: b
+- delay: 67
+  content: a
+- delay: 61
+  content: c
+- delay: 63
+  content: k
+- delay: 65
+  content: f
+- delay: 63
+  content: i
+- delay: 55
+  content: l
+- delay: 75
+  content: l
+- delay: 70
+  content: _
+- delay: 60
+  content: v
+- delay: 63
+  content: '2'
+- delay: 62
+  content: .
+- delay: 71
+  content: s
+- delay: 59
+  content: q
+- delay: 63
+  content: l
+- delay: 77
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m[migration-agent]\e[0m  Starting retry backfill: 2,000,000 rows\r\
+    \n"
+- delay: 300
+  content: ''
+- delay: 180
+  content: "  \e[90m[███████░░░░░░░░░░░░░░░░░░░░░░░]\e[0m  \e[93m  500,000\e[0m /\
+    \ 2,000,000  (25.0%)  \e[90m4.1s\e[0m\r\n"
+- delay: 180
+  content: "  \e[90m[███████████████░░░░░░░░░░░░░░░]\e[0m  \e[93m1,000,000\e[0m /\
+    \ 2,000,000  (50.0%)  \e[90m8.2s\e[0m\r\n"
+- delay: 180
+  content: "  \e[90m[██████████████████████░░░░░░░░]\e[0m  \e[93m1,500,000\e[0m /\
+    \ 2,000,000  (75.0%)  \e[90m12.3s\e[0m\r\n"
+- delay: 180
+  content: "  \e[90m[██████████████████████████████]\e[0m  \e[93m2,000,000\e[0m /\
+    \ 2,000,000  (100.0%)  \e[90m16.4s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Backfill complete  \e[90m(16.4s)\e[0m  2,000,000 rows\
+    \ processed\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 73
+  content: k
+- delay: 64
+  content: a
+- delay: 69
+  content: o
+- delay: 71
+  content: s
+- delay: 76
+  content: ' '
+- delay: 62
+  content: r
+- delay: 73
+  content: u
+- delay: 77
+  content: n
+- delay: 77
+  content: ' '
+- delay: 54
+  content: m
+- delay: 77
+  content: i
+- delay: 58
+  content: g
+- delay: 72
+  content: r
+- delay: 54
+  content: a
+- delay: 72
+  content: t
+- delay: 72
+  content: i
+- delay: 77
+  content: o
+- delay: 53
+  content: n
+- delay: 53
+  content: '-'
+- delay: 59
+  content: a
+- delay: 57
+  content: g
+- delay: 78
+  content: e
+- delay: 72
+  content: n
+- delay: 68
+  content: t
+- delay: 72
+  content: ' '
+- delay: 67
+  content: '-'
+- delay: 67
+  content: '-'
+- delay: 55
+  content: ' '
+- delay: 57
+  content: ''''
+- delay: 56
+  content: S
+- delay: 67
+  content: E
+- delay: 72
+  content: L
+- delay: 59
+  content: E
+- delay: 66
+  content: C
+- delay: 76
+  content: T
+- delay: 62
+  content: ' '
+- delay: 54
+  content: C
+- delay: 72
+  content: O
+- delay: 75
+  content: U
+- delay: 70
+  content: N
+- delay: 72
+  content: T
+- delay: 75
+  content: (
+- delay: 63
+  content: '*'
+- delay: 76
+  content: )
+- delay: 70
+  content: ' '
+- delay: 76
+  content: F
+- delay: 54
+  content: R
+- delay: 76
+  content: O
+- delay: 70
+  content: M
+- delay: 54
+  content: ' '
+- delay: 61
+  content: u
+- delay: 70
+  content: s
+- delay: 68
+  content: e
+- delay: 59
+  content: r
+- delay: 62
+  content: s
+- delay: 75
+  content: ' '
+- delay: 57
+  content: W
+- delay: 65
+  content: H
+- delay: 68
+  content: E
+- delay: 57
+  content: R
+- delay: 58
+  content: E
+- delay: 71
+  content: ' '
+- delay: 66
+  content: u
+- delay: 65
+  content: s
+- delay: 76
+  content: e
+- delay: 54
+  content: r
+- delay: 75
+  content: _
+- delay: 57
+  content: t
+- delay: 69
+  content: i
+- delay: 71
+  content: e
+- delay: 61
+  content: r
+- delay: 65
+  content: ' '
+- delay: 64
+  content: I
+- delay: 65
+  content: S
+- delay: 55
+  content: ' '
+- delay: 72
+  content: N
+- delay: 57
+  content: U
+- delay: 76
+  content: L
+- delay: 62
+  content: L
+- delay: 56
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mcount\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m─────\e[0m\r\n"
+- delay: 55
+  content: "  \e[92m0\e[0m    \e[90m← 0 NULLs  ✓\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mPHASE 3 — Final checkpoint + SQL audit trail\
+    \                            \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 75
+  content: k
+- delay: 52
+  content: a
+- delay: 78
+  content: o
+- delay: 73
+  content: s
+- delay: 71
+  content: ' '
+- delay: 67
+  content: c
+- delay: 54
+  content: h
+- delay: 60
+  content: e
+- delay: 53
+  content: c
+- delay: 56
+  content: k
+- delay: 71
+  content: p
+- delay: 56
+  content: o
+- delay: 61
+  content: i
+- delay: 75
+  content: n
+- delay: 67
+  content: t
+- delay: 53
+  content: ' '
+- delay: 52
+  content: m
+- delay: 60
+  content: i
+- delay: 62
+  content: g
+- delay: 59
+  content: r
+- delay: 74
+  content: a
+- delay: 58
+  content: t
+- delay: 71
+  content: i
+- delay: 53
+  content: o
+- delay: 57
+  content: n
+- delay: 76
+  content: '-'
+- delay: 78
+  content: a
+- delay: 65
+  content: g
+- delay: 74
+  content: e
+- delay: 61
+  content: n
+- delay: 70
+  content: t
+- delay: 57
+  content: ' '
+- delay: 68
+  content: '-'
+- delay: 67
+  content: '-'
+- delay: 60
+  content: l
+- delay: 63
+  content: a
+- delay: 75
+  content: b
+- delay: 68
+  content: e
+- delay: 65
+  content: l
+- delay: 57
+  content: ' '
+- delay: 65
+  content: p
+- delay: 56
+  content: o
+- delay: 73
+  content: s
+- delay: 74
+  content: t
+- delay: 59
+  content: '-'
+- delay: 65
+  content: b
+- delay: 70
+  content: a
+- delay: 74
+  content: c
+- delay: 73
+  content: k
+- delay: 74
+  content: f
+- delay: 69
+  content: i
+- delay: 76
+  content: l
+- delay: 73
+  content: l
+- delay: 70
+  content: '-'
+- delay: 67
+  content: s
+- delay: 60
+  content: u
+- delay: 66
+  content: c
+- delay: 64
+  content: c
+- delay: 63
+  content: e
+- delay: 61
+  content: s
+- delay: 54
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Checkpoint  \e[90m[post-backfill-success]\e[0m  created\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 56
+  content: k
+- delay: 76
+  content: a
+- delay: 61
+  content: o
+- delay: 78
+  content: s
+- delay: 78
+  content: ' '
+- delay: 61
+  content: '-'
+- delay: 62
+  content: '-'
+- delay: 74
+  content: j
+- delay: 75
+  content: s
+- delay: 77
+  content: o
+- delay: 76
+  content: n
+- delay: 72
+  content: ' '
+- delay: 75
+  content: q
+- delay: 66
+  content: u
+- delay: 73
+  content: e
+- delay: 54
+  content: r
+- delay: 59
+  content: y
+- delay: 62
+  content: ' '
+- delay: 54
+  content: '"'
+- delay: 52
+  content: S
+- delay: 72
+  content: E
+- delay: 59
+  content: L
+- delay: 64
+  content: E
+- delay: 66
+  content: C
+- delay: 68
+  content: T
+- delay: 65
+  content: ' '
+- delay: 67
+  content: p
+- delay: 52
+  content: h
+- delay: 73
+  content: a
+- delay: 57
+  content: s
+- delay: 67
+  content: e
+- delay: 64
+  content: ','
+- delay: 55
+  content: ' '
+- delay: 63
+  content: r
+- delay: 54
+  content: o
+- delay: 74
+  content: w
+- delay: 58
+  content: s
+- delay: 78
+  content: _
+- delay: 67
+  content: a
+- delay: 65
+  content: f
+- delay: 64
+  content: f
+- delay: 62
+  content: e
+- delay: 63
+  content: c
+- delay: 61
+  content: t
+- delay: 75
+  content: e
+- delay: 52
+  content: d
+- delay: 66
+  content: ','
+- delay: 62
+  content: ' '
+- delay: 54
+  content: s
+- delay: 67
+  content: t
+- delay: 73
+  content: a
+- delay: 61
+  content: t
+- delay: 56
+  content: u
+- delay: 66
+  content: s
+- delay: 53
+  content: ','
+- delay: 78
+  content: ' '
+- delay: 66
+  content: d
+- delay: 66
+  content: u
+- delay: 67
+  content: r
+- delay: 71
+  content: a
+- delay: 74
+  content: t
+- delay: 65
+  content: i
+- delay: 59
+  content: o
+- delay: 77
+  content: n
+- delay: 71
+  content: _
+- delay: 77
+  content: m
+- delay: 60
+  content: s
+- delay: 68
+  content: ' '
+- delay: 53
+  content: F
+- delay: 65
+  content: R
+- delay: 52
+  content: O
+- delay: 52
+  content: M
+- delay: 76
+  content: ' '
+- delay: 57
+  content: m
+- delay: 62
+  content: i
+- delay: 67
+  content: g
+- delay: 64
+  content: r
+- delay: 74
+  content: a
+- delay: 52
+  content: t
+- delay: 74
+  content: i
+- delay: 75
+  content: o
+- delay: 70
+  content: n
+- delay: 57
+  content: _
+- delay: 64
+  content: e
+- delay: 58
+  content: v
+- delay: 61
+  content: e
+- delay: 58
+  content: n
+- delay: 61
+  content: t
+- delay: 61
+  content: s
+- delay: 76
+  content: ' '
+- delay: 57
+  content: O
+- delay: 60
+  content: R
+- delay: 69
+  content: D
+- delay: 54
+  content: E
+- delay: 71
+  content: R
+- delay: 61
+  content: ' '
+- delay: 68
+  content: B
+- delay: 59
+  content: Y
+- delay: 75
+  content: ' '
+- delay: 72
+  content: i
+- delay: 77
+  content: d
+- delay: 73
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mphase               rows_affected   status     duration_ms\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m──────────────────  ─────────────   ─────────  ──────────\e[0m\r\
+    \n"
+- delay: 55
+  content: "  schema_change                    0   \e[32msuccess\e[0m        42\r\n"
+- delay: 55
+  content: "  checkpoint_pre_backfill          0   \e[32msuccess\e[0m        18\r\n"
+- delay: 55
+  content: "  backfill_v1              \e[33m847,412\e[0m   \e[91manomaly\e[0m   \
+    \   7001\r\n"
+- delay: 55
+  content: "  rollback_to_pre_backfill \e[31m847,412\e[0m   \e[32msuccess\e[0m   \
+    \    312  \e[90m← 0.3s\e[0m\r\n"
+- delay: 55
+  content: "  backfill_v2            \e[32m2,000,000\e[0m   \e[32msuccess\e[0m   \
+    \  16412\r\n"
+- delay: 55
+  content: "  checkpoint_post_success          0   \e[32msuccess\e[0m        21\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[92mMigration complete.\e[0m  \e[32m2,000,000 rows.  0 NULLs.  Full\
+    \ audit trail preserved.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2500
+  content: ''

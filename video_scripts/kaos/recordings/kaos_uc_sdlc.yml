@@ -1,0 +1,1333 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: 'KAOS — Self-Healing Pipeline: Bug, Rollback, Fix, Ship'
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mKAOS — Self-Healing Code Pipeline\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mDetect · Checkpoint · Fix · Rollback · Fix again · Ship\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mService:\e[0m   \e[93mpayment-svc\e[0m  \e[90m(payment processing\
+    \ backend)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mProblem:\e[0m   test suite just started failing after a refactor\r\
+    \n"
+- delay: 55
+  content: "  \e[90mFailure:\e[0m   \e[31mtest_payment_decimal_precision\e[0m  \e\
+    [90m— 1 test, introduced silently\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mTest output:\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mFAILED tests/test_payment.py::test_payment_decimal_precision\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  AssertionError: \e[0m\e[31m10.00 != 10.0\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  assert calculate_total(5, 2) == Decimal('10.00')\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  refactor changed float(amount) path — decimal precision lost\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mKAOS will:\e[0m  checkpoint → try fix 1 (wrong) → auto-rollback\
+    \ → fix 2 (correct)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3200
+  content: ''
+- delay: 2000
+  content: ''
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 67
+  content: k
+- delay: 61
+  content: a
+- delay: 52
+  content: o
+- delay: 78
+  content: s
+- delay: 72
+  content: ' '
+- delay: 65
+  content: l
+- delay: 67
+  content: s
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1magent_id\e[0m          \e[1mstatus\e[0m   \e[1mfiles\e[0m   \e\
+    [1msize\e[0m     \e[1mcreated\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m────────────────  ───────  ──────  ───────  ─────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32mpayment-svc\e[0m       \e[32mactive\e[0m    \e[93m14\e[0m    \
+    \  \e[93m38 KB\e[0m   2026-04-10 09:14:03\r\n"
+- delay: 55
+  content: "  \e[90mpayment-qa\e[0m        idle      0       —        —\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mpayment-svc VFS:\e[0m  src/payment.py  src/invoice.py  src/refund.py\r\
+    \n"
+- delay: 55
+  content: "                    tests/test_payment.py  \e[90m(47 tests, 1 failing)\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1400
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 1 — Detect regression: run test suite\
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 77
+  content: k
+- delay: 77
+  content: a
+- delay: 63
+  content: o
+- delay: 52
+  content: s
+- delay: 61
+  content: ' '
+- delay: 53
+  content: m
+- delay: 69
+  content: c
+- delay: 77
+  content: p
+- delay: 68
+  content: ' '
+- delay: 66
+  content: a
+- delay: 54
+  content: g
+- delay: 59
+  content: e
+- delay: 56
+  content: n
+- delay: 59
+  content: t
+- delay: 57
+  content: _
+- delay: 71
+  content: s
+- delay: 69
+  content: p
+- delay: 64
+  content: a
+- delay: 57
+  content: w
+- delay: 56
+  content: n
+- delay: 74
+  content: ' '
+- delay: 65
+  content: p
+- delay: 78
+  content: a
+- delay: 54
+  content: y
+- delay: 75
+  content: m
+- delay: 69
+  content: e
+- delay: 62
+  content: n
+- delay: 62
+  content: t
+- delay: 68
+  content: '-'
+- delay: 54
+  content: q
+- delay: 53
+  content: a
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Spawning agent  \e[90mpayment-qa\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  VFS snapshot of payment-svc  \e[90m→  payment-qa:/workspace/\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Agent ready  \e[90m[01JPAY-QA-d9f2]\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mRunning: pytest tests/ -v --tb=short\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_payment_zero_amount\e[0m         \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_payment_negative\e[0m            \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_currency_formatting\e[0m         \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 80
+  content: "  \e[33mtests/test_payment.py::test_payment_decimal_precision\e[0m   \
+    \  \e[31mFAILED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_invoice_total\e[0m               \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_refund_amount\e[0m               \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_currency_rounding\e[0m           \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 60
+  content: "  \e[90m  ... (40 more passed)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31mFAILED\e[0m  tests/test_payment.py::\e[31mtest_payment_decimal_precision\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  E   AssertionError: \e[0m\e[31mDecimal('10.00') != 10.0\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m  E   assert calculate_total(5, 2) == Decimal('10.00')\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m46 passed\e[0m, \e[31m1 failed\e[0m  \e[90min 2.1s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1600
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 2 — Checkpoint before attempting fix \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 56
+  content: k
+- delay: 78
+  content: a
+- delay: 59
+  content: o
+- delay: 73
+  content: s
+- delay: 52
+  content: ' '
+- delay: 63
+  content: c
+- delay: 53
+  content: h
+- delay: 61
+  content: e
+- delay: 75
+  content: c
+- delay: 56
+  content: k
+- delay: 52
+  content: p
+- delay: 58
+  content: o
+- delay: 69
+  content: i
+- delay: 77
+  content: n
+- delay: 59
+  content: t
+- delay: 66
+  content: ' '
+- delay: 63
+  content: p
+- delay: 77
+  content: a
+- delay: 75
+  content: y
+- delay: 65
+  content: m
+- delay: 57
+  content: e
+- delay: 58
+  content: n
+- delay: 66
+  content: t
+- delay: 60
+  content: '-'
+- delay: 55
+  content: s
+- delay: 60
+  content: v
+- delay: 63
+  content: c
+- delay: 63
+  content: ' '
+- delay: 61
+  content: '-'
+- delay: 59
+  content: '-'
+- delay: 77
+  content: l
+- delay: 71
+  content: a
+- delay: 64
+  content: b
+- delay: 57
+  content: e
+- delay: 78
+  content: l
+- delay: 71
+  content: ' '
+- delay: 59
+  content: p
+- delay: 57
+  content: r
+- delay: 70
+  content: e
+- delay: 74
+  content: '-'
+- delay: 72
+  content: f
+- delay: 77
+  content: i
+- delay: 71
+  content: x
+- delay: 77
+  content: '-'
+- delay: 69
+  content: a
+- delay: 68
+  content: t
+- delay: 65
+  content: t
+- delay: 52
+  content: e
+- delay: 74
+  content: m
+- delay: 53
+  content: p
+- delay: 53
+  content: t
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Checkpoint created\r\n"
+- delay: 55
+  content: "  \e[90m  id:      \e[0m\e[93mckpt_7f3a9b2c\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  label:   \e[0m\e[32mpre-fix-attempt\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  files:   \e[0m\e[93m14\e[0m  files snapshotted\r\n"
+- delay: 55
+  content: "  \e[90m  size:    \e[0m\e[93m38.2 KB\e[0m  compressed to  \e[93m11.4\
+    \ KB\e[0m  \e[90m(70% savings, content-addressed)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  time:    \e[0m2026-04-10 09:14:47 UTC\r\n"
+- delay: 55
+  content: "  \e[90m  blobs:   \e[0m14 refs stored in blob store  \e[90m[kaos.db/blobs]\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mCheckpoint is immutable. Restoring will not create new blobs.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1400
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 3 — Fix attempt 1 (wrong approach)   \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAgent reasoning: decimal precision issue → convert to float, let\
+    \ Python handle it\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mAgent writes patch to  \e[0m\e[93mpayment-svc:/src/payment.py\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m─── src/payment.py  (patch applied) ────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31m- amount_dec = Decimal(amount)\e[0m\r\n"
+- delay: 55
+  content: "  \e[92m+ amount_dec = float(amount)   \e[90m# ← WRONG: loses Decimal\
+    \ precision guarantees\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mRunning: pytest tests/ -v --tb=short\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: ''
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_payment_zero_amount\e[0m         \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 70
+  content: "  \e[32mtests/test_payment.py::test_payment_negative\e[0m            \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 80
+  content: "  \e[33mtests/test_payment.py::test_payment_decimal_precision\e[0m   \
+    \  \e[31mFAILED\e[0m\r\n"
+- delay: 80
+  content: "  \e[33mtests/test_payment.py::test_currency_rounding\e[0m           \
+    \  \e[31mFAILED\e[0m\r\n"
+- delay: 80
+  content: "  \e[33mtests/test_payment.py::test_invoice_total\e[0m               \
+    \  \e[31mFAILED\e[0m\r\n"
+- delay: 80
+  content: "  \e[33mtests/test_payment.py::test_refund_amount\e[0m               \
+    \  \e[31mFAILED\e[0m\r\n"
+- delay: 60
+  content: "  \e[90m  ... (43 more passed)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[93m43 passed\e[0m, \e[31m4 failed\e[0m  \e[90min 2.4s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[91m✗  Regression detected: 3 new failures introduced\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  float() strips Decimal type guarantees — rounding errors cascade\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m  Failed: test_currency_rounding  test_invoice_total  test_refund_amount\e\
+    [0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2400
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 4 — Auto-restore from checkpoint     \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 73
+  content: k
+- delay: 54
+  content: a
+- delay: 52
+  content: o
+- delay: 57
+  content: s
+- delay: 76
+  content: ' '
+- delay: 65
+  content: r
+- delay: 53
+  content: e
+- delay: 73
+  content: s
+- delay: 74
+  content: t
+- delay: 59
+  content: o
+- delay: 69
+  content: r
+- delay: 73
+  content: e
+- delay: 71
+  content: ' '
+- delay: 75
+  content: p
+- delay: 56
+  content: a
+- delay: 54
+  content: y
+- delay: 66
+  content: m
+- delay: 58
+  content: e
+- delay: 62
+  content: n
+- delay: 76
+  content: t
+- delay: 62
+  content: '-'
+- delay: 66
+  content: s
+- delay: 77
+  content: v
+- delay: 65
+  content: c
+- delay: 64
+  content: ' '
+- delay: 59
+  content: '-'
+- delay: 62
+  content: '-'
+- delay: 62
+  content: l
+- delay: 55
+  content: a
+- delay: 73
+  content: b
+- delay: 67
+  content: e
+- delay: 61
+  content: l
+- delay: 75
+  content: ' '
+- delay: 60
+  content: p
+- delay: 67
+  content: r
+- delay: 55
+  content: e
+- delay: 59
+  content: '-'
+- delay: 67
+  content: f
+- delay: 54
+  content: i
+- delay: 56
+  content: x
+- delay: 73
+  content: '-'
+- delay: 55
+  content: a
+- delay: 54
+  content: t
+- delay: 53
+  content: t
+- delay: 57
+  content: e
+- delay: 53
+  content: m
+- delay: 64
+  content: p
+- delay: 77
+  content: t
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Restoring  \e[90mpayment-svc\e[0m  from checkpoint  \e\
+    [93mckpt_7f3a9b2c\e[0m  \e[90m(pre-fix-attempt)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  14 files restored from blob store\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  VFS state matches checkpoint exactly  \e[90m(content-hash\
+    \ verified)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m✓\e[0m  Restore complete  \e[90min 0.03s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 61
+  content: k
+- delay: 76
+  content: a
+- delay: 73
+  content: o
+- delay: 65
+  content: s
+- delay: 64
+  content: ' '
+- delay: 72
+  content: d
+- delay: 74
+  content: i
+- delay: 60
+  content: f
+- delay: 58
+  content: f
+- delay: 72
+  content: ' '
+- delay: 73
+  content: p
+- delay: 58
+  content: a
+- delay: 66
+  content: y
+- delay: 63
+  content: m
+- delay: 74
+  content: e
+- delay: 78
+  content: n
+- delay: 72
+  content: t
+- delay: 77
+  content: '-'
+- delay: 59
+  content: s
+- delay: 54
+  content: v
+- delay: 65
+  content: c
+- delay: 60
+  content: ' '
+- delay: 72
+  content: p
+- delay: 58
+  content: r
+- delay: 56
+  content: e
+- delay: 52
+  content: '-'
+- delay: 77
+  content: f
+- delay: 78
+  content: i
+- delay: 70
+  content: x
+- delay: 61
+  content: '-'
+- delay: 71
+  content: a
+- delay: 59
+  content: t
+- delay: 72
+  content: t
+- delay: 56
+  content: e
+- delay: 52
+  content: m
+- delay: 77
+  content: p
+- delay: 69
+  content: t
+- delay: 66
+  content: ' '
+- delay: 76
+  content: H
+- delay: 69
+  content: E
+- delay: 59
+  content: A
+- delay: 68
+  content: D
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mDiff: checkpoint  \e[32mpre-fix-attempt\e[0m  →  \e[93mHEAD\e\
+    [0m  \e[90m(what was undone)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  src/payment.py\e[0m  \e[90m(restored to pre-attempt state)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[92m  + amount_dec = Decimal(amount)   \e[90m← restored original\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31m  - amount_dec = float(amount)     \e[90m← wrong fix removed\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  No other files changed.  VFS is clean.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2000
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 5 — Read failure diagnostics from VFS\
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 59
+  content: k
+- delay: 66
+  content: a
+- delay: 63
+  content: o
+- delay: 70
+  content: s
+- delay: 75
+  content: ' '
+- delay: 73
+  content: r
+- delay: 59
+  content: e
+- delay: 57
+  content: a
+- delay: 68
+  content: d
+- delay: 55
+  content: ' '
+- delay: 75
+  content: p
+- delay: 70
+  content: a
+- delay: 70
+  content: y
+- delay: 63
+  content: m
+- delay: 74
+  content: e
+- delay: 62
+  content: n
+- delay: 67
+  content: t
+- delay: 58
+  content: '-'
+- delay: 69
+  content: s
+- delay: 65
+  content: v
+- delay: 78
+  content: c
+- delay: 60
+  content: ' '
+- delay: 77
+  content: /
+- delay: 75
+  content: q
+- delay: 76
+  content: a
+- delay: 62
+  content: /
+- delay: 67
+  content: f
+- delay: 69
+  content: a
+- delay: 61
+  content: i
+- delay: 70
+  content: l
+- delay: 77
+  content: u
+- delay: 61
+  content: r
+- delay: 72
+  content: e
+- delay: 64
+  content: _
+- delay: 76
+  content: r
+- delay: 59
+  content: e
+- delay: 64
+  content: p
+- delay: 52
+  content: o
+- delay: 57
+  content: r
+- delay: 68
+  content: t
+- delay: 72
+  content: .
+- delay: 56
+  content: m
+- delay: 75
+  content: d
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mFailure Report — payment-svc\e[0m  \e[90mgenerated by payment-qa\
+    \ agent\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m───────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mRoot Cause\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  src/payment.py line 34:\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m    calculate_total() uses Decimal arithmetic internally\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90m    but the refactor broke the entry-point coercion path\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mSpecific Issue\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  The function must return Decimal, not float.\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  round() loses precision on .005 boundary values.\e[0m\r\n"
+- delay: 55
+  content: "  \e[31m  round(10.005, 2) → 10.0   (float rounding — WRONG)\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  Decimal('10.005').quantize(Decimal('0.01')) → 10.01  (correct)\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mAffected Lines\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  src/payment.py:34  — amount coercion (entry point)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  src/payment.py:41  — final return value must stay Decimal\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93mRecommended Fix\e[0m\r\n"
+- delay: 55
+  content: "  \e[32m  Use Decimal(str(amount)).quantize(Decimal('0.01')))\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Never use float() on monetary values. Never use round() on Decimal.\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1800
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 6 — Fix attempt 2 (correct approach) \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mAgent reads diagnostics → applies the correct fix\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mAgent writes patch to  \e[0m\e[93mpayment-svc:/src/payment.py\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m─── src/payment.py  (patch applied) ────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[31m- amount_dec = Decimal(amount)\e[0m\r\n"
+- delay: 55
+  content: "  \e[92m+ amount_dec = Decimal(str(amount)).quantize(Decimal('0.01'))\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mRunning: pytest tests/ -v --tb=short\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 1100
+  content: ''
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_payment_zero_amount\e[0m         \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_payment_negative\e[0m            \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_payment_decimal_precision\e[0m   \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_currency_rounding\e[0m           \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_invoice_total\e[0m               \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_refund_amount\e[0m               \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 65
+  content: "  \e[32mtests/test_payment.py::test_currency_formatting\e[0m         \
+    \  \e[32mPASSED\e[0m\r\n"
+- delay: 60
+  content: "  \e[90m  ... (40 more passed)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m─────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[92m47 passed\e[0m  \e[90min 2.3s\e[0m  \e[90m— 0 failed\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 600
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[92m✓  All tests pass.  Fix is correct.  Ready to ship.\e[0m\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2500
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mSTEP 7 — SQL audit trail                  \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m❯\e[0m "
+- delay: 63
+  content: k
+- delay: 68
+  content: a
+- delay: 70
+  content: o
+- delay: 63
+  content: s
+- delay: 71
+  content: ' '
+- delay: 72
+  content: '-'
+- delay: 78
+  content: '-'
+- delay: 70
+  content: j
+- delay: 78
+  content: s
+- delay: 63
+  content: o
+- delay: 77
+  content: n
+- delay: 56
+  content: ' '
+- delay: 69
+  content: q
+- delay: 72
+  content: u
+- delay: 65
+  content: e
+- delay: 59
+  content: r
+- delay: 76
+  content: y
+- delay: 61
+  content: ' '
+- delay: 77
+  content: '"'
+- delay: 53
+  content: S
+- delay: 72
+  content: E
+- delay: 75
+  content: L
+- delay: 77
+  content: E
+- delay: 54
+  content: C
+- delay: 69
+  content: T
+- delay: 76
+  content: ' '
+- delay: 73
+  content: t
+- delay: 67
+  content: i
+- delay: 77
+  content: m
+- delay: 53
+  content: e
+- delay: 68
+  content: s
+- delay: 68
+  content: t
+- delay: 76
+  content: a
+- delay: 52
+  content: m
+- delay: 69
+  content: p
+- delay: 55
+  content: ','
+- delay: 71
+  content: ' '
+- delay: 56
+  content: t
+- delay: 57
+  content: o
+- delay: 58
+  content: o
+- delay: 71
+  content: l
+- delay: 70
+  content: _
+- delay: 65
+  content: n
+- delay: 61
+  content: a
+- delay: 68
+  content: m
+- delay: 75
+  content: e
+- delay: 75
+  content: ','
+- delay: 61
+  content: ' '
+- delay: 56
+  content: c
+- delay: 72
+  content: o
+- delay: 63
+  content: n
+- delay: 62
+  content: t
+- delay: 54
+  content: e
+- delay: 57
+  content: n
+- delay: 64
+  content: t
+- delay: 52
+  content: ' '
+- delay: 63
+  content: F
+- delay: 53
+  content: R
+- delay: 76
+  content: O
+- delay: 60
+  content: M
+- delay: 60
+  content: ' '
+- delay: 66
+  content: v
+- delay: 59
+  content: f
+- delay: 59
+  content: s
+- delay: 74
+  content: _
+- delay: 72
+  content: e
+- delay: 52
+  content: v
+- delay: 54
+  content: e
+- delay: 56
+  content: n
+- delay: 71
+  content: t
+- delay: 62
+  content: s
+- delay: 62
+  content: ' '
+- delay: 68
+  content: W
+- delay: 74
+  content: H
+- delay: 75
+  content: E
+- delay: 71
+  content: R
+- delay: 69
+  content: E
+- delay: 53
+  content: ' '
+- delay: 77
+  content: a
+- delay: 56
+  content: g
+- delay: 69
+  content: e
+- delay: 66
+  content: n
+- delay: 73
+  content: t
+- delay: 66
+  content: _
+- delay: 52
+  content: i
+- delay: 74
+  content: d
+- delay: 56
+  content: '='
+- delay: 68
+  content: ''''
+- delay: 65
+  content: p
+- delay: 72
+  content: a
+- delay: 54
+  content: y
+- delay: 61
+  content: m
+- delay: 69
+  content: e
+- delay: 53
+  content: n
+- delay: 59
+  content: t
+- delay: 65
+  content: '-'
+- delay: 68
+  content: s
+- delay: 72
+  content: v
+- delay: 66
+  content: c
+- delay: 62
+  content: ''''
+- delay: 58
+  content: ' '
+- delay: 69
+  content: O
+- delay: 59
+  content: R
+- delay: 69
+  content: D
+- delay: 75
+  content: E
+- delay: 69
+  content: R
+- delay: 59
+  content: ' '
+- delay: 58
+  content: B
+- delay: 60
+  content: Y
+- delay: 54
+  content: ' '
+- delay: 76
+  content: t
+- delay: 75
+  content: i
+- delay: 60
+  content: m
+- delay: 71
+  content: e
+- delay: 74
+  content: s
+- delay: 63
+  content: t
+- delay: 77
+  content: a
+- delay: 76
+  content: m
+- delay: 54
+  content: p
+- delay: 75
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1mtimestamp\e[0m             \e[1mtool_name\e[0m         \e[1mcontent\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m────────────────────  ────────────────  ─────────────────────────────────────────\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:14:03\e[0m  \e[36magent_write\e[0m      src/payment.py\
+    \  \e[90m(original, Decimal(amount))\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:14:19\e[0m  \e[36magent_write\e[0m      src/invoice.py\
+    \  \e[90m(original)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:14:22\e[0m  \e[36magent_write\e[0m      src/refund.py\
+    \   \e[90m(original)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:14:47\e[0m  \e[32mcheckpoint\e[0m       pre-fix-attempt\
+    \  \e[90mckpt_7f3a9b2c  14 files\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:02\e[0m  \e[31magent_write\e[0m      src/payment.py\
+    \  \e[90m(wrong fix: float(amount))\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:11\e[0m  \e[91mtest_runner\e[0m      FAIL  4\
+    \ failures detected\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:12\e[0m  \e[33mrestore\e[0m          pre-fix-attempt\
+    \  \e[90m→  ckpt_7f3a9b2c  14 files\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:29\e[0m  \e[36magent_read\e[0m       /qa/failure_report.md\
+    \  \e[90m(diagnostics read)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:38\e[0m  \e[32magent_write\e[0m      src/payment.py\
+    \  \e[90m(correct fix: quantize)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m2026-04-10 09:15:47\e[0m  \e[92mtest_runner\e[0m      PASS  47\
+    \ passed  \e[90min 2.3s\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m10 events  │  full history preserved  │  queryable forever\e[0m\r\
+    \n"
+- delay: 80
+  content: "\r\n"
+- delay: 1200
+  content: ''
+- delay: 900
+  content: "\e[90m  ┌──────────────────────────────────────────────────────────────────────────┐\e\
+    [0m\r\n"
+- delay: 60
+  content: "\e[90m  │\e[0m  \e[1m\e[36mResult — Self-healing pipeline complete   \
+    \                              \e[0m  \e[90m│\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  └──────────────────────────────────────────────────────────────────────────┘\e\
+    [0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mTimeline:\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m09:14:03\e[0m  \e[32m✓\e[0m  Agent payment-qa spawned, VFS snapshot\
+    \ ready\r\n"
+- delay: 55
+  content: "  \e[90m09:14:19\e[0m  \e[31m✗\e[0m  Regression detected: test_payment_decimal_precision\r\
+    \n"
+- delay: 55
+  content: "  \e[90m09:14:47\e[0m  \e[32m✓\e[0m  Checkpoint  \e[93mpre-fix-attempt\e\
+    [0m  created  \e[90m(ckpt_7f3a9b2c)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m09:15:02\e[0m  \e[31m✗\e[0m  Fix attempt 1: float(amount)  \e\
+    [31m→  4 failures\e[0m  \e[90m(worse)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m09:15:12\e[0m  \e[33m↩\e[0m  Auto-restore from checkpoint  \e\
+    [90m(0.03s, content-hash verified)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m09:15:29\e[0m  \e[36m→\e[0m  Read failure diagnostics from VFS\
+    \  \e[90m(/qa/failure_report.md)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m09:15:38\e[0m  \e[32m✓\e[0m  Fix attempt 2: Decimal(str(amount)).quantize(Decimal('0.01'))\r\
+    \n"
+- delay: 55
+  content: "  \e[90m09:15:47\e[0m  \e[92m✓\e[0m  \e[92m47 passed, 0 failed — ready\
+    \ to ship\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mTotal time:\e[0m    \e[93m1 min 44 sec\e[0m  \e[90mfrom detection\
+    \ to green\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mRollbacks:\e[0m     \e[93m1\e[0m  \e[90m(automatic, 0.03s)\e[0m\r\
+    \n"
+- delay: 55
+  content: "  \e[90mFix attempts:\e[0m  \e[93m2\e[0m  \e[90m(wrong, then correct)\e\
+    [0m\r\n"
+- delay: 55
+  content: "  \e[90mAudit events:\e[0m  \e[93m10\e[0m  \e[90m(every action recorded,\
+    \ SQL-queryable)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[32mThe VFS checkpoint made wrong-fix recovery trivial.\e[0m\r\n"
+- delay: 55
+  content: "  \e[32mFailure diagnostics written by the QA agent guided the correct\
+    \ fix.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 3000
+  content: ''
+- delay: 2000
+  content: ''

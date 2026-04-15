@@ -194,6 +194,8 @@ class ProposerAgent:
         if archive_digest:
             # Prepend any reusable skills discovered so far
             skills_text = self._load_skills_text()
+            # Query cross-agent memory for relevant prior context (claude-mem inspired)
+            memory_context = self._load_memory_context(benchmark_name)
             prompt += (
                 "\n\n## Pre-loaded Archive Digest\n\n"
                 "The following is a compacted summary of ALL prior harnesses, "
@@ -201,6 +203,7 @@ class ProposerAgent:
                 "use the archive tools for details, but this digest should have "
                 "everything you need to propose improvements.\n\n"
                 + (skills_text + "\n" if skills_text else "")
+                + (memory_context + "\n" if memory_context else "")
                 + archive_digest
             )
 
@@ -364,6 +367,25 @@ class ProposerAgent:
                 if s.get("code_template"):
                     snippet = s["code_template"][:200]
                     lines.append(f"  ```python\n  {snippet}\n  ```")
+            return "\n".join(lines)
+        except Exception:
+            return ""
+
+    def _load_memory_context(self, benchmark_name: str, limit: int = 5) -> str:
+        """Query cross-agent memory for relevant prior results (claude-mem inspired).
+
+        Looks for 'result' and 'error' type entries related to this benchmark
+        to give the proposer cross-session context.
+        """
+        try:
+            from kaos.memory import MemoryStore
+            mem = MemoryStore(self.afs.conn)
+            hits = mem.search(query=benchmark_name, limit=limit)
+            if not hits:
+                return ""
+            lines = ["## Cross-Session Memory (from shared memory store)"]
+            for h in hits:
+                lines.append(f"- [{h.type}] {h.content[:200]}")
             return "\n".join(lines)
         except Exception:
             return ""

@@ -1,0 +1,798 @@
+config:
+  command: bash
+  cwd: null
+  env:
+    recording: true
+  cols: 110
+  rows: 36
+  repeat: 0
+  quality: 100
+  frameDelay: auto
+  maxIdleTime: 2000
+  frameBox:
+    type: window
+    title: KAOS — Cross-Agent Memory
+    style:
+      border: 0px black solid
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: '0.9'
+  cursorStyle: bar
+  fontFamily: Consolas, Menlo, monospace
+  fontSize: 14
+  lineHeight: 1.3
+  theme:
+    background: '#0d1117'
+    foreground: '#c9d1d9'
+records:
+- delay: 600
+  content: ''
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[96mKAOS — Cross-Agent Memory\e[0m  \e[90m(powered by claude-mem)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mProposer learns from 3 prior sessions before writing a single line.\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e[0m\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 1 — Prior session memory is already in the store                  \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 65
+  content: k
+- delay: 62
+  content: a
+- delay: 60
+  content: o
+- delay: 78
+  content: s
+- delay: 60
+  content: ' '
+- delay: 63
+  content: m
+- delay: 68
+  content: e
+- delay: 58
+  content: m
+- delay: 72
+  content: o
+- delay: 66
+  content: r
+- delay: 64
+  content: y
+- delay: 67
+  content: ' '
+- delay: 68
+  content: l
+- delay: 67
+  content: s
+- delay: 56
+  content: ' '
+- delay: 63
+  content: '-'
+- delay: 77
+  content: '-'
+- delay: 72
+  content: t
+- delay: 72
+  content: y
+- delay: 52
+  content: p
+- delay: 53
+  content: e
+- delay: 66
+  content: ' '
+- delay: 68
+  content: r
+- delay: 63
+  content: e
+- delay: 64
+  content: s
+- delay: 53
+  content: u
+- delay: 54
+  content: l
+- delay: 62
+  content: t
+- delay: 78
+  content: ' '
+- delay: 71
+  content: '-'
+- delay: 54
+  content: '-'
+- delay: 60
+  content: l
+- delay: 55
+  content: i
+- delay: 65
+  content: m
+- delay: 55
+  content: i
+- delay: 65
+  content: t
+- delay: 66
+  content: ' '
+- delay: 53
+  content: '5'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1mMemory Store\e[0m  total=18  observation=7  result=5  skill=3  error=3\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#12\e[0m  \e[32mresult\e[0m  \e[90msearch-01  2026-04-10 14:22\e[0m  \e[90mkey=iter6-best\e[0m\r\n"
+- delay: 55
+  content: "       Harness v6 achieved accuracy=0.872 using ensemble (3x Sonnet). \e[90mcost=19.4\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#9\e[0m   \e[32mresult\e[0m  \e[90msearch-01  2026-04-10 12:41\e[0m  \e[90mkey=iter3-best\e[0m\r\n"
+- delay: 55
+  content: "       Majority-vote with chain-of-thought. accuracy=0.831. Approach: parse...\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#7\e[0m   \e[32mresult\e[0m  \e[90msearch-01  2026-04-10 11:30\e[0m\r\n"
+- delay: 55
+  content: "       Temperature=0 improves determinism. accuracy=0.819.\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#6\e[0m   \e[31merror\e[0m   \e[90msearch-01  2026-04-10 11:12\e[0m  \e[90mkey=json-parse-fail\e[0m\r\n"
+- delay: 55
+  content: "       JSON decode error in 40% of cases. Always wrap output in try/except.\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#3\e[0m   \e[35mskill\e[0m   \e[90msearch-00  2026-04-09 09:15\e[0m  \e[90mkey=cot-numbered\e[0m\r\n"
+- delay: 55
+  content: "       Numbered chain-of-thought (Step 1, Step 2) reduces errors by 23%.\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 2 — Proposer searches memory before proposing                     \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 52
+  content: k
+- delay: 72
+  content: a
+- delay: 59
+  content: o
+- delay: 65
+  content: s
+- delay: 73
+  content: ' '
+- delay: 55
+  content: m
+- delay: 59
+  content: e
+- delay: 59
+  content: m
+- delay: 72
+  content: o
+- delay: 70
+  content: r
+- delay: 71
+  content: y
+- delay: 52
+  content: ' '
+- delay: 67
+  content: s
+- delay: 62
+  content: e
+- delay: 76
+  content: a
+- delay: 67
+  content: r
+- delay: 72
+  content: c
+- delay: 73
+  content: h
+- delay: 75
+  content: ' '
+- delay: 60
+  content: '"'
+- delay: 59
+  content: e
+- delay: 54
+  content: n
+- delay: 74
+  content: s
+- delay: 54
+  content: e
+- delay: 53
+  content: m
+- delay: 76
+  content: b
+- delay: 73
+  content: l
+- delay: 77
+  content: e
+- delay: 66
+  content: ' '
+- delay: 55
+  content: a
+- delay: 52
+  content: c
+- delay: 56
+  content: c
+- delay: 70
+  content: u
+- delay: 67
+  content: r
+- delay: 57
+  content: a
+- delay: 62
+  content: c
+- delay: 53
+  content: y
+- delay: 63
+  content: '"'
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[96m2 results\e[0m  (BM25 relevance order)\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#12\e[0m  \e[32mresult\e[0m  \e[90miter6-best\e[0m\r\n"
+- delay: 55
+  content: "       [math_rag] Improved harness at iteration 6. Scores: accuracy=0.872.\r\n"
+- delay: 55
+  content: "       Approach: ensemble voting with 3 Sonnet calls, temperature=0...\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#9\e[0m   \e[32mresult\e[0m  \e[90miter3-best\e[0m\r\n"
+- delay: 55
+  content: "       Majority-vote ensemble. accuracy=0.831. Chain-of-thought prompting.\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 72
+  content: k
+- delay: 76
+  content: a
+- delay: 62
+  content: o
+- delay: 78
+  content: s
+- delay: 69
+  content: ' '
+- delay: 65
+  content: m
+- delay: 64
+  content: e
+- delay: 64
+  content: m
+- delay: 62
+  content: o
+- delay: 73
+  content: r
+- delay: 59
+  content: y
+- delay: 73
+  content: ' '
+- delay: 57
+  content: s
+- delay: 72
+  content: e
+- delay: 55
+  content: a
+- delay: 68
+  content: r
+- delay: 76
+  content: c
+- delay: 62
+  content: h
+- delay: 57
+  content: ' '
+- delay: 72
+  content: '"'
+- delay: 67
+  content: e
+- delay: 65
+  content: r
+- delay: 58
+  content: r
+- delay: 59
+  content: o
+- delay: 68
+  content: r
+- delay: 78
+  content: ' '
+- delay: 56
+  content: f
+- delay: 52
+  content: a
+- delay: 56
+  content: i
+- delay: 73
+  content: l
+- delay: 65
+  content: u
+- delay: 55
+  content: r
+- delay: 53
+  content: e
+- delay: 77
+  content: '"'
+- delay: 57
+  content: ' '
+- delay: 59
+  content: '-'
+- delay: 52
+  content: '-'
+- delay: 73
+  content: t
+- delay: 70
+  content: y
+- delay: 61
+  content: p
+- delay: 53
+  content: e
+- delay: 57
+  content: ' '
+- delay: 67
+  content: e
+- delay: 72
+  content: r
+- delay: 52
+  content: r
+- delay: 67
+  content: o
+- delay: 62
+  content: r
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#6\e[0m   \e[31merror\e[0m  \e[90mjson-parse-fail\e[0m\r\n"
+- delay: 55
+  content: "       JSON decode error in 40% of cases. Always wrap output parsing in\r\n"
+- delay: 55
+  content: "       try/except with fallback to regex.\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 3 — New search begins, proposer sees cross-session context        \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 69
+  content: k
+- delay: 68
+  content: a
+- delay: 78
+  content: o
+- delay: 75
+  content: s
+- delay: 59
+  content: ' '
+- delay: 67
+  content: m
+- delay: 76
+  content: h
+- delay: 64
+  content: ' '
+- delay: 56
+  content: s
+- delay: 65
+  content: t
+- delay: 71
+  content: a
+- delay: 70
+  content: r
+- delay: 70
+  content: t
+- delay: 78
+  content: ' '
+- delay: 62
+  content: '-'
+- delay: 54
+  content: '-'
+- delay: 71
+  content: b
+- delay: 53
+  content: e
+- delay: 53
+  content: n
+- delay: 73
+  content: c
+- delay: 73
+  content: h
+- delay: 65
+  content: m
+- delay: 71
+  content: a
+- delay: 66
+  content: r
+- delay: 78
+  content: k
+- delay: 54
+  content: ' '
+- delay: 78
+  content: m
+- delay: 58
+  content: a
+- delay: 62
+  content: t
+- delay: 68
+  content: h
+- delay: 69
+  content: _
+- delay: 52
+  content: r
+- delay: 66
+  content: a
+- delay: 53
+  content: g
+- delay: 65
+  content: ' '
+- delay: 78
+  content: '-'
+- delay: 55
+  content: '-'
+- delay: 70
+  content: e
+- delay: 68
+  content: v
+- delay: 77
+  content: a
+- delay: 64
+  content: l
+- delay: 75
+  content: '-'
+- delay: 63
+  content: s
+- delay: 59
+  content: u
+- delay: 74
+  content: b
+- delay: 70
+  content: s
+- delay: 71
+  content: e
+- delay: 63
+  content: t
+- delay: 77
+  content: ' '
+- delay: 71
+  content: '2'
+- delay: 68
+  content: '0'
+- delay: 200
+  content: "\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mEvaluating 3 seed harnesses...\e[0m\r\n"
+- delay: 55
+  content: "  \e[90mSeeds done. Frontier: accuracy=0.641\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36m[proposer-iter-1]\e[0m  Building prompt with archive digest...\r\n"
+- delay: 55
+  content: "  \e[90mLoading skills (3 entries)...\e[0m\r\n"
+- delay: 55
+  content: "  \e[36mLoading cross-session memory (query: 'math_rag')...\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m## Cross-Session Memory (from shared memory store)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  [result]  accuracy=0.872  ensemble 3x Sonnet  iter6-best\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  [result]  accuracy=0.831  majority-vote + CoT  iter3-best\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  [error]   JSON decode error 40%  json-parse-fail\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  [skill]   Numbered CoT reduces errors 23%  cot-numbered\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m[proposer-iter-1]\e[0m  Proposing harness using known-good patterns...\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90m  Skipping naive single-call — known low accuracy\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Applying ensemble voting (learned from memory #12)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Adding try/except JSON fallback (learned from memory #6)\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  Adding numbered CoT (learned from skill #3)\e[0m\r\n"
+- delay: 400
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 4 — Iteration 1 result: skip 6 iterations of trial-and-error      \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mEvaluating candidate harness-a1b2c3d...\e[0m\r\n"
+- delay: 800
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[92m[harness-a1b2c3d]\e[0m  accuracy=\e[92m0.864\e[0m  \e[90mcost=18.7  iter=1\e[0m\r\n"
+- delay: 55
+  content: "  \e[1m\e[92mNEW FRONTIER POINT\e[0m  \e[90m(was 0.641 — +34% in 1 iteration)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[90mMemory: writing result to shared store...\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m  => memory_id=19  type=result  key=math_rag:iter1:a1b2c3d\e[0m\r\n"
+- delay: 500
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[36mFuture searches on math_rag will start from accuracy=0.864\e[0m\r\n"
+- delay: 55
+  content: "  \e[90m(memory persists across projects — kaos memory search 'math_rag')\e[0m\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 900
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  |\e[0m  \e[1m\e[36mScene 5 — Memory grows across sessions                                  \e[0m  \e[90m|\e[0m\r\n"
+- delay: 60
+  content: "\e[90m  +--------------------------------------------------------------------------+\e[0m\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 60
+  content: k
+- delay: 58
+  content: a
+- delay: 54
+  content: o
+- delay: 63
+  content: s
+- delay: 63
+  content: ' '
+- delay: 56
+  content: '-'
+- delay: 59
+  content: '-'
+- delay: 77
+  content: j
+- delay: 52
+  content: s
+- delay: 52
+  content: o
+- delay: 60
+  content: n
+- delay: 71
+  content: ' '
+- delay: 76
+  content: m
+- delay: 64
+  content: e
+- delay: 57
+  content: m
+- delay: 73
+  content: o
+- delay: 74
+  content: r
+- delay: 52
+  content: y
+- delay: 57
+  content: ' '
+- delay: 71
+  content: l
+- delay: 61
+  content: s
+- delay: 56
+  content: ' '
+- delay: 60
+  content: '-'
+- delay: 58
+  content: '-'
+- delay: 59
+  content: t
+- delay: 52
+  content: y
+- delay: 66
+  content: p
+- delay: 69
+  content: e
+- delay: 77
+  content: ' '
+- delay: 68
+  content: r
+- delay: 68
+  content: e
+- delay: 66
+  content: s
+- delay: 76
+  content: u
+- delay: 60
+  content: l
+- delay: 58
+  content: t
+- delay: 55
+  content: ' '
+- delay: 74
+  content: '|'
+- delay: 62
+  content: ' '
+- delay: 64
+  content: j
+- delay: 77
+  content: q
+- delay: 67
+  content: ' '
+- delay: 67
+  content: ''''
+- delay: 71
+  content: l
+- delay: 76
+  content: e
+- delay: 68
+  content: n
+- delay: 53
+  content: g
+- delay: 63
+  content: t
+- delay: 77
+  content: h
+- delay: 65
+  content: ''''
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[92m6\e[0m  \e[90m(6 result entries from 2 searches)\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 500
+  content: "\r\n\e[32m>\e[0m "
+- delay: 68
+  content: k
+- delay: 61
+  content: a
+- delay: 58
+  content: o
+- delay: 64
+  content: s
+- delay: 59
+  content: ' '
+- delay: 78
+  content: m
+- delay: 63
+  content: e
+- delay: 77
+  content: m
+- delay: 78
+  content: o
+- delay: 77
+  content: r
+- delay: 57
+  content: y
+- delay: 65
+  content: ' '
+- delay: 53
+  content: s
+- delay: 77
+  content: e
+- delay: 65
+  content: a
+- delay: 54
+  content: r
+- delay: 56
+  content: c
+- delay: 65
+  content: h
+- delay: 72
+  content: ' '
+- delay: 65
+  content: '"'
+- delay: 58
+  content: c
+- delay: 70
+  content: h
+- delay: 74
+  content: a
+- delay: 74
+  content: i
+- delay: 62
+  content: n
+- delay: 70
+  content: ' '
+- delay: 72
+  content: t
+- delay: 62
+  content: h
+- delay: 71
+  content: o
+- delay: 78
+  content: u
+- delay: 69
+  content: g
+- delay: 62
+  content: h
+- delay: 75
+  content: t
+- delay: 78
+  content: '"'
+- delay: 59
+  content: ' '
+- delay: 74
+  content: '-'
+- delay: 69
+  content: '-'
+- delay: 75
+  content: t
+- delay: 63
+  content: y
+- delay: 53
+  content: p
+- delay: 69
+  content: e
+- delay: 75
+  content: ' '
+- delay: 67
+  content: s
+- delay: 52
+  content: k
+- delay: 54
+  content: i
+- delay: 68
+  content: l
+- delay: 73
+  content: l
+- delay: 200
+  content: "\r\n"
+- delay: 300
+  content: "\r\n"
+- delay: 55
+  content: "  \e[93m#3\e[0m   \e[35mskill\e[0m  \e[90mcot-numbered\e[0m\r\n"
+- delay: 55
+  content: "       Numbered chain-of-thought (Step 1, Step 2) reduces errors by 23%\r\n"
+- delay: 55
+  content: "       on multi-step arithmetic.\r\n"
+- delay: 600
+  content: "\r\n"
+- delay: 400
+  content: "\e[90m──────────────────────────────────────────────────────────────────────────────\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 55
+  content: "  \e[1m\e[92mCross-Agent Memory\e[0m  \e[90m—\e[0m  write once, search everywhere, across sessions.\r\n"
+- delay: 55
+  content: "  \e[90mgithub.com/canivel/kaos\e[0m   \e[90m  Credits: claude-mem by @thedotmack\e[0m\r\n"
+- delay: 80
+  content: "\r\n"
+- delay: 2000
+  content: ''

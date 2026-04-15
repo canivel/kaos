@@ -647,6 +647,83 @@ class MetaHarnessSearch:
                 "rationale": harness.metadata.get("rationale", ""),
             }, indent=2).encode(),
         )
+        # Persist to cross-agent memory store (improved/failed results only)
+        self._persist_to_memory(harness, result, iteration, attempt_status)
+
+    def _persist_to_memory(
+        self,
+        harness: HarnessCandidate,
+        result: EvaluationResult,
+        iteration: int,
+        attempt_status: str,
+    ) -> None:
+        """Persist harness result to cross-agent memory store (claude-mem inspired).
+
+        Improved harnesses are stored as 'result' type so future proposer agents
+        can query what approaches have worked.  Failed harnesses are stored as
+        'error' type to prevent repeating known bad patterns.
+        """
+        try:
+            from kaos.memory import MemoryStore
+            mem = MemoryStore(self.afs.conn)
+            scores_str = "  ".join(f"{k}={v:.4f}" for k, v in result.scores.items())
+            benchmark = self.config.benchmark
+            approach_snippet = harness.source_code[:300].strip()
+            rationale = harness.metadata.get("rationale", "")
+
+            if attempt_status == "improved" or result.is_success:
+                mem_type = "result"
+                content = (
+                    f"[{benchmark}] Improved harness at iteration {iteration}. "
+                    f"Scores: {scores_str}. "
+                    f"Rationale: {rationale}. "
+                    f"Approach: {approach_snippet}"
+                )
+            elif result.error:
+                mem_type = "error"
+                content = (
+                    f"[{benchmark}] Failed harness at iteration {iteration}. "
+                    f"Error: {result.error[:200]}. "
+                    f"Approach: {approach_snippet}"
+                )
+            else:
+                # neutral — skip to avoid flooding memory with mediocre results
+                return
+
+            mem.write(
+                agent_id=self.search_agent_id,
+                content=content,
+                type=mem_type,
+                key=f"{benchmark}:iter{iteration}:{harness.harness_id[:8]}",
+                metadata={
+                    "harness_id": harness.harness_id,
+                    "benchmark": benchmark,
+                    "iteration": iteration,
+                    "scores": result.scores,
+                    "status": attempt_status,
+                },
+            )
+        except Exception as exc:
+            logger.debug("Memory persist failed (non-fatal): %s", exc)
+
+    def _query_memory_for_context(self, query: str, limit: int = 5) -> str:
+        """Query cross-agent memory for relevant context.
+
+        Returns a compact text block the proposer can use for inspiration.
+        Returns empty string if no results or memory not available.
+        """
+        try:
+            from kaos.memory import MemoryStore
+            mem = MemoryStore(self.afs.conn)
+            hits = mem.search(query=query, limit=limit)
+            if not hits:
+                return ""
+            lines = [f"## Prior Results (from shared memory)\n"]
+            for h in hits:
+                lines.append(f"- [{h.type}] {h.content[:200]}")
+            return "\n".join(lines)
+        except Exception:
+            return ""
 
     def _compute_frontier(self) -> ParetoFrontier:
         """Compute the current Pareto frontier from all results."""
