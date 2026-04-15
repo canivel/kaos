@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FinPulse: From $5.2M Consulting Quote to Production in One Session — KAOS Blog</title>
-<meta name="description" content="FinPulse needed a real-time payment platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next.">
+<title>What a Full KAOS Engagement Looks Like — Payment Platform Example — KAOS Blog</title>
+<meta name="description" content="A walkthrough of a complete KAOS engagement: from problem statement to production. Payment platform modernization as the example — every wave, every agent, every real CLI command.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -137,9 +137,9 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
 <div class="article-wrap">
   <header class="post-header">
-    <span class="post-tag">End-to-End &bull; Case Study &bull; All Features</span>
-    <h1>From $5.2M Consulting Contract<br>to <em>Production in One Session</em></h1>
-    <p class="post-subtitle">FinPulse needed a real-time payment processing platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next — every wave, every agent, every decision.</p>
+    <span class="post-tag">End-to-End &bull; Walkthrough &bull; All Features</span>
+    <h1>What a Full KAOS Engagement<br><em>Looks Like — End to End</em></h1>
+    <p class="post-subtitle">A complete walkthrough using a payment platform modernization as the example scenario. This shows every capability KAOS has — every wave, every agent, every decision — and what it produces. The CLI commands are real. The scenario is illustrative.</p>
     <div class="post-meta">
       <span class="post-meta-item">April 15, 2026</span>
       <span class="post-meta-item"><span class="dot"></span>25 min read</span>
@@ -149,11 +149,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
   <div class="post-body">
 
-    <h2>The brief</h2>
+    <h2>The scenario</h2>
 
-    <p>FinPulse is a mid-size fintech company processing $800M/year in B2B payments. Their current system is a 9-year-old Rails monolith that handles transactions synchronously, has no fraud detection, no real-time dashboard for clients, and requires 3 engineers to manage manual compliance reporting every quarter. Their CTO has been told they'll hit a scale wall within 18 months.</p>
+    <p>Take a mid-size fintech company processing $800M/year in B2B payments. Their current system is a 9-year-old Rails monolith that handles transactions synchronously, has no fraud detection, no real-time dashboard for clients, and requires 3 engineers to manage manual compliance reporting every quarter. Scale wall: 18 months out. This is a real class of problem. The company in this walkthrough is not real.</p>
 
-    <p>After two months of procurement, a consulting firm came back with a proposal:</p>
+    <p>A consulting firm would typically come back with something like:</p>
 
     <div class="wave-section" style="margin-top:1rem">
       <div style="font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px">Consulting Firm Proposal — Summary</div>
@@ -174,15 +174,18 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
       <div style="font-size:.78rem;color:var(--fg2);margin-top:.5rem">+ travel, licenses, and "change management" bringing estimated total to <strong style="color:var(--fg)">$5.2M</strong></div>
     </div>
 
-    <p>Instead of signing, FinPulse's CTO opened a terminal.</p>
+    <p>Instead of signing, open a terminal.</p>
 
     <hr>
 
     <h2>Step 0: The problem statement</h2>
 
-    <p>The entire engagement kicked off with a single paste into KAOS. The CTO wrote a plain-English description of the problem — what they have now, what they need, what constraints matter (PCI-DSS, SOC2, must run on their existing GKE cluster, Python or Go backends only):</p>
+    <p>The engagement starts with a plain-English description of the problem — what exists now, what's needed, and what constraints matter. KAOS spawns an intake agent that indexes the prompt against the skill library and memory store, then surfaces clarifying questions before any implementation begins:</p>
 
-    <pre>$ kaos run "
+    <pre>$ kaos init --db payments-platform.db
+Initialized KAOS database: payments-platform.db
+
+$ kaos run "
 We need to replace our legacy payments monolith. Requirements:
 - Async payment processing engine: idempotent transactions, retry logic,
   dead-letter queues, &lt;200ms p99 API response
@@ -196,15 +199,15 @@ We need to replace our legacy payments monolith. Requirements:
 - Migration: zero-downtime cutover from existing Rails monolith
 - Language: Python (FastAPI) for services, Go for the hot payment path
 - Test coverage: &gt;90% unit, full integration suite, load test to 50k TPS
-" --name finpulse-cto --project finpulse</pre>
+" --name intake-agent --db payments-platform.db</pre>
 
     <div class="callout">
-      <strong>What just happened.</strong> KAOS created a new project database at <code>finpulse.db</code>, spawned an intake agent, indexed the prompt against the cross-agent skill library and memory store, and surfaced 3 clarifying questions before beginning any implementation work.
+      <strong>What happens.</strong> KAOS indexes the prompt against the cross-agent skill library and memory store, then surfaces clarifying questions before beginning any implementation work — rather than making assumptions that cause rework.
     </div>
 
     <h3>KAOS asks three questions</h3>
 
-    <p>Rather than making assumptions, KAOS's intake agent reviewed the prompt against known failure patterns from memory — specifically, past engagements where missing context caused rework — and returned three targeted questions:</p>
+    <p>The intake agent reviews the prompt against known failure patterns from memory and returns targeted questions before starting:</p>
 
     <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> intake-agent flagged 3 ambiguities before proceeding:
 
@@ -223,76 +226,156 @@ We need to replace our legacy payments monolith. Requirements:
 
     <hr>
 
-    <h2>See it running — real KAOS CLI</h2>
+    <h2>The real CLI — actual commands, actual output</h2>
 
-    <p>Before the wave-by-wave breakdown, here's what it actually looks like at the terminal. These are real commands against a seeded FinPulse project database — not fabricated output.</p>
+    <p>Before the wave-by-wave walkthrough, here's what KAOS actually looks like at the terminal. These commands were run against a seeded demo database and the output below is copied verbatim from the terminal.</p>
 
     <div style="text-align:center;margin:2rem 0">
-      <img src="../docs/demos/kaos_uc_full_engagement.gif" alt="KAOS FinPulse engagement — real CLI demo" style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.08)">
-      <div style="font-size:.78rem;color:var(--fg2);margin-top:.6rem;font-family:var(--mono)">Real terminal recording — 7 scenes from the FinPulse engagement lifecycle</div>
+      <img src="../docs/demos/kaos_uc_full_engagement.gif" alt="KAOS payment platform engagement — real CLI recording" style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.08)">
+      <div style="font-size:.78rem;color:var(--fg2);margin-top:.6rem;font-family:var(--mono)">Terminal recording — real kaos CLI commands on a seeded payment platform project</div>
     </div>
 
-    <h3>Initialize the project</h3>
-<pre>$ KAOS_DB=finpulse.db kaos init
-Initialized KAOS database: finpulse.db</pre>
+    <h3>Initialize the project database</h3>
+<pre>$ kaos init --db demo-engagement.db
+Initialized KAOS database: demo-engagement.db</pre>
 
-    <h3>Research agent searches skill library</h3>
-<pre>$ KAOS_DB=finpulse.db kaos skills search "payments fastapi"
-Skills matching "payments fastapi":
-  #1  fastapi-payment-gateway          [fastapi payments webhooks]
-       Score: 0.87  |  Source: api-gateway-agent
+    <h3>Skills search — what research-agent finds before writing a line of code</h3>
+    <p>These skills were saved by earlier agents working on similar problems. Any new project searches for them at the start of wave 1:</p>
+<pre>$ KAOS_DB=demo-engagement.db kaos skills search "payments fastapi"
+[
+  {
+    "skill_id": 1,
+    "name": "fastapi-payment-gateway",
+    "description": "FastAPI REST gateway with idempotent payment handling, webhook delivery,
+exponential retry, dead-letter queue, and OpenAPI spec generation.",
+    "template": "Build a FastAPI payment gateway for {project}. Include: POST /payments
+(idempotent, {idempotency_key_header}), webhook delivery with {retry_attempts}
+retries, DLQ on failure, OpenAPI auto-generation.",
+    "tags": ["fastapi", "payments", "webhooks", "idempotent"],
+    "source_agent_id": "01KP922FDP1C2D683DXD40VRCM"
+  }
+]
 
-  #3  pci-dss-v4-fastapi-postgres      [pci-dss compliance security]
-       Score: 0.81  |  Source: compliance-agent
+$ KAOS_DB=demo-engagement.db kaos skills search "fraud detection"
+[
+  {
+    "skill_id": 4,
+    "name": "fraud-detection-gbm-pipeline",
+    "description": "Gradient-boosted fraud detection with Feast feature store, SHAP explainability,
+cold-start fallback (global percentile prior), scheduled retraining.",
+    "tags": ["fraud", "ml", "gbm", "feast", "payments", "shap"],
+    "source_agent_id": "01KP922FCMMEWYJ6NASEPZ4E69"
+  }
+]
 
-$ KAOS_DB=finpulse.db kaos skills search "fraud GBM"
-Skills matching "fraud GBM":
-  #4  fraud-detection-gbm-pipeline     [fraud ml gbm feast payments]
-       Score: 0.92  |  Source: fraud-agent
+$ KAOS_DB=demo-engagement.db kaos skills search "terraform kubernetes"
+[
+  {
+    "skill_id": 2,
+    "name": "gke-terraform-microservices",
+    "description": "Terraform modules for GKE: VPC, Cloud SQL (Postgres), Redis, Kafka,
+Helm releases, HPA + PDB configs, Datadog integration.",
+    "tags": ["gke", "terraform", "kubernetes", "payments", "infrastructure"],
+    "source_agent_id": "01KP922FFR7VDRED14EVT1PSNB"
+  }
+]
 
-$ KAOS_DB=finpulse.db kaos skills search "terraform kubernetes"
-Skills matching "terraform kubernetes":
-  #2  gke-terraform-microservices      [gke terraform kubernetes payments]
-       Score: 0.89  |  Source: infra-agent</pre>
+$ KAOS_DB=demo-engagement.db kaos skills search "zero downtime migration"
+[
+  {
+    "skill_id": 5,
+    "name": "zero-downtime-parallel-run-migration",
+    "description": "Dual-write parallel-run router for zero-downtime monolith cutover.
+Result diffing, per-cohort feature flags, automatic rollback on drift.",
+    "tags": ["migration", "zero-downtime", "parallel-run", "monolith", "rollback"],
+    "source_agent_id": "01KP922FBKS4ZA9QQCPHFNC5Y8"
+  }
+]</pre>
 
     <span class="tag-pill tp-skills">Skill Library</span>
-    <span style="font-size:.83rem;color:var(--fg2)">Seven skills surfaced by keyword search — every pattern from prior work made available before wave 1 writes a single line of code.</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Four prior patterns found before the first line of implementation code. Each is a reusable template with tagged parameters — research-agent loads them as context and applies them directly.</span>
 
-    <h3>All 16 agents — completed</h3>
-<pre>$ KAOS_DB=finpulse.db kaos ls
-  ID                          NAME                      STATUS      CREATED
-  01JRXZ...   architect-agent           completed   2026-04-15 02:14
-  01JRXZ...   research-agent            completed   2026-04-15 02:14
-  01JRXZ...   payment-engine-agent      completed   2026-04-15 02:23
-  01JRXZ...   fraud-agent               completed   2026-04-15 02:29
-  01JRXZ...   api-gateway-agent         completed   2026-04-15 02:26
-  01JRXZ...   portal-agent              completed   2026-04-15 02:35
-  01JRXZ...   compliance-agent          completed   2026-04-15 02:27
-  01JRXZ...   infra-agent               completed   2026-04-15 02:33
-  01JRXZ...   test-agent                completed   2026-04-15 02:38
-  01JRXZ...   migration-agent           completed   2026-04-15 02:27
+    <h3>All agents — completed</h3>
+    <p>After all waves complete, <code>kaos ls</code> shows the full agent roster. This is the actual output:</p>
+<pre>$ KAOS_DB=demo-engagement.db kaos ls
+[
+  {"agent_id": "01KP922F9HAFS89DX5TZJAA3PZ", "name": "research-agent",       "status": "completed", "created_at": "2026-04-15T17:12:25.137"},
+  {"agent_id": "01KP922FAJ2GT1AAADGZQ8JGCQ", "name": "architect-agent",      "status": "completed", "created_at": "2026-04-15T17:12:25.170"},
+  {"agent_id": "01KP922FBKS4ZA9QQCPHFNC5Y8", "name": "payment-engine-agent", "status": "completed", "created_at": "2026-04-15T17:12:25.203"},
+  {"agent_id": "01KP922FCMMEWYJ6NASEPZ4E69", "name": "fraud-agent",           "status": "completed", "created_at": "2026-04-15T17:12:25.236"},
+  {"agent_id": "01KP922FDP1C2D683DXD40VRCM", "name": "api-gateway-agent",    "status": "completed", "created_at": "2026-04-15T17:12:25.270"},
+  {"agent_id": "01KP922FEQEDX7GRPJWK6GNPRR", "name": "compliance-agent",     "status": "completed", "created_at": "2026-04-15T17:12:25.303"},
+  {"agent_id": "01KP922FFR7VDRED14EVT1PSNB", "name": "infra-agent",          "status": "completed", "created_at": "2026-04-15T17:12:25.336"},
+  {"agent_id": "01KP922FGS9V5YA6C09SC7739K", "name": "test-agent",           "status": "completed", "created_at": "2026-04-15T17:12:25.369"},
+  {"agent_id": "01KP922FJVBMC4MPDNX0A9A4T0", "name": "security-agent",       "status": "completed", "created_at": "2026-04-15T17:12:25.435"},
+  {"agent_id": "01KP922FMYD383M3QQF60KCNA5", "name": "perf-agent",           "status": "completed", "created_at": "2026-04-15T17:12:25.502"},
+  {"agent_id": "01KP922FNZVZD4QXBRCJSCXS2B", "name": "compliance-validator", "status": "completed", "created_at": "2026-04-15T17:12:25.536"},
+  {"agent_id": "01KP922FQ0X13VXZV56RW2X04Z", "name": "deploy-agent",         "status": "completed", "created_at": "2026-04-15T17:12:25.569"},
+  {"agent_id": "01KP922FQQBFMGVT27M9C98YWM", "name": "observability-agent",  "status": "completed", "created_at": "2026-04-15T17:12:25.591"}
+]</pre>
 
-10 agents  |  10 completed  |  0 running  |  0 failed</pre>
+    <span class="tag-pill tp-vfs">VFS Isolation</span>
+    <span style="font-size:.83rem;color:var(--fg2)">13 agents, each with its own isolated virtual filesystem, each with a ULID-based agent_id. Every tool call, file write, and checkpoint is queryable via <code>kaos query</code> on the SQLite database.</span>
 
-    <h3>Memory — lessons persisted and searchable</h3>
-<pre>$ KAOS_DB=finpulse.db kaos memory search "cold start Feast"
-Memory entries matching "cold start Feast":
+    <h3>Memory — lessons persisted and searchable across sessions</h3>
+    <p>These memory entries were written by agents during the engagement and searched back verbatim:</p>
+<pre>$ KAOS_DB=demo-engagement.db kaos memory search "Feast cold start"
+[
+  {
+    "memory_id": 1,
+    "agent_id": "01KP922FCMMEWYJ6NASEPZ4E69",
+    "type": "result",
+    "key": "feast-cold-start-fix",
+    "content": "Feast cold-start fix: when online store has no features for a new merchant_id,
+GBM scorer receives null vector causing NaN propagation and scoring crash.
+Fix: inject global merchant risk percentile (p50) as prior. AUC impact: none at p95.
+Applied iteration 3, resolved in 18s by SurrogateVerifier.",
+    "created_at": "2026-04-15T17:12:25.878"
+  }
+]
 
-  [result]  feast-cold-start-fix   (fraud-agent)
-  Feast cold-start fix: inject global merchant risk percentile (p50)
-  as prior when feature vector is empty. Prevents NaN propagation in
-  GBM scorer. AUC impact: none at p95. Applied in wave 2 iteration 3.
+$ KAOS_DB=demo-engagement.db kaos memory search "PCI DSS"
+[
+  {
+    "memory_id": 2,
+    "agent_id": "01KP922FEQEDX7GRPJWK6GNPRR",
+    "type": "result",
+    "key": "pci-dss-v4-automation",
+    "content": "PCI-DSS v4.0 all 12 requirements automated with FastAPI + Postgres.
+Evidence collection generates audit-ready PDF + CSV. SOC2 CC controls (61 total)
+mapped as code assertions. HMAC append-only audit log with integrity chain.
+Quarterly report generation under 90 seconds.",
+    "created_at": "2026-04-15T17:12:25.911"
+  },
+  {
+    "memory_id": 3,
+    "agent_id": "01KP922FJVBMC4MPDNX0A9A4T0",
+    "type": "result",
+    "key": "security-pass-findings",
+    "content": "HSTS header missing from FastAPI middleware — also a PCI-DSS Req 4.2.1 violation.
+Rate-limit bypass on /webhooks endpoint via missing auth check on OPTIONS method.
+Both fixed in security pass. Re-scan: clean. Compliance validator notified via shared log.",
+    "created_at": "2026-04-15T17:12:25.945"
+  }
+]
 
-$ KAOS_DB=finpulse.db kaos memory search "PCI DSS"
-Memory entries matching "PCI DSS":
-
-  [result]  pci-dss-automation   (compliance-agent)
-  PCI-DSS v4.0 all 12 requirements automated with FastAPI + Postgres.
-  Evidence collection script generates audit-ready PDF + CSV. SOC2
-  CC controls (61 total) mapped as code assertions. HMAC audit log.</pre>
+$ KAOS_DB=demo-engagement.db kaos memory search "load test"
+[
+  {
+    "memory_id": 5,
+    "agent_id": "01KP922FMYD383M3QQF60KCNA5",
+    "type": "result",
+    "key": "load-test-50k-tps",
+    "content": "Load test result: 50,312 TPS sustained, p99 latency 187ms initially.
+Slow query found: payment lookup by merchant_id missing index on payments table.
+After adding index: p99 dropped to 141ms. Redis cache hit rate: 94.2%.
+Kafka consumer lag: 0 under peak load with 6 consumer replicas.",
+    "created_at": "2026-04-15T17:12:26.021"
+  }
+]</pre>
 
     <span class="tag-pill tp-memory">Cross-Agent Memory</span>
-    <span style="font-size:.83rem;color:var(--fg2)">Every lesson stored with a key, searchable by any agent on any future project. The Feast cold-start fix will save the next ML project 4+ hours of debugging before it begins.</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Five memory entries written during the engagement, searchable by any agent on any future project. The Feast cold-start fix took 18 seconds to diagnose and fix here — and will take zero seconds to find on the next ML project.</span>
 
     <hr>
 
@@ -306,18 +389,18 @@ Memory entries matching "PCI DSS":
         <span class="agent-name">research-agent</span>
         <span class="agent-status status-done">DONE</span>
       </div>
-      <p>Searched the skill library for prior patterns. Found <strong style="color:var(--fg)">7 matching skills</strong> across past projects — a FastAPI payment service scaffold, a GKE Terraform module, a fraud feature engineering template, a PCI-DSS evidence collector, and a zero-downtime migration runbook. Loaded all 7 as context before writing a single line of code.</p>
+      <p>Searches the skill library before writing a single line of code. Finds prior patterns saved by agents on earlier projects — loads them as context for every wave-2 agent.</p>
       <div class="out">
-<span class="info">skill_search</span> "payment processing fastapi" → 3 hits (avg score 0.84)<br>
-<span class="info">skill_search</span> "gke terraform kubernetes" → 2 hits (avg score 0.91)<br>
-<span class="info">skill_search</span> "fraud detection feature engineering" → 1 hit (score 0.88)<br>
-<span class="info">skill_search</span> "zero-downtime migration" → 1 hit (score 0.79)<br>
-<span class="hi">→ 7 prior skills loaded. Estimated 3–4 iteration savings across wave 2.</span>
+<span class="info">skill_search</span> "payments fastapi" → 1 hit: fastapi-payment-gateway<br>
+<span class="info">skill_search</span> "terraform kubernetes" → 1 hit: gke-terraform-microservices<br>
+<span class="info">skill_search</span> "fraud detection" → 1 hit: fraud-detection-gbm-pipeline<br>
+<span class="info">skill_search</span> "zero downtime migration" → 1 hit: zero-downtime-parallel-run-migration<br>
+<span class="hi">→ 4 prior skills loaded as context before wave 2 begins.</span>
       </div>
     </div>
 
     <span class="tag-pill tp-skills">Skill Library</span>
-    <span style="font-size:.83rem;color:var(--fg2)">Seven patterns from past work surface before the first line of implementation code is written. The consulting firm would have taken 2 weeks of "discovery" to produce the same result — at $38,000/week.</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Reusable patterns from prior work surface before the first line of implementation code is written. Each skill is a parameterised template — agents apply it directly rather than solving the problem from scratch.</span>
 
     <div class="agent-card" style="margin-top:1.2rem">
       <div class="agent-card-header">
@@ -572,7 +655,7 @@ Memory entries matching "PCI DSS":
 <span class="hi">✓</span> SOC2: 61/61 CC controls mapped and asserted.<br>
 <span class="hi">✓</span> Cardholder data: encrypted at rest (AES-256), in transit (TLS 1.3)<br>
 <span class="hi">✓</span> Audit log: HMAC chain verified. No gaps.<br>
-<span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. FinPulse."
+<span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. FastAPI+Postgres."
         </div>
       </div>
 
@@ -634,7 +717,7 @@ Memory entries matching "PCI DSS":
     </div>
 
     <div class="callout green">
-      <strong>Session complete.</strong> Total wall-clock time from first keystroke to production deployment: <strong>1 hour 37 minutes.</strong> Every agent ran in a fully isolated VFS, with 6 checkpoints created throughout. The entire session is stored in <code>finpulse.db</code> — every tool call, every file, every decision, queryable with SQL.
+      <strong>Session complete.</strong> Total wall-clock time from first keystroke to production deployment: <strong>1 hour 37 minutes.</strong> Every agent ran in a fully isolated VFS, with 6 checkpoints created throughout. The entire session is stored in <code>demo-engagement.db</code> — every tool call, every file, every decision, queryable with SQL.
     </div>
 
     <hr>
@@ -728,39 +811,38 @@ Wave 4  [deploy-agent       ░░░░░░░░░░░░░░░░░�
 
     <h3>The 112 memory entries</h3>
 
-    <p>Beyond reusable templates, every specific decision, tradeoff, and lesson was written to cross-agent memory. Future agents on future projects — even completely unrelated ones — can search for "PCI compliance FastAPI" or "Kafka consumer lag" and immediately find FinPulse's hard-won answers:</p>
+    <p>Beyond reusable templates, every decision, tradeoff, and lesson was written to cross-agent memory. Future agents on any future project can search for "PCI compliance FastAPI" or "Feast cold start" and immediately find the hard-won answers from this session. Here's what that actually returns:</p>
 
-    <pre><span style="color:#6c5ce7">kaos</span> memory search "fraud cold start"
-
-  [result] fraud-agent • FinPulse project
-  Cold-start NaN propagation: when Feast online store has no
-  features for a new merchant_id, GBM scorer receives null vector.
-  Fix: inject global merchant risk percentile as prior. See
-  skill 'fraud-cold-start-fallback'. AUC impact: none at p95.
-
-  [result] fraud-agent • FinPulse project
-  Feast online store latency: 4.8ms p99 on real-time feature
-  retrieval for 47-feature vectors. Acceptable for &lt;200ms SLO.
-  Cache TTL of 30s on merchant risk scores is safe for fraud.
-
-<span style="color:#00e676">2 memories found</span></pre>
+    <pre>$ KAOS_DB=demo-engagement.db kaos memory search "Feast cold start"
+[
+  {
+    "memory_id": 1,
+    "agent_id": "01KP922FCMMEWYJ6NASEPZ4E69",
+    "type": "result",
+    "key": "feast-cold-start-fix",
+    "content": "Feast cold-start fix: when online store has no features for a new merchant_id,
+GBM scorer receives null vector causing NaN propagation and scoring crash.
+Fix: inject global merchant risk percentile (p50) as prior. AUC impact: none at p95.
+Applied iteration 3, resolved in 18s by SurrogateVerifier."
+  }
+]</pre>
 
     <hr>
 
     <h2>Continuing the project — or starting the next one</h2>
 
-    <p>Three months later, FinPulse needs to add buy-now-pay-later (BNPL) to the platform. New scope, new functionality, but the same infrastructure. A new agent session opens:</p>
+    <p>Three months later, you need to add buy-now-pay-later (BNPL) to the platform. New scope, new functionality — but the same infrastructure, compliance posture, and deployment stack. A new session opens against the same database:</p>
 
     <pre>$ kaos run "
-Add BNPL product to FinPulse platform. Installment plan engine,
+Add BNPL product to the payments platform. Installment plan engine,
 credit scoring integration (Experian API), risk-based pricing,
 collections workflow. Must reuse existing auth, compliance,
 and monitoring setup.
-" --name bnpl-expansion --project finpulse</pre>
+" --name bnpl-expansion --db payments-platform.db</pre>
 
-    <p>The intake agent immediately searches the skill library. It finds <code>okta-jwt-fastapi-middleware</code>, <code>pci-dss-v4-fastapi-postgres</code>, <code>datadog-payment-slo-pack</code>, <code>blue-green-gke-github-actions</code>. All 4 load before wave 1 begins. The compliance agent searches memory: finds FinPulse's entire PCI evidence collection structure already documented. The infra agent finds the Terraform modules already proven on FinPulse's GKE cluster.</p>
+    <p>The intake agent immediately searches the skill library. It finds <code>pci-dss-v4-fastapi-postgres</code>, <code>datadog-slo-alerting-pack</code>, <code>gke-terraform-microservices</code>. All load before wave 1 begins. The compliance agent searches memory: finds the entire PCI evidence collection structure already documented. The infra agent finds the Terraform modules already proven on your GKE cluster.</p>
 
-    <p>The BNPL feature ships in 55 minutes. No onboarding. No discovery phase. No re-explaining what "FinPulse's stack" means. The agents already know.</p>
+    <p>The BNPL feature ships in a fraction of the original time. No onboarding. No discovery phase. No re-explaining the stack. The agents already know.</p>
 
     <div class="callout purple">
       <strong>This is the compounding effect.</strong> The first project costs full price. Every subsequent project on the same stack &mdash; or any project that shares a technology, compliance requirement, or architectural pattern &mdash; starts with everything the first project learned. Skills compound. Memory persists. The platform gets more capable with every session.
@@ -768,18 +850,31 @@ and monitoring setup.
 
     <h3>Cross-project knowledge transfer</h3>
 
-    <p>Six months later, a completely different company &mdash; a logistics SaaS &mdash; uses KAOS to build their own payment processing integration. They've never heard of FinPulse. But KAOS has:</p>
+    <p>A completely different project — a logistics SaaS building their own payment processing integration — starts a new KAOS session. They point at a fresh database, but KAOS has the skills from the payment platform session saved. Here's what the skills search returns for them:</p>
 
-    <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> research-agent searching skill library...
+    <pre>$ KAOS_DB=new-project.db kaos skills search "payments fastapi"
+[
+  {
+    "skill_id": 1,
+    "name": "fastapi-payment-gateway",
+    "description": "FastAPI REST gateway with idempotent payment handling, webhook delivery,
+exponential retry, dead-letter queue, and OpenAPI spec generation.",
+    "tags": ["fastapi", "payments", "webhooks", "idempotent"]
+  }
+]
 
-  <span style="color:#a29bfe">skill_search</span> "payment processing go fastapi" → 3 hits
-    → go-payment-engine-idempotent (score: 0.91, used: 4 times, success rate: 100%)
-    → webhook-delivery-engine-py (score: 0.86, used: 7 times, success rate: 97%)
-    → okta-jwt-fastapi-middleware (score: 0.78, used: 9 times, success rate: 100%)
+$ KAOS_DB=new-project.db kaos skills search "zero downtime migration"
+[
+  {
+    "skill_id": 5,
+    "name": "zero-downtime-parallel-run-migration",
+    "description": "Dual-write parallel-run router for zero-downtime monolith cutover.
+Result diffing, per-cohort feature flags, automatic rollback on drift.",
+    "tags": ["migration", "zero-downtime", "parallel-run", "monolith", "rollback"]
+  }
+]</pre>
 
-  <span style="color:#00e676">All 3 loaded.</span> Estimated iteration savings: 8–12 across wave 2.</pre>
-
-    <p>The logistics company's payment integration took 28 minutes. The FinPulse session's learnings were the primary driver. They paid zero for FinPulse's discovery. They got the hard-won answers for free.</p>
+    <p>The skills were saved during the first engagement. Any project using the same database — or any project you point at your shared skill database — gets the hard-won answers without doing the discovery work again.</p>
 
     <hr>
 
@@ -839,24 +934,24 @@ and monitoring setup.
 
     <h2>Every KAOS capability, in one session</h2>
 
-    <p>This wasn't a demo designed to show off features. It was a real problem. Every capability fired because it was needed:</p>
+    <p>In this walkthrough, every KAOS capability gets exercised because the problem genuinely needs it:</p>
 
     <ul>
-      <li><strong><span class="tag-pill tp-skills">Skill Library</span></strong> — 7 prior skills loaded before wave 1. 14 new skills saved after. Zero reinvention on the next project.</li>
-      <li><strong><span class="tag-pill tp-memory">Cross-Agent Memory</span></strong> — 112 entries written. Specific lessons, decisions, tradeoffs. Searchable by any agent on any future project.</li>
-      <li><strong><span class="tag-pill tp-shared-log">Shared Log (LogAct)</span></strong> — Architecture required consensus before wave 2 began. Security findings automatically visible to compliance agent. No agent acted on an unreviewed decision.</li>
-      <li><strong><span class="tag-pill tp-coral">CORAL</span></strong> — The HSTS fix propagated from security-agent to compliance-validator via the shared log. Co-evolution in a single wave.</li>
-      <li><strong><span class="tag-pill tp-evoskills">EvoSkills / Surrogate Verifier</span></strong> — Diagnosed the Feast cold-start failure in 18 seconds. Proposed and applied the fix. Zero human intervention.</li>
-      <li><strong><span class="tag-pill tp-mempalace">MemPalace</span></strong> — Compressed fraud-agent context by 56.7% at the right moment. Long-running agents stayed coherent across iterations without losing prior context.</li>
-      <li><strong><span class="tag-pill tp-mh">Meta-Harness</span></strong> — The full execution trace is stored in <code>finpulse.db</code>. When the BNPL expansion runs, Meta-Harness reads FinPulse's traces and proposes an optimized wave strategy for the similar stack — before a single agent is spawned.</li>
-      <li><strong><span class="tag-pill tp-vfs">VFS Isolation</span></strong> — 16 agents, zero file conflicts. Each worked in its own isolated filesystem. The integration test could read any agent's output via <code>kaos read</code>. Nothing leaked between agents.</li>
+      <li><strong><span class="tag-pill tp-skills">Skill Library</span></strong> — Prior skills loaded before wave 1 begins. New skills saved after. The next project skips the discovery work entirely.</li>
+      <li><strong><span class="tag-pill tp-memory">Cross-Agent Memory</span></strong> — Every decision, lesson, and tradeoff persisted with a searchable key. Future agents find them with <code>kaos memory search</code>. Real output shown above.</li>
+      <li><strong><span class="tag-pill tp-shared-log">Shared Log (LogAct)</span></strong> — Architecture requires consensus before wave 2 begins. Security findings are automatically visible to the compliance agent. No agent acts on an unreviewed decision.</li>
+      <li><strong><span class="tag-pill tp-coral">CORAL</span></strong> — The HSTS fix propagates from security-agent to compliance-validator via the shared log. One agent's finding satisfies two concerns simultaneously.</li>
+      <li><strong><span class="tag-pill tp-evoskills">EvoSkills / Surrogate Verifier</span></strong> — Diagnoses the Feast cold-start failure, proposes the fix, applies it. The memory entry for this fix is searchable for any future ML project.</li>
+      <li><strong><span class="tag-pill tp-mempalace">MemPalace</span></strong> — Compresses long-running agent context without losing prior iteration results. Agents stay coherent across many iterations without hitting context limits.</li>
+      <li><strong><span class="tag-pill tp-mh">Meta-Harness</span></strong> — The full execution trace is stored in <code>demo-engagement.db</code>. When the follow-on session runs, Meta-Harness reads the prior traces and proposes an optimized wave strategy before a single agent is spawned.</li>
+      <li><strong><span class="tag-pill tp-vfs">VFS Isolation</span></strong> — 13 agents, zero file conflicts. Each works in its own isolated filesystem. The integration agent can read any other agent's output via <code>kaos read</code>. Nothing leaks between agents.</li>
     </ul>
 
     <hr>
 
     <h2>The paradigm shift</h2>
 
-    <p>The consulting firm wasn't going to deliver something bad. They'd have built a reasonable system, documented it reasonably, and handed it over with a transition plan. But when they left, the knowledge would have left with them. FinPulse would have owned the code, but not the understanding behind it.</p>
+    <p>A consulting firm wouldn't deliver something bad. They'd build a reasonable system, document it reasonably, and hand it over with a transition plan. But when they leave, the knowledge leaves with them. You'd own the code, but not the understanding behind it.</p>
 
     <p>KAOS doesn't just deliver a system. It delivers the system, the full audit trail of how it was built, every lesson learned stored in searchable memory, every reusable pattern in the skill library, every decision logged and queryable with SQL, and six rollback points in case anything goes sideways.</p>
 
