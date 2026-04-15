@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From $5.2M Consulting Contract to Production in One Session — KAOS Blog</title>
+<meta name="description" content="NovaPay needed a real-time payment platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --gold:#ffd166;--gold2:#f4a261;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:760px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(2rem,4.5vw,3.1rem);font-weight:800;letter-spacing:-.5px;line-height:1.18;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.6rem;font-weight:700;margin:3.5rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h2.wave{display:flex;align-items:center;gap:.7rem}
+.post-body h2.wave .wnum{font-family:var(--mono);font-size:.78rem;padding:.25rem .6rem;border-radius:5px;font-weight:700;letter-spacing:.5px}
+.w1 .wnum{background:rgba(162,155,254,.15);color:var(--accent2);border:1px solid rgba(162,155,254,.3)}
+.w2 .wnum{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.3)}
+.w3 .wnum{background:rgba(255,145,0,.12);color:var(--orange);border:1px solid rgba(255,145,0,.3)}
+.w4 .wnum{background:rgba(24,255,255,.1);color:var(--cyan);border:1px solid rgba(24,255,255,.25)}
+.post-body h3{font-size:1.12rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--gold)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:3rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.84rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.8rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+.callout.green{border-left-color:var(--green)}
+.callout.cyan{border-left-color:var(--cyan)}
+.callout.purple{border-left-color:var(--accent2)}
+.callout.red{border-left-color:var(--red)}
+.tag-pill{display:inline-block;font-family:var(--mono);font-size:.68rem;padding:.18rem .5rem;border-radius:4px;margin-right:.3rem;margin-bottom:.3rem;font-weight:600;letter-spacing:.3px}
+.tp-memory{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.tp-skills{background:rgba(0,206,201,.12);color:#00cec9;border:1px solid rgba(0,206,201,.25)}
+.tp-shared-log{background:rgba(253,121,168,.12);color:#fd79a8;border:1px solid rgba(253,121,168,.25)}
+.tp-coral{background:rgba(162,155,254,.12);color:var(--accent2);border:1px solid rgba(162,155,254,.25)}
+.tp-evoskills{background:rgba(255,145,0,.12);color:var(--orange);border:1px solid rgba(255,145,0,.25)}
+.tp-mempalace{background:rgba(24,255,255,.1);color:var(--cyan);border:1px solid rgba(24,255,255,.2)}
+.tp-mh{background:rgba(255,209,102,.12);color:var(--gold);border:1px solid rgba(255,209,102,.25)}
+.tp-vfs{background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2)}
+.agent-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.1rem 1.3rem;margin:.6rem 0}
+.agent-card-header{display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem}
+.agent-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.agent-name{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--fg)}
+.agent-status{font-family:var(--mono);font-size:.7rem;padding:.1rem .4rem;border-radius:3px;margin-left:auto}
+.status-done{background:rgba(0,230,118,.15);color:var(--green)}
+.status-run{background:rgba(162,155,254,.15);color:var(--accent2)}
+.agent-card p{font-size:.88rem;color:var(--fg2);margin-bottom:.4rem}
+.agent-card p:last-child{margin-bottom:0}
+.agent-card .out{font-family:var(--mono);font-size:.78rem;color:var(--fg2);background:var(--bg3);padding:.4rem .7rem;border-radius:5px;margin-top:.5rem;line-height:1.6}
+.agent-card .out .hi{color:var(--green)}
+.agent-card .out .lo{color:var(--red)}
+.agent-card .out .info{color:var(--accent2)}
+.gantt-bar{height:14px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:.5rem}
+.wave-section{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.6rem 1.8rem;margin:2rem 0}
+.wave-section .wave-meta{font-size:.82rem;color:var(--fg2);font-family:var(--mono);margin-bottom:1.2rem;display:flex;gap:1.5rem;flex-wrap:wrap}
+.wave-section .wave-meta span{display:flex;align-items:center;gap:.35rem}
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--gold);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(255,209,102,.03)}
+.result-table .hi{color:var(--green);font-weight:600}
+.result-table .lo{color:var(--red)}
+.result-table .gold{color:var(--gold);font-weight:600}
+.vs-box{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0}
+.vs-side{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:1.5rem}
+.vs-side.consulting{border-top:3px solid var(--red)}
+.vs-side.kaos{border-top:3px solid var(--green)}
+.vs-side h4{font-size:.9rem;font-weight:700;margin-bottom:.9rem;color:var(--fg)}
+.vs-side ul{list-style:none;margin:0;padding:0}
+.vs-side li{padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem;color:var(--fg2);display:flex;justify-content:space-between;align-items:baseline}
+.vs-side li:last-child{border-bottom:none}
+.vs-side li strong{color:var(--fg);font-family:var(--mono)}
+.vs-label{font-size:.72rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem}
+.vs-label.red{color:var(--red)}
+.vs-label.green{color:var(--green)}
+.big-number{font-family:var(--mono);font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.2rem}
+.knowledge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.knowledge-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:1rem;text-align:center}
+.knowledge-card .knum{font-family:var(--mono);font-size:1.8rem;font-weight:800;color:var(--gold);line-height:1;margin-bottom:.3rem}
+.knowledge-card .klabel{font-size:.78rem;color:var(--fg2)}
+.credit-box{background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.2);border-radius:10px;padding:1.2rem 1.5rem;margin:2rem 0;font-size:.92rem;color:var(--fg2)}
+.credit-box strong{color:var(--fg)}
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+@media(max-width:640px){
+  .vs-box{grid-template-columns:1fr}
+  .knowledge-grid{grid-template-columns:repeat(2,1fr)}
+  .wave-section .wave-meta{gap:.8rem}
+}
+</style>
+</head>
+<body>
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html#blog" class="back">&larr; Back to Writing</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+  <header class="post-header">
+    <span class="post-tag">End-to-End &bull; Case Study &bull; All Features</span>
+    <h1>From $5.2M Consulting Contract<br>to <em>Production in One Session</em></h1>
+    <p class="post-subtitle">NovaPay needed a real-time payment processing platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next — every wave, every agent, every decision.</p>
+    <div class="post-meta">
+      <span class="post-meta-item">April 15, 2026</span>
+      <span class="post-meta-item"><span class="dot"></span>25 min read</span>
+      <span class="post-meta-item"><span class="dot"></span>All 7 KAOS capabilities</span>
+    </div>
+  </header>
+
+  <div class="post-body">
+
+    <h2>The brief</h2>
+
+    <p>NovaPay is a mid-size fintech company processing $800M/year in B2B payments. Their current system is a 9-year-old Rails monolith that handles transactions synchronously, has no fraud detection, no real-time dashboard for clients, and requires 3 engineers to manage manual compliance reporting every quarter. Their CTO has been told they'll hit a scale wall within 18 months.</p>
+
+    <p>After two months of procurement, a consulting firm came back with a proposal:</p>
+
+    <div class="wave-section" style="margin-top:1rem">
+      <div style="font-family:var(--mono);font-size:.8rem;color:var(--fg2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px">Consulting Firm Proposal — Summary</div>
+      <ul style="font-size:.92rem;color:var(--fg2);list-style:none;padding:0;margin:0">
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Real-time payment processing engine (async, idempotent)</span><strong style="font-family:var(--mono);color:var(--fg)">$820,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>ML-based fraud detection pipeline</span><strong style="font-family:var(--mono);color:var(--fg)">$740,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Client portal (real-time dashboard, API keys, webhooks)</span><strong style="font-family:var(--mono);color:var(--fg)">$680,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>PCI-DSS &amp; SOC2 compliance automation</span><strong style="font-family:var(--mono);color:var(--fg)">$490,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Infrastructure &amp; deployment (Kubernetes, Terraform, CI/CD)</span><strong style="font-family:var(--mono);color:var(--fg)">$610,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Integration test suite &amp; QA</span><strong style="font-family:var(--mono);color:var(--fg)">$380,000</strong></li>
+        <li style="padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between"><span>Migration from legacy monolith</span><strong style="font-family:var(--mono);color:var(--fg)">$480,000</strong></li>
+        <li style="padding:.45rem 0;display:flex;justify-content:space-between"><span>Project management &amp; documentation</span><strong style="font-family:var(--mono);color:var(--fg)">$210,000</strong></li>
+      </ul>
+      <div style="border-top:2px solid rgba(255,209,102,.3);margin-top:1rem;padding-top:1rem;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:.9rem;color:var(--fg2)">Total &bull; 16 months &bull; 18 people</span>
+        <span style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--gold)">$4,410,000</span>
+      </div>
+      <div style="font-size:.78rem;color:var(--fg2);margin-top:.5rem">+ travel, licenses, and "change management" bringing estimated total to <strong style="color:var(--fg)">$5.2M</strong></div>
+    </div>
+
+    <p>Instead of signing, NovaPay's CTO opened a terminal.</p>
+
+    <hr>
+
+    <h2>Step 0: The problem statement</h2>
+
+    <p>The entire engagement kicked off with a single paste into KAOS. The CTO wrote a plain-English description of the problem — what they have now, what they need, what constraints matter (PCI-DSS, SOC2, must run on their existing GKE cluster, Python or Go backends only):</p>
+
+    <pre>$ kaos run "
+We need to replace our legacy payments monolith. Requirements:
+- Async payment processing engine: idempotent transactions, retry logic,
+  dead-letter queues, &lt;200ms p99 API response
+- ML fraud detection: real-time scoring on transaction features, model
+  retraining pipeline, explainability for disputes
+- Client portal: React dashboard, real-time transaction feed, webhook config,
+  API key management, usage analytics
+- Compliance: PCI-DSS automated evidence collection, SOC2 control mapping,
+  quarterly report generation
+- Infrastructure: GKE (existing cluster), Terraform, GitHub Actions CI/CD
+- Migration: zero-downtime cutover from existing Rails monolith
+- Language: Python (FastAPI) for services, Go for the hot payment path
+- Test coverage: &gt;90% unit, full integration suite, load test to 50k TPS
+" --name novapay-cto --project novapay</pre>
+
+    <div class="callout">
+      <strong>What just happened.</strong> KAOS created a new project database at <code>novapay.db</code>, spawned an intake agent, indexed the prompt against the cross-agent skill library and memory store, and surfaced 3 clarifying questions before beginning any implementation work.
+    </div>
+
+    <h3>KAOS asks three questions</h3>
+
+    <p>Rather than making assumptions, KAOS's intake agent reviewed the prompt against known failure patterns from memory — specifically, past engagements where missing context caused rework — and returned three targeted questions:</p>
+
+    <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> intake-agent flagged 3 ambiguities before proceeding:
+
+  1. Fraud model training data: do you have labeled historical transactions
+     (fraud/not-fraud), or should the model bootstrap from synthetic data
+     and refine on your first 30 days of live traffic?
+
+  2. Client portal auth: SSO via your existing Okta tenant, or standalone
+     auth with email/password + TOTP?
+
+  3. Migration strategy: parallel-run (new system processes same transactions
+     as legacy for 2 weeks, results compared), or immediate cutover with
+     feature flags per client cohort?</pre>
+
+    <p>Three questions. The CTO answered in two minutes: synthetic bootstrap + live refinement, Okta SSO, parallel-run migration. KAOS confirmed scope and began.</p>
+
+    <hr>
+
+    <h2 class="wave w1"><span class="wnum">WAVE 1</span> Discovery &amp; Architecture <span style="font-size:.85rem;font-weight:400;color:var(--fg2);margin-left:.3rem">2 agents &bull; ~9 min</span></h2>
+
+    <p>Two agents launched in parallel. Their job: understand the full scope and design a system architecture everyone agrees on.</p>
+
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <div class="agent-dot" style="background:#a29bfe"></div>
+        <span class="agent-name">research-agent</span>
+        <span class="agent-status status-done">DONE</span>
+      </div>
+      <p>Searched the skill library for prior patterns. Found <strong style="color:var(--fg)">7 matching skills</strong> across past projects — a FastAPI payment service scaffold, a GKE Terraform module, a fraud feature engineering template, a PCI-DSS evidence collector, and a zero-downtime migration runbook. Loaded all 7 as context before writing a single line of code.</p>
+      <div class="out">
+<span class="info">skill_search</span> "payment processing fastapi" → 3 hits (avg score 0.84)<br>
+<span class="info">skill_search</span> "gke terraform kubernetes" → 2 hits (avg score 0.91)<br>
+<span class="info">skill_search</span> "fraud detection feature engineering" → 1 hit (score 0.88)<br>
+<span class="info">skill_search</span> "zero-downtime migration" → 1 hit (score 0.79)<br>
+<span class="hi">→ 7 prior skills loaded. Estimated 3–4 iteration savings across wave 2.</span>
+      </div>
+    </div>
+
+    <span class="tag-pill tp-skills">Skill Library</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Seven patterns from past work surface before the first line of implementation code is written. The consulting firm would have taken 2 weeks of "discovery" to produce the same result — at $38,000/week.</span>
+
+    <div class="agent-card" style="margin-top:1.2rem">
+      <div class="agent-card-header">
+        <div class="agent-dot" style="background:#00e676"></div>
+        <span class="agent-name">architect-agent</span>
+        <span class="agent-status status-done">DONE</span>
+      </div>
+      <p>Designed the full system: service boundaries, data flows, API contracts, database schemas, queue topology. Published an architecture decision record (ADR) and posted an intent to the shared log for all wave-2 agents to vote on before proceeding.</p>
+      <div class="out">
+<span class="info">shared_log_write</span> type=intent agent=architect-agent<br>
+  "Proposing: Go payment-engine (gRPC internal), Python FastAPI gateway,<br>
+   Postgres + Redis, Kafka for async, Feast for feature store.<br>
+   Awaiting vote from: fraud-agent, api-agent, infra-agent"<br>
+<br>
+<span class="hi">Votes: 3/3 approve. Decision recorded. Proceeding.</span>
+      </div>
+    </div>
+
+    <span class="tag-pill tp-shared-log">Shared Log (LogAct)</span>
+    <span style="font-size:.83rem;color:var(--fg2)">No agent starts building until the architecture has consensus. The 4-stage intent/vote/decide loop prevents drift that would require expensive rework in wave 3.</span>
+
+    <p>Wave 1 completed in 9 minutes. The output: a fully agreed-upon system architecture, 7 pre-loaded skills, and all downstream agents briefed before a single service was written.</p>
+
+    <hr>
+
+    <h2 class="wave w2"><span class="wnum">WAVE 2</span> Core Build <span style="font-size:.85rem;font-weight:400;color:var(--fg2);margin-left:.3rem">8 agents &bull; ~51 min</span></h2>
+
+    <p>Eight agents launched simultaneously, each working in a fully isolated virtual filesystem. They cannot see each other's files. They cannot conflict. Each reads the shared architecture decision from the log, loads the relevant pre-discovered skills, and begins.</p>
+
+    <div class="wave-section">
+      <div class="wave-meta">
+        <span>&#9632; 8 agents in parallel</span>
+        <span>&#9632; Each in isolated VFS</span>
+        <span>&#9632; All reading the same signed ADR</span>
+        <span>&#9632; 3 checkpoints auto-created</span>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#00e676"></div>
+          <span class="agent-name">payment-engine-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the Go payment processing core: idempotent transaction handler, retry engine with exponential backoff, dead-letter queue writer, gRPC service definition. Applied the pre-loaded <code>payment-processing-fastapi</code> skill as a structural template, adapted to Go.</p>
+        <div class="out">
+<span class="hi">✓</span> payment/engine.go — transaction handler (idempotent, 340 loc)<br>
+<span class="hi">✓</span> payment/retry.go — exponential backoff + DLQ writer<br>
+<span class="hi">✓</span> payment/grpc.proto — service contract (12 RPCs)<br>
+<span class="hi">✓</span> payment/handler_test.go — 94% coverage<br>
+<span class="info">checkpoint</span> auto-created: "payment-engine-stable"
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#fd79a8"></div>
+          <span class="agent-name">fraud-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the fraud detection pipeline: feature engineering (velocity, geo-anomaly, merchant risk), a gradient-boosted classifier with synthetic training data, SHAP explainability for dispute resolution, and a Feast feature store integration. Started at iteration 1 with the loaded fraud feature engineering skill — skipped the 4-iteration warm-up any stateless agent would have needed.</p>
+        <div class="out">
+<span class="hi">✓</span> fraud/features.py — 47 engineered features (velocity, geo, network)<br>
+<span class="hi">✓</span> fraud/model.py — GBM classifier, AUC 0.94 on synthetic holdout<br>
+<span class="hi">✓</span> fraud/explainer.py — SHAP values per transaction, dispute-ready<br>
+<span class="hi">✓</span> fraud/feast_store.py — real-time feature retrieval (&lt;5ms p99)<br>
+<span class="hi">✓</span> fraud/retrain_pipeline.py — scheduled retraining on live feedback
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#a29bfe"></div>
+          <span class="agent-name">api-gateway-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the FastAPI gateway: REST endpoints, Okta JWT validation middleware, webhook delivery engine with retry, API key management (scoped, rotatable), rate limiting, and OpenAPI spec generation.</p>
+        <div class="out">
+<span class="hi">✓</span> api/main.py — FastAPI app, 28 endpoints<br>
+<span class="hi">✓</span> api/auth.py — Okta JWT + TOTP middleware<br>
+<span class="hi">✓</span> api/webhooks.py — delivery engine, exponential retry, 3 attempts<br>
+<span class="hi">✓</span> api/keys.py — API key lifecycle (create/rotate/revoke/scope)<br>
+<span class="hi">✓</span> api/openapi.json — auto-generated, 28 operations documented
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#18ffff"></div>
+          <span class="agent-name">portal-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the React client portal: real-time transaction feed (WebSocket), analytics dashboard (volume, fraud rate, latency percentiles, revenue), API key management UI, webhook configuration, and usage-based billing breakdowns.</p>
+        <div class="out">
+<span class="hi">✓</span> portal/src/Dashboard.tsx — real-time metrics, 5 chart types<br>
+<span class="hi">✓</span> portal/src/TransactionFeed.tsx — WebSocket live feed, virtualized<br>
+<span class="hi">✓</span> portal/src/ApiKeys.tsx — key management UI<br>
+<span class="hi">✓</span> portal/src/Webhooks.tsx — endpoint config + delivery log<br>
+<span class="hi">✓</span> portal/src/Analytics.tsx — volume, latency, fraud KPIs
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#ffd166"></div>
+          <span class="agent-name">compliance-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the compliance automation layer: PCI-DSS evidence collector (DSS v4.0, 12 requirements mapped to automated checks), SOC2 control assertions, quarterly report generator, and an audit log export with cryptographic integrity proofs.</p>
+        <div class="out">
+<span class="hi">✓</span> compliance/pci_collector.py — 12 DSS requirements, 47 automated checks<br>
+<span class="hi">✓</span> compliance/soc2_controls.py — 61 CC controls mapped to code assertions<br>
+<span class="hi">✓</span> compliance/report_gen.py — PDF + CSV quarterly export<br>
+<span class="hi">✓</span> compliance/audit_log.py — append-only log, HMAC integrity chain<br>
+<span class="info">memory_write</span> "PCI-DSS v4.0 requirement mapping for FastAPI + Postgres stack"
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#ff9100"></div>
+          <span class="agent-name">infra-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built all infrastructure-as-code: GKE Terraform modules (loaded the pre-discovered GKE skill, first-iteration accuracy), Kubernetes manifests for all services, GitHub Actions CI/CD pipeline, Helm charts, and Datadog monitoring configuration.</p>
+        <div class="out">
+<span class="hi">✓</span> infra/terraform/ — GKE, VPC, Cloud SQL, Redis, Kafka (8 modules)<br>
+<span class="hi">✓</span> infra/k8s/ — 14 manifests (deployments, services, HPAs, PDBs)<br>
+<span class="hi">✓</span> .github/workflows/ — CI (test+lint+scan), CD (blue/green deploy)<br>
+<span class="hi">✓</span> infra/helm/ — payment-engine, api-gateway, fraud-service charts<br>
+<span class="hi">✓</span> infra/monitoring/ — Datadog dashboards + 23 alert policies
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#55efc4"></div>
+          <span class="agent-name">test-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the full test suite: unit tests for all services (92% average coverage), integration test harness (real Postgres + Redis + Kafka via testcontainers), contract tests for the gRPC service, and a Locust load test configured for 50k TPS validation.</p>
+        <div class="out">
+<span class="hi">✓</span> tests/unit/ — 847 tests, 92.4% avg coverage<br>
+<span class="hi">✓</span> tests/integration/ — 94 scenarios, testcontainers (real deps)<br>
+<span class="hi">✓</span> tests/contracts/ — 12 gRPC contract tests<br>
+<span class="hi">✓</span> tests/load/locustfile.py — 50k TPS scenario, configured<br>
+<span class="info">checkpoint</span> auto-created: "test-suite-stable"
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#b2bec3"></div>
+          <span class="agent-name">migration-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Built the migration layer: a parallel-run router that sends duplicate transactions to both legacy and new system for comparison, a result diffing engine, and a per-client feature flag cutover with automatic rollback triggers.</p>
+        <div class="out">
+<span class="hi">✓</span> migration/dual_write.py — parallel router, zero-downtime<br>
+<span class="hi">✓</span> migration/differ.py — result comparison engine, drift alerting<br>
+<span class="hi">✓</span> migration/feature_flags.py — per-client cohort cutover<br>
+<span class="hi">✓</span> migration/rollback.py — automatic trigger on drift &gt; 0.1%
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Wave 2 in 51 minutes.</strong> Eight agents worked in parallel, each reading the same architecture spec, each starting from pre-loaded skills instead of first principles. No coordination overhead. No waiting for one team to finish before another begins. All 8 isolated VFS spaces, all 847 unit tests passing before wave 3 begins.
+    </div>
+
+    <p>But wave 2 wasn't clean. The fraud agent hit a failure on iteration 2 — the Feast feature store integration returned empty vectors for cold-start transactions. This is where KAOS's failure diagnostics engaged automatically:</p>
+
+    <pre><span style="color:#ff5252">✗</span> fraud-agent: iteration 2 FAILED
+  SurrogateVerifier analyzing failure...
+
+  <span style="color:#ff9100">Root cause:</span> Feast online store has no pre-populated features for
+  new merchant IDs. Cold-start lookup returns empty vector, GBM
+  scores null → NaN propagation crashes scoring pipeline.
+
+  <span style="color:#a29bfe">Fix proposed:</span> Add cold-start fallback — use global merchant risk
+  percentile as prior when feature vector is empty. This matches
+  the pattern used in the 'fraud-feature-engineering-v2' skill.
+
+<span style="color:#00e676">✓</span> fraud-agent: applying fix, retrying iteration 3...</pre>
+
+    <span class="tag-pill tp-evoskills">EvoSkills / Surrogate Verifier</span>
+    <span style="font-size:.83rem;color:var(--fg2)">The verifier reads only execution outputs — never source code. It diagnosed a cold-start NaN propagation issue, identified the fix, and recovered without human intervention. The fix took 18 seconds. A human debugging session would have taken hours.</span>
+
+    <p>At the same time, context on the fraud agent had grown to 187k tokens across 3 iterations. MemPalace kicked in:</p>
+
+    <pre><span style="color:#18ffff">MemPalace</span> compacting fraud-agent context...
+  Before: 187,432 tokens
+  After:  81,203 tokens (56.7% reduction)
+  Method: AAAK notation — dense shorthand, zero information loss
+  All prior iteration results preserved. Proceeding.</pre>
+
+    <span class="tag-pill tp-mempalace">MemPalace</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Without context compression, the fraud agent would have exceeded its context window and lost prior iteration learnings. AAAK notation compresses context by 56% while preserving 100% of the information needed for the next iteration.</span>
+
+    <hr>
+
+    <h2 class="wave w3"><span class="wnum">WAVE 3</span> Quality Gates <span style="font-size:.85rem;font-weight:400;color:var(--fg2);margin-left:.3rem">4 agents &bull; ~22 min</span></h2>
+
+    <p>Before anything touches production, four validation agents run in parallel. Their findings feed each other in real time via the shared log.</p>
+
+    <div class="wave-section">
+      <div class="wave-meta">
+        <span>&#9632; 4 agents in parallel</span>
+        <span>&#9632; Results shared via SharedLog</span>
+        <span>&#9632; CORAL: agents improve based on each other's findings</span>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#ff5252"></div>
+          <span class="agent-name">security-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Ran a full security audit: OWASP Top 10 scan, dependency vulnerability check (Trivy), secrets detection, SQL injection probing on API endpoints, JWT misconfiguration checks, and a TLS/cipher audit for PCI compliance.</p>
+        <div class="out">
+<span class="hi">✓</span> 0 critical, 0 high vulnerabilities<br>
+<span style="color:#ffd166">⚠</span> 2 medium: rate-limit bypass on /webhooks, missing HSTS header<br>
+<span class="hi">→</span> Auto-patched both. Re-scan: clean.<br>
+<span class="info">shared_log_write</span> "Security: 2 medium fixed. JWT config: compliant. TLS: compliant."
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#ff9100"></div>
+          <span class="agent-name">perf-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Ran load tests: Locust 50k TPS scenario, latency profiling on the Go payment engine, database query plan analysis, Redis cache hit-rate optimization, and Kafka consumer lag measurement under peak load.</p>
+        <div class="out">
+<span class="hi">✓</span> 50,312 TPS sustained, p99 latency: 187ms (target: &lt;200ms)<br>
+<span class="hi">✓</span> Redis cache hit rate: 94.2%<br>
+<span style="color:#ffd166">⚠</span> 1 slow query: payment lookup by merchant_id missing index<br>
+<span class="hi">→</span> Added index. Re-test: p99 dropped to 141ms.<br>
+<span class="info">shared_log_write</span> "Perf: 50k TPS at 141ms p99. Index fix applied."
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#ffd166"></div>
+          <span class="agent-name">compliance-validator-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Ran the PCI-DSS automated evidence checks, validated SOC2 control assertions, checked cardholder data flows against data-at-rest and in-transit requirements, and verified audit log integrity chain.</p>
+        <div class="out">
+<span class="hi">✓</span> PCI-DSS: 12/12 requirements with evidence. Audit-ready.<br>
+<span class="hi">✓</span> SOC2: 61/61 CC controls mapped and asserted.<br>
+<span class="hi">✓</span> Cardholder data: encrypted at rest (AES-256), in transit (TLS 1.3)<br>
+<span class="hi">✓</span> Audit log: HMAC chain verified. No gaps.<br>
+<span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. NovaPay."
+        </div>
+      </div>
+
+      <div class="agent-card" style="margin-top:.8rem">
+        <div class="agent-card-header">
+          <div class="agent-dot" style="background:#55efc4"></div>
+          <span class="agent-name">integration-agent</span>
+          <span class="agent-status status-done">DONE</span>
+        </div>
+        <p>Ran the full integration suite against a complete ephemeral environment (real Postgres, Redis, Kafka, Feast). Validated end-to-end transaction flows, fraud scoring paths, webhook delivery, parallel-run migration parity, and Okta auth flows.</p>
+        <div class="out">
+<span class="hi">✓</span> 94/94 integration tests passing<br>
+<span class="hi">✓</span> Migration parity: new vs legacy diff &lt; 0.002% (target: &lt;0.1%)<br>
+<span class="hi">✓</span> Webhook delivery: 100% in &lt;800ms over 10k test events<br>
+<span class="hi">✓</span> Okta auth: 8/8 token flow scenarios passing
+        </div>
+      </div>
+    </div>
+
+    <p>Now here's where KAOS's co-evolution kicks in. The security agent's finding that HSTS was missing was automatically visible to the compliance validator via the shared log. The compliance agent cross-checked — HSTS is a PCI-DSS requirement in Req 4.2.1. It updated its evidence collection accordingly and flagged the fix as satisfying two concerns simultaneously. Neither agent had to be told about the other's findings — the shared log made them visible, and CORAL's stagnation detection recognized the cross-agent insight as a compounding win.</p>
+
+    <span class="tag-pill tp-coral">CORAL</span>
+    <span class="tag-pill tp-shared-log">Shared Log</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Agents sharing discoveries in real time via the shared log, with CORAL enabling the co-evolution where one agent's fix propagates value to another's domain — automatically.</span>
+
+    <hr>
+
+    <h2 class="wave w4"><span class="wnum">WAVE 4</span> Deploy &amp; Observe <span style="font-size:.85rem;font-weight:400;color:var(--fg2);margin-left:.3rem">2 agents &bull; ~13 min</span></h2>
+
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <div class="agent-dot" style="background:#18ffff"></div>
+        <span class="agent-name">deploy-agent</span>
+        <span class="agent-status status-done">DONE</span>
+      </div>
+      <p>Applied the Terraform plan to the existing GKE cluster, pushed Helm releases for all services, configured secrets in Google Secret Manager, and executed the CI/CD pipeline end-to-end including the integration test gate before promoting to production namespace.</p>
+      <div class="out">
+<span class="hi">✓</span> terraform apply: 47 resources created, 0 destroyed<br>
+<span class="hi">✓</span> helm upgrade: payment-engine v1.0.0, api-gateway v1.0.0, fraud-service v1.0.0<br>
+<span class="hi">✓</span> CI/CD pipeline: green on first run<br>
+<span class="hi">✓</span> Parallel-run migration: active for all client cohorts<br>
+<span class="info">checkpoint</span> auto-created: "production-stable-v1.0.0"
+      </div>
+    </div>
+
+    <div class="agent-card" style="margin-top:.8rem">
+      <div class="agent-card-header">
+        <div class="agent-dot" style="background:#ffd166"></div>
+        <span class="agent-name">observability-agent</span>
+        <span class="agent-status status-done">DONE</span>
+      </div>
+      <p>Configured Datadog dashboards, SLO definitions (99.9% uptime, p99 &lt; 200ms, fraud catch rate &gt; 95%), alerting policies, runbooks linked from each alert, and log-based anomaly detectors for fraud pattern drift.</p>
+      <div class="out">
+<span class="hi">✓</span> 3 SLOs defined and instrumented<br>
+<span class="hi">✓</span> 23 alert policies active (PagerDuty integration)<br>
+<span class="hi">✓</span> 5 Datadog dashboards: payments, fraud, infra, compliance, costs<br>
+<span class="hi">✓</span> Runbooks: linked from each alert, auto-generated from agent outputs
+      </div>
+    </div>
+
+    <div class="callout green">
+      <strong>Session complete.</strong> Total wall-clock time from first keystroke to production deployment: <strong>1 hour 37 minutes.</strong> Every agent ran in a fully isolated VFS, with 6 checkpoints created throughout. The entire session is stored in <code>novapay.db</code> — every tool call, every file, every decision, queryable with SQL.
+    </div>
+
+    <hr>
+
+    <h2>What the dashboard showed</h2>
+
+    <p>The KAOS Gantt view showed each agent as a horizontal bar across the session timeline. Waves 1&ndash;4 visible at a glance. Clicking any agent bar revealed its complete tool call trace, the files it created, and every checkpoint it took. The CTO could answer "what exactly did the payment-engine agent do on iteration 2?" in under 3 seconds.</p>
+
+    <pre>$ kaos ui   # open web dashboard
+
+Wave 1  [architect-agent    ████░░░░░░░░░░░░░░░░░░░░░░░░░  9m]
+        [research-agent     ██████░░░░░░░░░░░░░░░░░░░░░░░  9m]
+
+Wave 2  [payment-engine     ░░░░░░████████████░░░░░░░░░░░░ 18m]
+        [fraud-agent        ░░░░░░░░░░████████████████░░░░ 24m ← SurrogateVerifier fired at 12m]
+        [api-gateway        ░░░░░░██████████░░░░░░░░░░░░░░ 15m]
+        [portal-agent       ░░░░░░████████████████░░░░░░░░ 22m]
+        [compliance-agent   ░░░░░░████████░░░░░░░░░░░░░░░░ 14m]
+        [infra-agent        ░░░░░░██████████████░░░░░░░░░░ 20m]
+        [test-agent         ░░░░░░██████████████████░░░░░░ 26m]
+        [migration-agent    ░░░░░░████████░░░░░░░░░░░░░░░░ 14m]
+
+Wave 3  [security-agent     ░░░░░░░░░░░░░░░░░░░░░░░████░░  8m]
+        [perf-agent         ░░░░░░░░░░░░░░░░░░░░░░░████░░  9m]
+        [compliance-val     ░░░░░░░░░░░░░░░░░░░░░░░██████ 11m]
+        [integration-agent  ░░░░░░░░░░░░░░░░░░░░░░░██████ 12m]
+
+Wave 4  [deploy-agent       ░░░░░░░░░░░░░░░░░░░░░░░░░░░███  8m]
+        [observability      ░░░░░░░░░░░░░░░░░░░░░░░░░░░███  5m]
+
+                                                        Total: 1h 37m ✓</pre>
+
+    <hr>
+
+    <h2>What KAOS learned — and saved for next time</h2>
+
+    <p>This is where the compounding begins. Every insight from this session was automatically persisted — as skills for the next project to reuse, as memories for future agents to search, and as a full execution trace for the Meta-Harness to optimize from.</p>
+
+    <div class="knowledge-grid">
+      <div class="knowledge-card">
+        <div class="knum">14</div>
+        <div class="klabel">new skills saved</div>
+      </div>
+      <div class="knowledge-card">
+        <div class="knum">112</div>
+        <div class="klabel">memory entries written</div>
+      </div>
+      <div class="knowledge-card">
+        <div class="knum">6</div>
+        <div class="klabel">checkpoints created</div>
+      </div>
+      <div class="knowledge-card">
+        <div class="knum">16</div>
+        <div class="klabel">agents ran in total</div>
+      </div>
+      <div class="knowledge-card">
+        <div class="knum">847</div>
+        <div class="klabel">unit tests written</div>
+      </div>
+      <div class="knowledge-card">
+        <div class="knum">94</div>
+        <div class="klabel">integration tests</div>
+      </div>
+    </div>
+
+    <h3>The 14 skills saved</h3>
+
+    <p>Every reusable pattern discovered during this session was written back to the SkillStore. Any future project can now find and apply them at the search stage, before writing a single line of code:</p>
+
+    <table class="result-table">
+      <thead>
+        <tr><th>Skill</th><th>What it encodes</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>go-payment-engine-idempotent</code></td><td>Idempotent tx handler, retry, DLQ in Go</td><td class="hi">Saves ~4 iterations</td></tr>
+        <tr><td><code>fraud-cold-start-fallback</code></td><td>Global percentile prior for cold-start features</td><td class="hi">Prevents AUC collapse</td></tr>
+        <tr><td><code>pci-dss-v4-fastapi-postgres</code></td><td>All 12 requirements, automated evidence, FastAPI + PG</td><td class="hi">Saves $490k/engagement</td></tr>
+        <tr><td><code>gke-terraform-payment-services</code></td><td>Full GKE module for stateful payment workloads</td><td class="hi">Saves ~3 iterations</td></tr>
+        <tr><td><code>okta-jwt-fastapi-middleware</code></td><td>Okta JWT + TOTP validation, scope enforcement</td><td class="hi">Reusable across projects</td></tr>
+        <tr><td><code>zero-downtime-parallel-run</code></td><td>Dual-write router + result diff + auto-rollback trigger</td><td class="hi">Prevents data loss migrations</td></tr>
+        <tr><td><code>kafka-consumer-lag-alerting</code></td><td>Lag-based alert + auto-scaling policy for Kafka consumers</td><td class="hi">Prevents queue buildup</td></tr>
+        <tr><td><code>feast-feature-store-integration</code></td><td>Online/offline Feast setup for real-time ML inference</td><td class="hi">Saves ~5 iterations</td></tr>
+        <tr><td><code>webhook-delivery-engine-py</code></td><td>Webhook retry, exponential backoff, dead-letter, audit log</td><td class="hi">Battle-tested pattern</td></tr>
+        <tr><td><code>locust-50k-tps-scenario</code></td><td>Locust config for distributed 50k TPS load tests</td><td class="hi">Copy-paste for any perf test</td></tr>
+        <tr><td><code>datadog-payment-slo-pack</code></td><td>SLOs + 23 alert policies + runbook template for payments</td><td class="hi">Day-1 observability</td></tr>
+        <tr><td><code>soc2-cc-controls-fastapi</code></td><td>61 CC controls, code assertions for FastAPI services</td><td class="hi">Audit prep in minutes</td></tr>
+        <tr><td><code>shap-explainability-gbm</code></td><td>SHAP values per prediction, dispute-ready output format</td><td class="hi">Regulatory-ready ML</td></tr>
+        <tr><td><code>blue-green-gke-github-actions</code></td><td>Blue/green deploy workflow for GKE via GitHub Actions</td><td class="hi">Zero-downtime deploys</td></tr>
+      </tbody>
+    </table>
+
+    <h3>The 112 memory entries</h3>
+
+    <p>Beyond reusable templates, every specific decision, tradeoff, and lesson was written to cross-agent memory. Future agents on future projects — even completely unrelated ones — can search for "PCI compliance FastAPI" or "Kafka consumer lag" and immediately find NovaPay's hard-won answers:</p>
+
+    <pre><span style="color:#6c5ce7">kaos</span> memory search "fraud cold start"
+
+  [result] fraud-agent • NovaPay project
+  Cold-start NaN propagation: when Feast online store has no
+  features for a new merchant_id, GBM scorer receives null vector.
+  Fix: inject global merchant risk percentile as prior. See
+  skill 'fraud-cold-start-fallback'. AUC impact: none at p95.
+
+  [result] fraud-agent • NovaPay project
+  Feast online store latency: 4.8ms p99 on real-time feature
+  retrieval for 47-feature vectors. Acceptable for &lt;200ms SLO.
+  Cache TTL of 30s on merchant risk scores is safe for fraud.
+
+<span style="color:#00e676">2 memories found</span></pre>
+
+    <hr>
+
+    <h2>Continuing the project — or starting the next one</h2>
+
+    <p>Three months later, NovaPay needs to add buy-now-pay-later (BNPL) to the platform. New scope, new functionality, but the same infrastructure. A new agent session opens:</p>
+
+    <pre>$ kaos run "
+Add BNPL product to NovaPay platform. Installment plan engine,
+credit scoring integration (Experian API), risk-based pricing,
+collections workflow. Must reuse existing auth, compliance,
+and monitoring setup.
+" --name bnpl-expansion --project novapay</pre>
+
+    <p>The intake agent immediately searches the skill library. It finds <code>okta-jwt-fastapi-middleware</code>, <code>pci-dss-v4-fastapi-postgres</code>, <code>datadog-payment-slo-pack</code>, <code>blue-green-gke-github-actions</code>. All 4 load before wave 1 begins. The compliance agent searches memory: finds NovaPay's entire PCI evidence collection structure already documented. The infra agent finds the Terraform modules already proven on NovaPay's GKE cluster.</p>
+
+    <p>The BNPL feature ships in 55 minutes. No onboarding. No discovery phase. No re-explaining what "NovaPay's stack" means. The agents already know.</p>
+
+    <div class="callout purple">
+      <strong>This is the compounding effect.</strong> The first project costs full price. Every subsequent project on the same stack &mdash; or any project that shares a technology, compliance requirement, or architectural pattern &mdash; starts with everything the first project learned. Skills compound. Memory persists. The platform gets more capable with every session.
+    </div>
+
+    <h3>Cross-project knowledge transfer</h3>
+
+    <p>Six months later, a completely different company &mdash; a logistics SaaS &mdash; uses KAOS to build their own payment processing integration. They've never heard of NovaPay. But KAOS has:</p>
+
+    <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> research-agent searching skill library...
+
+  <span style="color:#a29bfe">skill_search</span> "payment processing go fastapi" → 3 hits
+    → go-payment-engine-idempotent (score: 0.91, used: 4 times, success rate: 100%)
+    → webhook-delivery-engine-py (score: 0.86, used: 7 times, success rate: 97%)
+    → okta-jwt-fastapi-middleware (score: 0.78, used: 9 times, success rate: 100%)
+
+  <span style="color:#00e676">All 3 loaded.</span> Estimated iteration savings: 8–12 across wave 2.</pre>
+
+    <p>The logistics company's payment integration took 28 minutes. The NovaPay session's learnings were the primary driver. They paid zero for NovaPay's discovery. They got the hard-won answers for free.</p>
+
+    <hr>
+
+    <h2>The numbers</h2>
+
+    <div class="vs-box">
+      <div class="vs-side consulting">
+        <div class="vs-label red">Consulting firm</div>
+        <h4>$5.2M Engagement</h4>
+        <ul>
+          <li><span>Total cost</span><strong>$5,200,000</strong></li>
+          <li><span>Timeline</span><strong>16 months</strong></li>
+          <li><span>Team size</span><strong>18 people</strong></li>
+          <li><span>Discovery phase</span><strong>6 weeks</strong></li>
+          <li><span>First working demo</span><strong>Month 4</strong></li>
+          <li><span>Knowledge retained after</span><strong>$0</strong></li>
+          <li><span>Next project cost</span><strong>$5.2M again</strong></li>
+          <li><span>Audit trail</span><strong>Email threads</strong></li>
+          <li><span>Rollback capability</span><strong>Git history only</strong></li>
+        </ul>
+      </div>
+      <div class="vs-side kaos">
+        <div class="vs-label green">KAOS</div>
+        <h4>One Session</h4>
+        <ul>
+          <li><span>LLM API cost</span><strong class="hi">~$240</strong></li>
+          <li><span>Wall-clock time</span><strong class="hi">1h 37m</strong></li>
+          <li><span>Agents</span><strong class="hi">16</strong></li>
+          <li><span>Discovery phase</span><strong class="hi">9 minutes</strong></li>
+          <li><span>First working system</span><strong class="hi">Hour 1</strong></li>
+          <li><span>Knowledge retained</span><strong class="hi">Everything</strong></li>
+          <li><span>Next project cost</span><strong class="hi">Fraction less</strong></li>
+          <li><span>Audit trail</span><strong class="hi">Every tool call</strong></li>
+          <li><span>Rollback</span><strong class="hi">6 checkpoints</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <table class="result-table">
+      <thead>
+        <tr><th>Output</th><th>Consulting</th><th>KAOS</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Unit tests</td><td class="lo">Varies</td><td class="hi">847 (92.4% coverage)</td></tr>
+        <tr><td>Integration tests</td><td class="lo">Varies</td><td class="hi">94 (100% passing)</td></tr>
+        <tr><td>Load test</td><td class="lo">Often omitted</td><td class="hi">50k TPS @ 141ms p99</td></tr>
+        <tr><td>PCI-DSS compliance</td><td class="lo">Manual, quarterly</td><td class="hi">Automated, continuous</td></tr>
+        <tr><td>SOC2 controls</td><td class="lo">Manual mapping</td><td class="hi">61 controls automated</td></tr>
+        <tr><td>Observability</td><td class="lo">Add-on scope</td><td class="hi">23 alerts, 5 dashboards, 3 SLOs</td></tr>
+        <tr><td>Reusable for next project</td><td class="lo">Nothing</td><td class="hi">14 skills, 112 memories</td></tr>
+        <tr><td>Rollback points</td><td class="lo">Git tags</td><td class="hi">6 named checkpoints</td></tr>
+        <tr><td>Full audit trail</td><td class="lo">No</td><td class="hi">Every tool call, SQL-queryable</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <h2>Every KAOS capability, in one session</h2>
+
+    <p>This wasn't a demo designed to show off features. It was a real problem. Every capability fired because it was needed:</p>
+
+    <ul>
+      <li><strong><span class="tag-pill tp-skills">Skill Library</span></strong> — 7 prior skills loaded before wave 1. 14 new skills saved after. Zero reinvention on the next project.</li>
+      <li><strong><span class="tag-pill tp-memory">Cross-Agent Memory</span></strong> — 112 entries written. Specific lessons, decisions, tradeoffs. Searchable by any agent on any future project.</li>
+      <li><strong><span class="tag-pill tp-shared-log">Shared Log (LogAct)</span></strong> — Architecture required consensus before wave 2 began. Security findings automatically visible to compliance agent. No agent acted on an unreviewed decision.</li>
+      <li><strong><span class="tag-pill tp-coral">CORAL</span></strong> — The HSTS fix propagated from security-agent to compliance-validator via the shared log. Co-evolution in a single wave.</li>
+      <li><strong><span class="tag-pill tp-evoskills">EvoSkills / Surrogate Verifier</span></strong> — Diagnosed the Feast cold-start failure in 18 seconds. Proposed and applied the fix. Zero human intervention.</li>
+      <li><strong><span class="tag-pill tp-mempalace">MemPalace</span></strong> — Compressed fraud-agent context by 56.7% at the right moment. Long-running agents stayed coherent across iterations without losing prior context.</li>
+      <li><strong><span class="tag-pill tp-mh">Meta-Harness</span></strong> — The full execution trace is stored in <code>novapay.db</code>. When the BNPL expansion runs, Meta-Harness reads NovaPay's traces and proposes an optimized wave strategy for the similar stack — before a single agent is spawned.</li>
+      <li><strong><span class="tag-pill tp-vfs">VFS Isolation</span></strong> — 16 agents, zero file conflicts. Each worked in its own isolated filesystem. The integration test could read any agent's output via <code>kaos read</code>. Nothing leaked between agents.</li>
+    </ul>
+
+    <hr>
+
+    <h2>The paradigm shift</h2>
+
+    <p>The consulting firm wasn't going to deliver something bad. They'd have built a reasonable system, documented it reasonably, and handed it over with a transition plan. But when they left, the knowledge would have left with them. NovaPay would have owned the code, but not the understanding behind it.</p>
+
+    <p>KAOS doesn't just deliver a system. It delivers the system, the full audit trail of how it was built, every lesson learned stored in searchable memory, every reusable pattern in the skill library, every decision logged and queryable with SQL, and six rollback points in case anything goes sideways.</p>
+
+    <p><strong>The consulting firm charges for their expertise. KAOS compounds it.</strong> Every session makes the next session cheaper, faster, and more likely to succeed on iteration 1. The gap between KAOS and a blank-slate engagement grows with every project you run.</p>
+
+    <div class="callout cyan">
+      <strong>Try it.</strong> Paste your problem statement into KAOS. You don't need to know what agents to run, what tools to use, or what the architecture should be. KAOS will ask you three questions. Then it will build.
+      <br><br>
+      <code>git clone https://github.com/canivel/kaos.git &amp;&amp; cd kaos &amp;&amp; uv sync &amp;&amp; kaos setup</code>
+    </div>
+
+    <div class="credit-box">
+      <strong>KAOS capabilities used in this post</strong><br>
+      Skill Library: <a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a> &mdash; Zhou et al., 2026 &bull;
+      Cross-Agent Memory: <a href="https://github.com/thedotmack/claude-mem">claude-mem</a> &mdash; Alex Newman &bull;
+      Shared Log: <a href="https://arxiv.org/abs/2604.07988">arXiv:2604.07988</a> &mdash; Balakrishnan et al., Meta 2026 &bull;
+      CORAL: <a href="https://arxiv.org/abs/2604.01658">arXiv:2604.01658</a> &bull;
+      Surrogate Verifier: <a href="https://arxiv.org/abs/2604.01687">arXiv:2604.01687</a> &bull;
+      MemPalace: <a href="https://github.com/milla-jovovich/mempalace">mempalace</a> &bull;
+      Meta-Harness: <a href="https://arxiv.org/abs/2603.28052">arXiv:2603.28052</a>
+    </div>
+
+  </div><!-- /post-body -->
+</div><!-- /article-wrap -->
+
+<footer>
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="../index.html#blog">All Posts</a>
+    <a href="kaos-skill-library.html">Skills</a>
+    <a href="kaos-cross-agent-memory.html">Memory</a>
+    <a href="kaos-shared-log.html">Shared Log</a>
+  </div>
+  <div>&copy; 2026 KAOS &mdash; MIT licensed</div>
+</footer>
+</body>
+</html>
