@@ -288,8 +288,18 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 .uc-gif img{width:100%;display:block}
 
 /* ── Mobile ───────────────────────────────────────── */
-/* ── Hero examples ─────────────────────────────────── */
-.hero-examples{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;max-width:960px;margin:3rem auto 0;padding:0 2rem}
+/* ── Latest posts strip ─────────────────────────────── */
+.latest-posts{max-width:960px;margin:2.8rem auto 0;padding:0 2rem}
+.lp-eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--fg2);text-align:center;margin-bottom:1.1rem}
+.lp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.lp-card{display:flex;flex-direction:column;text-decoration:none;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-top:2px solid var(--lp-clr,var(--accent2));border-radius:10px;padding:1.2rem 1.4rem;transition:transform .2s,border-color .2s}
+.lp-card:hover{transform:translateY(-3px);border-color:var(--lp-clr,var(--accent2));border-top-color:var(--lp-clr,var(--accent2))}
+.lp-tag{font-family:var(--mono);font-size:.64rem;color:var(--lp-clr,var(--accent2));letter-spacing:2px;text-transform:uppercase;margin-bottom:.45rem}
+.lp-title{font-size:.95rem;font-weight:700;color:var(--fg);line-height:1.35;margin-bottom:.35rem}
+.lp-meta{font-family:var(--mono);font-size:.66rem;color:var(--fg2);margin-bottom:.5rem}
+.lp-desc{font-size:.82rem;color:var(--fg2);line-height:1.55;flex:1;margin-bottom:.7rem}
+.lp-read{font-family:var(--mono);font-size:.72rem;color:var(--lp-clr,var(--accent2))}
+/* ── Hero examples (kept for code reference) ────────── */
 .hero-ex-panel{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
 .hero-ex-label{font-family:var(--mono);font-size:.68rem;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;padding:.55rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);background:var(--bg3);display:flex;align-items:center;gap:.5rem}
 .hero-ex-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent2);display:inline-block}
@@ -300,7 +310,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 .hero-ex-panel pre .hi{color:var(--cyan)}
 @media(max-width:900px){
   .rb-papers{grid-template-columns:repeat(2,1fr)}
-  .hero-examples{grid-template-columns:1fr}
+  .lp-grid{grid-template-columns:1fr}
 }
 @media(max-width:768px){
   nav ul{display:none}
@@ -363,49 +373,43 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
   </div>
 </div>
 
-<!-- Hero feature examples: Memory + Shared Log -->
-<div class="hero-examples">
-  <div class="hero-ex-panel">
-    <div class="hero-ex-label">Cross-Agent Memory &mdash; FTS5 / BM25</div>
-    <pre><span class="kw">from</span> kaos.memory <span class="kw">import</span> MemoryStore
+<!-- Latest posts strip -->
+<div class="latest-posts">
+  <div class="lp-eyebrow">Latest from the blog</div>
+  <div class="lp-grid">
 
-mem = MemoryStore(db.conn)
+    <a href="blog/kaos-full-engagement.html" class="lp-card" style="--lp-clr:#ffd166">
+      <div class="lp-tag">End-to-End &bull; Walkthrough</div>
+      <div class="lp-title">What a Full KAOS Engagement Looks Like</div>
+      <div class="lp-meta">April 15, 2026 &bull; 25 min read</div>
+      <div class="lp-desc">Payment platform modernization from <code>kaos init</code> to production — every wave, every agent, real CLI output. All 7 capabilities in one session.</div>
+      <div class="lp-read">Read &rarr;</div>
+    </a>
 
-<span class="cm"># Any agent writes a lesson</span>
-mem.write(<span class="st">"agent-a"</span>, <span class="st">"ensemble voting hit 0.87"</span>,
-          type=<span class="st">"result"</span>, key=<span class="st">"iter6-best"</span>)
-mem.write(<span class="st">"agent-b"</span>, <span class="st">"JSON parse fails 40% — add try/except"</span>,
-          type=<span class="st">"error"</span>, key=<span class="st">"json-parse-fail"</span>)
+    <a href="blog/kaos-skill-library.html" class="lp-card" style="--lp-clr:#18ffff">
+      <div class="lp-tag">Skills &bull; v0.7.0</div>
+      <div class="lp-title">The Skill Library: Agents That Learn Procedures</div>
+      <div class="lp-meta">April 14, 2026 &bull; 12 min read</div>
+      <div class="lp-desc">Memory stores what happened. Skills store <em>how to do it</em> — parameterized templates that accumulate reliability across sessions and projects.</div>
+      <div class="lp-read">Read &rarr;</div>
+    </a>
 
-<span class="cm"># Any agent searches — BM25 ranked</span>
-hits = mem.search(<span class="st">"ensemble accuracy"</span>, limit=5)
-<span class="cm"># => [result: "ensemble voting hit 0.87" ...]</span>
+    <a href="blog/kaos-cross-agent-memory.html" class="lp-card" style="--lp-clr:#fd79a8">
+      <div class="lp-tag">Memory &bull; FTS5</div>
+      <div class="lp-title">How KAOS Agents Learn Across Sessions</div>
+      <div class="lp-meta">April 13, 2026 &bull; 10 min read</div>
+      <div class="lp-desc">Cross-agent memory with FTS5/BM25 full-text search. Any agent writes a lesson; any agent on any future project finds it in milliseconds.</div>
+      <div class="lp-read">Read &rarr;</div>
+    </a>
 
-<span class="hi"># kaos memory search "ensemble accuracy"</span>
-<span class="hi"># kaos memory ls --type error</span></pre>
-  </div>
-  <div class="hero-ex-panel">
-    <div class="hero-ex-label">Shared Log &mdash; LogAct Intent / Vote / Decide</div>
-    <pre><span class="kw">from</span> kaos.shared_log <span class="kw">import</span> SharedLog
+    <a href="blog/kaos-shared-log.html" class="lp-card" style="--lp-clr:#00cec9">
+      <div class="lp-tag">Coordination &bull; LogAct</div>
+      <div class="lp-title">The Shared Log: Intent, Vote, Decide</div>
+      <div class="lp-meta">April 13, 2026 &bull; 10 min read</div>
+      <div class="lp-desc">How KAOS agents coordinate safely without a human in the loop — intent-vote-decide protocol with a full audit trail in SQL.</div>
+      <div class="lp-read">Read &rarr;</div>
+    </a>
 
-log = SharedLog(db.conn)
-
-<span class="cm"># Safety policy: table drops need 2 approvals</span>
-log.policy(<span class="st">"supervisor"</span>,
-           <span class="st">"Table drops require 2 approvals."</span>)
-
-<span class="cm"># Agent proposes a risky action</span>
-intent_id = log.intent(<span class="st">"refactor-agent"</span>,
-    <span class="st">"DROP TABLE legacy_sessions"</span>)
-
-<span class="cm"># Peers vote — one rejects</span>
-log.vote(<span class="st">"safety-bot"</span>,   intent_id, approve=<span class="hi">True</span>)
-log.vote(<span class="st">"human-review"</span>, intent_id, approve=<span class="hi">False</span>,
-         reason=<span class="st">"BI service uses this table"</span>)
-
-<span class="cm"># Decision: blocked. Full trail in SQL.</span>
-result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
-<span class="cm"># result.passed == False</span></pre>
   </div>
 </div>
 
