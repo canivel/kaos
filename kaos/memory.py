@@ -157,7 +157,7 @@ class MemoryStore:
             SELECT m.memory_id, m.agent_id, m.type, m.key,
                    m.content, m.metadata, m.created_at
             FROM memory_fts f
-            JOIN memory m ON m.memory_id = f.rowid
+            JOIN memory m ON m.memory_id = f.memory_id
             WHERE memory_fts MATCH ?
             {where}
             ORDER BY rank
