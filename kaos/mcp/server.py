@@ -1,6 +1,6 @@
 """MCP Server — exposes KAOS as an MCP server for Claude Code integration.
 
-Provides 17 tools covering:
+Provides 25 tools covering:
 - Agent lifecycle: spawn, spawn_only, kill, pause, resume, status
 - Agent VFS: read, write, ls
 - Checkpoints: checkpoint, restore, diff, list_checkpoints
@@ -388,6 +388,257 @@ async def list_tools() -> list[Tool]:
                     "search_agent_id": {"type": "string"},
                 },
                 "required": ["search_agent_id"],
+            },
+        ),
+        # -- Cross-Agent Memory (claude-mem, Alex Newman @thedotmack) --
+        Tool(
+            name="agent_memory_write",
+            description=(
+                "Persist a memory entry to the shared cross-agent memory store. "
+                "Any agent in this project can later retrieve it via agent_memory_search. "
+                "Use type='result' for final outputs, 'skill' for reusable patterns, "
+                "'observation' for runtime findings, 'insight' for analysis."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent writing the memory"},
+                    "content": {"type": "string", "description": "Free-text content to store (FTS5 indexed)"},
+                    "type": {
+                        "type": "string",
+                        "enum": ["observation", "result", "skill", "insight", "error"],
+                        "default": "observation",
+                        "description": "Memory type",
+                    },
+                    "key": {"type": "string", "description": "Optional human-readable identifier"},
+                    "metadata": {"type": "object", "description": "Extra JSON metadata", "default": {}},
+                },
+                "required": ["agent_id", "content"],
+            },
+        ),
+        Tool(
+            name="agent_memory_search",
+            description=(
+                "Full-text search across all agents' memory entries using SQLite FTS5 "
+                "with porter stemming. Returns the most relevant entries ranked by BM25. "
+                "Supports FTS5 query syntax: phrases, NOT, OR, wildcard *."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "FTS5 search query"},
+                    "limit": {"type": "integer", "default": 10, "description": "Max results"},
+                    "type": {
+                        "type": "string",
+                        "enum": ["observation", "result", "skill", "insight", "error"],
+                        "description": "Filter by memory type (optional)",
+                    },
+                    "agent_id": {"type": "string", "description": "Restrict to one agent (optional)"},
+                },
+                "required": ["query"],
+            },
+        ),
+        Tool(
+            name="agent_memory_read",
+            description="Read a single memory entry by its memory_id, or list recent entries.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "memory_id": {"type": "integer", "description": "Specific memory_id to fetch (omit to list)"},
+                    "agent_id": {"type": "string", "description": "Filter by agent (for listing)"},
+                    "type": {
+                        "type": "string",
+                        "enum": ["observation", "result", "skill", "insight", "error"],
+                        "description": "Filter by type (for listing)",
+                    },
+                    "limit": {"type": "integer", "default": 20},
+                },
+            },
+        ),
+        # -- Shared Log / LogAct (Balakrishnan et al. 2026, arXiv:2604.07988, Meta) --
+        Tool(
+            name="shared_log_intent",
+            description=(
+                "Broadcast an intent to the shared coordination log (LogAct Stage 1). "
+                "Other agents vote on it before the action is taken. Returns the intent's log_id. "
+                "After broadcasting, collect votes then call shared_log_decide."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent declaring the intent"},
+                    "action": {"type": "string", "description": "Description of what the agent plans to do"},
+                    "metadata": {"type": "object", "description": "Extra context", "default": {}},
+                },
+                "required": ["agent_id", "action"],
+            },
+        ),
+        Tool(
+            name="shared_log_vote",
+            description=(
+                "Cast a vote on an intent (LogAct Stage 2). "
+                "approve=true to approve, false to reject."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Voting agent"},
+                    "intent_id": {"type": "integer", "description": "log_id of the intent"},
+                    "approve": {"type": "boolean", "description": "True = approve, False = reject"},
+                    "reason": {"type": "string", "default": "", "description": "Optional rationale"},
+                },
+                "required": ["agent_id", "intent_id", "approve"],
+            },
+        ),
+        Tool(
+            name="shared_log_decide",
+            description=(
+                "Record the decision after vote tally (LogAct Stage 3). "
+                "Returns passed=true/false and the vote counts. Idempotent."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string", "description": "Agent recording the decision"},
+                    "intent_id": {"type": "integer", "description": "log_id of the intent"},
+                },
+                "required": ["agent_id", "intent_id"],
+            },
+        ),
+        Tool(
+            name="shared_log_append",
+            description=(
+                "Append an entry to the shared coordination log. "
+                "Use typed helpers (intent/vote/decide) for structured coordination. "
+                "This tool handles commit, result, abort, policy, mail types."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "agent_id": {"type": "string"},
+                    "type": {
+                        "type": "string",
+                        "enum": ["commit", "result", "abort", "policy", "mail"],
+                        "description": "Entry type",
+                    },
+                    "payload": {"type": "object", "description": "Entry payload", "default": {}},
+                    "ref_id": {"type": "integer", "description": "Reference to a prior log_id (optional)"},
+                },
+                "required": ["agent_id", "type"],
+            },
+        ),
+        Tool(
+            name="shared_log_read",
+            description="Read entries from the shared coordination log in position order.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "since_position": {"type": "integer", "default": 0},
+                    "limit": {"type": "integer", "default": 50},
+                    "type": {"type": "string", "description": "Filter by entry type"},
+                    "agent_id": {"type": "string", "description": "Filter by agent"},
+                    "tail": {"type": "integer", "description": "Return last N entries (overrides since_position)"},
+                },
+            },
+        ),
+        # -- Cross-Agent Skill Library (Zhou et al. 2026, arXiv:2604.08224) --
+        Tool(
+            name="skill_save",
+            description=(
+                "Save a reusable skill to the cross-agent skill library. "
+                "Skills are procedural templates — parameterized patterns that encode "
+                "reliable solution strategies. Use {param} placeholders in the template. "
+                "Distinct from memory (episodic facts): skills are reusable procedures."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Short snake_case identifier"},
+                    "description": {"type": "string", "description": "What the skill does and when to use it"},
+                    "template": {"type": "string", "description": "Prompt template with {param} placeholders"},
+                    "source_agent_id": {"type": "string", "description": "Agent that discovered this skill"},
+                    "tags": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Topic tags for faceted search",
+                        "default": [],
+                    },
+                },
+                "required": ["name", "description", "template"],
+            },
+        ),
+        Tool(
+            name="skill_search",
+            description=(
+                "Search the cross-agent skill library using SQLite FTS5 with porter stemming. "
+                "Searches across name, description, tags, and template. "
+                "Returns skills ranked by BM25 relevance. "
+                "Call this before starting a task to find relevant reusable patterns."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "FTS5 search query"},
+                    "limit": {"type": "integer", "default": 10, "description": "Max results"},
+                    "tag": {"type": "string", "description": "Filter by exact tag (applied after FTS ranking)"},
+                },
+                "required": ["query"],
+            },
+        ),
+        Tool(
+            name="skill_apply",
+            description=(
+                "Render a skill template with parameters. "
+                "Returns the filled prompt ready to use as agent instructions. "
+                "Also records the use (increments use_count). "
+                "Call skill_search first to find the right skill_id."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "skill_id": {"type": "integer", "description": "Skill ID from skill_search or skill_list"},
+                    "params": {"type": "object", "description": "Parameter values for the template placeholders"},
+                    "outcome": {
+                        "type": "string",
+                        "enum": ["success", "failure", "pending"],
+                        "default": "pending",
+                        "description": "Record outcome immediately (or use skill_outcome later)",
+                    },
+                },
+                "required": ["skill_id"],
+            },
+        ),
+        Tool(
+            name="skill_list",
+            description="List skills in the cross-agent skill library with optional filters.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "tag": {"type": "string", "description": "Filter by tag"},
+                    "source_agent_id": {"type": "string", "description": "Filter by source agent"},
+                    "order_by": {
+                        "type": "string",
+                        "enum": ["created_at", "success_count", "use_count", "name"],
+                        "default": "created_at",
+                    },
+                    "limit": {"type": "integer", "default": 20},
+                },
+            },
+        ),
+        Tool(
+            name="skill_outcome",
+            description=(
+                "Record whether applying a skill succeeded or failed. "
+                "Increments use_count and (on success) success_count. "
+                "Used to rank skills by reliability over time."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "skill_id": {"type": "integer", "description": "Skill ID"},
+                    "success": {"type": "boolean", "description": "True = succeeded, False = failed"},
+                },
+                "required": ["skill_id", "success"],
             },
         ),
     ]
@@ -1225,6 +1476,167 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             return json.dumps({"error": "Agent not in a co-evolution run. Use mh_spawn_coevolution first."})
         result = _do_hub_sync(search_agent_id, hub_id, _afs)
         return json.dumps(result, indent=2)
+
+    # -- Cross-Agent Memory --
+    elif name == "agent_memory_write":
+        from kaos.memory import MemoryStore
+        mem = MemoryStore(_afs.conn)
+        mid = mem.write(
+            agent_id=args["agent_id"],
+            content=args["content"],
+            type=args.get("type", "observation"),
+            key=args.get("key"),
+            metadata=args.get("metadata"),
+        )
+        return json.dumps({"memory_id": mid, "status": "written"}, indent=2)
+
+    elif name == "agent_memory_search":
+        from kaos.memory import MemoryStore
+        mem = MemoryStore(_afs.conn)
+        hits = mem.search(
+            query=args["query"],
+            limit=args.get("limit", 10),
+            type=args.get("type"),
+            agent_id=args.get("agent_id"),
+        )
+        return json.dumps([h.to_dict() for h in hits], indent=2)
+
+    elif name == "agent_memory_read":
+        from kaos.memory import MemoryStore
+        mem = MemoryStore(_afs.conn)
+        if args.get("memory_id") is not None:
+            entry = mem.get(args["memory_id"])
+            return json.dumps(entry.to_dict() if entry else None, indent=2)
+        entries = mem.list(
+            agent_id=args.get("agent_id"),
+            type=args.get("type"),
+            limit=args.get("limit", 20),
+        )
+        return json.dumps([e.to_dict() for e in entries], indent=2)
+
+    # -- Shared Log (LogAct) --
+    elif name == "shared_log_intent":
+        from kaos.shared_log import SharedLog
+        log = SharedLog(_afs.conn)
+        intent_id = log.intent(
+            agent_id=args["agent_id"],
+            action=args["action"],
+            metadata=args.get("metadata"),
+        )
+        return json.dumps({"intent_id": intent_id, "status": "intent_broadcast"}, indent=2)
+
+    elif name == "shared_log_vote":
+        from kaos.shared_log import SharedLog
+        log = SharedLog(_afs.conn)
+        entry = log.vote(
+            agent_id=args["agent_id"],
+            intent_id=args["intent_id"],
+            approve=args["approve"],
+            reason=args.get("reason", ""),
+        )
+        return json.dumps(entry.to_dict(), indent=2)
+
+    elif name == "shared_log_decide":
+        from kaos.shared_log import SharedLog
+        log = SharedLog(_afs.conn)
+        entry = log.decide(intent_id=args["intent_id"], agent_id=args["agent_id"])
+        return json.dumps(entry.to_dict(), indent=2)
+
+    elif name == "shared_log_append":
+        from kaos.shared_log import SharedLog
+        log = SharedLog(_afs.conn)
+        entry = log.append(
+            agent_id=args["agent_id"],
+            type=args["type"],
+            payload=args.get("payload"),
+            ref_id=args.get("ref_id"),
+        )
+        return json.dumps(entry.to_dict(), indent=2)
+
+    elif name == "shared_log_read":
+        from kaos.shared_log import SharedLog
+        log = SharedLog(_afs.conn)
+        if args.get("tail") is not None:
+            entries = log.tail(args["tail"])
+        else:
+            entries = log.read(
+                since_position=args.get("since_position", 0),
+                limit=args.get("limit", 50),
+                type=args.get("type"),
+                agent_id=args.get("agent_id"),
+            )
+        return json.dumps([e.to_dict() for e in entries], indent=2)
+
+    # -- Cross-Agent Skill Library (Zhou et al. 2026, arXiv:2604.08224) --
+    elif name == "skill_save":
+        from kaos.skills import SkillStore
+        sk = SkillStore(_afs.conn)
+        sid = sk.save(
+            name=args["name"],
+            description=args["description"],
+            template=args["template"],
+            source_agent_id=args.get("source_agent_id"),
+            tags=args.get("tags", []),
+        )
+        skill = sk.get(sid)
+        return json.dumps({
+            "skill_id": sid,
+            "params": skill.params() if skill else [],
+            "status": "saved",
+        }, indent=2)
+
+    elif name == "skill_search":
+        from kaos.skills import SkillStore
+        sk = SkillStore(_afs.conn)
+        hits = sk.search(
+            query=args["query"],
+            limit=args.get("limit", 10),
+            tag=args.get("tag"),
+        )
+        return json.dumps([s.to_dict() for s in hits], indent=2)
+
+    elif name == "skill_apply":
+        from kaos.skills import SkillStore
+        sk = SkillStore(_afs.conn)
+        skill = sk.get(args["skill_id"])
+        if not skill:
+            return json.dumps({"error": f"Skill {args['skill_id']} not found"})
+        params = args.get("params") or {}
+        rendered = skill.apply(**params)
+        outcome = args.get("outcome", "pending")
+        if outcome == "success":
+            sk.record_outcome(skill.skill_id, success=True)
+        elif outcome == "failure":
+            sk.record_outcome(skill.skill_id, success=False)
+        # "pending" — caller will use skill_outcome later
+        return json.dumps({
+            "skill_id": skill.skill_id,
+            "name": skill.name,
+            "rendered": rendered,
+        }, indent=2)
+
+    elif name == "skill_list":
+        from kaos.skills import SkillStore
+        sk = SkillStore(_afs.conn)
+        skills = sk.list(
+            tag=args.get("tag"),
+            source_agent_id=args.get("source_agent_id"),
+            order_by=args.get("order_by", "created_at"),
+            limit=args.get("limit", 20),
+        )
+        return json.dumps([s.to_dict() for s in skills], indent=2)
+
+    elif name == "skill_outcome":
+        from kaos.skills import SkillStore
+        sk = SkillStore(_afs.conn)
+        sk.record_outcome(args["skill_id"], success=args["success"])
+        skill = sk.get(args["skill_id"])
+        return json.dumps({
+            "skill_id": args["skill_id"],
+            "use_count": skill.use_count if skill else None,
+            "success_count": skill.success_count if skill else None,
+            "success_rate": round(skill.success_count / skill.use_count, 3) if skill and skill.use_count else None,
+        }, indent=2)
 
     else:
         raise ValueError(f"Unknown tool: {name}")

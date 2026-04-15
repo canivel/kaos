@@ -1283,5 +1283,331 @@ def mh_knowledge(ctx, db):
         afs.close()
 
 
+# ── Memory CLI (kaos memory ...) ──────────────────────────────────────────
+
+@cli.group()
+def memory():
+    """Cross-agent memory store — write and search shared knowledge."""
+
+
+@memory.command("write")
+@click.argument("agent_id")
+@click.argument("content")
+@click.option("--type", "-t", "mem_type", default="observation",
+              type=click.Choice(["observation", "result", "skill", "insight", "error"]),
+              help="Memory type")
+@click.option("--key", "-k", default=None, help="Optional human-readable key")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def memory_write(ctx, agent_id: str, content: str, mem_type: str, key: str, db: str):
+    """Write a memory entry for AGENT_ID with CONTENT."""
+    from kaos.memory import MemoryStore
+    afs = _get_afs(db)
+    try:
+        mem = MemoryStore(afs.conn)
+        mid = mem.write(agent_id=agent_id, content=content, type=mem_type, key=key)
+        result = {"memory_id": mid, "agent_id": agent_id, "type": mem_type, "key": key}
+        if _json_out(ctx, result):
+            return
+        console.print(f"[green]Memory #{mid} written[/green]  agent={agent_id[:14]}  type={mem_type}"
+                      + (f"  key={key}" if key else ""))
+    finally:
+        afs.close()
+
+
+@memory.command("search")
+@click.argument("query")
+@click.option("--limit", "-n", default=10, help="Max results")
+@click.option("--type", "-t", "mem_type", default=None,
+              type=click.Choice(["observation", "result", "skill", "insight", "error"]),
+              help="Filter by type")
+@click.option("--agent", "-a", default=None, help="Filter by agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def memory_search(ctx, query: str, limit: int, mem_type: str, agent: str, db: str):
+    """Full-text search across shared memory (FTS5 + porter stemming)."""
+    from kaos.memory import MemoryStore
+    afs = _get_afs(db)
+    try:
+        mem = MemoryStore(afs.conn)
+        hits = mem.search(query=query, limit=limit, type=mem_type, agent_id=agent)
+        if _json_out(ctx, [h.to_dict() for h in hits]):
+            return
+        if not hits:
+            console.print("[dim]No results[/dim]")
+            return
+        for h in hits:
+            key_str = f"  [dim]key={h.key}[/dim]" if h.key else ""
+            console.print(f"[bold cyan]#{h.memory_id}[/bold cyan]  "
+                          f"[yellow]{h.type}[/yellow]  "
+                          f"[dim]{h.agent_id[:14]}[/dim]  "
+                          f"[dim]{h.created_at[:19]}[/dim]{key_str}")
+            console.print(f"  {h.content[:120]}" + ("..." if len(h.content) > 120 else ""))
+    finally:
+        afs.close()
+
+
+@memory.command("ls")
+@click.option("--agent", "-a", default=None, help="Filter by agent_id")
+@click.option("--type", "-t", "mem_type", default=None,
+              type=click.Choice(["observation", "result", "skill", "insight", "error"]),
+              help="Filter by type")
+@click.option("--limit", "-n", default=20, help="Max results")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def memory_ls(ctx, agent: str, mem_type: str, limit: int, db: str):
+    """List memory entries (most recent first)."""
+    from kaos.memory import MemoryStore
+    afs = _get_afs(db)
+    try:
+        mem = MemoryStore(afs.conn)
+        entries = mem.list(agent_id=agent, type=mem_type, limit=limit)
+        if _json_out(ctx, [e.to_dict() for e in entries]):
+            return
+        stats = mem.stats()
+        console.print(f"[bold]Memory Store[/bold]  total={stats['total']}  "
+                      + "  ".join(f"{k}={v}" for k, v in stats["by_type"].items()))
+        if not entries:
+            console.print("[dim]No entries[/dim]")
+            return
+        for e in entries:
+            key_str = f"  [dim]{e.key}[/dim]" if e.key else ""
+            console.print(f"  [cyan]#{e.memory_id}[/cyan]  [yellow]{e.type}[/yellow]  "
+                          f"[dim]{e.agent_id[:14]}[/dim]  [dim]{e.created_at[:19]}[/dim]{key_str}")
+            console.print(f"    {e.content[:100]}" + ("..." if len(e.content) > 100 else ""))
+    finally:
+        afs.close()
+
+
+# ── Shared Log CLI (kaos log ...) ─────────────────────────────────────────
+
+@cli.group("log")
+def shared_log_group():
+    """Shared coordination log — LogAct intent/vote/decide protocol."""
+
+
+@shared_log_group.command("tail")
+@click.option("--n", "-n", "count", default=20, help="Number of entries to show")
+@click.option("--type", "-t", "log_type", default=None, help="Filter by entry type")
+@click.option("--agent", "-a", default=None, help="Filter by agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def log_tail(ctx, count: int, log_type: str, agent: str, db: str):
+    """Show the last N entries from the shared coordination log."""
+    from kaos.shared_log import SharedLog
+    afs = _get_afs(db)
+    try:
+        log = SharedLog(afs.conn)
+        if log_type or agent:
+            entries = log.read(type=log_type, agent_id=agent, limit=count)
+        else:
+            entries = log.tail(count)
+        if _json_out(ctx, [e.to_dict() for e in entries]):
+            return
+        if not entries:
+            console.print("[dim]Log is empty[/dim]")
+            return
+        TYPE_COLORS = {
+            "intent": "cyan", "vote": "yellow", "decision": "green",
+            "commit": "bold green", "result": "magenta", "abort": "red",
+            "policy": "bold white", "mail": "blue",
+        }
+        for e in entries:
+            color = TYPE_COLORS.get(e.type, "white")
+            ref_str = f"  [dim]ref={e.ref_id}[/dim]" if e.ref_id else ""
+            console.print(f"[dim]{e.position:4d}[/dim]  [{color}]{e.type:8s}[/{color}]  "
+                          f"[dim]{e.agent_id[:14]}[/dim]  [dim]{e.created_at[:19]}[/dim]{ref_str}")
+            payload_str = str(e.payload)
+            console.print(f"       {payload_str[:100]}" + ("..." if len(payload_str) > 100 else ""))
+    finally:
+        afs.close()
+
+
+@shared_log_group.command("ls")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def log_ls(ctx, db: str):
+    """Show shared log statistics."""
+    from kaos.shared_log import SharedLog
+    afs = _get_afs(db)
+    try:
+        log = SharedLog(afs.conn)
+        stats = log.stats()
+        if _json_out(ctx, stats):
+            return
+        console.print(f"[bold]Shared Log[/bold]  total={stats['total']}")
+        for t, n in stats["by_type"].items():
+            console.print(f"  {t:12s} {n}")
+    finally:
+        afs.close()
+
+
+# ── Skills CLI (kaos skills ...) ──────────────────────────────────────────
+
+@cli.group("skills")
+def skills_group():
+    """Cross-agent skill library — save and search reusable solution patterns."""
+
+
+@skills_group.command("save")
+@click.option("--name", "-n", required=True, help="Skill name (snake_case)")
+@click.option("--description", "-d", required=True, help="What the skill does and when to use it")
+@click.option("--template", "-t", required=True, help="Prompt template (use {param} for variables)")
+@click.option("--agent", "-a", default=None, help="Source agent_id")
+@click.option("--tags", default=None, help="Comma-separated tags (e.g. classification,ensemble)")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def skills_save(ctx, name: str, description: str, template: str, agent: str, tags: str, db: str):
+    """Save a reusable skill to the shared library."""
+    from kaos.skills import SkillStore
+    afs = _get_afs(db)
+    try:
+        sk = SkillStore(afs.conn)
+        tag_list = [t.strip() for t in tags.split(",")] if tags else []
+        sid = sk.save(name=name, description=description, template=template,
+                      source_agent_id=agent, tags=tag_list)
+        skill = sk.get(sid)
+        result = skill.to_dict() if skill else {"skill_id": sid}
+        if _json_out(ctx, result):
+            return
+        params_str = ", ".join(skill.params()) if skill and skill.params() else "(no params)"
+        console.print(f"[green]Skill #{sid} saved[/green]  name={name}  params=[{params_str}]")
+        if tag_list:
+            console.print(f"  tags: {', '.join(tag_list)}")
+    finally:
+        afs.close()
+
+
+@skills_group.command("search")
+@click.argument("query")
+@click.option("--limit", "-n", default=10, help="Max results")
+@click.option("--tag", default=None, help="Filter by tag")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def skills_search(ctx, query: str, limit: int, tag: str, db: str):
+    """Full-text search across the skill library (FTS5 + BM25)."""
+    from kaos.skills import SkillStore
+    afs = _get_afs(db)
+    try:
+        sk = SkillStore(afs.conn)
+        hits = sk.search(query=query, limit=limit, tag=tag)
+        if _json_out(ctx, [s.to_dict() for s in hits]):
+            return
+        if not hits:
+            console.print("[dim]No skills found[/dim]")
+            return
+        for s in hits:
+            rate = f"{s.success_count}/{s.use_count}" if s.use_count else "unused"
+            tags_str = f"  [dim]{', '.join(s.tags)}[/dim]" if s.tags else ""
+            console.print(f"[bold cyan]#{s.skill_id}[/bold cyan]  [yellow]{s.name}[/yellow]  "
+                          f"[dim]{rate}[/dim]{tags_str}")
+            console.print(f"  {s.description[:120]}" + ("..." if len(s.description) > 120 else ""))
+            params = s.params()
+            if params:
+                console.print(f"  params: {{{', '.join(params)}}}")
+    finally:
+        afs.close()
+
+
+@skills_group.command("ls")
+@click.option("--tag", default=None, help="Filter by tag")
+@click.option("--agent", "-a", default=None, help="Filter by source agent_id")
+@click.option("--order", default="created_at",
+              type=click.Choice(["created_at", "success_count", "use_count", "name"]),
+              help="Sort order")
+@click.option("--limit", "-n", default=20, help="Max results")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def skills_ls(ctx, tag: str, agent: str, order: str, limit: int, db: str):
+    """List skills in the library (most recent first)."""
+    from kaos.skills import SkillStore
+    afs = _get_afs(db)
+    try:
+        sk = SkillStore(afs.conn)
+        skills = sk.list(tag=tag, source_agent_id=agent, order_by=order, limit=limit)
+        if _json_out(ctx, [s.to_dict() for s in skills]):
+            return
+        stats = sk.stats()
+        console.print(f"[bold]Skill Library[/bold]  total={stats['total']}")
+        if not skills:
+            console.print("[dim]No skills[/dim]")
+            return
+        t = Table(show_header=True, header_style="bold")
+        t.add_column("ID", style="cyan", width=5)
+        t.add_column("Name", style="yellow", width=24)
+        t.add_column("Tags", width=20)
+        t.add_column("Used", width=6)
+        t.add_column("OK%", width=6)
+        t.add_column("Description", width=40)
+        for s in skills:
+            rate = f"{s.success_count/s.use_count*100:.0f}%" if s.use_count else "-"
+            t.add_row(
+                str(s.skill_id),
+                s.name,
+                ", ".join(s.tags[:3]),
+                str(s.use_count),
+                rate,
+                s.description[:40] + ("..." if len(s.description) > 40 else ""),
+            )
+        console.print(t)
+    finally:
+        afs.close()
+
+
+@skills_group.command("apply")
+@click.argument("skill_id", type=int)
+@click.option("--param", "-p", "params", multiple=True,
+              help="Template param as key=value (repeat for multiple)")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def skills_apply(ctx, skill_id: int, params: tuple, db: str):
+    """Render a skill template with parameters and print the result.
+
+    Example: kaos skills apply 3 -p model=gpt4 -p voting=majority
+    """
+    from kaos.skills import SkillStore
+    afs = _get_afs(db)
+    try:
+        sk = SkillStore(afs.conn)
+        skill = sk.get(skill_id)
+        if not skill:
+            console.print(f"[red]Skill #{skill_id} not found[/red]")
+            return
+        kv: dict[str, str] = {}
+        for p in params:
+            if "=" in p:
+                k, v = p.split("=", 1)
+                kv[k.strip()] = v.strip()
+        rendered = skill.apply(**kv)
+        if _json_out(ctx, {"skill_id": skill_id, "name": skill.name, "rendered": rendered}):
+            return
+        console.print(f"[bold]Skill #{skill_id} — {skill.name}[/bold]")
+        console.print(rendered)
+    finally:
+        afs.close()
+
+
+@skills_group.command("delete")
+@click.argument("skill_id", type=int)
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def skills_delete(ctx, skill_id: int, db: str):
+    """Delete a skill by ID."""
+    from kaos.skills import SkillStore
+    afs = _get_afs(db)
+    try:
+        sk = SkillStore(afs.conn)
+        removed = sk.delete(skill_id)
+        result = {"skill_id": skill_id, "deleted": removed}
+        if _json_out(ctx, result):
+            return
+        if removed:
+            console.print(f"[green]Skill #{skill_id} deleted[/green]")
+        else:
+            console.print(f"[yellow]Skill #{skill_id} not found[/yellow]")
+    finally:
+        afs.close()
+
+
 if __name__ == "__main__":
     cli()

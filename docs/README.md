@@ -36,6 +36,7 @@ kaos demo        # see it in action — no API keys needed
 | [Meta-Harness](meta-harness.md) | Automated prompt/strategy optimization search |
 | [CLI Reference](cli-reference.md) | Every command, every flag |
 | [Cross-Agent Memory](memory.md) | FTS5 searchable memory across agents and sessions |
+| [Skill Library](skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](shared-log.md) | LogAct intent/vote/decide coordination protocol |
 
 ---

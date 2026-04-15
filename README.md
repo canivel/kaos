@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
-[![Research](https://img.shields.io/badge/research%20integrations-6-brightgreen)]()
+[![Research](https://img.shields.io/badge/research%20integrations-7-brightgreen)]()
 
 > KAOS doesn't build from scratch — it identifies the best solution to each hard problem in agentic AI and integrates it faithfully. Every capability traces back to a proven paper or open-source project. We add new integrations as we find synergy and reason to include them.
 
@@ -60,6 +60,7 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 | Problem | Best-in-class solution | Source |
 |---|---|---|
 | Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) |
+| Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) |
 | Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) |
 | Context explodes, quality drops | AAAK compact notation, 57% savings at default | [MemPalace](https://github.com/milla-jovovich/mempalace) |
 | Agents co-evolve poorly | Stagnation detection + skill sharing | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) |
@@ -162,6 +163,7 @@ db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
 | [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 25 tools |
 | [Meta-Harness](docs/meta-harness.md) | Automated prompt/strategy optimization |
 | [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |
+| [Skill Library](docs/skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
 | [Schema](docs/schema.md) | All 10 SQLite tables |
@@ -206,6 +208,11 @@ The intent/vote/decision 4-stage loop and append-only log design are taken direc
 
 **CORAL** (stagnation detection, skill distillation, co-evolution)
 Meta-Harness's CORAL features are independently derived from similar ideas in the evolutionary optimization literature.
+
+**Skill Library** (`kaos/skills.py`, `kaos skills` CLI, `skill_*` MCP tools)
+Informed by **Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols and Harness Engineering**
+Zhou, Chai, Chen, et al. (2026). [arXiv:2604.08224](https://arxiv.org/abs/2604.08224)
+The paper's skills axis — parameterized procedural templates that agents save, search, and apply — is the foundation for KAOS's SkillStore. KAOS adapts it for SQLite FTS5, adds usage/success tracking for reliability ranking, and integrates it alongside memory and shared log as the third externalization layer.
 
 **EvoSkills / MemPalace**
 Earlier KAOS versions integrated ideas from EvoSkills (v0.5.1) and MemPalace (v0.5.2).

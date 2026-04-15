@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 3
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -115,6 +115,125 @@ CREATE TABLE IF NOT EXISTS schema_version (
 );
 """
 
+# Migration to v2: cross-agent memory (FTS5) + shared log (LogAct)
+MIGRATION_V2_SQL = """
+-- Cross-Agent Memory Store (inspired by claude-mem / thedotmack)
+CREATE TABLE IF NOT EXISTS memory (
+    memory_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id    TEXT NOT NULL REFERENCES agents(agent_id),
+    type        TEXT NOT NULL DEFAULT 'observation'
+                CHECK (type IN ('observation','result','skill','insight','error')),
+    key         TEXT,
+    content     TEXT NOT NULL,
+    metadata    TEXT NOT NULL DEFAULT '{}',
+    created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_memory_agent ON memory(agent_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_memory_type  ON memory(type);
+CREATE INDEX IF NOT EXISTS idx_memory_key   ON memory(key) WHERE key IS NOT NULL;
+
+-- FTS5 full-text search index over memory
+CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
+    content,
+    key,
+    type        UNINDEXED,
+    agent_id    UNINDEXED,
+    memory_id   UNINDEXED,
+    created_at  UNINDEXED,
+    tokenize    = 'porter unicode61'
+);
+
+-- Keep FTS in sync with memory table
+CREATE TRIGGER IF NOT EXISTS memory_fts_insert
+AFTER INSERT ON memory BEGIN
+    INSERT INTO memory_fts(rowid, content, key, type, agent_id, memory_id, created_at)
+    VALUES (NEW.memory_id, NEW.content, NEW.key, NEW.type, NEW.agent_id, NEW.memory_id, NEW.created_at);
+END;
+
+CREATE TRIGGER IF NOT EXISTS memory_fts_delete
+AFTER DELETE ON memory BEGIN
+    DELETE FROM memory_fts WHERE rowid = OLD.memory_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS memory_fts_update
+AFTER UPDATE OF content, key ON memory BEGIN
+    DELETE FROM memory_fts WHERE rowid = OLD.memory_id;
+    INSERT INTO memory_fts(rowid, content, key, type, agent_id, memory_id, created_at)
+    VALUES (NEW.memory_id, NEW.content, NEW.key, NEW.type, NEW.agent_id, NEW.memory_id, NEW.created_at);
+END;
+
+-- Shared Append-Only Log (inspired by LogAct / Balakrishnan et al. 2026, arXiv:2604.07988)
+CREATE TABLE IF NOT EXISTS shared_log (
+    log_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    position    INTEGER UNIQUE NOT NULL,
+    type        TEXT NOT NULL
+                CHECK (type IN ('intent','vote','decision','commit','result','abort','policy','mail')),
+    agent_id    TEXT NOT NULL,
+    ref_id      INTEGER REFERENCES shared_log(log_id),
+    payload     TEXT NOT NULL DEFAULT '{}',
+    created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_shared_log_type     ON shared_log(type, created_at);
+CREATE INDEX IF NOT EXISTS idx_shared_log_agent    ON shared_log(agent_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_shared_log_ref      ON shared_log(ref_id) WHERE ref_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_shared_log_position ON shared_log(position);
+"""
+
+
+# Migration to v3: cross-agent skill library (Externalization / arXiv:2604.08224)
+MIGRATION_V3_SQL = """
+-- Cross-Agent Skill Library (inspired by Zhou et al. 2026, arXiv:2604.08224)
+-- Skills are procedural templates — distinct from episodic memory entries.
+-- Agents save reliable solution patterns; any agent can search and apply them.
+CREATE TABLE IF NOT EXISTS agent_skills (
+    skill_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,
+    description     TEXT NOT NULL,
+    template        TEXT NOT NULL,
+    tags            TEXT NOT NULL DEFAULT '[]',
+    source_agent_id TEXT REFERENCES agents(agent_id),
+    use_count       INTEGER NOT NULL DEFAULT 0,
+    success_count   INTEGER NOT NULL DEFAULT 0,
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_skills_source ON agent_skills(source_agent_id);
+CREATE INDEX IF NOT EXISTS idx_agent_skills_name   ON agent_skills(name);
+
+-- FTS5 full-text search over name, description, tags, and template
+CREATE VIRTUAL TABLE IF NOT EXISTS agent_skills_fts USING fts5(
+    name,
+    description,
+    tags,
+    template,
+    content     = 'agent_skills',
+    content_rowid = 'skill_id',
+    tokenize    = 'porter unicode61'
+);
+
+-- Keep FTS in sync
+CREATE TRIGGER IF NOT EXISTS agent_skills_fts_insert
+AFTER INSERT ON agent_skills BEGIN
+    INSERT INTO agent_skills_fts(rowid, name, description, tags, template)
+    VALUES (NEW.skill_id, NEW.name, NEW.description, NEW.tags, NEW.template);
+END;
+
+CREATE TRIGGER IF NOT EXISTS agent_skills_fts_delete
+AFTER DELETE ON agent_skills BEGIN
+    DELETE FROM agent_skills_fts WHERE rowid = OLD.skill_id;
+END;
+
+CREATE TRIGGER IF NOT EXISTS agent_skills_fts_update
+AFTER UPDATE OF name, description, tags, template ON agent_skills BEGIN
+    DELETE FROM agent_skills_fts WHERE rowid = OLD.skill_id;
+    INSERT INTO agent_skills_fts(rowid, name, description, tags, template)
+    VALUES (NEW.skill_id, NEW.name, NEW.description, NEW.tags, NEW.template);
+END;
+"""
+
 
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
@@ -125,6 +244,9 @@ def init_schema(conn: sqlite3.Connection) -> None:
     ).fetchone()[0]
 
     if current is None:
+        # Brand-new DB: apply all migrations up front then stamp version
+        conn.executescript(MIGRATION_V2_SQL)
+        conn.executescript(MIGRATION_V3_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -135,10 +257,10 @@ def init_schema(conn: sqlite3.Connection) -> None:
 
 def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: int) -> None:
     """Apply incremental schema migrations."""
-    # Future migrations go here as version increases
-    # Example:
-    # if from_version < 2:
-    #     conn.execute("ALTER TABLE agents ADD COLUMN priority INTEGER DEFAULT 0")
+    if from_version < 2:
+        conn.executescript(MIGRATION_V2_SQL)
+    if from_version < 3:
+        conn.executescript(MIGRATION_V3_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )

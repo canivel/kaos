@@ -30,6 +30,7 @@ If all four answers are yes, we build it. If not, we wait.
 | Capability | Source | What It Solves |
 |---|---|---|
 | Cross-agent FTS5 memory | [claude-mem](https://github.com/thedotmack/claude-mem) by Alex Newman | Agents repeating past mistakes across sessions |
+| Cross-agent skill library | [Zhou et al. 2026, arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | Agents reinventing reliable solutions every run |
 | Shared log / coordination | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988), Balakrishnan et al. 2026 | Agents acting without consensus on risky operations |
 | AAAK context compaction | [MemPalace](https://github.com/milla-jovovich/mempalace) | Context bloat eating accuracy and budget |
 | Stagnation + co-evolution | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) | Agent improvement plateaus and wasted iterations |
