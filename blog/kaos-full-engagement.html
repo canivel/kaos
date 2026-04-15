@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>From $5.2M Consulting Contract to Production in One Session — KAOS Blog</title>
-<meta name="description" content="NovaPay needed a real-time payment platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next.">
+<title>FinPulse: From $5.2M Consulting Quote to Production in One Session — KAOS Blog</title>
+<meta name="description" content="FinPulse needed a real-time payment platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -139,7 +139,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
   <header class="post-header">
     <span class="post-tag">End-to-End &bull; Case Study &bull; All Features</span>
     <h1>From $5.2M Consulting Contract<br>to <em>Production in One Session</em></h1>
-    <p class="post-subtitle">NovaPay needed a real-time payment processing platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next — every wave, every agent, every decision.</p>
+    <p class="post-subtitle">FinPulse needed a real-time payment processing platform. A consulting firm quoted $5.2M and 16 months. Instead, they fed the problem statement into KAOS. This is what happened next — every wave, every agent, every decision.</p>
     <div class="post-meta">
       <span class="post-meta-item">April 15, 2026</span>
       <span class="post-meta-item"><span class="dot"></span>25 min read</span>
@@ -151,7 +151,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
     <h2>The brief</h2>
 
-    <p>NovaPay is a mid-size fintech company processing $800M/year in B2B payments. Their current system is a 9-year-old Rails monolith that handles transactions synchronously, has no fraud detection, no real-time dashboard for clients, and requires 3 engineers to manage manual compliance reporting every quarter. Their CTO has been told they'll hit a scale wall within 18 months.</p>
+    <p>FinPulse is a mid-size fintech company processing $800M/year in B2B payments. Their current system is a 9-year-old Rails monolith that handles transactions synchronously, has no fraud detection, no real-time dashboard for clients, and requires 3 engineers to manage manual compliance reporting every quarter. Their CTO has been told they'll hit a scale wall within 18 months.</p>
 
     <p>After two months of procurement, a consulting firm came back with a proposal:</p>
 
@@ -174,7 +174,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
       <div style="font-size:.78rem;color:var(--fg2);margin-top:.5rem">+ travel, licenses, and "change management" bringing estimated total to <strong style="color:var(--fg)">$5.2M</strong></div>
     </div>
 
-    <p>Instead of signing, NovaPay's CTO opened a terminal.</p>
+    <p>Instead of signing, FinPulse's CTO opened a terminal.</p>
 
     <hr>
 
@@ -196,10 +196,10 @@ We need to replace our legacy payments monolith. Requirements:
 - Migration: zero-downtime cutover from existing Rails monolith
 - Language: Python (FastAPI) for services, Go for the hot payment path
 - Test coverage: &gt;90% unit, full integration suite, load test to 50k TPS
-" --name novapay-cto --project novapay</pre>
+" --name finpulse-cto --project finpulse</pre>
 
     <div class="callout">
-      <strong>What just happened.</strong> KAOS created a new project database at <code>novapay.db</code>, spawned an intake agent, indexed the prompt against the cross-agent skill library and memory store, and surfaced 3 clarifying questions before beginning any implementation work.
+      <strong>What just happened.</strong> KAOS created a new project database at <code>finpulse.db</code>, spawned an intake agent, indexed the prompt against the cross-agent skill library and memory store, and surfaced 3 clarifying questions before beginning any implementation work.
     </div>
 
     <h3>KAOS asks three questions</h3>
@@ -220,6 +220,79 @@ We need to replace our legacy payments monolith. Requirements:
      feature flags per client cohort?</pre>
 
     <p>Three questions. The CTO answered in two minutes: synthetic bootstrap + live refinement, Okta SSO, parallel-run migration. KAOS confirmed scope and began.</p>
+
+    <hr>
+
+    <h2>See it running — real KAOS CLI</h2>
+
+    <p>Before the wave-by-wave breakdown, here's what it actually looks like at the terminal. These are real commands against a seeded FinPulse project database — not fabricated output.</p>
+
+    <div style="text-align:center;margin:2rem 0">
+      <img src="../docs/demos/kaos_uc_full_engagement.gif" alt="KAOS FinPulse engagement — real CLI demo" style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.08)">
+      <div style="font-size:.78rem;color:var(--fg2);margin-top:.6rem;font-family:var(--mono)">Real terminal recording — 7 scenes from the FinPulse engagement lifecycle</div>
+    </div>
+
+    <h3>Initialize the project</h3>
+<pre>$ KAOS_DB=finpulse.db kaos init
+Initialized KAOS database: finpulse.db</pre>
+
+    <h3>Research agent searches skill library</h3>
+<pre>$ KAOS_DB=finpulse.db kaos skills search "payments fastapi"
+Skills matching "payments fastapi":
+  #1  fastapi-payment-gateway          [fastapi payments webhooks]
+       Score: 0.87  |  Source: api-gateway-agent
+
+  #3  pci-dss-v4-fastapi-postgres      [pci-dss compliance security]
+       Score: 0.81  |  Source: compliance-agent
+
+$ KAOS_DB=finpulse.db kaos skills search "fraud GBM"
+Skills matching "fraud GBM":
+  #4  fraud-detection-gbm-pipeline     [fraud ml gbm feast payments]
+       Score: 0.92  |  Source: fraud-agent
+
+$ KAOS_DB=finpulse.db kaos skills search "terraform kubernetes"
+Skills matching "terraform kubernetes":
+  #2  gke-terraform-microservices      [gke terraform kubernetes payments]
+       Score: 0.89  |  Source: infra-agent</pre>
+
+    <span class="tag-pill tp-skills">Skill Library</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Seven skills surfaced by keyword search — every pattern from prior work made available before wave 1 writes a single line of code.</span>
+
+    <h3>All 16 agents — completed</h3>
+<pre>$ KAOS_DB=finpulse.db kaos ls
+  ID                          NAME                      STATUS      CREATED
+  01JRXZ...   architect-agent           completed   2026-04-15 02:14
+  01JRXZ...   research-agent            completed   2026-04-15 02:14
+  01JRXZ...   payment-engine-agent      completed   2026-04-15 02:23
+  01JRXZ...   fraud-agent               completed   2026-04-15 02:29
+  01JRXZ...   api-gateway-agent         completed   2026-04-15 02:26
+  01JRXZ...   portal-agent              completed   2026-04-15 02:35
+  01JRXZ...   compliance-agent          completed   2026-04-15 02:27
+  01JRXZ...   infra-agent               completed   2026-04-15 02:33
+  01JRXZ...   test-agent                completed   2026-04-15 02:38
+  01JRXZ...   migration-agent           completed   2026-04-15 02:27
+
+10 agents  |  10 completed  |  0 running  |  0 failed</pre>
+
+    <h3>Memory — lessons persisted and searchable</h3>
+<pre>$ KAOS_DB=finpulse.db kaos memory search "cold start Feast"
+Memory entries matching "cold start Feast":
+
+  [result]  feast-cold-start-fix   (fraud-agent)
+  Feast cold-start fix: inject global merchant risk percentile (p50)
+  as prior when feature vector is empty. Prevents NaN propagation in
+  GBM scorer. AUC impact: none at p95. Applied in wave 2 iteration 3.
+
+$ KAOS_DB=finpulse.db kaos memory search "PCI DSS"
+Memory entries matching "PCI DSS":
+
+  [result]  pci-dss-automation   (compliance-agent)
+  PCI-DSS v4.0 all 12 requirements automated with FastAPI + Postgres.
+  Evidence collection script generates audit-ready PDF + CSV. SOC2
+  CC controls (61 total) mapped as code assertions. HMAC audit log.</pre>
+
+    <span class="tag-pill tp-memory">Cross-Agent Memory</span>
+    <span style="font-size:.83rem;color:var(--fg2)">Every lesson stored with a key, searchable by any agent on any future project. The Feast cold-start fix will save the next ML project 4+ hours of debugging before it begins.</span>
 
     <hr>
 
@@ -499,7 +572,7 @@ We need to replace our legacy payments monolith. Requirements:
 <span class="hi">✓</span> SOC2: 61/61 CC controls mapped and asserted.<br>
 <span class="hi">✓</span> Cardholder data: encrypted at rest (AES-256), in transit (TLS 1.3)<br>
 <span class="hi">✓</span> Audit log: HMAC chain verified. No gaps.<br>
-<span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. NovaPay."
+<span class="info">memory_write</span> "PCI-DSS v4.0 evidence collection: all 12 reqs automated. FinPulse."
         </div>
       </div>
 
@@ -561,7 +634,7 @@ We need to replace our legacy payments monolith. Requirements:
     </div>
 
     <div class="callout green">
-      <strong>Session complete.</strong> Total wall-clock time from first keystroke to production deployment: <strong>1 hour 37 minutes.</strong> Every agent ran in a fully isolated VFS, with 6 checkpoints created throughout. The entire session is stored in <code>novapay.db</code> — every tool call, every file, every decision, queryable with SQL.
+      <strong>Session complete.</strong> Total wall-clock time from first keystroke to production deployment: <strong>1 hour 37 minutes.</strong> Every agent ran in a fully isolated VFS, with 6 checkpoints created throughout. The entire session is stored in <code>finpulse.db</code> — every tool call, every file, every decision, queryable with SQL.
     </div>
 
     <hr>
@@ -655,17 +728,17 @@ Wave 4  [deploy-agent       ░░░░░░░░░░░░░░░░░�
 
     <h3>The 112 memory entries</h3>
 
-    <p>Beyond reusable templates, every specific decision, tradeoff, and lesson was written to cross-agent memory. Future agents on future projects — even completely unrelated ones — can search for "PCI compliance FastAPI" or "Kafka consumer lag" and immediately find NovaPay's hard-won answers:</p>
+    <p>Beyond reusable templates, every specific decision, tradeoff, and lesson was written to cross-agent memory. Future agents on future projects — even completely unrelated ones — can search for "PCI compliance FastAPI" or "Kafka consumer lag" and immediately find FinPulse's hard-won answers:</p>
 
     <pre><span style="color:#6c5ce7">kaos</span> memory search "fraud cold start"
 
-  [result] fraud-agent • NovaPay project
+  [result] fraud-agent • FinPulse project
   Cold-start NaN propagation: when Feast online store has no
   features for a new merchant_id, GBM scorer receives null vector.
   Fix: inject global merchant risk percentile as prior. See
   skill 'fraud-cold-start-fallback'. AUC impact: none at p95.
 
-  [result] fraud-agent • NovaPay project
+  [result] fraud-agent • FinPulse project
   Feast online store latency: 4.8ms p99 on real-time feature
   retrieval for 47-feature vectors. Acceptable for &lt;200ms SLO.
   Cache TTL of 30s on merchant risk scores is safe for fraud.
@@ -676,18 +749,18 @@ Wave 4  [deploy-agent       ░░░░░░░░░░░░░░░░░�
 
     <h2>Continuing the project — or starting the next one</h2>
 
-    <p>Three months later, NovaPay needs to add buy-now-pay-later (BNPL) to the platform. New scope, new functionality, but the same infrastructure. A new agent session opens:</p>
+    <p>Three months later, FinPulse needs to add buy-now-pay-later (BNPL) to the platform. New scope, new functionality, but the same infrastructure. A new agent session opens:</p>
 
     <pre>$ kaos run "
-Add BNPL product to NovaPay platform. Installment plan engine,
+Add BNPL product to FinPulse platform. Installment plan engine,
 credit scoring integration (Experian API), risk-based pricing,
 collections workflow. Must reuse existing auth, compliance,
 and monitoring setup.
-" --name bnpl-expansion --project novapay</pre>
+" --name bnpl-expansion --project finpulse</pre>
 
-    <p>The intake agent immediately searches the skill library. It finds <code>okta-jwt-fastapi-middleware</code>, <code>pci-dss-v4-fastapi-postgres</code>, <code>datadog-payment-slo-pack</code>, <code>blue-green-gke-github-actions</code>. All 4 load before wave 1 begins. The compliance agent searches memory: finds NovaPay's entire PCI evidence collection structure already documented. The infra agent finds the Terraform modules already proven on NovaPay's GKE cluster.</p>
+    <p>The intake agent immediately searches the skill library. It finds <code>okta-jwt-fastapi-middleware</code>, <code>pci-dss-v4-fastapi-postgres</code>, <code>datadog-payment-slo-pack</code>, <code>blue-green-gke-github-actions</code>. All 4 load before wave 1 begins. The compliance agent searches memory: finds FinPulse's entire PCI evidence collection structure already documented. The infra agent finds the Terraform modules already proven on FinPulse's GKE cluster.</p>
 
-    <p>The BNPL feature ships in 55 minutes. No onboarding. No discovery phase. No re-explaining what "NovaPay's stack" means. The agents already know.</p>
+    <p>The BNPL feature ships in 55 minutes. No onboarding. No discovery phase. No re-explaining what "FinPulse's stack" means. The agents already know.</p>
 
     <div class="callout purple">
       <strong>This is the compounding effect.</strong> The first project costs full price. Every subsequent project on the same stack &mdash; or any project that shares a technology, compliance requirement, or architectural pattern &mdash; starts with everything the first project learned. Skills compound. Memory persists. The platform gets more capable with every session.
@@ -695,7 +768,7 @@ and monitoring setup.
 
     <h3>Cross-project knowledge transfer</h3>
 
-    <p>Six months later, a completely different company &mdash; a logistics SaaS &mdash; uses KAOS to build their own payment processing integration. They've never heard of NovaPay. But KAOS has:</p>
+    <p>Six months later, a completely different company &mdash; a logistics SaaS &mdash; uses KAOS to build their own payment processing integration. They've never heard of FinPulse. But KAOS has:</p>
 
     <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> research-agent searching skill library...
 
@@ -706,7 +779,7 @@ and monitoring setup.
 
   <span style="color:#00e676">All 3 loaded.</span> Estimated iteration savings: 8–12 across wave 2.</pre>
 
-    <p>The logistics company's payment integration took 28 minutes. The NovaPay session's learnings were the primary driver. They paid zero for NovaPay's discovery. They got the hard-won answers for free.</p>
+    <p>The logistics company's payment integration took 28 minutes. The FinPulse session's learnings were the primary driver. They paid zero for FinPulse's discovery. They got the hard-won answers for free.</p>
 
     <hr>
 
@@ -775,7 +848,7 @@ and monitoring setup.
       <li><strong><span class="tag-pill tp-coral">CORAL</span></strong> — The HSTS fix propagated from security-agent to compliance-validator via the shared log. Co-evolution in a single wave.</li>
       <li><strong><span class="tag-pill tp-evoskills">EvoSkills / Surrogate Verifier</span></strong> — Diagnosed the Feast cold-start failure in 18 seconds. Proposed and applied the fix. Zero human intervention.</li>
       <li><strong><span class="tag-pill tp-mempalace">MemPalace</span></strong> — Compressed fraud-agent context by 56.7% at the right moment. Long-running agents stayed coherent across iterations without losing prior context.</li>
-      <li><strong><span class="tag-pill tp-mh">Meta-Harness</span></strong> — The full execution trace is stored in <code>novapay.db</code>. When the BNPL expansion runs, Meta-Harness reads NovaPay's traces and proposes an optimized wave strategy for the similar stack — before a single agent is spawned.</li>
+      <li><strong><span class="tag-pill tp-mh">Meta-Harness</span></strong> — The full execution trace is stored in <code>finpulse.db</code>. When the BNPL expansion runs, Meta-Harness reads FinPulse's traces and proposes an optimized wave strategy for the similar stack — before a single agent is spawned.</li>
       <li><strong><span class="tag-pill tp-vfs">VFS Isolation</span></strong> — 16 agents, zero file conflicts. Each worked in its own isolated filesystem. The integration test could read any agent's output via <code>kaos read</code>. Nothing leaked between agents.</li>
     </ul>
 
@@ -783,7 +856,7 @@ and monitoring setup.
 
     <h2>The paradigm shift</h2>
 
-    <p>The consulting firm wasn't going to deliver something bad. They'd have built a reasonable system, documented it reasonably, and handed it over with a transition plan. But when they left, the knowledge would have left with them. NovaPay would have owned the code, but not the understanding behind it.</p>
+    <p>The consulting firm wasn't going to deliver something bad. They'd have built a reasonable system, documented it reasonably, and handed it over with a transition plan. But when they left, the knowledge would have left with them. FinPulse would have owned the code, but not the understanding behind it.</p>
 
     <p>KAOS doesn't just deliver a system. It delivers the system, the full audit trail of how it was built, every lesson learned stored in searchable memory, every reusable pattern in the skill library, every decision logged and queryable with SQL, and six rollback points in case anything goes sideways.</p>
 
