@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KAOS — The Living Synthesis of Agentic AI Research</title>
-<meta name="description" content="Six research breakthroughs unified in one framework: memory that learns, coordination that requires consensus, context that compresses, agents that co-evolve. Safe, reliable, self-improving. All local, all free.">
+<meta name="description" content="Seven research breakthroughs unified in one framework: memory that learns, skills that compound, coordination that requires consensus, context that compresses, agents that co-evolve. Safe, reliable, self-improving. All local, all free.">
 <meta property="og:title" content="KAOS — The Living Synthesis of Agentic AI Research">
-<meta property="og:description" content="KAOS doesn't build from scratch — it synthesizes what's best. Six proven research integrations, production-grade by default, constantly improving itself. One SQLite file. Zero cloud.">
+<meta property="og:description" content="KAOS doesn't build from scratch — it synthesizes what's best. Seven proven research integrations, production-grade by default, constantly improving itself. One SQLite file. Zero cloud.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
@@ -324,7 +324,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     </div>
     <div class="badges">
       <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
-      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">6 research integrations</span>
+      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">7 research integrations</span>
       <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">self-improving</span>
       <span class="badge">safe by design</span>
       <span class="badge">local-first</span>
@@ -435,6 +435,13 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.07988">arXiv:2604.07988</a> &bull; Balakrishnan et al., Meta 2026</div>
       <p>Append-only shared log with a 4-stage intent/vote/decision/commit loop. No agent can act without consensus. Every action is auditable, reversible, and queryable with SQL.</p>
       <div class="rb-paper-used">Used in: <code>SharedLog</code> &bull; <code>kaos log</code> &bull; <code>shared_log_*</code> MCP tools</div>
+    </div>
+    <div class="rb-paper" style="border-top-color:#00cec9">
+      <div class="rb-paper-tag">Skill Externalization</div>
+      <h3>Externalization in LLM Agents</h3>
+      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a> &bull; Zhou et al. 2026</div>
+      <p>Skills are <em>procedural</em> artifacts &mdash; parameterized templates that encode reliable solution strategies. Agents save them, any agent searches and applies them. Usage and success are tracked for reliability ranking.</p>
+      <div class="rb-paper-used">Used in: <code>SkillStore</code> &bull; <code>kaos skills</code> &bull; <code>skill_*</code> MCP tools</div>
     </div>
   </div>
 </div>
@@ -784,15 +791,15 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   </div>
   <div class="si-evidence">
     <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--accent2)">6</span>
+      <span class="si-ev-num" style="color:var(--accent2)">7</span>
       <span class="si-ev-label">Research integrations and growing</span>
     </div>
     <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--green)">219</span>
+      <span class="si-ev-num" style="color:var(--green)">256</span>
       <span class="si-ev-label">Tests, all passing</span>
     </div>
     <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--cyan)">25</span>
+      <span class="si-ev-num" style="color:var(--cyan)">30</span>
       <span class="si-ev-label">MCP tools</span>
     </div>
     <div class="si-ev-item">
