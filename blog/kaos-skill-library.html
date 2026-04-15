@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Skill Library: Agents That Learn Procedures Across Sessions — KAOS Blog</title>
+<meta name="description" content="Memory stores what happened. Skills store how to do it. KAOS v0.7.0 adds a SkillStore: parameterized prompt templates that accumulate reliability across sessions — inspired by Zhou et al. 2026.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --pink:#fd79a8;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--cyan),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+.demo-gif{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.demo-gif img{width:100%;display:block}
+.demo-gif-caption{text-align:center;font-size:.82rem;color:var(--fg2);margin-top:.6rem;font-style:italic}
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--cyan);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--fg2)}
+.result-table tr:hover td{background:rgba(24,255,255,.04)}
+.result-table .hi{color:var(--green);font-weight:600}
+.result-table .lo{color:var(--red);font-weight:600}
+.credit-box{background:rgba(24,255,255,.06);border:1px solid rgba(24,255,255,.2);border-radius:10px;padding:1.2rem 1.5rem;margin:2rem 0;font-size:.92rem;color:var(--fg2)}
+.credit-box strong{color:var(--fg)}
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html#blog" class="back">&larr; Back to Writing</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+  <header class="post-header">
+    <span class="post-tag">Skills &bull; v0.7.0</span>
+    <h1>The Skill Library: Agents That<br><em>Learn Procedures</em></h1>
+    <p class="post-subtitle">Memory stores what happened. Skills store how to do it. KAOS v0.7.0 adds a SkillStore — parameterized prompt templates that accumulate reliability across sessions. What one agent discovers, every agent uses forever.</p>
+    <div class="post-meta">
+      <span class="post-meta-item">April 14, 2026</span>
+      <span class="post-meta-item"><span class="dot"></span>10 min read</span>
+      <span class="post-meta-item"><span class="dot"></span>SkillStore, FTS5, Externalization</span>
+    </div>
+  </header>
+
+  <div class="post-body">
+
+    <h2>The problem: agents reinvent the wheel every session</h2>
+
+    <p>An ML agent starts a new classification task. It has no memory of prior runs. It tries single-call inference — too slow. It tries temperature sampling — inconsistent. It tries chain-of-thought — better but still wrong. By iteration 5, it discovers that ensemble voting with 3 models and majority vote reliably hits 83%+ accuracy. Iteration 6 is the first time it actually gets there.</p>
+
+    <p>Cost: $19.40. Iterations: 6. Time: ~40 minutes.</p>
+
+    <p>Next week, a different agent on a different project hits the same classification problem. It has no idea what the last agent learned. It starts from scratch. Goes through the same 5 failed iterations. Spends $19.40 again.</p>
+
+    <p><strong>This is the core inefficiency of stateless agents.</strong> Every session starts from zero. Every discovery is lost. The cost of finding good solutions gets paid over and over — by every agent, on every project, forever.</p>
+
+    <div class="callout">
+      <strong>The compounding problem.</strong> In a team of 10 agents running 50 sessions a week, each burning $19 to rediscover the same patterns — that's $9,500/week in redundant exploration. Skills eliminate this. Once the pattern is saved, every future agent applies it at iteration 1.
+    </div>
+
+    <hr>
+
+    <h2>Memory vs Skills: the key distinction</h2>
+
+    <p>KAOS already has <a href="kaos-cross-agent-memory.html">cross-agent memory</a> — a shared FTS5-indexed store where agents record observations, errors, and results across sessions. So why add a separate SkillStore?</p>
+
+    <p>Because memory and skills answer different questions:</p>
+
+    <table class="result-table">
+      <thead>
+        <tr><th>Dimension</th><th>Memory</th><th>Skills</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>What it stores</td><td>Facts, observations, outcomes</td><td>Reusable procedures</td></tr>
+        <tr><td>Cognitive type</td><td>Episodic (what happened)</td><td>Procedural (how to do it)</td></tr>
+        <tr><td>Structure</td><td>Free-form text</td><td>Parameterized template</td></tr>
+        <tr><td>Usage pattern</td><td>Read for context</td><td>Apply with parameters</td></tr>
+        <tr><td>Outcome tracking</td><td>No</td><td>Yes — per-use success/failure</td></tr>
+        <tr><td>Reliability signal</td><td>None</td><td>Accumulates over time</td></tr>
+        <tr><td>Example</td><td>"ensemble hit 83% on 2026-04-10"</td><td>"Use {n} models with {voting} voting"</td></tr>
+      </tbody>
+    </table>
+
+    <p>Memory tells you what happened. Skills tell you how to reproduce it — on any task, with any parameters. They're complementary layers of the same externalized knowledge system.</p>
+
+    <hr>
+
+    <h2>How SkillStore works</h2>
+
+    <p>A skill is a named, parameterized prompt template. Parameters are written as <code>{param}</code> placeholders. When an agent applies a skill, it fills in the placeholders and gets back a ready-to-use prompt string.</p>
+
+    <p>Under the hood, skills live in a dedicated SQLite table with an FTS5 virtual table for full-text search (porter stemming). Every application is tracked — success or failure. Over time, skills with high <code>success_count</code> float to the top of the library.</p>
+
+    <h3>The schema</h3>
+
+    <pre><code>CREATE TABLE skills (
+    skill_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT NOT NULL UNIQUE,
+    description   TEXT NOT NULL,
+    template      TEXT NOT NULL,          -- {param} placeholders
+    tags          TEXT NOT NULL DEFAULT '',
+    use_count     INTEGER NOT NULL DEFAULT 0,
+    success_count INTEGER NOT NULL DEFAULT 0,
+    fail_count    INTEGER NOT NULL DEFAULT 0,
+    created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+-- FTS5 for BM25 search (porter stemming)
+CREATE VIRTUAL TABLE skills_fts USING fts5(
+    name, description, tags,
+    content=skills, content_rowid=skill_id,
+    tokenize='porter ascii'
+);</code></pre>
+
+    <p>The FTS5 index covers name, description, and tags — so a search for "classification accuracy" will match a skill tagged <code>classification,ensemble</code> whose description mentions "improve accuracy".</p>
+
+    <hr>
+
+    <h2>CLI walkthrough</h2>
+
+    <h3>Saving a skill after discovering what works</h3>
+
+    <pre><code>$ kaos skills save \
+    --name ensemble_voting \
+    --description "Ensemble voting improves classification accuracy" \
+    --template "Use {n_models} models with {voting} voting on {task}. Threshold: {threshold}." \
+    --tags classification,ensemble
+
+Skill #1 saved
+  name=ensemble_voting
+  params=[n_models, voting, task, threshold]
+  tags=classification, ensemble</code></pre>
+
+    <p>KAOS automatically extracts the parameter list from the <code>{placeholder}</code> tokens in the template — no schema declaration needed.</p>
+
+    <h3>Saving a second skill</h3>
+
+    <pre><code>$ kaos skills save \
+    --name json_error_guard \
+    --description "Wrap LLM output parsing in try/except for JSON errors" \
+    --template "Always parse {output} inside try/except json.JSONDecodeError. Return {fallback} on failure." \
+    --tags python,error-handling,reliability
+
+Skill #2 saved
+  name=json_error_guard
+  params=[output, fallback]
+  tags=python, error-handling, reliability</code></pre>
+
+    <h3>Searching before starting a new task</h3>
+
+    <p>The next day, a different agent hits the same classification problem. Instead of starting blind, it searches first:</p>
+
+    <pre><code>$ kaos skills search "classification accuracy"
+
+2 results  (BM25 relevance order)
+
+  #1  ensemble_voting  [classification, ensemble]
+      Ensemble voting improves classification accuracy
+      params=[n_models, voting, task, threshold]  use_count=0  success_rate=n/a
+
+  #4  cot_numbered  [reasoning, chain-of-thought]
+      Numbered chain-of-thought reduces multi-step errors
+      params=[steps, domain]  use_count=14  success_rate=0.86</code></pre>
+
+    <h3>Applying the skill</h3>
+
+    <pre><code>$ kaos skills apply 1 -p n_models=3 -p voting=majority -p task="code review" -p threshold=0.5
+
+Rendered prompt:
+  Use 3 models with majority voting on code review. Threshold: 0.5.</code></pre>
+
+    <p>The agent uses this rendered prompt at iteration 1 instead of discovering it at iteration 6.</p>
+
+    <h3>Viewing the library by success rate</h3>
+
+    <pre><code>$ kaos skills ls --order success_count
+
+  ID  Name                  Tags                         Uses  Success  Fail  Rate
+  ──  ────────────────────  ───────────────────────────  ────  ───────  ────  ────
+   4  cot_numbered          reasoning,chain-of-thought     14       12     2  0.86
+   3  progressive_unfreezing  fine-tuning,training          9        7     2  0.78
+   1  ensemble_voting       classification,ensemble         6        5     1  0.83
+   2  json_error_guard      python,error-handling           4        4     0  1.00
+   5  temp_zero_determinism  inference,sampling             3        2     1  0.67</code></pre>
+
+    <h3>Recording outcomes</h3>
+
+    <pre><code># After a successful run using skill #1
+$ kaos skills outcome 1 --success
+
+# After a failed run
+$ kaos skills outcome 1 --fail</code></pre>
+
+    <p>Outcome tracking is how reliability accumulates. Skills that consistently work rise to the top. Skills that fail often get deprioritized — or removed.</p>
+
+    <hr>
+
+    <h2>The before/after</h2>
+
+    <table class="result-table">
+      <thead>
+        <tr><th>Metric</th><th>Without Skills</th><th>With Skills</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Accuracy</td>
+          <td class="hi">83%</td>
+          <td class="hi">83%</td>
+        </tr>
+        <tr>
+          <td>Iterations to hit target</td>
+          <td class="lo">6</td>
+          <td class="hi">1</td>
+        </tr>
+        <tr>
+          <td>LLM cost</td>
+          <td class="lo">$19.40</td>
+          <td class="hi">$3.20</td>
+        </tr>
+        <tr>
+          <td>Time to first result</td>
+          <td class="lo">~40 min</td>
+          <td class="hi">~7 min</td>
+        </tr>
+        <tr>
+          <td>Cross-session transfer</td>
+          <td class="lo">None</td>
+          <td class="hi">Automatic</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Same accuracy. 6x fewer iterations. 6x lower cost. The difference is that the second agent started from knowledge, not from scratch.</p>
+
+    <div class="demo-gif">
+      <img src="../docs/demos/kaos_uc_skills.gif" alt="KAOS SkillStore demo — save a skill, search before starting, apply at iteration 1">
+    </div>
+    <p class="demo-gif-caption">An agent saves the ensemble voting pattern, then a second agent finds it via FTS5 search and applies it directly — skipping 5 iterations of trial and error.</p>
+
+    <hr>
+
+    <h2>Python API</h2>
+
+    <pre><code>from kaos import Kaos
+from kaos.skills import SkillStore
+
+db    = Kaos("project.db")
+store = SkillStore(db.conn)
+
+# Save a skill
+skill = store.save(
+    name="ensemble_voting",
+    description="Ensemble voting improves classification accuracy",
+    template="Use {n_models} models with {voting} voting on {task}. Threshold: {threshold}.",
+    tags=["classification", "ensemble"]
+)
+print(skill.skill_id)   # 1
+print(skill.params)     # ['n_models', 'voting', 'task', 'threshold']
+
+# Search
+results = store.search("classification accuracy")
+for s in results:
+    print(s.name, s.success_rate)
+
+# Apply — fills placeholders, returns rendered string
+prompt = results[0].apply(
+    n_models=3,
+    voting="majority",
+    task="fraud detection",
+    threshold=0.45
+)
+# "Use 3 models with majority voting on fraud detection. Threshold: 0.45."
+
+# Record outcome
+store.outcome(skill_id=1, success=True)
+
+# List by reliability
+top = store.list(order="success_count", limit=10)</code></pre>
+
+    <hr>
+
+    <h2>MCP tools for Claude Code</h2>
+
+    <p>All five skill operations are available as MCP tools — meaning Claude Code agents running inside KAOS can save and search skills without any CLI calls:</p>
+
+    <ul>
+      <li><code>skill_save</code> — save a new skill with name, description, template, and tags</li>
+      <li><code>skill_search</code> — FTS5+BM25 search across name, description, and tags</li>
+      <li><code>skill_apply</code> — render a skill template with parameter values</li>
+      <li><code>skill_list</code> — list the library, sortable by use count or success count</li>
+      <li><code>skill_outcome</code> — record success or failure after applying a skill</li>
+    </ul>
+
+    <p>Tell your agent: <em>"before writing any classification logic, search the skill library first."</em> It will call <code>skill_search</code>, find relevant patterns, and apply them before proposing any new approach.</p>
+
+    <p>The simplest agentic pattern:</p>
+
+    <pre><code># At the start of any session
+skills = await mcp.call("skill_search", {"query": task_description})
+if skills:
+    prompt = await mcp.call("skill_apply", {
+        "skill_id": skills[0]["skill_id"],
+        "params": relevant_params
+    })
+    # use prompt at iteration 1
+
+# At the end of a successful session
+await mcp.call("skill_save", {
+    "name": "...",
+    "description": "...",
+    "template": "...",
+    "tags": "..."
+})</code></pre>
+
+    <hr>
+
+    <h2>The externalization framework</h2>
+
+    <p>The SkillStore is a direct implementation of externalized procedural memory from <a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a>. Zhou et al. 2026 distinguish two types of externalized knowledge:</p>
+
+    <ul>
+      <li><strong>Episodic externalization</strong> — recording what happened (observations, results, errors) so future agents have context. This is what KAOS memory does.</li>
+      <li><strong>Procedural externalization</strong> — encoding how to do something as a reusable, parameterized procedure. This is what SkillStore does.</li>
+    </ul>
+
+    <p>The insight from Zhou et al. is that <strong>procedures decouple discovery cost from application cost</strong>. Discovery is expensive — it requires iteration, failure, and inference calls. Application is cheap — it requires one search and one fill-in. By externalizing procedures, you pay discovery cost once and application cost forever after.</p>
+
+    <p>KAOS implements this with FTS5+BM25 over porter-stemmed tokens, so skill discovery is a sub-millisecond SQL query even across thousands of saved skills.</p>
+
+    <div class="credit-box">
+      <strong>Credits.</strong> The SkillStore in KAOS is inspired by <em>Externalization in LLM Agents: Memory, Skills, and Reasoning Artifacts</em> — Zhou, Chen, Liu, Zhang (2026). <a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a>. The episodic/procedural distinction and the parameterized template design are drawn directly from Zhou et al.'s externalization framework. KAOS adapts it for SQLite FTS5, adds per-use outcome tracking, and integrates skills as first-class MCP tools alongside memory.
+    </div>
+
+    <hr>
+
+    <h2>Memory + Skills: the full externalized knowledge layer</h2>
+
+    <p>Together, memory and skills form the complete externalized knowledge layer that makes KAOS agents smarter over time:</p>
+
+    <ul>
+      <li><strong>Memory</strong> records what happened — prior results, errors to avoid, domain observations. Agents start with context instead of ignorance.</li>
+      <li><strong>Skills</strong> record how to do it — validated procedures ready to apply. Agents start from proven patterns instead of blind exploration.</li>
+    </ul>
+
+    <p>Both are indexed by FTS5+BM25 with porter stemming. Both are cross-agent and cross-session. Both compound over time — the more you use KAOS, the smarter every agent in the system becomes.</p>
+
+    <p>The long-term dynamic: a team that saves skills consistently will see per-session costs drop quarter over quarter, while accuracy holds steady or improves. The skill library becomes a team asset — accumulated procedural knowledge that outlasts any individual session, agent, or project.</p>
+
+    <hr>
+
+    <h2>Where to go next</h2>
+
+    <ul>
+      <li><a href="https://github.com/canivel/kaos/blob/main/docs/skills.md">Full SkillStore documentation</a> — API reference, CLI, MCP, schema</li>
+      <li><a href="https://github.com/canivel/kaos/blob/main/examples/skill_library.py">skill_library.py</a> — end-to-end walkthrough in Python</li>
+      <li><a href="kaos-cross-agent-memory.html">Cross-Agent Memory &larr;</a> — the episodic layer that complements skills</li>
+      <li><a href="kaos-shared-log.html">Shared Log &larr;</a> — coordination and intent before acting</li>
+    </ul>
+
+  </div>
+</div>
+
+<footer>
+<div class="links">
+  <a href="../index.html">Home</a>
+  <a href="https://github.com/canivel/kaos">GitHub</a>
+  <a href="https://github.com/canivel/kaos/blob/main/docs/skills.md">Skills Docs</a>
+  <a href="kaos-cross-agent-memory.html">Cross-Agent Memory</a>
+  <a href="../index.html#blog">All Posts</a>
+</div>
+<p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
+</footer>
+
+</body>
+</html>
