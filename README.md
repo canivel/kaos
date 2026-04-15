@@ -2,7 +2,7 @@
 
 **The living synthesis of agentic AI research.** Six research breakthroughs — memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.7.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![Research](https://img.shields.io/badge/research%20integrations-7-brightgreen)]()
