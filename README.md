@@ -57,17 +57,17 @@ KAOS handles isolation, checkpointing, and the dashboard automatically.
 
 Each capability in KAOS comes from a proven source. Nothing is invented that doesn't need to be.
 
-| Problem | Best-in-class solution | Source |
-|---|---|---|
-| Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) |
-| Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) |
-| Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) |
-| Context explodes, quality drops | AAAK compact notation, 57% savings at default | [MemPalace](https://github.com/milla-jovovich/mempalace) |
-| Agents co-evolve poorly | Stagnation detection + skill sharing | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) |
-| Failures are opaque | Surrogate Verifier — isolated failure diagnostics | [EvoSkills arXiv:2604.01687](https://arxiv.org/abs/2604.01687) |
-| Strategies don't improve | Evolutionary proposer reads execution traces | [Meta-Harness arXiv:2603.28052](https://arxiv.org/abs/2603.28052) |
-| Agent isolation is convention | Enforced per-agent VFS + audit trail | KAOS core |
-| Agent crashes lose progress | Checkpoint / restore / diff | KAOS core |
+| Problem | Best-in-class solution | Source | Since |
+|---|---|---|---|
+| Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | **v0.7.0 🆕** |
+| Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) | v0.6.0 |
+| Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) | v0.6.0 |
+| Agents co-evolve poorly | Stagnation detection + skill sharing | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) | v0.6.0 |
+| Failures are opaque | Surrogate Verifier — isolated failure diagnostics | [EvoSkills arXiv:2604.01687](https://arxiv.org/abs/2604.01687) | v0.5.1 |
+| Context explodes, quality drops | AAAK compact notation, 57% savings at default | [MemPalace](https://github.com/milla-jovovich/mempalace) | v0.5.2 |
+| Strategies don't improve | Evolutionary proposer reads execution traces | [Meta-Harness arXiv:2603.28052](https://arxiv.org/abs/2603.28052) | v0.2.0 |
+| Agent isolation is convention | Enforced per-agent VFS + audit trail | KAOS core | v0.1.0 |
+| Agent crashes lose progress | Checkpoint / restore / diff | KAOS core | v0.1.0 |
 
 ---
 
