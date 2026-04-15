@@ -105,6 +105,8 @@ nav a:hover{color:var(--fg)}
 .rb-badge-new{font-family:var(--mono);font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:4px;background:rgba(0,206,201,.15);color:#00cec9;border:1px solid rgba(0,206,201,.35);letter-spacing:.5px;text-transform:uppercase}
 .rb-badge-ver{font-family:var(--mono);font-size:.62rem;padding:.15rem .5rem;border-radius:4px;background:rgba(162,155,254,.1);color:var(--accent2);border:1px solid rgba(162,155,254,.25);letter-spacing:.3px}
 .rb-paper-used code{background:var(--bg3);padding:.1rem .35rem;border-radius:3px;font-size:.75rem;color:var(--accent2)}
+.rb-paper-demo{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-family:var(--mono);color:var(--accent2);border:1px solid rgba(162,155,254,.25);border-radius:4px;padding:.2rem .55rem;margin-top:.6rem;transition:color .2s,border-color .2s,background .2s}
+.rb-paper-demo:hover{color:var(--cyan);border-color:rgba(24,255,255,.4);background:rgba(24,255,255,.05)}
 
 /* ── Problem ──────────────────────────────────────── */
 .problem{background:var(--bg2)}
@@ -405,6 +407,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a> &bull; Zhou et al. 2026</div>
       <p>Skills are <em>procedural</em> artifacts &mdash; parameterized templates that encode reliable solution strategies. Agents save them, any agent searches and applies them. Usage and success are tracked for reliability ranking.</p>
       <div class="rb-paper-used">Used in: <code>SkillStore</code> &bull; <code>kaos skills</code> &bull; <code>skill_*</code> MCP tools</div>
+      <a class="rb-paper-demo" href="blog/kaos-skill-library.html">&#9654; blog &amp; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
@@ -413,6 +416,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://github.com/thedotmack/claude-mem">github.com/thedotmack/claude-mem</a> &bull; Alex Newman &bull; AGPL-3.0</div>
       <p>Agents write compact, searchable memories — results, skills, errors, observations — accessible to every agent via FTS5/BM25 full-text search. Knowledge persists across sessions and projects.</p>
       <div class="rb-paper-used">Used in: <code>MemoryStore</code> &bull; <code>kaos memory</code> &bull; <code>agent_memory_*</code> MCP tools</div>
+      <a class="rb-paper-demo" href="blog/kaos-cross-agent-memory.html">&#9654; blog &amp; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
@@ -421,6 +425,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.07988">arXiv:2604.07988</a> &bull; Balakrishnan et al., Meta 2026</div>
       <p>Append-only shared log with a 4-stage intent/vote/decision/commit loop. No agent can act without consensus. Every action is auditable, reversible, and queryable with SQL.</p>
       <div class="rb-paper-used">Used in: <code>SharedLog</code> &bull; <code>kaos log</code> &bull; <code>shared_log_*</code> MCP tools</div>
+      <a class="rb-paper-demo" href="blog/kaos-shared-log.html">&#9654; blog &amp; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
@@ -429,6 +434,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01658">arXiv:2604.01658</a></div>
       <p>Shared persistent memory, per-iteration reflection, stagnation-triggered pivot, and live skill sharing across co-evolving agents. 3&ndash;10&times; higher improvement rates.</p>
       <div class="rb-paper-used">Used in: <code>mh_spawn_coevolution</code> &bull; <code>mh_hub_sync</code></div>
+      <a class="rb-paper-demo" href="docs/demos/kaos_07_coral_coevolution.gif" target="_blank">&#9654; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.5.1</span></div>
@@ -437,6 +443,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01687">arXiv:2604.01687</a></div>
       <p>Surrogate Verifier &mdash; informationally isolated failure diagnostics. Reads execution outputs only, never source code. Gives the proposer structured &ldquo;why it failed + how to fix it&rdquo;.</p>
       <div class="rb-paper-used">Used in: <code>SurrogateVerifier</code></div>
+      <a class="rb-paper-demo" href="docs/demos/kaos_uc03_post_mortem_debug.gif" target="_blank">&#9654; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.5.2</span></div>
@@ -445,6 +452,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://github.com/milla-jovovich/mempalace">github.com/milla-jovovich/mempalace</a></div>
       <p>AAAK compact notation &mdash; dense shorthand that any LLM reads without decoders. 57% context savings at default, 95% at ultra, with 100% quality retained.</p>
       <div class="rb-paper-used">Used in: <code>Compactor</code> &bull; <code>kaos mh search</code></div>
+      <a class="rb-paper-demo" href="docs/demos/kaos_06_meta_harness.gif" target="_blank">&#9654; demo</a>
     </div>
     <div class="rb-paper">
       <div class="rb-paper-badges"><span class="rb-badge-ver">v0.2.0</span></div>
@@ -453,6 +461,7 @@ result = log.decide(intent_id, <span class="st">"refactor-agent"</span>)
       <div class="rb-paper-source"><a href="https://arxiv.org/abs/2603.28052">arXiv:2603.28052</a> &bull; Stanford / MIT / KRAFTON</div>
       <p>Evolutionary proposer reads full execution traces and automatically searches for the best prompt strategy, retrieval approach, and context design.</p>
       <div class="rb-paper-used">Used in: <code>kaos mh search</code></div>
+      <a class="rb-paper-demo" href="docs/demos/kaos_mh_full_demo.gif" target="_blank">&#9654; demo</a>
     </div>
   </div>
 </div>
