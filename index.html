@@ -323,7 +323,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
       <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
     </div>
     <div class="badges">
-      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
+      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.7.0</span>
       <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">7 research integrations</span>
       <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">self-improving</span>
       <span class="badge">safe by design</span>
@@ -803,8 +803,8 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <span class="si-ev-label">MCP tools</span>
     </div>
     <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--orange)">v0.1&rarr;v0.6</span>
-      <span class="si-ev-label">6 versions in 2 weeks</span>
+      <span class="si-ev-num" style="color:var(--orange)">v0.1&rarr;v0.7</span>
+      <span class="si-ev-label">7 versions in 2 weeks</span>
     </div>
   </div>
 </div>
@@ -1105,9 +1105,26 @@ kaos log decide refactor-agent --intent 2
 
     <div class="release">
       <div class="release-header">
+        <span class="release-version">v0.7.0</span>
+        <span class="release-date">April 15, 2026</span>
+        <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">Cross-Agent Skill Library &mdash; <a href="https://arxiv.org/abs/2604.08224" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.08224 &bull; Zhou et al. 2026</a></p>
+      <ul>
+        <li><strong>SkillStore</strong> &mdash; dedicated skill library distinct from memory. Skills are parameterized prompt templates (<code>{param}</code> placeholders) — procedural patterns any agent can save, search, and apply.</li>
+        <li><strong>FTS5 + BM25 search</strong> &mdash; searches across name, description, tags, and template body with porter stemming. <code>kaos skills search "classification accuracy"</code> finds relevant patterns across all agents and sessions.</li>
+        <li><strong>Outcome tracking</strong> &mdash; every applied skill records success or failure. Skills accumulate reliability scores over time. <code>kaos skills ls --order success_count</code> surfaces what actually works.</li>
+        <li><strong>5 new MCP tools</strong> &mdash; <code>skill_save</code>, <code>skill_search</code>, <code>skill_apply</code>, <code>skill_list</code>, <code>skill_outcome</code>. 30 MCP tools total.</li>
+        <li>CLI: <code>kaos skills save / search / ls / apply / delete</code></li>
+        <li><strong>Schema v3</strong> &mdash; <code>agent_skills</code> table + FTS5 virtual table + sync triggers. Migration applied automatically.</li>
+        <li><strong>MIT license</strong> &mdash; switched from Apache 2.0. Third-party license notices (claude-mem AGPL-3.0, research papers) preserved in LICENSE file.</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
         <span class="release-version">v0.6.0</span>
         <span class="release-date">April 13, 2026</span>
-        <span class="release-tag">latest</span>
       </div>
       <p class="release-category">Cross-Agent Memory &mdash; <a href="https://github.com/thedotmack/claude-mem" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">claude-mem by @thedotmack</a></p>
       <ul>
@@ -1260,7 +1277,7 @@ kaos log decide refactor-agent --intent 2
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">cross-agent memory</span>
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">FTS5</span>
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">meta-harness</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.6.0</span>
+        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.7.0</span>
         <span style="color:#fd79a8;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
       </div>
     </a>
@@ -1284,17 +1301,17 @@ kaos log decide refactor-agent --intent 2
 
     <a href="blog/kaos-v060.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='var(--accent2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
       <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(108,92,231,.15);color:var(--accent2);padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(108,92,231,.2)">v0.6.0</span>
+        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(108,92,231,.15);color:var(--accent2);padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(108,92,231,.2)">v0.7.0</span>
         <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 10, 2026</span>
         <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 10 min read</span>
       </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">From 48% to 83%: How KAOS v0.6.0 Automates Multi-Agent AI Research</h3>
+      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">From 48% to 83%: How KAOS v0.7.0 Automates Multi-Agent AI Research</h3>
       <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A complete walkthrough of the Meta-Harness search loop — seed evaluation, 15 iterations, the CORAL plateau pivot that breaks a 4-iteration stall, the two-step decomposition breakthrough, and the winning harness. Nothing skipped.</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">Meta-Harness</span>
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">CORAL</span>
         <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">co-evolution</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.6.0</span>
+        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.7.0</span>
         <span style="color:var(--accent2);font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
       </div>
     </a>
