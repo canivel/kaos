@@ -92,7 +92,17 @@ def setup(output: str):
 @click.option("--config-file", default=DEFAULT_CONFIG, help="Config file path")
 @click.option("--model", "-m", help="Force a specific model")
 @click.option("--checkpoint-interval", default=10, help="Auto-checkpoint every N iterations")
-def run(task: str, name: str, db: str, config_file: str, model: str, checkpoint_interval: int):
+@click.option("--ask/--no-ask", default=False,
+              help="Run the intake step first: analyze the task and ask any clarifying "
+                   "questions the builder genuinely needs before starting (0 or more — dynamic, "
+                   "no fixed count).")
+@click.option("--answers", type=click.Path(exists=True, dir_okay=False),
+              help="Path to a JSON file with pre-filled answers (for non-interactive --ask).")
+@click.option("--intake-only", is_flag=True, default=False,
+              help="Run only the intake step and print the questions as JSON. Does not spawn "
+                   "an agent. Useful for scripting or previewing.")
+def run(task: str, name: str, db: str, config_file: str, model: str,
+        checkpoint_interval: int, ask: bool, answers: str, intake_only: bool):
     """Spawn and run an agent with a task."""
     from kaos.router.gepa import GEPARouter
     from kaos.ccr.runner import ClaudeCodeRunner
@@ -105,6 +115,34 @@ def run(task: str, name: str, db: str, config_file: str, model: str, checkpoint_
         return
 
     router = GEPARouter.from_config(config_file)
+
+    # ── Intake step (dynamic clarifying questions) ──────────────────
+    if ask or intake_only:
+        from kaos.intake import analyze, ask_interactively, enrich_task
+
+        try:
+            questions = asyncio.run(analyze(task, router, force_model=model))
+        except Exception as e:
+            console.print(f"[red]Intake step failed:[/red] {e}")
+            afs.close()
+            return
+
+        if intake_only:
+            click.echo(json.dumps([q.to_dict() for q in questions], indent=2))
+            afs.close()
+            return
+
+        if not questions:
+            console.print("[green]\u2714 intake-agent:[/green] task is fully specified. "
+                          "No questions — proceeding.")
+        else:
+            if answers:
+                with open(answers) as f:
+                    answer_map = json.load(f)
+            else:
+                answer_map = ask_interactively(questions)
+            task = enrich_task(task, answer_map)
+
     ccr = ClaudeCodeRunner(
         afs, router, checkpoint_interval=checkpoint_interval
     )
