@@ -2,6 +2,54 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.7.0] - 2026-04-15
+
+### Cross-Agent Skill Library (arXiv:2604.08224 — Zhou et al. 2026)
+
+Adds a dedicated skill library distinct from memory. Skills are *procedural* artifacts — parameterized prompt templates that encode reliable solution strategies. Agents save them; any agent in any future session can search and apply them.
+
+**Core**
+- `kaos/skills.py` — `SkillStore` with `save`, `search` (FTS5+BM25), `get`, `list`, `apply`, `record_outcome`, `delete`, `stats`
+- Skills have `{param}` placeholders in templates. `skill.params()` returns the list; `skill.apply(**kwargs)` renders the filled prompt.
+- `use_count` / `success_count` tracked per skill. `kaos skills ls --order success_count` surfaces what actually works.
+- Skills are shared across all agents in the project — any agent can read any other agent's skills.
+
+**Schema v3**
+- New `agent_skills` table with FTS5 virtual table (`agent_skills_fts`) and insert/update/delete sync triggers.
+- Porter unicode61 stemming over name, description, tags, and template body.
+- Migration applied automatically to existing databases.
+
+**MCP tools** (30 total, +5)
+- `skill_save` — save a new skill with name, description, template, tags, source agent
+- `skill_search` — BM25 full-text search across all skills
+- `skill_apply` — render a skill template with parameters; optionally record outcome immediately
+- `skill_list` — list skills with tag/agent/sort filters
+- `skill_outcome` — record success or failure for reliability tracking
+
+**CLI**
+- `kaos skills save --name X --description Y --template Z --tags a,b`
+- `kaos skills search "query"` — FTS5+BM25, supports phrases, NOT, wildcards
+- `kaos skills ls --order success_count`
+- `kaos skills apply <id> -p key=value`
+- `kaos skills delete <id>`
+
+**Tests** — 37 new tests (256 total)
+
+**Memory vs Skills distinction**
+
+| | Memory | Skill |
+|---|---|---|
+| What it stores | Facts, observations, results | Procedures, templates |
+| Example | "Accuracy was 87% with ensemble" | "Use {n} models with {voting} voting" |
+| Table | `memory` | `agent_skills` |
+
+### MIT License
+
+- Switched from Apache 2.0 to MIT.
+- Third-party license notices preserved in `LICENSE` (claude-mem AGPL-3.0, research paper credits).
+
+---
+
 ## [0.6.0] - 2026-04-09
 
 ### CORAL: Autonomous Multi-Agent Evolution (inspired by arXiv:2604.01658)
