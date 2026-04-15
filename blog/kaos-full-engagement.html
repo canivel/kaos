@@ -190,10 +190,10 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
     <h2>Step 0: The problem statement</h2>
 
-    <p>The engagement starts with a plain-English description of the problem — what exists now, what's needed, and what constraints matter. KAOS spawns an intake agent that indexes the prompt against the skill library and memory store, then surfaces clarifying questions before any implementation begins:</p>
+    <p>The engagement starts with a plain-English description of the problem — what exists now, what's needed, and what constraints matter. You hand that to <code>kaos run</code> with <code>--ask</code>, and KAOS runs an intake step that analyzes the task and surfaces only the clarifying questions a builder genuinely needs before starting. Zero, two, six — whatever the task actually warrants. There is no hard-coded count.</p>
 
-    <pre>$ kaos init --db payments-platform.db
-Initialized KAOS database: payments-platform.db
+    <pre>$ kaos init --db demo-engagement.db
+Initialized KAOS database: demo-engagement.db
 
 $ kaos run "
 We need to replace our legacy payments monolith. Requirements:
@@ -209,30 +209,55 @@ We need to replace our legacy payments monolith. Requirements:
 - Migration: zero-downtime cutover from existing Rails monolith
 - Language: Python (FastAPI) for services, Go for the hot payment path
 - Test coverage: &gt;90% unit, full integration suite, load test to 50k TPS
-" --name intake-agent --db payments-platform.db</pre>
+" --name intake-agent --db demo-engagement.db --ask --intake-only</pre>
 
     <div class="callout">
-      <strong>What happens.</strong> KAOS indexes the prompt against the cross-agent skill library and memory store, then surfaces clarifying questions before beginning any implementation work — rather than making assumptions that cause rework.
+      <strong>What <code>--ask</code> does.</strong> Before spawning any build agents, KAOS routes the task through <code>kaos/intake.py</code>, which calls a model with a single instruction: <em>return the clarifying questions a builder genuinely needs — no fixed count, zero is valid</em>. The count is dynamic on purpose: a trivially-specified task returns <code>[]</code>; a genuinely under-specified one returns as many questions as it needs. <code>--intake-only</code> prints the questions as JSON without spawning the agent, so you can preview them.
     </div>
 
-    <h3>KAOS asks three questions</h3>
+    <h3>Real output from <code>--ask --intake-only</code></h3>
 
-    <p>The intake agent reviews the prompt against known failure patterns from memory and returns targeted questions before starting:</p>
+    <p>Run against the task above, the intake agent returned <strong>6 questions</strong> — not 3, not because anything is hard-coded, but because this particular task has 6 genuinely load-bearing ambiguities. The output is copied verbatim from the terminal:</p>
 
-    <pre><span style="color:#6c5ce7">kaos</span> <span style="color:#a29bfe">›</span> intake-agent flagged 3 ambiguities before proceeding:
+    <pre>[
+  {
+    "question": "What message broker is in scope \u2014 Kafka, GCP Pub/Sub, or something else?",
+    "why": "Dead-letter queue topology, retry back-off design, and the Go hot-path consumer model differ fundamentally between Kafka (partition-based replay) and Pub/Sub (push/pull with ack deadlines). This drives core architecture of the async engine."
+  },
+  {
+    "question": "What is the target PCI-DSS compliance tier \u2014 SAQ A, SAQ D, or full Level 1 (QSA audit)?",
+    "why": "Level 1 requires a formal QSA, network segmentation evidence, HSM key management, and annual pen test artifacts. SAQ A/D scopes are an order of magnitude smaller. This determines whether 'automated evidence collection' is a reporting job or a full control-plane build."
+  },
+  {
+    "question": "Does a fraud ML model and labeled training dataset already exist, or is this greenfield?",
+    "why": "Greenfield means building a feature store, labeling pipeline, and baseline model from scratch \u2014 3\u20136 months of ML platform work. An existing model changes scope to serving infrastructure, retraining automation, and explainability layer only."
+  },
+  {
+    "question": "What database engine does the Rails monolith use, and is it the system of record for transaction history post-migration?",
+    "why": "Zero-downtime cutover strategy (dual-write, change-data-capture, or logical replication) is database-specific. Postgres vs. MySQL vs. Aurora changes tooling entirely, and whether the old DB is decommissioned affects data migration scope and idempotency key lineage."
+  },
+  {
+    "question": "Is 50k TPS the target peak burst or sustained throughput?",
+    "why": "Sustained 50k TPS requires roughly 5\u201310\u00d7 the infrastructure of a burst target at the same number. GKE node pool sizing, Go runtime concurrency budget, and the fraud scoring latency budget within the 200ms p99 SLA all scale with this."
+  },
+  {
+    "question": "What is the interface contract between the Go payment path and Python services \u2014 gRPC, shared database, or async message handoff?",
+    "why": "This boundary determines how distributed transactions achieve idempotency (two-phase commit, outbox pattern, or saga). A shared DB means one transaction; message handoff means an at-least-once saga \u2014 fundamentally different failure modes and rollback design."
+  }
+]</pre>
 
-  1. Fraud model training data: do you have labeled historical transactions
-     (fraud/not-fraud), or should the model bootstrap from synthetic data
-     and refine on your first 30 days of live traffic?
+    <p>Every one of these is the kind of thing that — if guessed wrong — turns into multi-week rework in week 4. The intake agent flagged them in about 9 seconds from a single API call, before a single build agent was spawned.</p>
 
-  2. Client portal auth: SSO via your existing Okta tenant, or standalone
-     auth with email/password + TOTP?
+    <p>A <strong>trivially-specified task</strong> gets zero questions. As a sanity check:</p>
 
-  3. Migration strategy: parallel-run (new system processes same transactions
-     as legacy for 2 weeks, results compared), or immediate cutover with
-     feature flags per client cohort?</pre>
+    <pre>$ kaos run "Build a simple hello world REST API in FastAPI that returns
+{\"message\": \"hello\"} on GET /" \
+    --name intake-agent --db demo-engagement.db --ask --intake-only
+[]</pre>
 
-    <p>Three questions. The CTO answered in two minutes: synthetic bootstrap + live refinement, Okta SSO, parallel-run migration. KAOS confirmed scope and began.</p>
+    <p>The intake model returned an empty array because there is nothing architecturally ambiguous about a hello-world endpoint. No questions fire. The build agent would proceed immediately.</p>
+
+    <p>You answer the questions (in a shell, a file, or skip them with blanks), <code>--ask</code> appends them to the task, and the agent run starts with full context. No hard-coded count. No fake clarifications. The count is exactly whatever the task warrants.</p>
 
     <hr>
 
