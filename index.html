@@ -184,9 +184,34 @@ nav a:hover{color:var(--fg)}
 
 /* ── Architecture ─────────────────────────────────── */
 .architecture{background:var(--bg2)}
-.architecture h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
-.arch-image{max-width:900px;margin:0 auto}
-.arch-image img{width:100%;height:auto;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
+.architecture h2{text-align:center;font-size:2rem;margin-bottom:.6rem}
+.architecture .arch-sub{text-align:center;color:var(--fg2);font-size:.95rem;margin-bottom:2.5rem}
+.arch-diagram{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:0}
+.arch-layer{display:grid;grid-template-columns:120px 1fr;gap:1rem;align-items:center}
+.arch-layer-label{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--fg2);text-align:right;padding-right:.5rem;opacity:.7;line-height:1.4}
+.arch-cells{display:flex;gap:.6rem;flex-wrap:wrap;padding:.8rem;background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:10px}
+.arch-cell{flex:1;min-width:110px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:.65rem .8rem;text-align:center}
+.arch-cell .ac-name{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--fg);line-height:1.3;margin-bottom:.2rem}
+.arch-cell .ac-sub{font-size:.68rem;color:var(--fg2);line-height:1.4}
+.arch-cell .ac-badge{font-family:var(--mono);font-size:.6rem;padding:.1rem .35rem;border-radius:3px;margin-top:.3rem;display:inline-block}
+.arch-connector{display:flex;align-items:center;justify-content:center;height:20px;margin-left:128px}
+.arch-connector::after{content:'↓';color:var(--accent);opacity:.4;font-size:1rem}
+/* layer accent colors */
+.al-interfaces .arch-cells{border-top:2px solid var(--accent2)}
+.al-interfaces .arch-cell{border-top:2px solid var(--accent2)}
+.al-orchestration .arch-cells{border-top:2px solid var(--cyan)}
+.al-orchestration .arch-cell{border-top:2px solid rgba(24,255,255,.4)}
+.al-extern .arch-cells{border-top:2px solid var(--green)}
+.al-extern .arch-cell{border-top:2px solid rgba(0,230,118,.5)}
+.al-extern .arch-cell .ac-name{color:var(--green)}
+.al-metaharness .arch-cells{border-top:2px solid var(--orange)}
+.al-metaharness .arch-cell{border-top:2px solid rgba(255,145,0,.4)}
+.al-core .arch-cells{border-top:2px solid var(--accent)}
+.al-core .arch-cell{border-top:2px solid rgba(108,92,231,.5)}
+.al-storage .arch-cells{border-top:2px solid rgba(255,255,255,.15);background:var(--bg3)}
+.al-storage .arch-cell{border:none;background:transparent;flex:unset;min-width:auto}
+.al-storage .arch-cell .ac-name{color:var(--fg2)}
+@media(max-width:700px){.arch-layer{grid-template-columns:1fr}.arch-layer-label{text-align:left;padding-right:0}.arch-connector{margin-left:0}.arch-cell{min-width:90px}}
 
 /* ── Use Cases ────────────────────────────────────── */
 .use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
@@ -770,8 +795,165 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="architecture">
 <div class="wrap">
   <h2>Architecture</h2>
-  <div class="arch-image">
-    <img src="image.png" alt="KAOS Architecture — Interfaces, Orchestration, Core VFS Engine, and SQLite storage layers" loading="lazy">
+  <p class="arch-sub">Six clean layers. Every agent interaction flows through the same stack — from MCP tool call or CLI command down to a single SQLite file.</p>
+
+  <div class="arch-diagram">
+
+    <!-- Interfaces -->
+    <div class="arch-layer al-interfaces">
+      <div class="arch-layer-label">Interfaces</div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">MCP Server</div>
+          <div class="ac-sub">30 tools<br>Claude Code / Cursor</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">CLI</div>
+          <div class="ac-sub">20+ commands<br>--json composable</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Python API</div>
+          <div class="ac-sub">from kaos import Kaos<br>full programmatic control</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Web Dashboard</div>
+          <div class="ac-sub">Gantt timeline<br>agent inspector, live events</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
+    <!-- Orchestration -->
+    <div class="arch-layer al-orchestration">
+      <div class="arch-layer-label">Orchestration</div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">CCR Runner</div>
+          <div class="ac-sub">agent execution loop<br>parallel waves, isolation</div>
+        </div>
+        <div class="arch-cell" style="flex:2;min-width:220px">
+          <div class="ac-name">GEPA Router</div>
+          <div class="ac-sub" style="display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-top:.2rem">
+            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">local-fast</span>
+            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">local-strong</span>
+            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">openai</span>
+            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">anthropic</span>
+            <span style="font-family:var(--mono);font-size:.64rem;background:rgba(0,230,118,.1);padding:.1rem .35rem;border-radius:3px;color:var(--green)">agent_sdk</span>
+          </div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Tool Registry</div>
+          <div class="ac-sub">per-agent tool dispatch<br>VFS, checkpoints, events</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
+    <!-- Externalization -->
+    <div class="arch-layer al-extern">
+      <div class="arch-layer-label">Externalization<br><span style="color:var(--green);font-size:.6rem">v0.6 &ndash; v0.7</span></div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">MemoryStore</div>
+          <div class="ac-sub">FTS5 / BM25<br>cross-agent episodic memory</div>
+          <div class="ac-badge" style="background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2)">claude-mem</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">SkillStore</div>
+          <div class="ac-sub">FTS5 / BM25<br>parameterized templates</div>
+          <div class="ac-badge" style="background:rgba(0,206,201,.1);color:#00cec9;border:1px solid rgba(0,206,201,.2)">arXiv:2604.08224</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">SharedLog</div>
+          <div class="ac-sub">intent → vote → decide<br>append-only, WAL mode</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.2)">LogAct arXiv:2604.07988</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
+    <!-- Meta-Harness -->
+    <div class="arch-layer al-metaharness">
+      <div class="arch-layer-label">Meta-Harness</div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">Search Loop</div>
+          <div class="ac-sub">evolutionary proposer<br>reads full execution traces</div>
+          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2603.28052</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Surrogate Verifier</div>
+          <div class="ac-sub">isolated failure diagnosis<br>why it failed + how to fix</div>
+          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2604.01687</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">CORAL Co-Evolution</div>
+          <div class="ac-sub">stagnation detection<br>parallel agent skill sharing</div>
+          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2604.01658</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
+    <!-- Core Engine -->
+    <div class="arch-layer al-core">
+      <div class="arch-layer-label">Core Engine</div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">Kaos VFS</div>
+          <div class="ac-sub">per-agent isolation<br>enforced at query level</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Checkpoints</div>
+          <div class="ac-sub">snapshot / restore / diff<br>named, surgical rollback</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Events Journal</div>
+          <div class="ac-sub">append-only audit log<br>every tool call recorded</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Blob Store</div>
+          <div class="ac-sub">content-addressable<br>SHA-256, deduped</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">MemPalace</div>
+          <div class="ac-sub">AAAK compaction<br>57% context savings</div>
+          <div class="ac-badge" style="background:rgba(24,255,255,.08);color:var(--cyan);border:1px solid rgba(24,255,255,.2)">mempalace</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
+    <!-- Storage -->
+    <div class="arch-layer al-storage">
+      <div class="arch-layer-label">Storage</div>
+      <div class="arch-cells" style="justify-content:center;gap:1.5rem">
+        <div class="arch-cell">
+          <div class="ac-name">SQLite</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name" style="color:var(--fg2)">single .db file</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name" style="color:var(--fg2)">WAL mode</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name" style="color:var(--fg2)">10 tables</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name" style="color:var(--fg2)">plain SQL</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name" style="color:var(--fg2)">copy &amp; share</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 </section>
@@ -782,37 +964,37 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
   <div class="si-header">
     <div class="si-eyebrow">Continuously Evolving</div>
     <h2>A Framework That Improves Itself</h2>
-    <p class="si-sub">KAOS doesn&rsquo;t just run research &mdash; it uses its own tools to get better. The meta-harness optimizes KAOS&rsquo;s own strategies. Memory accumulates what works across runs. The shared log coordinates changes safely before they ship. We add new integrations as we find synergy and reason to include them &mdash; and KAOS makes the case for each one by running it on itself first.</p>
+    <p class="si-sub">Every session makes the next one better. Skills record what worked. Memory accumulates what was learned. The meta-harness reads execution traces and proposes better strategies. KAOS compounds knowledge the same way it compounds capability &mdash; automatically, across every run.</p>
   </div>
   <div class="si-loop">
     <div class="si-step">
       <div class="si-step-num">01 &mdash; Discover</div>
       <h3>Find the best solution</h3>
-      <p>A hard problem in agentic AI has already been solved somewhere &mdash; in a paper, an open-source project, or empirical work. Identify it. Read it carefully. Understand what it actually does.</p>
+      <p>Every hard problem in agentic AI has already been solved somewhere &mdash; in a paper or open-source project. We identify it, read it carefully, and integrate it faithfully. Seven so far.</p>
     </div>
     <div class="si-arrow">&rarr;</div>
     <div class="si-step">
       <div class="si-step-num">02 &mdash; Integrate</div>
-      <h3>Implement faithfully</h3>
-      <p>Build it into KAOS. Wire it into the CLI, MCP server, and Python API so it composes with everything else. Write tests. Credit the source explicitly. No reinvention.</p>
+      <h3>Wire into every interface</h3>
+      <p>Each integration lands in the CLI, MCP server, and Python API simultaneously. Tests at 90%+. Source credited. SharedLog coordinates any risky change before it ships &mdash; no agent acts without consensus.</p>
     </div>
     <div class="si-arrow">&rarr;</div>
     <div class="si-step">
-      <div class="si-step-num">03 &mdash; Self-apply</div>
-      <h3>Run it on KAOS itself</h3>
-      <p>Use meta-harness to test new strategies on KAOS&rsquo;s own benchmarks. Store findings in MemoryStore. Coordinate any risky changes through SharedLog before they land.</p>
+      <div class="si-step-num">03 &mdash; Run &amp; Record</div>
+      <h3>Every session writes back</h3>
+      <p>Agents save reusable patterns to SkillStore. Lessons, tradeoffs, and error fixes go to MemoryStore. The SurrogateVerifier diagnoses failures automatically. MemPalace keeps long runs coherent. Nothing is lost.</p>
     </div>
     <div class="si-arrow">&rarr;</div>
     <div class="si-step">
       <div class="si-step-num">04 &mdash; Compound</div>
-      <h3>Each version enables the next</h3>
-      <p>A more capable KAOS finds better research, integrates it faster, and tests it more rigorously. The framework that improves agents also improves itself &mdash; by the same mechanism.</p>
+      <h3>Each project starts smarter</h3>
+      <p>The next session searches skills before writing a single line. The next agent loads prior memory before exploring. The meta-harness reads traces from every prior run. The gap vs. a blank-slate system grows with every session.</p>
     </div>
   </div>
   <div class="si-evidence">
     <div class="si-ev-item">
       <span class="si-ev-num" style="color:var(--accent2)">7</span>
-      <span class="si-ev-label">Research integrations and growing</span>
+      <span class="si-ev-label">Research integrations</span>
     </div>
     <div class="si-ev-item">
       <span class="si-ev-num" style="color:var(--green)">256</span>
@@ -825,6 +1007,14 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
     <div class="si-ev-item">
       <span class="si-ev-num" style="color:var(--orange)">v0.1&rarr;v0.7</span>
       <span class="si-ev-label">7 versions in 2 weeks</span>
+    </div>
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:#00cec9">10</span>
+      <span class="si-ev-label">SQLite tables</span>
+    </div>
+    <div class="si-ev-item">
+      <span class="si-ev-num" style="color:var(--gold,#ffd166)">5</span>
+      <span class="si-ev-label">LLM providers</span>
     </div>
   </div>
 </div>
