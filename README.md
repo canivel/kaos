@@ -75,12 +75,20 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 **CLI:**
 ```bash
-kaos run "refactor auth.py" -n auth-agent        # single agent
+kaos run "refactor auth.py" -n auth-agent         # single agent
+kaos run "..." -n engine --ask                    # intake step first: analyze
+                                                  # the task, ask only the
+                                                  # clarifying questions the
+                                                  # builder genuinely needs
+                                                  # (0 or more — dynamic)
+kaos run "..." -n engine --ask --intake-only      # preview questions as JSON
 kaos parallel \
   -t security "find vulnerabilities" \
   -t tests    "write unit tests" \
   -t docs     "update API docs"                   # parallel agents
 ```
+
+`--ask` routes the task through the intake agent before any build agent is spawned. A fully-specified task returns `[]` (no questions, agent starts immediately); an under-specified one returns as many clarifying questions as the task actually warrants — there is no fixed count.
 
 **Python:**
 ```python
