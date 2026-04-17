@@ -1,6 +1,6 @@
 # KAOS
 
-**The living synthesis of agentic AI research.** Six research breakthroughs — memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
+**The living synthesis of agentic AI research.** Seven research breakthroughs — skills that compound across projects, memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
 
 [![Version](https://img.shields.io/badge/version-0.7.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
@@ -59,7 +59,8 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 | Problem | Best-in-class solution | Source | Since |
 |---|---|---|---|
-| Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | **v0.7.0 🆕** |
+| Agents start on under-specified tasks | Dynamic intake — LLM-analyzed clarifying questions (0 or more, no fixed count) | KAOS core | **new 🆕** |
+| Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | v0.7.0 |
 | Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) | v0.6.0 |
 | Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) | v0.6.0 |
 | Agents co-evolve poorly | Stagnation detection + skill sharing | [CORAL arXiv:2604.01658](https://arxiv.org/abs/2604.01658) | v0.6.0 |
@@ -111,12 +112,19 @@ results = asyncio.run(ccr.run_parallel([
 
 ```bash
 kaos ls                            # list all agents + status
+kaos status <id>                   # detailed agent status (pid, heartbeat, config)
 kaos logs <id>                     # conversation + event log
 kaos read <id> /path/to/file       # read a file from the agent's VFS
-kaos checkpoint <id> -l "safe"     # snapshot agent state
+kaos search "TODO"                 # full-text search across every agent's VFS
+kaos index <id>                    # build /index.md of the agent's VFS
+kaos checkpoint <id> -l "safe"     # snapshot files + KV state
+kaos checkpoints <id>              # list all checkpoints
 kaos restore <id> --checkpoint X   # roll back to that snapshot
 kaos diff <id> --from X --to Y     # what changed between checkpoints?
+kaos kill <id>                     # terminate a running agent
 kaos query "SELECT * FROM events"  # raw SQL on everything
+kaos export <id> --output a.db     # export one agent to a standalone .db
+kaos import a.db --merge           # import agents back from a standalone .db
 kaos ui                            # open the web dashboard
 ```
 
@@ -134,10 +142,84 @@ The web dashboard shows each execution wave as a **Gantt timeline**: one horizon
 
 ---
 
+## Model providers
+
+KAOS routes every inference call through the GEPA router, which supports **5 providers** (raw `httpx` under the hood — no OpenAI SDK, no LiteLLM, no vendor lock-in):
+
+| Provider | How it's called | API key | Typical use |
+|---|---|---|---|
+| `claude_code` | Claude Code CLI subprocess (uses your existing CLI login) | none | default when you already have Claude Code installed |
+| `agent_sdk` | Claude Agent SDK in-process (no subprocess, no rate-limit contention) | none | recommended when you run alongside an active Claude Code session |
+| `anthropic` | Anthropic `/v1/messages` via httpx | `ANTHROPIC_API_KEY` | production, explicit billing |
+| `openai` | OpenAI / Azure / any OpenAI-compatible endpoint | `OPENAI_API_KEY` | GPT, local vLLM served as OpenAI-compatible |
+| `local` | vLLM / ollama / llama.cpp `/v1/chat/completions` | none | fully local, zero cost per call |
+
+Any mix of providers can coexist in a single `kaos.yaml` — route trivial/moderate work to a local model and send critical/complex tasks to a frontier model. `kaos setup` walks you through configuration.
+
+---
+
+## Cross-agent knowledge — Skills, Memory, Shared Log
+
+Three independent stores that agents use to talk to each other across sessions, projects, and databases. All three are FTS5-indexed and queryable with plain CLI:
+
+```bash
+# Skill Library — reusable parameterized templates
+kaos skills save --name fastapi-gateway \
+  --description "FastAPI + idempotent payments + webhook DLQ" \
+  --template "Build a FastAPI gateway for {project} with ..."
+kaos skills search "payments fastapi"
+kaos skills apply 1 --param project=checkout
+
+# Cross-Agent Memory — searchable results, insights, errors
+kaos memory write <agent_id> "Feast cold-start: inject p50 risk as prior" \
+  --type result --key feast-cold-start-fix
+kaos memory search "cold start"
+
+# Shared Log — LogAct intent / vote / decide coordination
+kaos log tail --n 20             # last 20 entries
+kaos log ls                      # counts by type (intent/vote/decide/commit/…)
+```
+
+All three are exposed as MCP tools too (see below).
+
+---
+
+## Meta-Harness — automated harness optimization
+
+Run an evolutionary search over agent harnesses themselves. The proposer reads execution traces from previous iterations, proposes new harness candidates, and the evaluator scores them on a benchmark. Pareto frontier, stagnation detection (CORAL), skill distillation.
+
+```bash
+kaos mh search --benchmark text_classify --iterations 20 --candidates 4
+kaos mh search --benchmark arc_agi3 --background       # detached worker
+kaos mh frontier <search_agent_id>                     # Pareto frontier
+kaos mh inspect <search_agent_id> <harness_id>         # source + scores + trace
+kaos mh status <search_agent_id>                       # iterations, frontier size
+kaos mh resume <search_agent_id> --benchmark text_classify
+kaos mh knowledge                                      # skills distilled across all searches
+```
+
+Built-in benchmarks: `text_classify` (DBpedia), `math_rag`, `agentic_coding`, `arc_agi3` (ARC-AGI-3), plus an extensible framework for your own.
+
+---
+
+## MCP server
+
+```bash
+kaos serve                         # stdio (default — for Claude Code / Cursor)
+kaos serve --transport sse --port 8788   # SSE over HTTP
+```
+
+Exposes **37 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, and 9 meta-harness (including CORAL co-evolution and skill distillation). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
+
+---
+
 ## Python library
 
 ```python
 from kaos import Kaos
+from kaos.memory import MemoryStore
+from kaos.skills import SkillStore
+from kaos.shared_log import SharedLog
 
 db = Kaos("project.db")
 
@@ -149,12 +231,47 @@ db.write(b, "/src/auth.py", b"# tests")  # no conflict — separate VFS
 
 # Checkpoint / restore
 cp = db.checkpoint(a, label="before-migration")
-# ... agent does work ...
 db.restore(a, cp)  # roll back just this agent
 
-# Query everything with SQL
+# Cross-agent memory, skills, coordination — all backed by FTS5
+mem = MemoryStore(db.conn)
+mem.write(a, "Found idempotency bug in retry path", type="insight")
+mem.search("idempotency")
+
+sk = SkillStore(db.conn)
+sk.save("security_review", "Check for injection attacks",
+        template="Review {target} for SQL injection and XSS...")
+sk.search("security")
+
+log = SharedLog(db.conn)
+intent_id = log.intent(a, "refactor auth module")
+log.vote(b, intent_id, approve=True, reason="plan looks safe")
+log.decide(intent_id, a)
+
+# Full SQL over everything
 db.query("SELECT name, status FROM agents")
 db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
+```
+
+Running agents programmatically (async via the CCR runner):
+
+```python
+import asyncio
+from kaos.ccr.runner import ClaudeCodeRunner
+from kaos.router.gepa import GEPARouter
+
+router = GEPARouter.from_config("kaos.yaml")
+ccr    = ClaudeCodeRunner(db, router)
+
+# Single agent
+result = asyncio.run(ccr.run_agent(a, "Refactor auth.py for testability"))
+
+# N agents in parallel, each with isolated VFS
+results = asyncio.run(ccr.run_parallel([
+    {"name": "security", "prompt": "Find vulnerabilities in auth.py"},
+    {"name": "tests",    "prompt": "Write unit tests for auth.py"},
+    {"name": "docs",     "prompt": "Update API docs"},
+]))
 ```
 
 ---
@@ -168,13 +285,13 @@ db.query("SELECT SUM(token_count) FROM tool_calls WHERE agent_id = ?", [a])
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag |
-| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 25 tools |
-| [Meta-Harness](docs/meta-harness.md) | Automated prompt/strategy optimization |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 37 tools |
+| [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |
 | [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |
 | [Skill Library](docs/skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
-| [Schema](docs/schema.md) | All 10 SQLite tables |
+| [Schema](docs/schema.md) | All 11 SQLite tables + 2 FTS5 indexes |
 | [Deployment](docs/deployment.md) | vLLM, production config |
 
 Full docs index → [`docs/`](docs/)
