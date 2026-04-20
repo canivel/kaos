@@ -1,0 +1,35 @@
+/* KAOS vault color scheme — matches the KAOS brand palette.
+ * Enable under Settings → Appearance → CSS snippets → kaos
+ */
+
+/* File tree color by folder */
+.nav-folder-title[data-path^="Agents"]        { color: #00e676; }
+.nav-folder-title[data-path^="Skills"]        { color: #00cec9; }
+.nav-folder-title[data-path^="Memory"]        { color: #fd79a8; }
+.nav-folder-title[data-path^="Checkpoints"]   { color: #ffd166; }
+.nav-folder-title[data-path^="Sessions"]      { color: #a29bfe; }
+.nav-folder-title[data-path^="VFS"]           { color: #6c5ce7; }
+.nav-folder-title[data-path^="Log"]           { color: #e3b341; }
+
+/* Frontmatter keys in reading view */
+.metadata-property[data-property-key="agent_id"] .metadata-property-key,
+.metadata-property[data-property-key="skill_id"] .metadata-property-key,
+.metadata-property[data-property-key="memory_id"] .metadata-property-key,
+.metadata-property[data-property-key="checkpoint_id"] .metadata-property-key {
+  color: #6c5ce7;
+  font-family: var(--font-monospace);
+}
+
+/* Callouts used by KAOS templates */
+.callout[data-callout="kaos-wave"] {
+  --callout-color: 0, 230, 118;
+  --callout-icon: flame;
+}
+.callout[data-callout="kaos-skill"] {
+  --callout-color: 0, 206, 201;
+  --callout-icon: sparkles;
+}
+.callout[data-callout="kaos-memory"] {
+  --callout-color: 253, 121, 168;
+  --callout-icon: brain;
+}

@@ -1,0 +1,51 @@
+filters:
+  and: []
+properties:
+  note.type:
+    displayName: Type
+  note.status:
+    displayName: Status
+  note.wave:
+    displayName: Wave
+  note.created_at:
+    displayName: Created
+views:
+  - type: table
+    name: Agents
+    filters:
+      and:
+        - note.type == "agent"
+    order:
+      - file.name
+      - note.wave
+      - note.status
+      - note.created_at
+  - type: table
+    name: Skills
+    filters:
+      and:
+        - note.type == "skill"
+    order:
+      - file.name
+      - note.use_count
+      - note.success_count
+      - note.created_at
+  - type: table
+    name: Memory
+    filters:
+      and:
+        - note.type == "memory"
+    order:
+      - file.name
+      - note.memory_type
+      - note.source_agent
+      - note.created_at
+  - type: table
+    name: Checkpoints
+    filters:
+      and:
+        - note.type == "checkpoint"
+    order:
+      - file.name
+      - note.source_agent
+      - note.created_at

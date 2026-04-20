@@ -1,0 +1,29 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {"query": "path:Agents", "color": {"a": 1, "rgb": 36817}},
+    {"query": "path:Skills", "color": {"a": 1, "rgb": 1638655}},
+    {"query": "path:Memory", "color": {"a": 1, "rgb": 16606120}},
+    {"query": "path:Checkpoints", "color": {"a": 1, "rgb": 16761411}},
+    {"query": "path:Sessions", "color": {"a": 1, "rgb": 11382256}},
+    {"query": "path:VFS", "color": {"a": 1, "rgb": 7900153}}
+  ],
+  "collapse-display": false,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.5,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1,
+  "close": true
+}

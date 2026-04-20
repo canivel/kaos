@@ -1,0 +1,5 @@
+# Obsidian's per-user state — intentionally not committed so the vault reloads
+# cleanly in each user's Obsidian instance.
+.obsidian/workspace*
+.obsidian/cache
+.obsidian/*.hotkeys.json

@@ -1647,5 +1647,100 @@ def skills_delete(ctx, skill_id: int, db: str):
         afs.close()
 
 
+@cli.group("obsidian")
+def obsidian_group():
+    """Export a KAOS database to an Obsidian-compatible markdown vault."""
+
+
+@obsidian_group.command("export")
+@click.option("--vault", required=True, type=click.Path(),
+              help="Path to the vault directory (created if missing)")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--clean", is_flag=True, default=False,
+              help="Wipe generated directories/files before export (preserves "
+                   ".obsidian/workspace* and any hand-written notes outside "
+                   "the owned folders).")
+@click.pass_context
+def obsidian_export(ctx, vault: str, db: str, clean: bool):
+    """Render agents, skills, memory, checkpoints, and the shared log as a vault."""
+    from kaos.obsidian import VaultExporter
+
+    if not Path(db).exists():
+        msg = f"Database not found: {db}"
+        if _json_err(ctx, msg):
+            return
+        console.print(f"[red]{msg}[/red]")
+        ctx.exit(1)
+        return
+
+    exporter = VaultExporter(db_path=db, vault_path=vault)
+    stats = exporter.export_all(clean=clean)
+
+    result = {
+        "vault": str(exporter.vault_path),
+        "db": db,
+        "agents": stats.agents,
+        "skills": stats.skills,
+        "memories": stats.memories,
+        "checkpoints": stats.checkpoints,
+        "log_entries": stats.log_entries,
+        "files_written": stats.files_written,
+    }
+    if _json_out(ctx, result):
+        return
+    console.print(f"[green]\u2714 Vault exported:[/green] {exporter.vault_path}")
+    console.print(
+        f"  {stats.agents} agents  \u00b7  {stats.skills} skills  \u00b7  "
+        f"{stats.memories} memories  \u00b7  {stats.checkpoints} checkpoints  \u00b7  "
+        f"{stats.log_entries} log entries"
+    )
+    console.print(f"  [dim]{stats.files_written} files written[/dim]")
+    console.print(
+        "\n  Open the folder in Obsidian: "
+        "[cyan]Manage Vaults \u2192 Open folder as vault \u2192 select the path above[/cyan]"
+    )
+
+
+@obsidian_group.command("info")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def obsidian_info(ctx, db: str):
+    """Preview what would be exported without writing anything."""
+    import sqlite3 as _sqlite3
+    if not Path(db).exists():
+        msg = f"Database not found: {db}"
+        if _json_err(ctx, msg):
+            return
+        console.print(f"[red]{msg}[/red]")
+        ctx.exit(1)
+        return
+
+    conn = _sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    conn.row_factory = _sqlite3.Row
+    try:
+        counts: dict[str, int] = {}
+        for table, label in [
+            ("agents", "agents"),
+            ("agent_skills", "skills"),
+            ("memory", "memories"),
+            ("checkpoints", "checkpoints"),
+            ("shared_log", "log_entries"),
+        ]:
+            try:
+                counts[label] = conn.execute(
+                    f"SELECT COUNT(*) FROM {table}"
+                ).fetchone()[0]
+            except _sqlite3.OperationalError:
+                counts[label] = 0
+    finally:
+        conn.close()
+
+    if _json_out(ctx, counts):
+        return
+    console.print(f"[bold]Export preview for[/bold] {db}")
+    for key, n in counts.items():
+        console.print(f"  {key:<14} {n}")
+
+
 if __name__ == "__main__":
     cli()
