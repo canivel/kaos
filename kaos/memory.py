@@ -124,20 +124,29 @@ class MemoryStore:
         limit: int = 10,
         type: str | None = None,
         agent_id: str | None = None,
+        rank: str = "bm25",
+        record_hits: bool = False,
+        requesting_agent_id: str | None = None,
     ) -> list[MemoryEntry]:
         """Full-text search over memory content and keys.
 
-        Uses SQLite FTS5 with porter stemming.  Results are ranked by BM25
-        relevance (most relevant first).
+        Uses SQLite FTS5 with porter stemming. BM25 relevance by default.
 
         Args:
             query:    FTS5 query string (supports phrases "like this", NOT, OR, *).
             limit:    Maximum number of results to return.
             type:     Optional filter by memory type.
             agent_id: Optional filter to a single agent's memories.
+            rank:     ``"bm25"`` (default) or ``"weighted"``. Weighted rank
+                      multiplies bm25 relevance by retrieval-frequency and
+                      recency signals populated by ``kaos dream``.
+            record_hits: If True, write each returned entry to ``memory_hits``
+                      so plasticity can learn which memories are actually
+                      consulted.
+            requesting_agent_id: Written to memory_hits when record_hits=True.
 
         Returns:
-            List of MemoryEntry sorted by relevance (best first).
+            List of MemoryEntry sorted by the chosen ranking (best first).
         """
         filters: list[str] = []
         params: list[Any] = [query]
@@ -150,12 +159,14 @@ class MemoryStore:
             params.append(agent_id)
 
         where = ("AND " + " AND ".join(filters)) if filters else ""
-        params.append(limit)
+        fetch = limit * 4 if rank == "weighted" else limit
+        params.append(fetch)
 
         rows = self._conn.execute(
             f"""
             SELECT m.memory_id, m.agent_id, m.type, m.key,
-                   m.content, m.metadata, m.created_at
+                   m.content, m.metadata, m.created_at,
+                   bm25(memory_fts) AS bm25_raw
             FROM memory_fts f
             JOIN memory m ON m.memory_id = f.memory_id
             WHERE memory_fts MATCH ?
@@ -165,7 +176,43 @@ class MemoryStore:
             """,
             params,
         ).fetchall()
-        return [MemoryEntry.from_row(r) for r in rows]
+        entries = [MemoryEntry.from_row(r) for r in rows]
+
+        if rank == "weighted":
+            from kaos.dream.signals import weighted_score
+            hits_by_id, last_hit_by_id = _memory_hits_map(
+                self._conn, [e.memory_id for e in entries]
+            )
+            bm25_by_id = {r["memory_id"]: -float(r["bm25_raw"] or 0.0) for r in rows}
+
+            def score(e: MemoryEntry) -> float:
+                hits = hits_by_id.get(e.memory_id, 0)
+                return weighted_score(
+                    bm25_score=bm25_by_id.get(e.memory_id, 1.0),
+                    uses=hits,
+                    successes=hits,  # every retrieval counts as a positive signal
+                    last_used_at=last_hit_by_id.get(e.memory_id) or e.created_at,
+                )
+
+            entries = sorted(entries, key=score, reverse=True)
+
+        entries = entries[:limit]
+
+        if record_hits and entries:
+            try:
+                self._conn.executemany(
+                    "INSERT INTO memory_hits (memory_id, agent_id, query, rank_pos) "
+                    "VALUES (?, ?, ?, ?)",
+                    [
+                        (e.memory_id, requesting_agent_id, query, i + 1)
+                        for i, e in enumerate(entries)
+                    ],
+                )
+                self._conn.commit()
+            except sqlite3.OperationalError:
+                pass
+
+        return entries
 
     # ── List ─────────────────────────────────────────────────────────
 
@@ -263,3 +310,28 @@ class MemoryStore:
             "total": total,
             "by_type": {r["type"]: r["n"] for r in rows},
         }
+
+
+def _memory_hits_map(
+    conn: sqlite3.Connection, memory_ids: list[int]
+) -> tuple[dict[int, int], dict[int, str]]:
+    """Return ({id: hit_count}, {id: last_hit_at}) for the given memory IDs.
+
+    Swallows OperationalError so this works on pre-v4 databases that don't
+    have the memory_hits table.
+    """
+    if not memory_ids:
+        return {}, {}
+    placeholders = ",".join("?" * len(memory_ids))
+    try:
+        rows = conn.execute(
+            f"SELECT memory_id, COUNT(*) AS n, MAX(hit_at) AS last_hit "
+            f"FROM memory_hits WHERE memory_id IN ({placeholders}) "
+            f"GROUP BY memory_id",
+            memory_ids,
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return {}, {}
+    counts = {r["memory_id"]: r["n"] for r in rows}
+    lasts = {r["memory_id"]: r["last_hit"] for r in rows if r["last_hit"]}
+    return counts, lasts

@@ -1647,6 +1647,137 @@ def skills_delete(ctx, skill_id: int, db: str):
         afs.close()
 
 
+@cli.group("dream")
+def dream_group():
+    """Neuroplasticity cycle — replay events, score entities, write a digest."""
+
+
+@dream_group.command("run")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--dry-run/--apply", default=True,
+              help="dry-run (default) = no DB mutations beyond the dream_runs "
+                   "row; apply = also upsert episode_signals")
+@click.option("--since", "since_ts", default=None,
+              help="ISO timestamp; only replay agents created at/after this")
+@click.option("--digest-dir", default=None,
+              help="Where to write the markdown digest (default: Dreams/ next to DB)")
+@click.option("--print-digest/--no-print-digest", default=True,
+              help="Print the digest to stdout (default on)")
+@click.pass_context
+def dream_run(ctx, db: str, dry_run: bool, since_ts: str, digest_dir: str,
+              print_digest: bool):
+    """Run one dream cycle (replay + weights + narrative)."""
+    from kaos.dream import DreamCycle
+    if not Path(db).exists():
+        msg = f"Database not found: {db}"
+        if _json_err(ctx, msg):
+            return
+        console.print(f"[red]{msg}[/red]")
+        ctx.exit(1)
+        return
+
+    afs = _get_afs(db)
+    try:
+        default_dir = Path(db).resolve().parent / "Dreams"
+        cycle = DreamCycle(afs, digest_dir=digest_dir or default_dir)
+        result = cycle.run(dry_run=dry_run, since_ts=since_ts)
+    finally:
+        afs.close()
+
+    if _json_out(ctx, result.summary()):
+        return
+
+    console.print(
+        f"[green]\u2714 Dream finished[/green]  "
+        f"run_id=[cyan]{result.run_id}[/cyan]  "
+        f"mode=[cyan]{result.mode}[/cyan]  "
+        f"episodes=[cyan]{result.episodes}[/cyan]  "
+        f"skills=[cyan]{result.skills_scored}[/cyan]  "
+        f"memories=[cyan]{result.memories_scored}[/cyan]  "
+        f"({result.phase_timings_ms.get('total_ms', 0)}ms)"
+    )
+    if result.digest_path:
+        console.print(f"  Digest: [dim]{result.digest_path}[/dim]")
+    if print_digest:
+        console.print("")
+        console.print(result.digest_markdown)
+
+
+@dream_group.command("runs")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--limit", default=20, help="Number of past runs to list")
+@click.pass_context
+def dream_runs(ctx, db: str, limit: int):
+    """List recent dream runs."""
+    from kaos.dream.cycle import list_runs
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    afs = _get_afs(db)
+    try:
+        runs = list_runs(afs.conn, limit=limit)
+    finally:
+        afs.close()
+    if _json_out(ctx, runs):
+        return
+    if not runs:
+        console.print("[yellow]No dream runs yet.[/yellow]")
+        return
+    for r in runs:
+        console.print(
+            f"[cyan]#{r['run_id']}[/cyan]  {r['started_at']}  "
+            f"[dim]{r['mode']}[/dim]  "
+            f"episodes={r['episodes']} skills={r['skills_scored']} "
+            f"memories={r['memories_scored']}"
+        )
+
+
+@dream_group.command("show")
+@click.argument("run_id", type=int)
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def dream_show(ctx, run_id: int, db: str):
+    """Show the digest and metadata for a past dream run."""
+    from kaos.dream.cycle import get_run
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    afs = _get_afs(db)
+    try:
+        run = get_run(afs.conn, run_id)
+    finally:
+        afs.close()
+    if run is None:
+        if _json_err(ctx, f"Run {run_id} not found"):
+            return
+        console.print(f"[yellow]Run #{run_id} not found[/yellow]")
+        ctx.exit(1)
+        return
+    if _json_out(ctx, run):
+        return
+    console.print(f"[bold cyan]Dream run #{run_id}[/bold cyan]  ({run['mode']})")
+    console.print(f"  Started:  {run['started_at']}")
+    console.print(f"  Finished: {run['finished_at']}")
+    console.print(f"  Window:   {run['since_ts'] or 'all-time'}")
+    console.print(f"  Episodes: {run['episodes']}  "
+                  f"Skills: {run['skills_scored']}  "
+                  f"Memories: {run['memories_scored']}")
+    console.print(f"  Timings:  {run['phase_timings']}")
+    if run.get("digest_path"):
+        p = Path(run["digest_path"])
+        if p.exists():
+            console.print("")
+            console.print(p.read_text(encoding="utf-8"))
+        else:
+            console.print(f"  [yellow]Digest file not found on disk: {p}[/yellow]")
+
+
 @cli.group("obsidian")
 def obsidian_group():
     """Export a KAOS database to an Obsidian-compatible markdown vault."""

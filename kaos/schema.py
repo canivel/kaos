@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -235,6 +235,79 @@ END;
 """
 
 
+# Migration to v4: neuroplasticity substrate — usage telemetry + dream runs.
+# Additive only. No existing tables changed. No behavior change until the
+# caller opts in via `rank="weighted"` or invokes `kaos dream`.
+MIGRATION_V4_SQL = """
+-- Per-application record of a skill being used by an agent.
+CREATE TABLE IF NOT EXISTS skill_uses (
+    use_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    skill_id    INTEGER NOT NULL REFERENCES agent_skills(skill_id),
+    agent_id    TEXT REFERENCES agents(agent_id),
+    used_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    success     INTEGER,          -- NULL = unreported, 0/1 otherwise
+    task_hash   TEXT              -- optional bucket id for per-context weighting
+);
+
+CREATE INDEX IF NOT EXISTS idx_skill_uses_skill  ON skill_uses(skill_id, used_at);
+CREATE INDEX IF NOT EXISTS idx_skill_uses_agent  ON skill_uses(agent_id, used_at);
+
+-- Per-retrieval record of a memory entry being searched for / surfaced.
+CREATE TABLE IF NOT EXISTS memory_hits (
+    hit_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    memory_id   INTEGER NOT NULL REFERENCES memory(memory_id),
+    agent_id    TEXT REFERENCES agents(agent_id),
+    hit_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    query       TEXT,
+    rank_pos    INTEGER           -- position in the result set (1-indexed)
+);
+
+CREATE INDEX IF NOT EXISTS idx_memory_hits_mem    ON memory_hits(memory_id, hit_at);
+CREATE INDEX IF NOT EXISTS idx_memory_hits_agent  ON memory_hits(agent_id, hit_at);
+
+-- One row per `kaos dream` invocation.
+CREATE TABLE IF NOT EXISTS dream_runs (
+    run_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    started_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    finished_at    TEXT,
+    since_ts       TEXT,          -- --since parameter (null = all-time)
+    mode           TEXT NOT NULL DEFAULT 'dry_run'
+                   CHECK (mode IN ('dry_run','apply')),
+    episodes       INTEGER NOT NULL DEFAULT 0,
+    skills_scored  INTEGER NOT NULL DEFAULT 0,
+    memories_scored INTEGER NOT NULL DEFAULT 0,
+    digest_path    TEXT,
+    phase_timings  TEXT NOT NULL DEFAULT '{}',
+    summary        TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_dream_runs_started ON dream_runs(started_at);
+
+-- Per-agent-run derived signals produced by the replay phase.
+-- One row per agent completion. If the replay runs again against the same
+-- event history the row is upserted (idempotent).
+CREATE TABLE IF NOT EXISTS episode_signals (
+    agent_id           TEXT PRIMARY KEY REFERENCES agents(agent_id),
+    started_at         TEXT,
+    ended_at           TEXT,
+    status             TEXT,
+    success            INTEGER,        -- 1 if status in (completed), 0 if failed/killed, NULL if running
+    tool_calls_count   INTEGER NOT NULL DEFAULT 0,
+    tool_calls_error   INTEGER NOT NULL DEFAULT 0,
+    total_tokens       INTEGER NOT NULL DEFAULT 0,
+    total_cost_usd     REAL    NOT NULL DEFAULT 0.0,
+    duration_ms        INTEGER,
+    skills_applied     INTEGER NOT NULL DEFAULT 0,
+    memories_written   INTEGER NOT NULL DEFAULT 0,
+    memories_retrieved INTEGER NOT NULL DEFAULT 0,
+    checkpoints_made   INTEGER NOT NULL DEFAULT 0,
+    last_computed_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_episode_signals_success ON episode_signals(success);
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
     conn.executescript(SCHEMA_SQL)
@@ -247,6 +320,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
         # Brand-new DB: apply all migrations up front then stamp version
         conn.executescript(MIGRATION_V2_SQL)
         conn.executescript(MIGRATION_V3_SQL)
+        conn.executescript(MIGRATION_V4_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -261,6 +335,8 @@ def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: i
         conn.executescript(MIGRATION_V2_SQL)
     if from_version < 3:
         conn.executescript(MIGRATION_V3_SQL)
+    if from_version < 4:
+        conn.executescript(MIGRATION_V4_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )
