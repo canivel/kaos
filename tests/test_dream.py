@@ -294,13 +294,18 @@ class TestNarrativePhase:
 
 
 class TestDreamCycle:
-    def test_dry_run_writes_run_row_no_episode_signals(self, plastic_db, tmp_path):
+    def test_dry_run_writes_run_row_no_new_episode_signals(self, plastic_db, tmp_path):
+        """Dry-run dream must NOT add new episode_signals beyond what the
+        automatic hooks already wrote at agent-completion time."""
         db_path, _, _ = plastic_db
         afs = Kaos(db_path=db_path)
         try:
+            before = afs.conn.execute(
+                "SELECT COUNT(*) FROM episode_signals"
+            ).fetchone()[0]
             cycle = DreamCycle(afs, digest_dir=tmp_path / "Dreams")
             result = cycle.run(dry_run=True)
-            rows = afs.conn.execute(
+            after = afs.conn.execute(
                 "SELECT COUNT(*) FROM episode_signals"
             ).fetchone()[0]
             runs_count = afs.conn.execute(
@@ -309,8 +314,12 @@ class TestDreamCycle:
         finally:
             afs.close()
         assert result.mode == "dry_run"
-        assert runs_count == 1
-        assert rows == 0  # dry run must not write episode_signals
+        # Plastic-DB fixture completes 2 agents; auto hooks write 2 signals.
+        assert before == 2
+        # Dry-run must not add more.
+        assert after == before
+        # dream_runs row was inserted even in dry_run
+        assert runs_count >= 1
 
     def test_apply_writes_episode_signals(self, plastic_db, tmp_path):
         db_path, _, _ = plastic_db

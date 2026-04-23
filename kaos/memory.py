@@ -211,6 +211,17 @@ class MemoryStore:
                 self._conn.commit()
             except sqlite3.OperationalError:
                 pass
+            # Automatic plasticity: associate co-retrieved memories with each
+            # other, and with any skills the requesting agent has already used.
+            try:
+                from kaos.dream import auto as _auto
+                _auto.on_memory_hits(
+                    self._conn,
+                    [e.memory_id for e in entries],
+                    requesting_agent_id=requesting_agent_id,
+                )
+            except Exception:
+                pass
 
         return entries
 

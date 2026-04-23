@@ -16,6 +16,16 @@ from kaos.events import EventJournal
 from kaos.schema import init_schema
 
 
+def _fire_plasticity(conn: sqlite3.Connection, agent_id: str, status: str) -> None:
+    """Call the automatic plasticity hook on agent termination. Never raises —
+    plasticity is best-effort and must not break the caller."""
+    try:
+        from kaos.dream import auto as _auto
+        _auto.on_agent_completion(conn, agent_id, status)
+    except Exception:
+        pass
+
+
 class Kaos:
     """
     One instance per .db file. Thread-safe via SQLite WAL mode.
@@ -151,6 +161,7 @@ class Kaos:
                 raise
             # Thread-local connection is blocked — try a fresh one
             self._force_kill(agent_id)
+        _fire_plasticity(self.conn, agent_id, "killed")
 
     def _force_kill(self, agent_id: str) -> None:
         """Kill via a fresh connection after a WAL checkpoint attempt."""
@@ -187,12 +198,14 @@ class Kaos:
         self.set_status(agent_id, "completed")
         self.events.log(agent_id, EventJournal.AGENT_COMPLETE)
         self.conn.commit()
+        _fire_plasticity(self.conn, agent_id, "completed")
 
     def fail(self, agent_id: str, error: str | None = None) -> None:
         """Mark an agent as failed."""
         self.set_status(agent_id, "failed")
         self.events.log(agent_id, EventJournal.AGENT_FAIL, {"error": error})
         self.conn.commit()
+        _fire_plasticity(self.conn, agent_id, "failed")
 
     def status(self, agent_id: str) -> dict:
         """Get full status of an agent."""

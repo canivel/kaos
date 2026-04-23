@@ -337,6 +337,14 @@ class SkillStore:
         except sqlite3.OperationalError:
             pass
         self._conn.commit()
+        # Automatic plasticity (Hebbian): associate with prior skills used
+        # by the same agent. Deferred import keeps the module layering clean.
+        try:
+            from kaos.dream import auto as _auto
+            _auto.on_skill_outcome(self._conn, skill_id, agent_id, success)
+        except Exception:
+            # Plasticity is best-effort; never break the caller.
+            pass
 
     # ── Delete ───────────────────────────────────────────────────────
 

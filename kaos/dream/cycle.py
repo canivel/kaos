@@ -20,7 +20,15 @@ from pathlib import Path
 from typing import Any
 
 from kaos.core import Kaos
-from kaos.dream.phases import narrative, replay, weights
+from kaos.dream.phases import (
+    associations,
+    consolidation as consolidation_phase,
+    failures,
+    narrative,
+    policies as policies_phase,
+    replay,
+    weights,
+)
 from kaos.dream.signals import now_utc
 
 
@@ -41,6 +49,10 @@ class DreamResult:
     digest_path: str | None
     replay_report: replay.ReplayReport = field(default=None)  # type: ignore[assignment]
     weights_report: weights.WeightsReport = field(default=None)  # type: ignore[assignment]
+    associations_report: associations.AssociationsReport = field(default=None)  # type: ignore[assignment]
+    failures_report: failures.FailuresReport = field(default=None)  # type: ignore[assignment]
+    consolidation_report: consolidation_phase.ConsolidationReport = field(default=None)  # type: ignore[assignment]
+    policies_report: policies_phase.PoliciesReport = field(default=None)  # type: ignore[assignment]
 
     def summary(self) -> dict[str, Any]:
         return {
@@ -95,13 +107,37 @@ class DreamCycle:
         weights_report = weights.run(conn, now=started_at)
         phase_timings["weights_ms"] = int((time.perf_counter() - t0) * 1000)
 
+        # Phase 3 — associations (M2)
+        t0 = time.perf_counter()
+        associations_report = associations.run(conn, now=started_at)
+        phase_timings["associations_ms"] = int((time.perf_counter() - t0) * 1000)
+
+        # Phase 4 — failures (M2)
+        t0 = time.perf_counter()
+        failures_report = failures.run(conn)
+        phase_timings["failures_ms"] = int((time.perf_counter() - t0) * 1000)
+
+        # Phase 5 — consolidation (M3)
+        t0 = time.perf_counter()
+        consolidation_report = consolidation_phase.run(conn, dry_run=dry_run)
+        phase_timings["consolidation_ms"] = int((time.perf_counter() - t0) * 1000)
+
+        # Phase 6 — policies (M3)
+        t0 = time.perf_counter()
+        policies_report = policies_phase.run(conn, dry_run=dry_run)
+        phase_timings["policies_ms"] = int((time.perf_counter() - t0) * 1000)
+
         finished_at = now_utc()
 
-        # Phase 3 — narrative
+        # Phase 7 — narrative
         t0 = time.perf_counter()
         digest_md = narrative.render_digest(
             replay=replay_report,
             weights=weights_report,
+            associations=associations_report,
+            failures=failures_report,
+            consolidation=consolidation_report,
+            policies=policies_report,
             mode=mode,
             since_ts=since_ts,
             started_at=started_at,
@@ -160,6 +196,10 @@ class DreamCycle:
             digest_path=digest_path,
             replay_report=replay_report,
             weights_report=weights_report,
+            associations_report=associations_report,
+            failures_report=failures_report,
+            consolidation_report=consolidation_report,
+            policies_report=policies_report,
         )
 
 

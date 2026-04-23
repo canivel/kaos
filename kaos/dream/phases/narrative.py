@@ -10,6 +10,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from kaos.dream.phases.associations import AssociationsReport
+from kaos.dream.phases.consolidation import ConsolidationReport
+from kaos.dream.phases.failures import FailuresReport
+from kaos.dream.phases.policies import PoliciesReport
 from kaos.dream.phases.replay import ReplayReport
 from kaos.dream.phases.weights import WeightsReport
 from kaos.dream.signals import now_utc
@@ -19,6 +23,10 @@ def render_digest(
     *,
     replay: ReplayReport,
     weights: WeightsReport,
+    associations: AssociationsReport | None = None,
+    failures: FailuresReport | None = None,
+    consolidation: ConsolidationReport | None = None,
+    policies: PoliciesReport | None = None,
     mode: str,
     since_ts: str | None,
     started_at: datetime,
@@ -57,7 +65,15 @@ def render_digest(
     _section_cold_skills(lines, weights)
     _section_hot_memory(lines, weights)
     _section_cold_memory(lines, weights)
-    _section_recommendations(lines, replay, weights)
+    if associations is not None:
+        _section_associations(lines, associations)
+    if failures is not None:
+        _section_failures(lines, failures)
+    if consolidation is not None:
+        _section_consolidation(lines, consolidation)
+    if policies is not None:
+        _section_policies(lines, policies)
+    _section_recommendations(lines, replay, weights, consolidation, failures)
     return "\n".join(lines) + "\n"
 
 
@@ -152,7 +168,103 @@ def _section_cold_memory(lines: list[str], w: WeightsReport) -> None:
     lines.append("")
 
 
-def _section_recommendations(lines: list[str], r: ReplayReport, w: WeightsReport) -> None:
+def _section_associations(lines: list[str], a: AssociationsReport) -> None:
+    lines.append("## 🕸️ Associations (Hebbian graph)")
+    lines.append("")
+    if not a.total_edges:
+        lines.append("_No co-occurrence edges yet — associations build as agents run._")
+        lines.append("")
+        return
+    lines.append(f"{a.total_edges} edges across the library.")
+    lines.append("")
+    if a.top_edges:
+        lines.append("**Top co-fired pairs (recency-decayed):**")
+        lines.append("")
+        lines.append("| A | B | weight | uses |")
+        lines.append("|---|---|---:|---:|")
+        for e in a.top_edges[:10]:
+            lines.append(
+                f"| `{e.kind_a}:{e.label_a}` | `{e.kind_b}:{e.label_b}` "
+                f"| {e.decayed_weight:.2f} | {e.uses} |"
+            )
+        lines.append("")
+
+
+def _section_failures(lines: list[str], f: FailuresReport) -> None:
+    lines.append("## ⚠️ Failure fingerprints")
+    lines.append("")
+    if not f.total_fingerprints:
+        lines.append("_No failures fingerprinted. (Either nothing has failed, "
+                     "or only the success path has run so far.)_")
+        lines.append("")
+        return
+    lines.append(f"Tracking **{f.total_fingerprints}** distinct failure signatures "
+                 f"(newly added this cycle: **{f.newly_added}**).")
+    lines.append("")
+    if f.recurring:
+        lines.append("**Recurring failures (count ≥ 2):**")
+        lines.append("")
+        lines.append("| Fingerprint | Tool | Count | Has fix? | Last seen |")
+        lines.append("|---|---|---:|:---:|---|")
+        for fe in f.recurring[:10]:
+            fix = "✓" if fe.fix_summary or fe.fix_skill_id else "—"
+            err = (fe.example_error or "")[:60]
+            lines.append(
+                f"| `{fe.fingerprint}` — `{err}` | {fe.tool_name or '_?_'} "
+                f"| {fe.count} | {fix} | {fe.last_seen} |"
+            )
+        lines.append("")
+
+
+def _section_consolidation(lines: list[str], c: ConsolidationReport) -> None:
+    lines.append("## 🛠 Consolidation proposals")
+    lines.append("")
+    if not c.proposals:
+        lines.append("_No structural changes proposed this cycle. "
+                     "Library is stable._")
+        lines.append("")
+        return
+    lines.append(
+        f"**{len(c.proposals)}** proposals "
+        f"({c.promoted} promote, {c.pruned} prune, "
+        f"{c.merge_candidates} merge candidates). "
+        f"Applied this cycle: **{c.applied}**."
+    )
+    if c.trigger_reason:
+        lines.append(f"Trigger: `{c.trigger_reason}`.")
+    lines.append("")
+    for p in c.proposals[:12]:
+        marker = {"promote": "🚀", "prune": "✂️", "merge": "🔗", "split": "🪓"}.get(p.kind, "•")
+        applied = " · **applied**" if p.applied else ""
+        lines.append(f"- {marker} **{p.kind}**{applied}: {p.rationale}")
+    lines.append("")
+
+
+def _section_policies(lines: list[str], p: PoliciesReport) -> None:
+    if not p.candidates:
+        return
+    lines.append("## 📜 Auto-promoted policies")
+    lines.append("")
+    lines.append(f"{p.total_promoted} newly promoted this cycle "
+                 f"({p.skipped_existing} already known).")
+    lines.append("")
+    for cand in p.candidates[:8]:
+        new = " 🆕" if cand.newly_promoted else ""
+        lines.append(
+            f"- `{cand.action_pattern}` — approval "
+            f"{int(cand.approval_rate * 100)}% "
+            f"over {cand.sample_size} vote(s){new}"
+        )
+    lines.append("")
+
+
+def _section_recommendations(
+    lines: list[str],
+    r: ReplayReport,
+    w: WeightsReport,
+    c: ConsolidationReport | None = None,
+    f: FailuresReport | None = None,
+) -> None:
     lines.append("## Recommendations for the next cycle")
     lines.append("")
     recs: list[str] = []
@@ -172,8 +284,25 @@ def _section_recommendations(lines: list[str], r: ReplayReport, w: WeightsReport
     cold = [s for s in w.cold_skills if s.uses == 0]
     if cold:
         recs.append(
-            f"- **{len(cold)} skills never used**: consider pruning in the M3 consolidation pass."
+            f"- **{len(cold)} skills never used**: consolidation will mark "
+            "them deprecated once they cross the prune threshold."
         )
+    if c and c.proposals and c.applied == 0:
+        unapplied = [p for p in c.proposals if not p.applied]
+        if unapplied:
+            recs.append(
+                f"- **{len(unapplied)} consolidation proposals awaiting review** "
+                "(merges are never auto-applied). Run `kaos dream consolidate "
+                "--apply` if you accept them."
+            )
+    if f and f.recurring:
+        without_fix = [fe for fe in f.recurring if not (fe.fix_summary or fe.fix_skill_id)]
+        if without_fix:
+            recs.append(
+                f"- **{len(without_fix)} recurring failures without a recorded fix**. "
+                "Attach a fix via `kaos dream failures attach <fp_id>` so future "
+                "agents hitting the same error get the known solution."
+            )
     if not recs:
         recs.append("- Nothing obviously wrong. Library is warming up.")
     lines.extend(recs)

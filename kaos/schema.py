@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -308,6 +308,93 @@ CREATE INDEX IF NOT EXISTS idx_episode_signals_success ON episode_signals(succes
 """
 
 
+# Migration to v5: neuroplasticity mechanism — associations (Hebbian graph),
+# failure fingerprints, auto-promoted shared-log policies, and a proposal
+# journal for consolidation actions. All additive.
+MIGRATION_V5_SQL = """
+-- Hebbian co-occurrence graph.
+-- One row per ordered pair (kind_a, id_a) -> (kind_b, id_b). We store both
+-- directions so lookups are cheap.  `weight` is the decayed co-fire count,
+-- `uses` is the raw unweighted count, `last_seen` drives decay on read.
+CREATE TABLE IF NOT EXISTS associations (
+    kind_a      TEXT NOT NULL,
+    id_a        INTEGER NOT NULL,
+    kind_b      TEXT NOT NULL,
+    id_b        INTEGER NOT NULL,
+    weight      REAL NOT NULL DEFAULT 1.0,
+    uses        INTEGER NOT NULL DEFAULT 1,
+    first_seen  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_seen   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    PRIMARY KEY (kind_a, id_a, kind_b, id_b)
+);
+
+CREATE INDEX IF NOT EXISTS idx_associations_a ON associations(kind_a, id_a);
+CREATE INDEX IF NOT EXISTS idx_associations_b ON associations(kind_b, id_b);
+CREATE INDEX IF NOT EXISTS idx_associations_last_seen ON associations(last_seen);
+
+-- Failure fingerprints — normalised error signatures extracted from tool_calls
+-- when agents fail. Agents can consult this table BEFORE invoking the LLM on
+-- a recurring failure ("this exact error has a known fix").
+CREATE TABLE IF NOT EXISTS failure_fingerprints (
+    fp_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    fingerprint   TEXT UNIQUE NOT NULL,
+    first_seen    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_seen     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    count         INTEGER NOT NULL DEFAULT 1,
+    example_error TEXT,
+    tool_name     TEXT,
+    fix_agent_id  TEXT,
+    fix_summary   TEXT,
+    fix_skill_id  INTEGER REFERENCES agent_skills(skill_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fp_last_seen ON failure_fingerprints(last_seen);
+CREATE INDEX IF NOT EXISTS idx_fp_count     ON failure_fingerprints(count);
+
+-- Promoted shared-log policies. When a decision pattern repeats above a
+-- confidence threshold, the consolidation phase promotes it here so future
+-- intents matching the pattern can short-circuit the intent/vote loop.
+CREATE TABLE IF NOT EXISTS policies (
+    policy_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    action_pattern  TEXT NOT NULL,
+    approval_rate   REAL NOT NULL,
+    sample_size     INTEGER NOT NULL,
+    promoted_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_applied_at TEXT,
+    applied_count   INTEGER NOT NULL DEFAULT 0,
+    enabled         INTEGER NOT NULL DEFAULT 1,
+    source_runs     TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE INDEX IF NOT EXISTS idx_policies_enabled ON policies(enabled);
+
+-- Consolidation proposals journal. Every structural change the consolidation
+-- phase identifies gets a row, even in dry-run mode. Applied proposals flip
+-- `applied=1` and record `applied_at`. This is the audit trail for
+-- structural plasticity.
+CREATE TABLE IF NOT EXISTS consolidation_proposals (
+    proposal_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id       INTEGER REFERENCES dream_runs(run_id),
+    kind         TEXT NOT NULL
+                 CHECK (kind IN ('promote','prune','merge','split')),
+    targets      TEXT NOT NULL,
+    rationale    TEXT,
+    applied      INTEGER NOT NULL DEFAULT 0,
+    applied_at   TEXT,
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_proposals_run     ON consolidation_proposals(run_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_applied ON consolidation_proposals(applied);
+
+-- Mark skills as deprecated without deleting them. Soft-delete preserves
+-- history and references; consolidation writes here rather than DELETE.
+ALTER TABLE agent_skills ADD COLUMN deprecated INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE agent_skills ADD COLUMN deprecated_at TEXT;
+ALTER TABLE agent_skills ADD COLUMN deprecated_reason TEXT;
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
     conn.executescript(SCHEMA_SQL)
@@ -321,6 +408,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
         conn.executescript(MIGRATION_V2_SQL)
         conn.executescript(MIGRATION_V3_SQL)
         conn.executescript(MIGRATION_V4_SQL)
+        conn.executescript(MIGRATION_V5_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -337,6 +425,8 @@ def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: i
         conn.executescript(MIGRATION_V3_SQL)
     if from_version < 4:
         conn.executescript(MIGRATION_V4_SQL)
+    if from_version < 5:
+        conn.executescript(MIGRATION_V5_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )

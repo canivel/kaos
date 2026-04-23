@@ -1647,6 +1647,25 @@ def skills_delete(ctx, skill_id: int, db: str):
         afs.close()
 
 
+def _resolve_identifier(conn, kind: str, identifier: str) -> int | None:
+    """Accept either a numeric id or a name/key and return the integer id."""
+    if identifier.isdigit():
+        return int(identifier)
+    if kind == "skill":
+        row = conn.execute(
+            "SELECT skill_id FROM agent_skills WHERE name = ?",
+            (identifier,),
+        ).fetchone()
+    elif kind == "memory":
+        row = conn.execute(
+            "SELECT memory_id FROM memory WHERE key = ?",
+            (identifier,),
+        ).fetchone()
+    else:
+        return None
+    return int(row[0]) if row else None
+
+
 @cli.group("dream")
 def dream_group():
     """Neuroplasticity cycle — replay events, score entities, write a digest."""
@@ -1733,6 +1752,151 @@ def dream_runs(ctx, db: str, limit: int):
             f"episodes={r['episodes']} skills={r['skills_scored']} "
             f"memories={r['memories_scored']}"
         )
+
+
+@dream_group.command("related")
+@click.argument("kind", type=click.Choice(["skill", "memory"]))
+@click.argument("identifier")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--limit", default=10, help="Max related entities to show")
+@click.pass_context
+def dream_related(ctx, kind: str, identifier: str, db: str, limit: int):
+    """Show entities strongly associated with SKILL|MEMORY by name or id."""
+    from kaos.dream.phases.associations import related
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    afs = _get_afs(db)
+    try:
+        ent_id = _resolve_identifier(afs.conn, kind, identifier)
+        if ent_id is None:
+            msg = f"{kind} not found: {identifier}"
+            if _json_err(ctx, msg):
+                return
+            console.print(f"[red]{msg}[/red]")
+            ctx.exit(1)
+            return
+        edges = related(afs.conn, kind, ent_id, limit=limit)
+    finally:
+        afs.close()
+
+    if _json_out(ctx, [
+        {
+            "kind": e.kind_b, "id": e.id_b, "label": e.label_b,
+            "weight": e.decayed_weight, "uses": e.uses,
+            "last_seen": e.last_seen,
+        } for e in edges
+    ]):
+        return
+    if not edges:
+        console.print(f"[yellow]No associations yet for {kind} '{identifier}'[/yellow]")
+        return
+    console.print(f"[bold]{len(edges)} associations[/bold] for {kind} [cyan]{identifier}[/cyan]:")
+    for e in edges:
+        console.print(
+            f"  [dim]{e.kind_b}[/dim]  [cyan]{e.label_b}[/cyan]  "
+            f"weight=[green]{e.decayed_weight:.2f}[/green]  uses={e.uses}"
+        )
+
+
+@dream_group.command("consolidate")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--apply/--dry-run", default=False,
+              help="--apply executes safe proposals (prune/promote). "
+                   "Merges are never auto-applied.")
+@click.pass_context
+def dream_consolidate(ctx, db: str, apply: bool):
+    """Identify (and optionally execute) structural consolidation proposals."""
+    from kaos.dream.phases.consolidation import run as run_consolidation
+    from kaos.dream.phases.policies import run as run_policies
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    afs = _get_afs(db)
+    try:
+        cons = run_consolidation(afs.conn, dry_run=not apply,
+                                 trigger_reason="manual")
+        pol = run_policies(afs.conn, dry_run=not apply)
+    finally:
+        afs.close()
+
+    payload = {
+        "mode": "apply" if apply else "dry_run",
+        "consolidation": {
+            "total": len(cons.proposals),
+            "promoted": cons.promoted,
+            "pruned": cons.pruned,
+            "merge_candidates": cons.merge_candidates,
+            "applied": cons.applied,
+        },
+        "policies": {
+            "promoted": pol.total_promoted,
+            "existing_skipped": pol.skipped_existing,
+        },
+    }
+    if _json_out(ctx, payload):
+        return
+    console.print(f"[bold]Consolidation ({'apply' if apply else 'dry_run'})[/bold]")
+    console.print(f"  {cons.promoted} promote, {cons.pruned} prune, "
+                  f"{cons.merge_candidates} merge candidates "
+                  f"\u2192 applied [green]{cons.applied}[/green]")
+    for p in cons.proposals[:12]:
+        marker = {"promote": "\u2191", "prune": "\u2193",
+                  "merge": "=", "split": "\u2502"}.get(p.kind, "-")
+        applied = " [green](applied)[/green]" if p.applied else ""
+        console.print(f"  {marker} {p.kind}: {p.rationale}{applied}")
+    if pol.total_promoted or pol.skipped_existing:
+        console.print(f"\n[bold]Policies[/bold]")
+        console.print(f"  promoted {pol.total_promoted}  "
+                      f"skipped {pol.skipped_existing} (already known)")
+
+
+@dream_group.command("failures")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--min-count", default=2, help="Only show fingerprints seen N+ times")
+@click.pass_context
+def dream_failures(ctx, db: str, min_count: int):
+    """List recurring failure fingerprints."""
+    from kaos.dream.phases.failures import run as run_failures
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    afs = _get_afs(db)
+    try:
+        report = run_failures(afs.conn, min_count_for_recurring=min_count)
+    finally:
+        afs.close()
+    payload = [
+        {
+            "fp_id": e.fp_id, "fingerprint": e.fingerprint,
+            "tool": e.tool_name, "count": e.count,
+            "has_fix": bool(e.fix_summary or e.fix_skill_id),
+            "example": e.example_error,
+            "last_seen": e.last_seen,
+        } for e in report.recurring
+    ]
+    if _json_out(ctx, payload):
+        return
+    if not report.recurring:
+        console.print("[yellow]No recurring failures[/yellow]")
+        return
+    console.print(f"[bold]{report.total_fingerprints} distinct failure fingerprints[/bold] "
+                  f"({len(report.recurring)} recurring):")
+    for e in report.recurring:
+        fix = "[green](has fix)[/green]" if e.fix_summary or e.fix_skill_id else ""
+        console.print(f"  [cyan]#{e.fp_id}[/cyan] `{e.fingerprint}` "
+                      f"{e.tool_name or '?'} \u00d7{e.count} {fix}")
+        if e.example_error:
+            console.print(f"    [dim]{e.example_error[:100]}[/dim]")
 
 
 @dream_group.command("show")
