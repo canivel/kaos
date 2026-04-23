@@ -1,0 +1,50 @@
+{
+  "episodes": 80,
+  "n_queries": 10,
+  "n_skills": 20,
+  "bm25": {
+    "final_accuracy": 0.8,
+    "curve": [
+      0.6,
+      0.7,
+      0.7,
+      0.7
+    ],
+    "per_query": {
+      "classify text topic": 0,
+      "forecast time series": 1,
+      "detect time series anomaly": 1,
+      "classify image label": 1,
+      "segment image pixel region": 1,
+      "transcribe speech audio": 1,
+      "classify audio clip": 1,
+      "classify tabular structured row": 1,
+      "detect tabular anomaly row": 0,
+      "extract named entity span": 1
+    }
+  },
+  "weighted": {
+    "final_accuracy": 0.9,
+    "curve": [
+      0.4,
+      0.475,
+      0.55,
+      0.6
+    ],
+    "per_query": {
+      "classify text topic": 1,
+      "forecast time series": 1,
+      "detect time series anomaly": 1,
+      "classify image label": 1,
+      "segment image pixel region": 0,
+      "transcribe speech audio": 1,
+      "classify audio clip": 1,
+      "classify tabular structured row": 1,
+      "detect tabular anomaly row": 1,
+      "extract named entity span": 1
+    }
+  },
+  "absolute_gain_pp": 9.999999999999998,
+  "relative_gain_pct": 12.499999999999996,
+  "break_even_episode": null
+}

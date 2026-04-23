@@ -641,6 +641,88 @@ async def list_tools() -> list[Tool]:
                 "required": ["skill_id", "success"],
             },
         ),
+        # ── Neuroplasticity / Dream (v0.8.0) ─────────────────────
+        Tool(
+            name="dream_run",
+            description=(
+                "Run one dream cycle (replay + weights + associations + failures + "
+                "consolidation + policies + narrative). Returns a run_id and summary. "
+                "Default mode is dry_run — pass apply=true to persist episode_signals "
+                "and execute safe structural proposals (prune + promote)."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "apply": {"type": "boolean", "default": False,
+                              "description": "Apply safe proposals; False = dry-run only."},
+                    "since_ts": {"type": "string",
+                                 "description": "ISO timestamp to limit replay to agents created at/after."},
+                },
+            },
+        ),
+        Tool(
+            name="dream_related",
+            description=(
+                "Hebbian association lookup. Given a skill or memory entity, return the "
+                "top-N entities that most strongly co-fire with it (recency-decayed)."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "kind": {"type": "string", "enum": ["skill", "memory"],
+                             "description": "Entity kind"},
+                    "id": {"type": "integer",
+                           "description": "Entity id (skill_id or memory_id)"},
+                    "limit": {"type": "integer", "default": 10},
+                },
+                "required": ["kind", "id"],
+            },
+        ),
+        Tool(
+            name="failure_lookup",
+            description=(
+                "Agent-time fast path: given a tool_name + error_message, return the "
+                "matching failure fingerprint and any recorded fix. Agents should call "
+                "this BEFORE invoking the LLM to diagnose a failure — if a known fix "
+                "exists it can be applied directly."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "tool_name": {"type": "string"},
+                    "error_message": {"type": "string"},
+                },
+                "required": ["tool_name", "error_message"],
+            },
+        ),
+        Tool(
+            name="failure_list",
+            description="List recurring failure fingerprints with count and fix status.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "min_count": {"type": "integer", "default": 2,
+                                  "description": "Only return fingerprints seen N+ times"},
+                },
+            },
+        ),
+        Tool(
+            name="dream_consolidate",
+            description=(
+                "Identify structural consolidation proposals (promote memory→skill, "
+                "prune low-success skills, merge near-duplicates). Safe proposals "
+                "(prune, promote) execute in apply mode; merges always stay as "
+                "proposals for human review."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "apply": {"type": "boolean", "default": False},
+                    "merge_threshold": {"type": "number", "default": 0.65,
+                                         "description": "Jaccard similarity threshold for merge proposals"},
+                },
+            },
+        ),
     ]
 
 
@@ -1636,6 +1718,74 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             "use_count": skill.use_count if skill else None,
             "success_count": skill.success_count if skill else None,
             "success_rate": round(skill.success_count / skill.use_count, 3) if skill and skill.use_count else None,
+        }, indent=2)
+
+    # ── Neuroplasticity / Dream (v0.8.0) ─────────────────────
+    elif name == "dream_run":
+        from kaos.dream import DreamCycle
+        cycle = DreamCycle(_afs)
+        result = cycle.run(dry_run=not args.get("apply", False),
+                           since_ts=args.get("since_ts"),
+                           write_digest=False)
+        return json.dumps(result.summary(), indent=2)
+
+    elif name == "dream_related":
+        from kaos.dream.phases.associations import related
+        edges = related(_afs.conn, args["kind"], args["id"],
+                        limit=args.get("limit", 10))
+        return json.dumps([
+            {
+                "kind": e.kind_b, "id": e.id_b, "label": e.label_b,
+                "weight": round(e.decayed_weight, 4),
+                "uses": e.uses, "last_seen": e.last_seen,
+            } for e in edges
+        ], indent=2)
+
+    elif name == "failure_lookup":
+        from kaos.dream.phases.failures import lookup
+        row = lookup(_afs.conn, args["tool_name"], args["error_message"])
+        return json.dumps(row, indent=2)
+
+    elif name == "failure_list":
+        from kaos.dream.phases.failures import run as run_failures
+        report = run_failures(_afs.conn,
+                              min_count_for_recurring=args.get("min_count", 2))
+        return json.dumps([
+            {
+                "fp_id": e.fp_id, "fingerprint": e.fingerprint,
+                "tool": e.tool_name, "count": e.count,
+                "has_fix": bool(e.fix_summary or e.fix_skill_id),
+                "example": e.example_error,
+                "last_seen": e.last_seen,
+            } for e in report.recurring
+        ], indent=2)
+
+    elif name == "dream_consolidate":
+        from kaos.dream.phases.consolidation import run as run_consolidation
+        from kaos.dream.phases.policies import run as run_policies
+        cons = run_consolidation(
+            _afs.conn, dry_run=not args.get("apply", False),
+            trigger_reason="mcp",
+            merge_threshold=args.get("merge_threshold", 0.65),
+        )
+        pol = run_policies(_afs.conn, dry_run=not args.get("apply", False))
+        return json.dumps({
+            "mode": "apply" if args.get("apply") else "dry_run",
+            "consolidation": {
+                "promote": cons.promoted,
+                "prune": cons.pruned,
+                "merge_candidates": cons.merge_candidates,
+                "applied": cons.applied,
+                "proposals": [
+                    {"kind": p.kind, "rationale": p.rationale,
+                     "targets": p.targets, "applied": p.applied}
+                    for p in cons.proposals
+                ],
+            },
+            "policies": {
+                "promoted": pol.total_promoted,
+                "skipped_existing": pol.skipped_existing,
+            },
         }, indent=2)
 
     else:

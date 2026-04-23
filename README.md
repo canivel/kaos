@@ -1,11 +1,11 @@
 # KAOS
 
-**The living synthesis of agentic AI research.** Seven research breakthroughs — skills that compound across projects, memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
+**The living synthesis of agentic AI research.** Eight research breakthroughs — neuroplasticity that rewires the library automatically, skills that compound across projects, memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.8.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
-[![Research](https://img.shields.io/badge/research%20integrations-7-brightgreen)]()
+[![Research](https://img.shields.io/badge/research%20integrations-8-brightgreen)]()
 
 > KAOS doesn't build from scratch — it identifies the best solution to each hard problem in agentic AI and integrates it faithfully. Every capability traces back to a proven paper or open-source project. We add new integrations as we find synergy and reason to include them.
 
@@ -59,7 +59,8 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 | Problem | Best-in-class solution | Source | Since |
 |---|---|---|---|
-| Agents start on under-specified tasks | Dynamic intake — LLM-analyzed clarifying questions (0 or more, no fixed count) | KAOS core | **new 🆕** |
+| Library stays static as it's used | Neuroplasticity: Hebbian associations, weighted search, failure fingerprints, automatic consolidation — fires inline on every skill use, memory hit, and agent completion | KAOS core | **v0.8.0 🆕** |
+| Agents start on under-specified tasks | Dynamic intake — LLM-analyzed clarifying questions (0 or more, no fixed count) | KAOS core | v0.7.1 |
 | Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | v0.7.0 |
 | Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) | v0.6.0 |
 | Agents act without consensus | SharedLog: intent → vote → decide | [LogAct arXiv:2604.07988](https://arxiv.org/abs/2604.07988) | v0.6.0 |
@@ -184,6 +185,77 @@ All three are exposed as MCP tools too (see below).
 
 ---
 
+## Neuroplasticity — the library self-organizes as it's used
+
+Every skill application, memory retrieval, and agent completion fires a
+small plasticity hook that updates the library **inline** — like synaptic
+plasticity. Every N completions (default 25), a lightweight consolidation
+pass runs in-process — like sleep consolidation.
+
+No daemon to start. No command to remember. It just happens.
+
+```bash
+kaos dream run [--dry-run|--apply]     # manual full cycle (7 phases)
+kaos dream related skill <name>         # what fires with this?
+kaos dream failures                     # recurring failure fingerprints
+kaos dream consolidate --dry-run        # preview promote/prune/merge proposals
+kaos dream show <run_id>                # re-print a past digest
+```
+
+What gets learned automatically:
+
+| Event | What plasticity does |
+|---|---|
+| `SkillStore.record_outcome(...)` | Hebbian association: this skill co-fires with every skill the same agent has already used. Success = weight +1.0, failure = +0.3. |
+| `MemoryStore.search(..., record_hits=True)` | Co-retrieved memories get associated; cross-modal skill↔memory edges form if the agent has used skills. |
+| `Kaos.complete/fail/kill(agent_id)` | Episode signals written inline. On failure: normalised error fingerprint captured automatically. Threshold crossed → consolidation runs in-process. |
+
+What consolidation does (in `--apply` mode):
+
+- **Promote**: memory retrieved 5+ times → becomes a skill template
+- **Prune**: skills with <40% success after 6+ uses → soft-deprecate (recoverable)
+- **Merge**: near-duplicate skills (Jaccard ≥ 0.65 on descriptions) → proposal only; merges are never auto-applied
+- **Policies**: shared-log intents approved ≥ 90% across 3+ cycles → promoted to the `policies` table
+
+What agents see at runtime:
+
+```python
+# Weighted search — bm25 × Wilson(success) × recency decay
+skills.search("payments fastapi", rank="weighted")
+memory.search("retry", rank="weighted", record_hits=True,
+              requesting_agent_id=agent_id)
+
+# Known-failure shortcut — skip the LLM on a recurring error
+from kaos.dream.phases.failures import lookup
+prior = lookup(conn, "http_get", error_msg)
+if prior and prior["fix_summary"]:
+    apply_known_fix(prior)
+```
+
+Escape hatches: `KAOS_DREAM_AUTO=0` disables inline hooks entirely,
+`KAOS_DREAM_THRESHOLD=<N>` tunes consolidation cadence.
+
+### Measured gain
+
+Real benchmark in [`demo_neuroplasticity_bench/`](demo_neuroplasticity_bench/) —
+10 ambiguous twin-pair queries, 20 skills, 80 training episodes,
+epsilon-greedy pick (ε=0.25, seed=42) — no planted outcomes, no
+pre-engineered winners:
+
+| | bm25 baseline | weighted (plasticity) | gain |
+|---|---:|---:|---:|
+| **Final top-1 accuracy** | 80.0% | 90.0% | **+10.0 pp (+12.5%)** |
+
+Raw numbers: [`demo_neuroplasticity_bench/results.json`](demo_neuroplasticity_bench/results.json)
+· Per-query breakdown: [`results.md`](demo_neuroplasticity_bench/results.md).
+Re-run yourself: `uv run python demo_neuroplasticity_bench/run.py`.
+
+See [`docs/neuroplasticity.md`](docs/neuroplasticity.md) for the full
+mechanism and [`demo_arc_agi3_test/`](demo_arc_agi3_test/) for a 76-check
+validation against a simulated ARC-AGI-3 meta-harness workload.
+
+---
+
 ## Meta-Harness — automated harness optimization
 
 Run an evolutionary search over agent harnesses themselves. The proposer reads execution traces from previous iterations, proposes new harness candidates, and the evaluator scores them on a benchmark. Pareto frontier, stagnation detection (CORAL), skill distillation.
@@ -209,7 +281,7 @@ kaos serve                         # stdio (default — for Claude Code / Cursor
 kaos serve --transport sse --port 8788   # SSE over HTTP
 ```
 
-Exposes **37 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, and 9 meta-harness (including CORAL co-evolution and skill distillation). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
+Exposes **42 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, 9 meta-harness (including CORAL co-evolution and skill distillation), and **5 neuroplasticity** (`dream_run`, `dream_related`, `failure_lookup`, `failure_list`, `dream_consolidate`). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
 
 ---
 
@@ -285,13 +357,14 @@ results = asyncio.run(ccr.run_parallel([
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag |
-| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 37 tools |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 42 tools |
+| [Neuroplasticity](docs/neuroplasticity.md) | How inline plasticity + consolidation works, measured +10pp gain |
 | [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |
 | [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |
 | [Skill Library](docs/skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
-| [Schema](docs/schema.md) | All 11 SQLite tables + 2 FTS5 indexes |
+| [Schema](docs/schema.md) | All 15 SQLite tables + 2 FTS5 indexes (schema v5) |
 | [Deployment](docs/deployment.md) | vLLM, production config |
 
 Full docs index → [`docs/`](docs/)
