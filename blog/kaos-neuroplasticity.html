@@ -119,6 +119,15 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
       The library wasn't wrong. It was just <strong>dead</strong>. Skills accumulated, memory accumulated, shared log entries piled up, but none of it learned anything about which entries mattered, which ones worked, which ones always showed up together. A filing cabinet, not a brain. This post is the story of how we fixed that.
     </div>
 
+    <div style="margin:2rem -1rem 2rem;border-radius:14px;overflow:hidden;border:1px solid rgba(253,121,168,.18);box-shadow:0 10px 40px rgba(0,0,0,.5)">
+      <img src="../docs/demos/kaos_neuroplasticity.gif"
+           alt="KAOS plasticity demo: BM25 picks the wrong skill, agents accumulate feedback, weighted search flips the ranking, failures get categorised."
+           style="width:100%;display:block">
+      <div style="background:var(--bg2);padding:.75rem 1rem;font-size:.78rem;color:var(--fg2);text-align:center;font-style:italic;border-top:1px solid rgba(255,255,255,.05)">
+        6 scenes, ~45 seconds. Real CLI. No edits, no cuts. Every command in this GIF is reproducible via <code>uv run kaos skills search --rank weighted</code> and <code>kaos dream failures</code>.
+      </div>
+    </div>
+
     <hr>
 
     <h2><span class="n">01</span>The shape we started from</h2>

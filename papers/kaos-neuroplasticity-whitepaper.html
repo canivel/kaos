@@ -122,6 +122,15 @@ footer a:hover{color:var(--accent2)}
     </div>
   </header>
 
+  <div style="margin:1.5rem 0 2rem;border-radius:10px;overflow:hidden;border:1px solid rgba(253,121,168,.18)">
+    <img src="../docs/demos/kaos_neuroplasticity.gif"
+         alt="End-to-end demo of KAOS plasticity: BM25 baseline retrieval, feedback accumulation, weighted rank flip, and failure triage."
+         style="width:100%;display:block">
+    <div style="background:var(--bg2);padding:.7rem 1rem;font-size:.75rem;color:var(--fg2);text-align:center;font-style:italic;font-family:var(--sans)">
+      Figure 0 &middot; End-to-end demo: BM25 ordering before feedback, plasticity accumulates outcomes, weighted rank flips top-1, failure triage surfaces categorised fingerprints with a live systemic alert. 6 scenes, ~45 seconds, real CLI output.
+    </div>
+  </div>
+
   <div class="abstract">
     <span class="abstract-label">Abstract</span>
     We describe <b>KAOS Dream</b>, a continuous consolidation mechanism for multi-agent LLM frameworks. Unlike prior work treating the agent library (skills, memory, shared log) as a passive filing cabinet queried at retrieval time, Dream introduces <em>inline synaptic plasticity</em> &mdash; lightweight telemetry writes on every skill outcome, memory retrieval, and agent termination &mdash; plus <em>batched structural consolidation</em> that rebuilds a Hebbian co-occurrence graph at agent-completion boundaries. Retrieval is reweighted at query time using a Wilson-lower-bound success estimator combined with exponential recency decay. A parallel failure-intelligence subsystem categorises errors into actionable buckets (transient / config / code / infra / unknown), tracks whether suggested fixes actually resolve the error, and raises systemic alerts when multiple agents hit the same fingerprint inside a sliding window. Three reproducible benchmarks committed alongside the code measure: a <b>+10 percentage-point gain</b> in top-1 retrieval accuracy on a disambiguation-dominated workload; <b>+15 &micro;s of p50 hot-path overhead</b> per agent operation after an initial naive design was rejected by the microbenchmark and rewritten; and <b>60/60 validations</b> in a realistic failure-triage scenario. An earlier design with inline association upserts was 14,000&times; slower and was discarded. We are explicit that gains are workload-conditional: benchmarks without outcome feedback or without retrieval ambiguity show zero gain. The paper concludes with a simulated adversarial review from systems, information-retrieval, and cognitive-science perspectives, pushing back on the biological metaphor, the benchmark design, and the production readiness claims.

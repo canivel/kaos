@@ -2,6 +2,85 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.8.1] - 2026-04-24
+
+### Neuroplasticity: The Library Rewires Itself
+
+KAOS v0.8.1 turns the agent library from a passive filing cabinet into a
+self-organizing graph. Inline synaptic plasticity plus batched structural
+consolidation, modeled after biological sleep-consolidation separation.
+
+**Inline plasticity hooks (synaptic)**
+- Every `SkillStore.record_outcome(...)` writes a `skill_uses` row in the caller's existing transaction — zero extra fsync
+- Every `MemoryStore.search(record_hits=True)` writes `memory_hits` rows
+- Every `Kaos.complete/fail/kill(agent_id)` triggers inline `episode_signals` upsert (single agent, indexed; not a full replay)
+- Opt-out: `KAOS_DREAM_AUTO=0` disables all hooks
+
+**Batched structural consolidation (sleep)**
+- At agent completion: one `executemany` rebuilds the Hebbian co-occurrence graph for the session (skill↔skill, memory↔memory, skill↔memory edges)
+- At every `KAOS_DREAM_THRESHOLD` (default 100) completions: full consolidation pass proposes promote (memory → skill), prune (low-success skill → soft-deprecate), and merge (near-duplicate) changes
+- Proposals journalled to `consolidation_proposals`; safe actions auto-applied, merges stay human-review
+
+**Weighted retrieval**
+- New `rank="weighted"` on `SkillStore.search()` and `MemoryStore.search()`: composite score of BM25 × Wilson-lower-bound success × exponential recency decay
+- Default remains BM25; weighted is opt-in per call
+- CLI exposes `--rank weighted` on `kaos skills search` and `kaos memory search`
+
+**Failure intelligence**
+- 8 built-in heuristic diagnosers categorise errors into `transient` / `config` / `code` / `infra` / `unknown` with root cause and suggested action — pure Python, no LLM calls
+- Fix-outcome tracking: a "known fix" that fails 5+ times with <50% success rate auto-downgrades so future agents stop applying broken suggestions
+- Systemic alerts: ≥N agents hitting the same fingerprint inside a sliding window raises a `systemic_alerts` row; consumers should refuse to spawn until resolved
+- Pluggable `Diagnoser` protocol for custom rules; `register_diagnoser()` prepends to the registry
+
+**Schema v6 (additive; v3 DBs migrate in place)**
+- New tables: `skill_uses`, `memory_hits`, `episode_signals`, `dream_runs`, `associations`, `failure_fingerprints`, `failure_occurrences`, `systemic_alerts`, `consolidation_proposals`, `policies`
+- New columns: `agent_skills.deprecated`, `agent_skills.deprecated_at`, `agent_skills.deprecated_reason`
+
+**10 new CLI commands under `kaos dream`**
+- `kaos dream run [--dry-run|--apply]` — manual full cycle (7 phases)
+- `kaos dream runs` — list past runs
+- `kaos dream show <run_id>` — reprint a digest
+- `kaos dream related <skill|memory> <name>` — Hebbian lookup
+- `kaos dream consolidate [--dry-run|--apply]` — structural changes
+- `kaos dream failures [--min-count N]` — recurring fingerprints with category
+- `kaos dream diagnose <fp_id> [--category ...]` — show or set diagnosis
+- `kaos dream fix-outcome <fp_id> --succeeded|--failed` — fix-outcome tracking
+- `kaos dream systemic [--ack N|--resolve N]` — incident lifecycle
+
+**8 new MCP tools**
+`dream_run`, `dream_related`, `dream_consolidate`, `failure_lookup`, `failure_list`, `failure_diagnose`, `failure_fix_outcome`, `systemic_alerts`. Total MCP surface now **45 tools**.
+
+### Architecture rewrite (measured)
+
+The initial M2 design fired inline association upserts on every `record_outcome`. A committed microbenchmark measured **+210 ms p50 overhead** and rejected the build pre-merge. Rewrote graph construction from per-event to batched-at-completion (single `executemany` per session). Final measured overhead: **+15 µs p50** on `record_outcome`, **+872 µs p50** on `agent_complete`. **14,000× faster.**
+
+### Measured gains
+
+All three numbers below come from benchmarks committed in the repo alongside their data and scripts — reproducible with `uv run python demo_*/run.py` or `/scenario.py`:
+
+- **Retrieval accuracy**: BM25 80% → plasticity-weighted 90% (+10 pp, +12.5%). Seed=42 reproducible. Source: `demo_neuroplasticity_bench/`
+- **Hot-path overhead**: +15 µs p50 record_outcome, +872 µs p50 agent_complete, p99 within budget. Source: `demo_plasticity_overhead_bench/`
+- **Failure triage**: 60/60 validations pass — 7 planted error types correctly categorised, fix auto-downgrade after 5 failed attempts, systemic alert on 4-agent wave. Source: `demo_failure_intelligence_bench/`
+
+### Documentation
+
+- [Blog post (growth story with charts)](blog/kaos-neuroplasticity.html) — 7 chapters, 4 inline SVG charts, embedded demo GIF
+- [Whitepaper](papers/kaos-neuroplasticity-whitepaper.html) — 16 pages, formal paper structure, simulated adversarial review from 3 reviewer personas (systems, info retrieval, cognitive science) with author responses
+- [docs/neuroplasticity.md](https://github.com/canivel/kaos/blob/main/docs/neuroplasticity.md) — full mechanism reference with schema and formulas
+
+### Honest limits
+- Gains are workload-conditional: requires outcome feedback and retrieval ambiguity
+- `policies` table populates but is not yet consulted (M4 scaffolding)
+- Merge detection uses Jaccard-on-word-bags; catches obvious duplicates, misses semantic ones; never auto-applied
+- Heuristic diagnosers cover common cases; exotic errors stay `unknown` until a custom diagnoser is registered
+
+### Stats
+- 423 unit tests passing (+30 from 0.8.0; 0 regressions)
+- 181 total scenario validations (45 dream use case + 60 failure intelligence + 76 ARC-AGI-3)
+- 3 new benchmark folders committed next to the code
+
+---
+
 ## [0.6.0] - 2026-04-09
 
 ### CORAL: Autonomous Multi-Agent Evolution (inspired by arXiv:2604.01658)
