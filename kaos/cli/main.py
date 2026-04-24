@@ -1360,20 +1360,36 @@ def memory_write(ctx, agent_id: str, content: str, mem_type: str, key: str, db: 
               type=click.Choice(["observation", "result", "skill", "insight", "error"]),
               help="Filter by type")
 @click.option("--agent", "-a", default=None, help="Filter by agent_id")
+@click.option("--rank",
+              type=click.Choice(["bm25", "weighted"]),
+              default="bm25",
+              help="bm25 (default) or weighted (plasticity-aware: "
+                   "retrieval frequency + recency decay reorder results)")
+@click.option("--record-hits/--no-record-hits", default=False,
+              help="Record retrieval as memory_hits rows so plasticity "
+                   "learns which entries are actually consulted.")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.pass_context
-def memory_search(ctx, query: str, limit: int, mem_type: str, agent: str, db: str):
-    """Full-text search across shared memory (FTS5 + porter stemming)."""
+def memory_search(ctx, query: str, limit: int, mem_type: str, agent: str,
+                  rank: str, record_hits: bool, db: str):
+    """Full-text search across shared memory (FTS5 + porter stemming,
+    optionally plasticity-weighted)."""
     from kaos.memory import MemoryStore
     afs = _get_afs(db)
     try:
         mem = MemoryStore(afs.conn)
-        hits = mem.search(query=query, limit=limit, type=mem_type, agent_id=agent)
+        hits = mem.search(query=query, limit=limit, type=mem_type,
+                          agent_id=agent, rank=rank,
+                          record_hits=record_hits,
+                          requesting_agent_id=agent)
         if _json_out(ctx, [h.to_dict() for h in hits]):
             return
         if not hits:
             console.print("[dim]No results[/dim]")
             return
+        if rank == "weighted":
+            console.print("[magenta](weighted)[/magenta] "
+                          f"[dim]query: {query!r}[/dim]")
         for h in hits:
             key_str = f"  [dim]key={h.key}[/dim]" if h.key else ""
             console.print(f"[bold cyan]#{h.memory_id}[/bold cyan]  "
@@ -1520,20 +1536,28 @@ def skills_save(ctx, name: str, description: str, template: str, agent: str, tag
 @click.argument("query")
 @click.option("--limit", "-n", default=10, help="Max results")
 @click.option("--tag", default=None, help="Filter by tag")
+@click.option("--rank",
+              type=click.Choice(["bm25", "weighted"]),
+              default="bm25",
+              help="bm25 (default) or weighted (plasticity-aware: bm25 "
+                   "× Wilson-lower-bound success × recency decay)")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.pass_context
-def skills_search(ctx, query: str, limit: int, tag: str, db: str):
-    """Full-text search across the skill library (FTS5 + BM25)."""
+def skills_search(ctx, query: str, limit: int, tag: str, rank: str, db: str):
+    """Full-text search across the skill library (FTS5 + BM25, optionally
+    plasticity-weighted)."""
     from kaos.skills import SkillStore
     afs = _get_afs(db)
     try:
         sk = SkillStore(afs.conn)
-        hits = sk.search(query=query, limit=limit, tag=tag)
+        hits = sk.search(query=query, limit=limit, tag=tag, rank=rank)
         if _json_out(ctx, [s.to_dict() for s in hits]):
             return
         if not hits:
             console.print("[dim]No skills found[/dim]")
             return
+        mode_tag = "[magenta](weighted)[/magenta] " if rank == "weighted" else ""
+        console.print(f"{mode_tag}[dim]query: {query!r}[/dim]")
         for s in hits:
             rate = f"{s.success_count}/{s.use_count}" if s.use_count else "unused"
             tags_str = f"  [dim]{', '.join(s.tags)}[/dim]" if s.tags else ""
