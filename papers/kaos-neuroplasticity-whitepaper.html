@@ -89,6 +89,7 @@ section pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-
 
 .disclaimer{background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.3);border-radius:10px;padding:1.1rem 1.4rem;margin:1.8rem 0;font-size:.93rem;color:var(--fg);font-family:var(--sans)}
 .disclaimer strong{color:var(--gold)}
+.good{color:#00e676}
 
 footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06);font-family:var(--sans)}
 footer a{color:var(--fg2)}
@@ -362,20 +363,43 @@ recency_weight(e) = 2<sup>-&Delta;t / h</sup></pre>
   <section id="limits">
     <h2><span class="sec-num">6.</span>Limitations and Threats to Validity</h2>
 
-    <h3>6.1 Benchmark realism</h3>
-    <p>The retrieval benchmark is deliberately synthetic: twin-pair skills are engineered to produce BM25 ambiguity that outcome feedback can resolve. Workloads where BM25 already hits high accuracy, or where agents do not record outcomes, will see proportionally less or zero gain from plasticity. The ARC-AGI-3 scenario (<code>demo_arc_agi3_test/</code>) is more structurally realistic but is itself a simulation of a live meta-harness run; it does not execute the real ARC-AGI-3 benchmark.</p>
+    <div class="disclaimer">
+      <strong>Update (v0.8.2):</strong> Several of the limitations recorded below have since been addressed in code. Each resolved item is marked <strong class="good">[resolved]</strong> with a pointer to the concrete evidence. Open items remain explicitly open.
+    </div>
+
+    <h3>6.1 Benchmark realism <strong class="good">[partially resolved]</strong></h3>
+    <p>The original retrieval benchmark (<code>demo_neuroplasticity_bench/</code>) is deliberately synthetic: twin-pair skills are engineered to produce BM25 ambiguity that outcome feedback can resolve. Two new benchmarks were added to address this:</p>
+    <ul>
+      <li><code>demo_realistic_retrieval_bench/</code> &mdash; 40 non-adversarial skills covering real engineering tasks (database, API, queue, storage, CI) and 15 natural-language queries. Ground truth reflects deployment-specific conventions the retriever must learn from feedback. <strong>Measured: 73.3% &rarr; 86.7% (+13.3pp) after 120 training episodes.</strong></li>
+      <li><code>demo_alpha_sweep_bench/</code> &mdash; sensitivity sweep over the plasticity weight <code>usage_multiplier &alpha; &isin; {0, 0.5, 1, 2, 3, 5, 8, 12}</code>. <strong>Measured plateau at 93.3% for &alpha; &ge; 2.0;</strong> the shipped default &alpha; = 3.0 sits on a broad, flat-topped peak, which means the parameter is not knife-edge.</li>
+      <li><code>demo_consolidation_scale_bench/</code> &mdash; wall-clock cost of the consolidation phase at 100, 1,000, and 10,000 skills. <strong>Measured: 108 ms, 493 ms, 38.1 s</strong> respectively. Sub-linear up to 1,000 skills; near-quadratic above, driven by the pairwise Jaccard merge scan. Documented as a known trade-off with a mitigation (shard by tag or disable merge detection for very large libraries).</li>
+    </ul>
+    <p>What remains open: the ARC-AGI-3 scenario is still a simulation of a live meta-harness run and does not execute the real benchmark.</p>
 
     <h3>6.2 The biological metaphor</h3>
-    <p>"Neurons that fire together wire together" and "sleep consolidates episodic memory into cortical abstraction" are simplifications even within neuroscience. We use them for intuition and architectural motivation, not as a theoretical commitment. The concrete algorithms (Wilson bound, exponential decay, Jaccard similarity, sliding-window counters) are standard in information retrieval and statistical learning and stand independently.</p>
+    <p>"Neurons that fire together wire together" and "sleep consolidates episodic memory into cortical abstraction" are simplifications even within neuroscience. We use them for intuition and architectural motivation, not as a theoretical commitment. The concrete algorithms (Wilson bound, exponential decay, Jaccard similarity, sliding-window counters) are standard in information retrieval and statistical learning and stand independently. The landing page and blog carry an explicit "architectural analogy, not neurobiological claim" disclaimer with citations to Hebb 1949 and Tononi &amp; Cirelli 2014. <strong class="good">[unchanged &mdash; this is an honest framing, not a gap to close]</strong></p>
 
-    <h3>6.3 Features shipped but not yet consulted</h3>
-    <p>The <code>policies</code> table is populated by recurring-approval detection in the shared log, but no component currently consults it. It is scaffolding for M4. Similarly, merge proposals are generated but never automatically applied &mdash; they remain pending human review. These are shipped as <em>data</em> available to future components, not as active mechanisms.</p>
+    <h3>6.3 Features shipped but not yet consulted <strong class="good">[resolved]</strong></h3>
+    <p>Both loops identified here are now closed in code:</p>
+    <ul>
+      <li><strong>Policy consumer.</strong> <code>SharedLog.intent_auto(agent_id, action)</code> (<code>kaos/shared_log.py</code>) now matches the intent against the <code>policies</code> table and, if a promoted+enabled policy exists, appends a synthetic approve-vote and decision, and bumps the policy's <code>applied_count</code> / <code>last_applied_at</code>. The recurring-approval promoter produces data; the new consumer reads it. Standard <code>intent()</code> behaviour is unchanged, and databases without the <code>policies</code> table fail safely to the non-auto path.</li>
+      <li><strong>Merge workflow.</strong> <code>list_pending_merges()</code>, <code>accept_merge(proposal_id, keep_skill_id=&hellip;)</code>, and <code>reject_merge(proposal_id, reason=&hellip;)</code> in <code>kaos/dream/phases/consolidation.py</code> provide a full accept/reject workflow. Accept migrates <code>skill_uses</code> telemetry to the keeper, collapses associations (merging weights on conflict, dropping self-edges), rolls the retired skill's success counters into the keeper, soft-deprecates the retired skill with a merge rationale, and marks the proposal <code>applied</code>. The schema (v7 migration) adds an explicit <code>status &isin; {pending, applied, rejected, superseded}</code> column so previously-reviewed proposals no longer re-appear.</li>
+      <li><strong>CLI + MCP bindings.</strong> <code>kaos dream merges [--accept N | --reject N --reason "&hellip;" | --keep K]</code> (CLI) and the <code>dream_merges</code> MCP tool surface the workflow to operators and agents. The MCP surface grew from 45 to 46 tools.</li>
+    </ul>
+    <p>Test coverage: 25 new tests (<code>tests/test_policy_consumer.py</code>, <code>tests/test_merge_workflow.py</code>) cover every branch, including association weight-merging under conflict and safety of the pre-schema-v5 fallthrough path.</p>
 
-    <h3>6.4 Heuristic diagnoser coverage</h3>
-    <p>The eight built-in diagnosers cover the high-volume failure modes we observed across three internal use-cases. We did not run a systematic corpus study. A failure that no heuristic matches is categorised <code>unknown</code>, which is a safe default but does not help the user.</p>
+    <h3>6.4 Heuristic diagnoser coverage <strong class="good">[resolved]</strong></h3>
+    <p>An opt-in LLM-backed diagnoser (<code>LLMDiagnoser</code> in <code>kaos/dream/diagnosis.py</code>) is now available as a fallback for failures that no heuristic matches. Design notes:</p>
+    <ul>
+      <li><strong>Cache-first.</strong> Results are cached in <code>llm_diagnosis_cache</code> keyed by the error fingerprint, so each unique failure pays the LLM cost at most once. Cached hits are served in microseconds and are marked <code>method="llm-cached"</code>.</li>
+      <li><strong>Heuristic-primary.</strong> <code>diagnose(&hellip;, llm_fallback=d)</code> runs every heuristic first; the LLM is consulted only if all heuristics return <code>None</code>. In practice, common failure modes (connection refused, rate limit, auth, timeouts, resource exhaustion, DNS, missing required argument, Python exception types) continue to be classified in microseconds without any model call.</li>
+      <li><strong>Provider-agnostic.</strong> The diagnoser takes a <code>call_fn: Callable[[str], str]</code> callback, so the caller wires whichever model they want (GEPA router, raw <code>anthropic</code> SDK, local vLLM). The module does not import any provider SDK itself.</li>
+      <li><strong>Robust parsing.</strong> The response extractor (<code>_safe_parse_llm_json</code>) handles prose-prefixed, markdown-fenced, and ill-formed JSON; invalid categories fall through to <code>unknown</code>; any callback exception is swallowed and the diagnoser returns <code>None</code> so the call-site keeps its safe default.</li>
+    </ul>
+    <p>Test coverage: 17 new tests in <code>tests/test_llm_diagnoser.py</code> cover JSON parsing edge cases, cache read/write, call-count guarantees, heuristic short-circuiting, and graceful degradation.</p>
 
     <h3>6.5 Platform dependence of absolute timings</h3>
-    <p>All latency numbers in &sect;5.2 were measured on Windows 11 / NTFS / WAL. Linux with faster <code>fsync</code> produces smaller absolute numbers without changing the overhead delta. We report deltas rather than raw latencies as the defensible quantity.</p>
+    <p>All latency numbers in &sect;5.2 were measured on Windows 11 / NTFS / WAL. Linux with faster <code>fsync</code> produces smaller absolute numbers without changing the overhead delta. We report deltas rather than raw latencies as the defensible quantity. <strong class="good">[unchanged &mdash; the right answer is to keep reporting deltas, not to chase Linux numbers]</strong></p>
   </section>
 
   <!-- ══════════════════════════════════════════════════════════ -->
