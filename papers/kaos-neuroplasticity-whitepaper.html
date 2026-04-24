@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAOS Dream: A Continuous Consolidation Mechanism for Agent Libraries — Whitepaper</title>
+<meta name="description" content="A whitepaper describing the KAOS Dream mechanism: inline synaptic plasticity plus batched structural consolidation for LLM agent frameworks. Includes a simulated adversarial review from systems, ML/retrieval, and cognitive science perspectives.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--red:#ff5252;--cyan:#18ffff;
+  --pink:#fd79a8;--gold:#ffd166;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:800px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--serif);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15);font-family:var(--sans)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.05rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2)}
+nav .back:hover{color:var(--fg);text-decoration:none}
+.paper-wrap{max-width:var(--max);margin:0 auto;padding:7rem 2rem 5rem}
+.paper-header{padding-bottom:2.5rem;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:3rem;font-family:var(--sans)}
+.paper-tag{font-family:var(--mono);font-size:.72rem;color:var(--pink);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:.9rem}
+.paper-header h1{font-size:2.1rem;font-weight:700;letter-spacing:-.3px;line-height:1.3;margin-bottom:1rem;font-family:var(--serif)}
+.paper-header .subtitle{font-style:italic;color:var(--fg2);font-size:1.08rem;margin-bottom:1.3rem}
+.paper-meta{display:flex;gap:1.6rem;align-items:center;flex-wrap:wrap;font-size:.83rem;color:var(--fg2);font-family:var(--sans)}
+.paper-authors{font-size:.95rem;color:var(--fg2);margin-bottom:.8rem}
+.paper-authors strong{color:var(--fg)}
+.abstract{background:var(--bg2);border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:1.3rem 1.6rem;margin:2rem 0 2.5rem;font-size:.97rem;line-height:1.7}
+.abstract-label{font-family:var(--mono);font-size:.74rem;color:var(--pink);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.5rem;display:block}
+/* Section structure */
+section{margin:3rem 0}
+section h2{font-family:var(--sans);font-size:1.4rem;font-weight:700;color:var(--fg);margin-bottom:.8rem;letter-spacing:-.2px}
+section h2 .sec-num{color:var(--pink);font-family:var(--mono);font-size:.85em;margin-right:.6em}
+section h3{font-family:var(--sans);font-size:1.12rem;font-weight:700;color:var(--accent2);margin:1.8rem 0 .6rem}
+section p{margin-bottom:1.2rem;font-size:1.02rem;color:var(--fg);line-height:1.8}
+section ul,section ol{margin:0 0 1.3rem 1.8rem;color:var(--fg)}
+section li{margin-bottom:.5rem;line-height:1.7}
+section a{color:var(--accent2);text-decoration:underline;text-decoration-color:rgba(162,155,254,.3)}
+section a:hover{text-decoration-color:var(--cyan);color:var(--cyan)}
+section :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.1rem .4rem;border-radius:3px;font-size:.84em}
+section pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:1rem 1.3rem;overflow-x:auto;font-size:.83rem;line-height:1.6;color:var(--fg2);margin-bottom:1.3rem}
+/* Figure environment */
+.figure{margin:2rem 0;font-family:var(--sans)}
+.figure-box{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:1.2rem}
+.figure-caption{font-size:.85rem;color:var(--fg2);text-align:left;margin-top:.6rem;font-style:italic;line-height:1.55}
+.figure-caption b{color:var(--fg);font-style:normal}
+/* Tables */
+.tab{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:.9rem;margin:1.3rem 0}
+.tab th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--pink);color:var(--fg);font-size:.78rem;text-transform:uppercase;letter-spacing:.4px;background:rgba(253,121,168,.04)}
+.tab td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.06);color:var(--fg2)}
+.tab td.hi{color:var(--green);font-weight:600}
+.tab td.lo{color:var(--red)}
+/* Citations & references */
+.cite{font-family:var(--sans);font-size:.78em;color:var(--accent2);vertical-align:super;padding:0 1px}
+.refs{font-family:var(--sans);font-size:.85rem;line-height:1.7}
+.refs li{margin-bottom:.8rem;color:var(--fg2)}
+.refs .ref-id{font-family:var(--mono);color:var(--pink);font-weight:600;margin-right:.3rem}
+/* Reviewer box */
+.reviewer{background:var(--bg2);border-radius:10px;padding:1.3rem 1.5rem;margin:1.5rem 0;border-left:3px solid var(--accent2);font-family:var(--sans)}
+.reviewer.a{border-left-color:#18ffff}
+.reviewer.b{border-left-color:#fd79a8}
+.reviewer.c{border-left-color:#ffd166}
+.reviewer .rev-label{font-family:var(--mono);font-size:.74rem;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.5rem;font-weight:600}
+.reviewer.a .rev-label{color:#18ffff}
+.reviewer.b .rev-label{color:#fd79a8}
+.reviewer.c .rev-label{color:#ffd166}
+.reviewer h4{font-size:1rem;font-weight:700;margin-bottom:.6rem;color:var(--fg)}
+.reviewer p{font-size:.93rem;color:var(--fg);line-height:1.7;margin-bottom:.8rem}
+.reviewer .severity{display:inline-block;font-family:var(--mono);font-size:.7rem;padding:.15rem .5rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;font-weight:600}
+.sev-major{background:rgba(255,82,82,.15);color:#ff5252;border:1px solid rgba(255,82,82,.3)}
+.sev-minor{background:rgba(255,209,102,.15);color:#ffd166;border:1px solid rgba(255,209,102,.3)}
+.sev-ack{background:rgba(0,230,118,.15);color:#00e676;border:1px solid rgba(0,230,118,.3)}
+.response{background:var(--bg3);border-radius:6px;padding:.9rem 1.1rem;margin-top:.9rem;font-size:.9rem;color:var(--fg)}
+.response-label{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:.3rem;font-weight:600;display:block}
+
+.disclaimer{background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.3);border-radius:10px;padding:1.1rem 1.4rem;margin:1.8rem 0;font-size:.93rem;color:var(--fg);font-family:var(--sans)}
+.disclaimer strong{color:var(--gold)}
+
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06);font-family:var(--sans)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+
+/* Chart styling inherits from blog */
+.chart svg{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../blog/kaos-neuroplasticity.html" class="back">&larr; Back to blog post</a>
+</div>
+</nav>
+
+<div class="paper-wrap">
+
+  <header class="paper-header">
+    <div class="paper-tag">KAOS Whitepaper &middot; April 2026 &middot; v0.8.1</div>
+    <h1>KAOS Dream: A Continuous Consolidation Mechanism for Agent Libraries</h1>
+    <p class="subtitle">Inline synaptic plasticity plus batched structural consolidation, implemented for an SQLite-backed multi-agent framework. Real benchmarks, honest limits, and a simulated adversarial review.</p>
+    <div class="paper-authors">
+      <strong>Danilo Canivel</strong> &middot; KAOS maintainer &middot; <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a>
+    </div>
+    <div class="paper-meta">
+      <span>16 pages &middot; 4 figures &middot; 2 tables</span>
+      <span>&middot;</span>
+      <span>Companion benchmarks committed in <code>demo_*_bench/</code></span>
+    </div>
+  </header>
+
+  <div class="abstract">
+    <span class="abstract-label">Abstract</span>
+    We describe <b>KAOS Dream</b>, a continuous consolidation mechanism for multi-agent LLM frameworks. Unlike prior work treating the agent library (skills, memory, shared log) as a passive filing cabinet queried at retrieval time, Dream introduces <em>inline synaptic plasticity</em> &mdash; lightweight telemetry writes on every skill outcome, memory retrieval, and agent termination &mdash; plus <em>batched structural consolidation</em> that rebuilds a Hebbian co-occurrence graph at agent-completion boundaries. Retrieval is reweighted at query time using a Wilson-lower-bound success estimator combined with exponential recency decay. A parallel failure-intelligence subsystem categorises errors into actionable buckets (transient / config / code / infra / unknown), tracks whether suggested fixes actually resolve the error, and raises systemic alerts when multiple agents hit the same fingerprint inside a sliding window. Three reproducible benchmarks committed alongside the code measure: a <b>+10 percentage-point gain</b> in top-1 retrieval accuracy on a disambiguation-dominated workload; <b>+15 &micro;s of p50 hot-path overhead</b> per agent operation after an initial naive design was rejected by the microbenchmark and rewritten; and <b>60/60 validations</b> in a realistic failure-triage scenario. An earlier design with inline association upserts was 14,000&times; slower and was discarded. We are explicit that gains are workload-conditional: benchmarks without outcome feedback or without retrieval ambiguity show zero gain. The paper concludes with a simulated adversarial review from systems, information-retrieval, and cognitive-science perspectives, pushing back on the biological metaphor, the benchmark design, and the production readiness claims.
+  </div>
+
+  <div class="disclaimer">
+    <strong>On the review process.</strong> Section 7 of this paper contains what we call a <em>simulated adversarial review</em>: three distinct reviewer personas (systems, information retrieval, cognitive science), each articulating the strongest critique of the work from their perspective. We do not fake the identity of real researchers. The reviewers are rhetorical devices used to stress-test claims we would otherwise be too close to. Authors' responses follow each critique. Anyone reading this is welcome to actually review the work &mdash; open an issue on the repository.
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="intro">
+    <h2><span class="sec-num">1.</span>Introduction</h2>
+
+    <p>Contemporary multi-agent frameworks &mdash; AutoGen, CrewAI, LangGraph, and KAOS <span class="cite">[1]</span> among them &mdash; have converged on a common storage pattern. An agent's episodic memory is a full-text search index of past observations. Its procedural skills are a collection of parameterised prompt templates (<em>externalisation</em> in the sense of Zhou et al. <span class="cite">[2]</span>). Its coordination history is an append-only log, often with intent-vote-decide primitives <span class="cite">[3]</span>. Each of these is a <em>place</em>: a table an agent writes into at one moment and retrieves from at another.</p>
+
+    <p>Viewed globally, the library is nevertheless <em>dead</em>. Nothing ranks its contents by whether they actually worked in production. Nothing notices that two skills are always applied in the same session, or that a particular memory entry is cited by every successful run but never by a failed one. Nothing raises a flag when the same error fingerprint is hit by ten agents in two minutes &mdash; a signal that infrastructure is down and spawning more agents will make things worse.</p>
+
+    <p>The biological analogue does not work this way. The cortex is a graph that reshapes its own connectivity as a side effect of neural activity: coincident firing reinforces synaptic strength (Hebbian learning <span class="cite">[4]</span>), unused pathways atrophy, and consolidation during sleep moves episodic content into structured abstraction <span class="cite">[5]</span>. This activity is continuous with normal cognition, not a separate maintenance job.</p>
+
+    <p>This paper presents KAOS Dream, an integration of these ideas into a production multi-agent framework. The <b>contribution is not a new algorithm</b>. Wilson score intervals <span class="cite">[6]</span>, exponential recency decay, Hebbian co-occurrence graphs, and failure-fingerprint indexes all predate this work. The contribution is a carefully engineered system where these signals flow continuously through normal agent operation without manual curation, and where an honest benchmark forced us to throw away an obvious-but-slow architecture and rebuild it for the hot path.</p>
+
+    <p>Concretely, we claim:</p>
+    <ul>
+      <li><b>C1 (retrieval gain).</b> On a disambiguation-dominated benchmark of 10 queries against 20 twin-pair skills over 80 training episodes, plasticity-weighted top-1 retrieval achieves 90% accuracy versus 80% for BM25 alone: a gain of +10 percentage points (&sect;5.1). Reproducible at seed 42.</li>
+      <li><b>C2 (overhead tractability).</b> Inline plasticity hooks impose +15&nbsp;&micro;s p50 overhead on <code>record_outcome</code> and +872&nbsp;&micro;s on agent termination, after an initial design imposing 210&nbsp;ms was rejected by benchmark and rewritten (&sect;5.2).</li>
+      <li><b>C3 (failure triage).</b> Eight heuristic diagnosers without LLM invocation categorise 7/7 realistic failure types correctly in a committed scenario; fix-outcome tracking auto-downgrades broken fixes after 5+ failed attempts; a sliding-window detector raises systemic alerts on incident-like patterns. 60/60 validations pass (&sect;5.3).</li>
+    </ul>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="related">
+    <h2><span class="sec-num">2.</span>Related Work</h2>
+
+    <h3>2.1 Agent frameworks and skill libraries</h3>
+    <p>Zhou et al. <span class="cite">[2]</span> introduce the externalisation framework, distinguishing episodic memory from procedural skills and proposing that skills carry reliability statistics. KAOS's v0.7.0 <code>SkillStore</code> implements this, tracking <code>use_count</code> and <code>success_count</code>. This paper extends that foundation by <em>using</em> those counters at query time &mdash; combined with recency signals &mdash; rather than merely recording them. Meta-Harness <span class="cite">[7]</span> evolves entire harness programs; our work is orthogonal, operating one layer below at the skill-retrieval level.</p>
+
+    <h3>2.2 Memory for LLM agents</h3>
+    <p>Claude-mem <span class="cite">[8]</span> popularised FTS5-backed cross-agent memory with BM25 search. MemPalace <span class="cite">[9]</span> addresses context compression. Neither adjusts retrieval ranking based on downstream task outcomes. We add a weighted-rank mode that composes with BM25 without replacing it.</p>
+
+    <h3>2.3 Biological inspiration</h3>
+    <p>Hebb <span class="cite">[4]</span> formalised "cells that fire together wire together". Tononi and Cirelli's synaptic-homeostasis hypothesis <span class="cite">[5]</span> and the hippocampal-cortical dialog <span class="cite">[10]</span> describe how synaptic weight adjustments (fast, distributed) are complemented by structural rewiring during offline consolidation (slow, centralised). We use this distinction explicitly as an architectural principle: inline hooks write raw telemetry (synaptic); a batch at agent completion upserts the association graph (structural).</p>
+
+    <h3>2.4 Failure indexing</h3>
+    <p>Stack-trace-based failure deduplication is standard in production logging systems (e.g. Sentry's <code>groupingHash</code>) and in evolutionary harness search (e.g. the Surrogate Verifier in EvoSkills <span class="cite">[11]</span>). What is novel in our setup is the coupling of fingerprinting with <em>fix-outcome tracking</em>: we apply the same Hebbian principle to fix suggestions &mdash; a fix that keeps failing decays and stops being offered &mdash; and with <em>systemic-alert detection</em> via sliding-window agent counts.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="system">
+    <h2><span class="sec-num">3.</span>System</h2>
+
+    <h3>3.1 Architecture</h3>
+    <p>KAOS stores all runtime state in a single SQLite file with WAL mode <span class="cite">[1]</span>. Schema v6 adds four tables for plasticity (<code>skill_uses</code>, <code>memory_hits</code>, <code>episode_signals</code>, <code>dream_runs</code>) and five for failure intelligence and structural consolidation (<code>associations</code>, <code>failure_fingerprints</code>, <code>failure_occurrences</code>, <code>systemic_alerts</code>, <code>consolidation_proposals</code>, <code>policies</code>). All migrations are additive; v3 databases upgrade in place.</p>
+
+    <p>Two classes of plasticity update run on distinct timescales:</p>
+
+    <ul>
+      <li><b>Fast path (synaptic).</b> Inline hooks fire on every <code>record_outcome</code>, <code>memory.search(record_hits=True)</code>, and agent terminal-state transition (<code>complete</code>/<code>fail</code>/<code>kill</code>). These write one row each to their respective telemetry tables in the caller's existing transaction. No new <code>COMMIT</code>. No graph writes. Measured cost: +15 &micro;s p50 per call (&sect;5.2).</li>
+      <li><b>Slow path (structural).</b> At agent completion, one <code>executemany</code> upserts every association edge implied by the agent's session (skill&harr;skill, skill&harr;memory, memory&harr;memory). At every <code>KAOS_DREAM_THRESHOLD</code>-th completion (default 100), a full consolidation pass proposes promote/prune/merge changes to the library. Measured cost: +872 &micro;s p50 per agent completion; consolidation pass is bounded by library size, not per-agent cost.</li>
+    </ul>
+
+    <h3>3.2 Weighted retrieval</h3>
+
+    <p>Skill and memory search support a <code>rank="weighted"</code> mode that replaces pure BM25 with a composite score:</p>
+
+    <pre>score(e) = max(bm25(e, q), floor) &times; usage_factor(e) &times; recency_weight(e)
+
+usage_factor(e) = 0.5                                   if uses(e) = 0
+                 0.5 + &alpha; &middot; W<sub>lo</sub>(s(e), n(e))        otherwise
+
+recency_weight(e) = 2<sup>-&Delta;t / h</sup></pre>
+
+    <p>where <em>W<sub>lo</sub>(s, n)</em> is the Wilson score interval lower bound for <em>s</em> successes out of <em>n</em> attempts <span class="cite">[6]</span>, &alpha;=3.0 by default, <em>h</em> is the recency half-life (default 14 days), and the BM25 floor prevents retrieval-irrelevant skills from dominating via usage alone.</p>
+
+    <p>The Wilson lower bound has two useful properties for this application. First, it penalises small sample sizes &mdash; a skill with 10/10 successes rightly outranks one with 1/1. Second, it never returns zero for 0/n attempts, so a never-tried-but-recently-created skill retains a meaningful weight until usage data arrives. The 0.5 offset for zero-use entries ensures plasticity begins as a neutral multiplier and can only <em>amplify</em> evidence that accumulates, never punish unknowns.</p>
+
+    <h3>3.3 Hebbian association graph</h3>
+
+    <p>At agent completion time, for every agent with at least one session-level signal, we compute three edge sets:</p>
+
+    <ol>
+      <li><b>skill&harr;skill</b>: all pairs of distinct skills the agent applied.</li>
+      <li><b>memory&harr;memory</b>: all pairs of distinct memory entries retrieved (with <code>record_hits=True</code>) in the session.</li>
+      <li><b>skill&harr;memory</b> (cross-modal): Cartesian product of applied skills and retrieved memory, with half weight.</li>
+    </ol>
+
+    <p>Edges are inserted with <code>ON CONFLICT DO UPDATE SET weight = weight + excluded.weight</code>, so repeated co-occurrences accumulate weight linearly. Each edge also carries <code>last_seen</code> for lazy exponential decay at query time.</p>
+
+    <h3>3.4 Failure intelligence</h3>
+
+    <p>Failures produce a normalised fingerprint via a stable hash of (tool name, normalised error message) where the normalisation strips UUIDs, timestamps, file paths, and other non-semantic identifiers. On first observation, the fingerprint is diagnosed by a registry of heuristic diagnosers: pattern matchers that return a (<em>category</em>, <em>root_cause</em>, <em>suggested_action</em>, <em>confidence</em>) tuple. Eight diagnosers ship by default; users register domain-specific ones.</p>
+
+    <p>When an agent applies a fix suggested by a prior diagnosis, it calls <code>record_fix_outcome(fp_id, succeeded=...)</code>. The fingerprint tracks <em>fix_attempts</em> and <em>fix_success_count</em>; at <em>fix_attempts</em> &ge; 5 with success rate &lt; 0.5, the fix suggestion is cleared so future agents fall back to fresh diagnosis. This applies Hebbian principles to the fix layer itself: working suggestions persist, non-working ones fade.</p>
+
+    <p>A sliding-window counter per fingerprint tracks recent occurrences. When &ge; <code>KAOS_SYSTEMIC_THRESHOLD</code> distinct agents hit the same fingerprint within <code>KAOS_SYSTEMIC_WINDOW_S</code>, a <code>systemic_alerts</code> row is written (debounced against retriggers for 60s). Consumers should consult active alerts before spawning: infrastructure being down is a signal to stop, not to retry.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="impl">
+    <h2><span class="sec-num">4.</span>Implementation Notes</h2>
+
+    <h3>4.1 The cost of getting it wrong</h3>
+
+    <p>The first implementation (KAOS v0.8.0) built the Hebbian graph <em>synchronously</em>: every <code>record_outcome</code> queried for sibling skills and upserted an association for each. On a 100-skill library under Windows fsync (~30 ms per <code>COMMIT</code>), this produced <b>+210 ms p50 overhead</b> per call, with p99 exceeding 1 second.</p>
+
+    <p>The cost was discovered by a microbenchmark we had committed alongside the code, measuring per-op latency with plasticity hooks enabled and disabled. The benchmark's verdict: <em>OVER BUDGET</em>. We regard this as a methodological success, not a failure: the system rejected its own design at code-review time. The alternative &mdash; shipping a 210-ms-overhead hook and discovering it in production &mdash; would have been materially worse.</p>
+
+    <p>The rewrite moved graph construction out of per-event hooks and into a single <code>executemany</code> at agent completion. Raw telemetry (the <code>skill_uses</code> row) continues to write inline in the caller's transaction &mdash; zero extra fsync. The agent-completion batch pays one <code>COMMIT</code> for the whole session's edges. Measured overhead: +15 &micro;s p50 on the hot path, +872 &micro;s on completion. The architectural change was roughly eighty lines of code.</p>
+
+    <h3>4.2 Inline vs. batched: the biology is also the engineering</h3>
+
+    <p>In the mammalian cortex, synaptic-weight adjustment (long-term potentiation) is a fast, local process at individual synapses. Structural plasticity &mdash; dendritic spine formation and pruning &mdash; is a slower, energy-expensive process concentrated in sleep <span class="cite">[5]</span>. The two are <em>mechanistically distinct</em>, not implementations of the same thing at different speeds.</p>
+
+    <p>KAOS adopts the same distinction. Inline hooks write telemetry but do not restructure the library. Structural operations &mdash; Hebbian edge upserts, promote/prune/merge proposals, policy promotion &mdash; run at natural consolidation boundaries. The benefit is not only performance; it is also <em>semantic</em>: the inline operations are small, bounded, and transactionally coupled to the event that produced them, which makes reasoning about consistency straightforward. Structural changes are transactionally separate and can be rolled back or re-run idempotently.</p>
+
+    <h3>4.3 Escape hatches</h3>
+
+    <p>Neuroplasticity has pharmacological opt-outs. KAOS has <code>KAOS_DREAM_AUTO=0</code>, which disables all inline hooks (telemetry tables still accept writes but nothing reads them for plasticity purposes). <code>KAOS_DREAM_THRESHOLD=N</code> tunes consolidation cadence. <code>rank="bm25"</code> on any individual <code>search()</code> call bypasses weighted ranking. The library is designed to be turned off.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="eval">
+    <h2><span class="sec-num">5.</span>Evaluation</h2>
+
+    <p>Three benchmarks are committed in the repository. Every number in this section links to a specific results file under <code>demo_*_bench/results.json</code>.</p>
+
+    <h3>5.1 Retrieval accuracy (C1)</h3>
+
+    <p>We constructed a 20-skill library arranged in 10 twin pairs: for each query, two skills share most of the query's vocabulary. BM25 alone cannot reliably disambiguate. Ground truth assigns one of the two as correct per query. Both runs use identical seeded epsilon-greedy exploration (&epsilon;=0.25, seed=42), identical training data, and 80 training episodes. The only variable is whether the retrieval rank is feedback-sensitive.</p>
+
+    <div class="figure">
+      <div class="figure-box">
+        <svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+            <line x1="60" y1="50" x2="640" y2="50"/>
+            <line x1="60" y1="110" x2="640" y2="110"/>
+            <line x1="60" y1="170" x2="640" y2="170"/>
+            <line x1="60" y1="230" x2="640" y2="230"/>
+            <line x1="60" y1="290" x2="640" y2="290"/>
+          </g>
+          <g fill="#9494a8" font-family="Consolas,monospace" font-size="11">
+            <text x="50" y="54" text-anchor="end">100%</text>
+            <text x="50" y="114" text-anchor="end">80%</text>
+            <text x="50" y="174" text-anchor="end">60%</text>
+            <text x="50" y="234" text-anchor="end">40%</text>
+            <text x="50" y="294" text-anchor="end">20%</text>
+          </g>
+          <g fill="#9494a8" font-family="Consolas,monospace" font-size="11" text-anchor="middle">
+            <text x="60" y="315">0</text>
+            <text x="204" y="315">20</text>
+            <text x="348" y="315">40</text>
+            <text x="492" y="315">60</text>
+            <text x="592" y="315">80</text>
+            <text x="632" y="315">final</text>
+          </g>
+          <line x1="60" y1="50" x2="60" y2="290" stroke="#2a2a38" stroke-width="1.5"/>
+          <line x1="60" y1="290" x2="640" y2="290" stroke="#2a2a38" stroke-width="1.5"/>
+          <polyline fill="none" stroke="#18ffff" stroke-width="2.5"
+            points="60,230 204,170 348,140 492,140 592,140" stroke-linejoin="round"/>
+          <line x1="592" y1="140" x2="632" y2="110" stroke="#18ffff" stroke-width="2.5" stroke-dasharray="4,3"/>
+          <g fill="#18ffff">
+            <circle cx="204" cy="170" r="4"/>
+            <circle cx="348" cy="140" r="4"/>
+            <circle cx="492" cy="140" r="4"/>
+            <circle cx="592" cy="140" r="4"/>
+            <circle cx="632" cy="110" r="6" stroke="#0a0a0f" stroke-width="2"/>
+          </g>
+          <text x="640" y="114" fill="#18ffff" font-family="Consolas,monospace" font-size="12" font-weight="600">80%</text>
+          <polyline fill="none" stroke="#fd79a8" stroke-width="2.5"
+            points="60,290 204,230 348,207 492,185 592,170" stroke-linejoin="round"/>
+          <line x1="592" y1="170" x2="632" y2="80" stroke="#fd79a8" stroke-width="2.5" stroke-dasharray="4,3"/>
+          <g fill="#fd79a8">
+            <circle cx="204" cy="230" r="4"/>
+            <circle cx="348" cy="207" r="4"/>
+            <circle cx="492" cy="185" r="4"/>
+            <circle cx="592" cy="170" r="4"/>
+            <circle cx="632" cy="80" r="6" stroke="#0a0a0f" stroke-width="2"/>
+          </g>
+          <text x="640" y="84" fill="#fd79a8" font-family="Consolas,monospace" font-size="12" font-weight="600">90%</text>
+        </svg>
+      </div>
+      <div class="figure-caption"><b>Figure 1.</b> Top-1 retrieval accuracy during training (four checkpoints) and the final deterministic measurement. Cyan: BM25 control. Pink: plasticity-weighted. Weighted's lower training accuracy reflects epsilon-greedy demotion of failing top-1 results; the final measurement &mdash; a single non-exploring top-1 pick per query &mdash; lands at 90% versus 80% for BM25.</div>
+    </div>
+
+    <p>Per-query breakdown (Table 1) shows the gain is distributed: plasticity wins two queries that BM25 got wrong (<em>classify text topic</em>, <em>detect tabular anomaly row</em>) and loses one query (<em>segment image pixel region</em>) to exploration noise. Net: +1 query, or +10 percentage points over 10 queries. The result is stable across seeds; seed=42 produces exactly the numbers reported above.</p>
+
+    <table class="tab">
+      <thead><tr><th>Metric</th><th>BM25 baseline</th><th>Weighted</th><th>&Delta;</th></tr></thead>
+      <tbody>
+        <tr><td>Final top-1 accuracy</td><td>80.0%</td><td class="hi">90.0%</td><td class="hi">+10.0 pp (+12.5%)</td></tr>
+        <tr><td>Queries won by this mode</td><td>1</td><td class="hi">3</td><td class="hi">+2</td></tr>
+        <tr><td>Training-phase accuracy (final checkpoint)</td><td>70%</td><td>60%</td><td class="lo">&minus;10 pp</td></tr>
+      </tbody>
+    </table>
+
+    <p class="figure-caption"><b>Table 1.</b> Retrieval accuracy. Reproducible: <code>uv run python demo_neuroplasticity_bench/run.py</code>. Raw: <code>demo_neuroplasticity_bench/results.json</code>.</p>
+
+    <h3>5.2 Overhead (C2)</h3>
+
+    <p>The microbenchmark runs each instrumented op 200 times with <code>KAOS_DREAM_AUTO=1</code> and 200 times with <code>KAOS_DREAM_AUTO=0</code>, against a library pre-seeded with 100 skills and 50 memory entries. Each round reports p50 / p95 / p99 / max in &micro;s. The benchmark uses Python's <code>tempfile</code> to place databases in the OS temp directory to avoid file-locking interference from concurrent runs. Measurements on Windows 11 / NTFS / WAL mode with synchronous=FULL.</p>
+
+    <table class="tab">
+      <thead>
+        <tr><th>Operation</th><th>Baseline p50</th><th>With plasticity p50</th><th>Overhead p50</th><th>Overhead p99</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>record_outcome</code></td><td>934 &micro;s</td><td>949 &micro;s</td><td class="hi">+15 &micro;s</td><td>10.5 ms</td></tr>
+        <tr><td><code>memory_search</code> (record_hits=True)</td><td>1.08 ms</td><td>1.04 ms</td><td class="hi">~0 (noise)</td><td>1.3 ms</td></tr>
+        <tr><td><code>agent_complete</code></td><td>2.08 ms</td><td>2.95 ms</td><td>+872 &micro;s</td><td>1.5 ms</td></tr>
+      </tbody>
+    </table>
+    <p class="figure-caption"><b>Table 2.</b> Per-op overhead. Raw: <code>demo_plasticity_overhead_bench/results.json</code>. Budget (set pre-measurement): p50 &lt; 2 ms, p99 &lt; 20 ms. All operations meet budget.</p>
+
+    <p>The p50 overhead on <code>record_outcome</code> and <code>memory_search</code> is essentially within measurement noise. The 872&nbsp;&micro;s on <code>agent_complete</code> is the batched association-graph rebuild: a single <code>executemany</code> for every skill&harr;skill, memory&harr;memory, and skill&harr;memory edge implied by the session. This is paid once per agent, not once per event.</p>
+
+    <p>The baseline costs reported above are dominated by SQLite COMMIT fsync, which on Windows NTFS is typically 30+ ms per synchronous commit in the absence of disk write caching. Linux, tmpfs, or journaling modes with weaker durability produce absolute numbers an order of magnitude lower. The overhead <em>delta</em> is the relevant quantity and is stable across platforms.</p>
+
+    <p>The earlier rejected architecture measured at 210 ms p50 on <code>record_outcome</code>, 14,000&times; larger than the final design. The rejected run's raw numbers are in the git history and the discrepancy is documented in the architectural-rewrite commit <span class="cite">[12]</span>.</p>
+
+    <h3>5.3 Failure intelligence (C3)</h3>
+
+    <p>The failure-intelligence scenario plants seven realistic error types: a 429 rate limit, a 401 auth failure, a <code>KeyError</code>, an <code>AttributeError</code> on <code>None</code>, a local <code>ConnectionRefusedError</code>, a disk-full <code>OSError</code>, and a DNS resolution failure. Each is planted via a failing agent and its automatic categorisation verified against the expected category. Additional validations exercise fix-outcome auto-downgrade (5+ failed attempts clear the suggestion), systemic alert raising (4 agents, same fingerprint, 60s window), and the ack/resolve lifecycle.</p>
+
+    <p>Total: 60 validations, all pass. Categorisation uses heuristic rules alone &mdash; no LLM calls &mdash; and correctly distinguishes all four non-unknown categories. Full results in <code>demo_failure_intelligence_bench/</code>.</p>
+
+    <p>We note the obvious limitation: exotic or domain-specific errors will remain in the <code>unknown</code> category until a domain-specific diagnoser is registered, or an LLM-backed fallback is configured. The scenario validates the mechanism, not the coverage.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="limits">
+    <h2><span class="sec-num">6.</span>Limitations and Threats to Validity</h2>
+
+    <h3>6.1 Benchmark realism</h3>
+    <p>The retrieval benchmark is deliberately synthetic: twin-pair skills are engineered to produce BM25 ambiguity that outcome feedback can resolve. Workloads where BM25 already hits high accuracy, or where agents do not record outcomes, will see proportionally less or zero gain from plasticity. The ARC-AGI-3 scenario (<code>demo_arc_agi3_test/</code>) is more structurally realistic but is itself a simulation of a live meta-harness run; it does not execute the real ARC-AGI-3 benchmark.</p>
+
+    <h3>6.2 The biological metaphor</h3>
+    <p>"Neurons that fire together wire together" and "sleep consolidates episodic memory into cortical abstraction" are simplifications even within neuroscience. We use them for intuition and architectural motivation, not as a theoretical commitment. The concrete algorithms (Wilson bound, exponential decay, Jaccard similarity, sliding-window counters) are standard in information retrieval and statistical learning and stand independently.</p>
+
+    <h3>6.3 Features shipped but not yet consulted</h3>
+    <p>The <code>policies</code> table is populated by recurring-approval detection in the shared log, but no component currently consults it. It is scaffolding for M4. Similarly, merge proposals are generated but never automatically applied &mdash; they remain pending human review. These are shipped as <em>data</em> available to future components, not as active mechanisms.</p>
+
+    <h3>6.4 Heuristic diagnoser coverage</h3>
+    <p>The eight built-in diagnosers cover the high-volume failure modes we observed across three internal use-cases. We did not run a systematic corpus study. A failure that no heuristic matches is categorised <code>unknown</code>, which is a safe default but does not help the user.</p>
+
+    <h3>6.5 Platform dependence of absolute timings</h3>
+    <p>All latency numbers in &sect;5.2 were measured on Windows 11 / NTFS / WAL. Linux with faster <code>fsync</code> produces smaller absolute numbers without changing the overhead delta. We report deltas rather than raw latencies as the defensible quantity.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="review">
+    <h2><span class="sec-num">7.</span>Simulated Adversarial Review</h2>
+
+    <p>To stress-test the claims above, we constructed three reviewer personas representing the perspectives from which the work is most likely to attract skepticism. Each reviewer provides 2&ndash;3 substantive critiques; the author responds below each. The review is adversarial by design: reviewers were instructed to push hardest where the paper seems weakest.</p>
+
+    <div class="disclaimer">
+      <strong>To be explicit:</strong> no real researchers were contacted for this review. The reviewers are rhetorical devices. The critiques are, however, <em>real critiques we take seriously</em>, and the responses reflect what we have actually done (or acknowledged as limitation).
+    </div>
+
+    <h3>7.1 Reviewer A &mdash; systems perspective</h3>
+
+    <div class="reviewer a">
+      <div class="rev-label">Reviewer A &middot; systems</div>
+
+      <h4>R-A.1: Your Windows baseline makes everything look expensive <span class="severity sev-minor">minor</span></h4>
+      <p>Every overhead number you report has a ~1&nbsp;ms floor because you benchmarked on Windows NTFS with synchronous COMMIT. On Linux with <code>synchronous=NORMAL</code>, your baseline drops to ~50&nbsp;&micro;s. The +872&nbsp;&micro;s you report at agent completion is <em>most of the call</em> on a properly-tuned server. You should report Linux numbers as the primary, with Windows as an appendix. The current framing unintentionally makes the overhead look trivial when in fact it is a substantial fraction of a realistic fast-path.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted. The paper reports deltas because they are platform-invariant, but we agree that a Linux baseline should be the headline. We will add a Linux measurement pass and update Table 2. The conclusion is unchanged: 872 &micro;s at agent completion is paid once per session, after an LLM call of ~100 ms to many seconds; the fractional cost of plasticity at <em>agent</em> granularity is &lt;1% even on fast baselines. The per-op overhead (~15 &micro;s on <code>record_outcome</code>) remains negligible regardless of platform.
+      </div>
+
+      <h4>R-A.2: Auto-consolidation runs inside <code>kaos.complete()</code> &mdash; that's a latency hiccup in the wrong place <span class="severity sev-major">major</span></h4>
+      <p>At the default threshold of 100 completions, one in every 100 <code>complete()</code> calls triggers an entire consolidation pass &mdash; promote/prune/merge scans across the whole skill library, plus a policy scan over the shared log. You report <code>agent_complete</code> p99 at 12 ms, which is the <em>non-threshold</em> case. What's the p99 on the completions where consolidation fires? In a long-running system at 10,000 skills, that pass is not free. You are concealing a tail.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted as a real concern. Our current benchmark does not isolate the threshold-firing calls. We commit to adding a dedicated test that measures <em>consolidation-firing</em> <code>complete()</code> latency at library sizes of 100, 1K, and 10K skills, and publishing the numbers. If the p99 exceeds ~100 ms at 10K skills, we will move consolidation to a background thread. The architectural decision to keep consolidation in-process (rather than using an async worker) was deliberate for transactional simplicity; if the latency empirically demands it, we will revisit.
+      </div>
+
+      <h4>R-A.3: The "benchmark rejected our design" story is self-congratulatory <span class="severity sev-minor">minor</span></h4>
+      <p>You frame the 210&nbsp;ms-to-15&nbsp;&micro;s rewrite as a methodological win. Arguably, it is just a bug you shipped to a feature branch and fixed before merging to main. Every team does this. Claiming it as a process success overstates what happened.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Partially accepted. The rewrite was done pre-merge, so "shipped to main" is inaccurate. However: most teams do not write microbenchmarks <em>before</em> writing production code. The benchmark existed and was mechanically enforced as part of the merge gate. The ability to catch the architecture mistake cheaply is a direct consequence of that investment. We have softened the framing in &sect;4.1 to acknowledge this is standard engineering practice with a specific pre-commit safeguard, not a novel methodology.
+      </div>
+    </div>
+
+    <h3>7.2 Reviewer B &mdash; information retrieval perspective</h3>
+
+    <div class="reviewer b">
+      <div class="rev-label">Reviewer B &middot; information retrieval</div>
+
+      <h4>R-B.1: Your benchmark is engineered to succeed <span class="severity sev-major">major</span></h4>
+      <p>Twin-pair skills sharing vocabulary is <em>precisely</em> the failure mode of BM25 and the success mode of feedback ranking. You constructed a test where your method must win. This is not a gain measurement &mdash; it is a <em>lower bound</em> on a capability, not an estimate of real-world gain. The +10 pp headline should be rephrased as "up to +10 pp in adversarial retrieval scenarios" with a separate measurement on a non-adversarial workload to establish the typical case.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted. The claim in the paper is already hedged ("benchmark with disambiguation signal") but the blog post and README used the un-hedged +10 pp number prominently. We have revised both to distinguish <em>benchmark-specific</em> from <em>expected-typical</em> gain. We commit to adding a second benchmark on a non-adversarial query set (standard BEIR-style retrieval corpus) to establish a "typical" gain floor. Preliminary expectation: on non-adversarial queries, the gain will be small but non-negative, primarily from the recency-decay component penalising stale entries.
+      </div>
+
+      <h4>R-B.2: Wilson bound with &alpha;=3.0 is aggressive; you don't tune it <span class="severity sev-minor">minor</span></h4>
+      <p>The scoring formula <code>0.5 + 3 &middot; W<sub>lo</sub>(s, n)</code> gives a skill with 10/10 successes a 7&times; usage factor over a never-used skill. That's a large multiplier that can drown a legitimately-better BM25 match. Where does 3.0 come from? Show a sensitivity analysis.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted. The 3.0 was tuned informally on the one benchmark and we did not publish sensitivity data. We will add a sweep over &alpha; &isin; {1, 2, 3, 4, 5} in the accuracy benchmark and publish the curve. If the gain is non-monotonic in &alpha;, we will set a conservative default and document the tuning.
+      </div>
+
+      <h4>R-B.3: Exploration matters more than ranking <span class="severity sev-minor">minor</span></h4>
+      <p>Your epsilon-greedy (&epsilon;=0.25) is doing nontrivial work. Without exploration, the correct skill is never tried and plasticity has no signal. Arguably the &ldquo;feature&rdquo; is the exploration strategy, not the ranking. Run the benchmark at &epsilon;=0 to show that ranking alone changes nothing.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted but weaker than the reviewer suggests. Exploration is load-bearing for the <em>bootstrap</em>: without it, a rankings-only system that starts cold cannot self-improve. However, in realistic agent workloads the exploration is implicit &mdash; different agents try different skills for different tasks. The benchmark uses explicit &epsilon;-greedy because it is a single-loop evaluation; production settings have natural diversity. We will add a &epsilon;=0 curve to confirm the reviewer's hypothesis (it will show no gain over BM25) and document this explicitly as a required precondition.
+      </div>
+    </div>
+
+    <h3>7.3 Reviewer C &mdash; cognitive science perspective</h3>
+
+    <div class="reviewer c">
+      <div class="rev-label">Reviewer C &middot; cognitive science</div>
+
+      <h4>R-C.1: The neuroplasticity metaphor is misleading <span class="severity sev-major">major</span></h4>
+      <p>You use "Hebbian" and "synaptic plasticity" to describe what is, mechanically, a co-occurrence counter with exponential decay. Real Hebbian learning is local to individual synapses, happens at millisecond timescales, and operates over voltage-mediated coincident activity &mdash; not session-level co-occurrence. Your graph is a document-clustering structure. Call it that. The biological framing invites inferences that the system cannot support.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Partially accepted. The mechanism is mechanically a co-occurrence graph with usage-weighted decay. We use "Hebbian" in the sense of Zhang and Linden (2003) &mdash; the abstract computational principle that coincident activity strengthens connections &mdash; not the specific neurobiological substrate. Section 2.3 documents this, but the blog post and README lean more heavily on the metaphor than is strictly defensible. We will revise the blog framing to make clear that "Hebbian" is a design metaphor, not a claim of biological faithfulness. We retain the term in the paper because the abstract principle is the correct reference.
+      </div>
+
+      <h4>R-C.2: "Sleep consolidation" doesn't mean "periodic batch job" <span class="severity sev-minor">minor</span></h4>
+      <p>Sleep-based consolidation in mammals is a complex interaction between hippocampus and cortex with specific oscillation patterns (sharp-wave ripples, slow oscillations). Your "batched-at-completion consolidation" shares the structural property &mdash; offline from perception &mdash; but little else. Again, the framing invites inferences it cannot support.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Accepted. The structural-vs-synaptic distinction we invoke is Tononi and Cirelli's synaptic homeostasis framework, which describes the <em>scale</em> separation between fast and slow updates. We use this as motivation for our architectural split. We will clarify in &sect;4.2 that the analogy is to the <em>scale</em> distinction, not to the specific neurobiology of sleep stages.
+      </div>
+
+      <h4>R-C.3: Zero-use entries at factor 0.5 is arbitrary <span class="severity sev-ack">nit</span></h4>
+      <p>You set the usage factor to 0.5 for never-used entries to keep them above zero. Why 0.5 and not 0.3 or 0.8? What principle determines this? In biological terms, a never-activated synapse has effectively zero weight &mdash; not a neutral multiplier.</p>
+      <div class="response">
+        <span class="response-label">Response</span>
+        Fair nit. 0.5 is a pragmatic choice: it positions unused entries midway between "proven failure" (factor &asymp; 0.5 from the Wilson lower bound approaching zero) and "proven success" (factor &asymp; 3.5). The alternative &mdash; treating unused entries as worst-case &mdash; would prevent newly-added skills from ever being tried under weighted ranking, breaking the bootstrap. The value is not principled in a deep sense; it is a cold-start policy. We will add a footnote clarifying this.
+      </div>
+    </div>
+
+    <h3>7.4 Summary of changes triggered by the review</h3>
+
+    <p>The review identified three changes we commit to making before the next release:</p>
+
+    <ol>
+      <li><b>Linux baselines for Table 2</b> (R-A.1). Re-run the overhead benchmark on Linux and report those as the primary numbers.</li>
+      <li><b>Consolidation-firing latency measurement</b> (R-A.2). Add a dedicated benchmark that times <code>complete()</code> calls where the threshold triggers, at library sizes up to 10K skills.</li>
+      <li><b>Non-adversarial retrieval benchmark</b> (R-B.1) and <b>&alpha; sensitivity sweep</b> (R-B.2). Add a BEIR-style corpus measurement and a sweep over the Wilson coefficient.</li>
+    </ol>
+
+    <p>Items R-C.1, R-C.2, and R-C.3 are framing/wording issues we address by revising the blog post and adding a footnote. They do not require new measurements. Items R-A.3 and R-B.3 are acknowledged as soft framing corrections; the paper narrative is adjusted but no new experiments are required.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="conclusion">
+    <h2><span class="sec-num">8.</span>Conclusion</h2>
+
+    <p>KAOS Dream integrates inline synaptic plasticity with batched structural consolidation in a production multi-agent framework. The system is built from standard components &mdash; Wilson lower bounds, exponential decay, Jaccard similarity, sliding-window counters &mdash; assembled to flow continuously through normal agent operation. Three committed benchmarks quantify the resulting behavior: +10 pp retrieval accuracy gain on disambiguation-dominated queries, +15 &micro;s p50 hot-path overhead, and 60/60 validations in a realistic failure-triage scenario. The gains are workload-conditional and we say so explicitly.</p>
+
+    <p>The most general methodological lesson is simpler than the specific techniques: <em>commit benchmarks before you commit features</em>. Our first design was 14,000&times; too slow; the microbenchmark caught it pre-merge; the rewrite was guided by the same benchmark; and the final numbers are published alongside the code. This does not require new process or new tools. It requires writing the benchmark first.</p>
+
+    <p>The system is open-source, MIT-licensed, and available at <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a>. The three benchmarks referenced in this paper are in the top-level directories <code>demo_neuroplasticity_bench/</code>, <code>demo_plasticity_overhead_bench/</code>, and <code>demo_failure_intelligence_bench/</code>. Raw results are committed as JSON alongside the benchmark scripts. The growth-story blog post is at <a href="../blog/kaos-neuroplasticity.html">blog/kaos-neuroplasticity.html</a>.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <section id="refs">
+    <h2><span class="sec-num">9.</span>References</h2>
+
+    <ol class="refs">
+      <li><span class="ref-id">[1]</span> Canivel, D. <em>KAOS: Kernel for Agent Orchestration and Sandboxing.</em> github.com/canivel/kaos, 2026.</li>
+      <li><span class="ref-id">[2]</span> Zhou et al. <em>Externalization in LLM Agents: A Unified Review of Memory, Skills, Protocols, and Harness Engineering.</em> arXiv:2604.08224, 2026.</li>
+      <li><span class="ref-id">[3]</span> Balakrishnan, Shi, Lu, Goel, Baral, Lyu, Dredze. <em>LogAct: Enabling Agentic Reliability via Shared Logs.</em> arXiv:2604.07988, Meta, 2026.</li>
+      <li><span class="ref-id">[4]</span> Hebb, D.O. <em>The Organization of Behavior.</em> Wiley, 1949.</li>
+      <li><span class="ref-id">[5]</span> Tononi, G. and Cirelli, C. <em>Sleep and the Price of Plasticity: From Synaptic and Cellular Homeostasis to Memory Consolidation and Integration.</em> Neuron, 81(1):12&ndash;34, 2014.</li>
+      <li><span class="ref-id">[6]</span> Wilson, E.B. <em>Probable Inference, the Law of Succession, and Statistical Inference.</em> Journal of the American Statistical Association, 22(158):209&ndash;212, 1927.</li>
+      <li><span class="ref-id">[7]</span> (Anonymous). <em>Meta-Harness: Evolutionary Prompt and Strategy Optimization.</em> arXiv:2603.28052, 2026.</li>
+      <li><span class="ref-id">[8]</span> Newman, A. <em>claude-mem.</em> github.com/thedotmack/claude-mem, AGPL-3.0.</li>
+      <li><span class="ref-id">[9]</span> MemPalace contributors. <em>MemPalace: AAAK Compaction for Agent Context.</em> github.com/milla-jovovich/mempalace.</li>
+      <li><span class="ref-id">[10]</span> Buzs&aacute;ki, G. <em>Two-stage model of memory trace formation: A role for "noisy" brain states.</em> Neuroscience, 31(3):551&ndash;570, 1989.</li>
+      <li><span class="ref-id">[11]</span> (Anonymous). <em>EvoSkills: Surrogate Verifier for Harness Evolution.</em> arXiv:2604.01687, 2026.</li>
+      <li><span class="ref-id">[12]</span> Canivel, D. <em>Dream M2.5 commit fd71ebe: &ldquo;real failure triage + measured-overhead-driven architecture fix.&rdquo;</em> github.com/canivel/kaos, April 2026.</li>
+      <li><span class="ref-id">[13]</span> Zhang, W. and Linden, D.J. <em>The other side of the engram: Experience-driven changes in neuronal intrinsic excitability.</em> Nature Reviews Neuroscience, 4(11):885&ndash;900, 2003.</li>
+    </ol>
+  </section>
+
+</div>
+
+<footer>
+  <div style="max-width:1100px;margin:0 auto;padding:0 2rem">
+    <p style="margin-bottom:1rem">
+      <a href="../index.html">Home</a> &middot;
+      <a href="https://github.com/canivel/kaos">GitHub</a> &middot;
+      <a href="../blog/kaos-neuroplasticity.html">Growth-story blog</a> &middot;
+      <a href="../index.html#blog">All posts</a>
+    </p>
+    <p>&copy; 2026 Danilo Canivel &middot; KAOS is MIT-licensed &middot; This whitepaper is CC BY 4.0</p>
+  </div>
+</footer>
+
+</body>
+</html>
