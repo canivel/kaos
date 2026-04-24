@@ -8,7 +8,7 @@ config:
   repeat: 0
   quality: 100
   frameDelay: auto
-  maxIdleTime: 2500
+  maxIdleTime: 5000
   frameBox:
     type: window
     title: "KAOS \u2014 Neuroplasticity in action"
@@ -41,229 +41,231 @@ config:
 records:
 
   # ════════════════════════════════════════════════════
-  # SCENE 1 — Opening / setup
+  # SCENE 1 — Opening / setup (~7s total)
   # ════════════════════════════════════════════════════
-  - delay: 400
+  - delay: 500
     content: "\e[2J\e[H"
-  - delay: 80
-    content: "\r\n"
-  - delay: 60
-    content: "  \e[1m\e[96mKAOS \u2014 Neuroplasticity in Action\e[0m\r\n"
-  - delay: 60
-    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
-    content: "\r\n"
   - delay: 200
-    content: "  \e[90mTwo skills, nearly-identical vocabulary. BM25 cannot tell them apart.\e[0m\r\n"
-  - delay: 100
-    content: "  \e[90mOne is the right answer; the other is a plausible distractor.\e[0m\r\n"
-  - delay: 300
+    content: "\r\n"
+  - delay: 150
+    content: "  \e[1m\e[96mKAOS \u2014 Neuroplasticity in Action\e[0m\r\n"
+  - delay: 150
+    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
+  - delay: 700
     content: "\r\n"
   - delay: 600
+    content: "  \e[90mTwo skills, nearly-identical vocabulary. BM25 cannot tell them apart.\e[0m\r\n"
+  - delay: 500
+    content: "  \e[90mOne is the right answer; the other is a plausible distractor.\e[0m\r\n"
+  - delay: 1200
+    content: "\r\n"
+  - delay: 900
     content: "  \e[32m$\e[0m \e[1mkaos skills ls --db plasticity.db\e[0m\r\n"
-  - delay: 400
+  - delay: 900
     content: "\r\n"
-  - delay: 200
+  - delay: 400
     content: "  \e[96m#1\e[0m  \e[1mtfidf-logreg-classifier\e[0m          \e[90munused\e[0m\r\n"
-  - delay: 80
+  - delay: 250
     content: "       Classify text document topic with tfidf logreg features.\r\n"
-  - delay: 80
+  - delay: 500
     content: "  \e[96m#2\e[0m  \e[1mnaive-bayes-text-classifier\e[0m       \e[90munused\e[0m\r\n"
-  - delay: 80
+  - delay: 250
     content: "       Classify text document topic with naive bayes features.\r\n"
-  - delay: 2500
+  - delay: 4800
     content: ""
 
   # ════════════════════════════════════════════════════
-  # SCENE 2 — Before plasticity: bm25 picks the wrong one
+  # SCENE 2 — Before plasticity: bm25 picks the wrong one (~9s total)
   # ════════════════════════════════════════════════════
-  - delay: 400
+  - delay: 500
     content: "\e[2J\e[H"
-  - delay: 80
+  - delay: 200
     content: "\r\n"
-  - delay: 60
-    content: "  \e[1m\e[96mScene 1  \u00b7  BM25 alone  \u00b7  No feedback\e[0m\r\n"
-  - delay: 60
+  - delay: 150
+    content: "  \e[1m\e[96mScene 1  \u00b7  BM25 alone  \u00b7  No feedback yet\e[0m\r\n"
+  - delay: 150
     content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
+  - delay: 800
     content: "\r\n"
-  - delay: 400
+  - delay: 700
     content: "  \e[32m$\e[0m \e[1mkaos skills search 'classify text topic' --db plasticity.db\e[0m\r\n"
-  - delay: 400
+  - delay: 900
     content: "\r\n"
-  - delay: 300
+  - delay: 600
     content: "  \e[90mquery: 'classify text topic'\e[0m\r\n"
-  - delay: 200
-    content: "  \e[96m#2\e[0m  \e[1m\e[91mnaive-bayes-text-classifier\e[0m  \e[90munused\e[0m   \e[90m\u2190 top-1 (wrong!)\e[0m\r\n"
-  - delay: 80
+  - delay: 400
+    content: "  \e[96m#2\e[0m  \e[1m\e[91mnaive-bayes-text-classifier\e[0m  \e[90munused\e[0m   \e[90m\u2190 top-1\e[0m\r\n"
+  - delay: 250
     content: "      Classify text document topic with naive bayes features.\r\n"
-  - delay: 80
+  - delay: 500
     content: "  \e[96m#1\e[0m  \e[1mtfidf-logreg-classifier\e[0m         \e[90munused\e[0m\r\n"
-  - delay: 80
+  - delay: 250
     content: "      Classify text document topic with tfidf logreg features.\r\n"
-  - delay: 400
+  - delay: 1200
     content: "\r\n"
-  - delay: 300
-    content: "  \e[91m\u2717\e[0m  BM25 puts the distractor first. \e[90mGround truth: #1 is correct.\e[0m\r\n"
-  - delay: 2800
+  - delay: 1000
+    content: "  \e[91m\u2717\e[0m BM25 puts the distractor first. \e[90mGround truth: #1 is correct.\e[0m\r\n"
+  - delay: 5000
     content: ""
 
   # ════════════════════════════════════════════════════
-  # SCENE 3 — Feedback accumulates (agents report outcomes)
+  # SCENE 3 — Feedback accumulates (agents report outcomes) (~11s total)
   # ════════════════════════════════════════════════════
-  - delay: 400
+  - delay: 500
     content: "\e[2J\e[H"
-  - delay: 80
+  - delay: 200
     content: "\r\n"
-  - delay: 60
+  - delay: 150
     content: "  \e[1m\e[96mScene 2  \u00b7  Agents report outcomes  \u00b7  Plasticity accumulates\e[0m\r\n"
-  - delay: 60
+  - delay: 150
     content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
+  - delay: 800
     content: "\r\n"
-  - delay: 200
-    content: "  \e[90mAgents try each skill; outcomes feed `skill_uses`. No extra writes\e[0m\r\n"
-  - delay: 100
-    content: "  \e[90mon the hot path \u2014 raw telemetry only, +15\u00b5s p50 overhead.\e[0m\r\n"
-  - delay: 400
-    content: "\r\n"
+  - delay: 600
+    content: "  \e[90mAgents try each skill; outcomes feed `skill_uses`.\e[0m\r\n"
   - delay: 500
+    content: "  \e[90mNo extra writes on the hot path \u2014 +15\u00b5s p50 overhead.\e[0m\r\n"
+  - delay: 1200
+    content: "\r\n"
+  - delay: 700
     content: "  \e[32mapplying skill #1 (tfidf)  \u2192  \e[92msuccess\e[0m\e[32m\e[0m    \e[90m[1/1]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #1 (tfidf)  \u2192  \e[92msuccess\e[0m\e[32m\e[0m    \e[90m[2/2]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #2 (nb)     \u2192  \e[91mfailure\e[0m\e[32m\e[0m    \e[90m[0/1]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #1 (tfidf)  \u2192  \e[92msuccess\e[0m\e[32m\e[0m    \e[90m[3/3]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #2 (nb)     \u2192  \e[91mfailure\e[0m\e[32m\e[0m    \e[90m[0/2]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #1 (tfidf)  \u2192  \e[92msuccess\e[0m\e[32m\e[0m    \e[90m[4/4]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #2 (nb)     \u2192  \e[91mfailure\e[0m\e[32m\e[0m    \e[90m[0/3]\e[0m\r\n"
-  - delay: 150
+  - delay: 500
     content: "  \e[32mapplying skill #1 (tfidf)  \u2192  \e[92msuccess\e[0m\e[32m\e[0m    \e[90m[5/5]\e[0m\r\n"
-  - delay: 400
+  - delay: 1200
     content: "\r\n"
-  - delay: 400
-    content: "  \e[32m\u2714\e[0m  Wilson-lower-bound accumulates: tfidf 0.56, nb 0.01\r\n"
-  - delay: 2200
+  - delay: 800
+    content: "  \e[32m\u2714\e[0m  Wilson lower bound:  tfidf \e[92m0.56\e[0m   nb \e[91m0.01\e[0m\r\n"
+  - delay: 4500
     content: ""
 
   # ════════════════════════════════════════════════════
-  # SCENE 4 — After plasticity: weighted flips the order
+  # SCENE 4 — After plasticity: weighted flips the order (~10s)
   # ════════════════════════════════════════════════════
-  - delay: 400
+  - delay: 500
     content: "\e[2J\e[H"
-  - delay: 80
-    content: "\r\n"
-  - delay: 60
-    content: "  \e[1m\e[96mScene 3  \u00b7  Weighted rank  \u00b7  Plasticity flips the ordering\e[0m\r\n"
-  - delay: 60
-    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
-    content: "\r\n"
-  - delay: 400
-    content: "  \e[32m$\e[0m \e[1mkaos skills search 'classify text topic' --rank weighted\e[0m\r\n"
-  - delay: 400
-    content: "\r\n"
-  - delay: 300
-    content: "  \e[95m(weighted)\e[0m \e[90mquery: 'classify text topic'\e[0m\r\n"
-  - delay: 200
-    content: "  \e[96m#1\e[0m  \e[1m\e[92mtfidf-logreg-classifier\e[0m         \e[90m5/5\e[0m    \e[92m\u2190 now top-1 \u2713\e[0m\r\n"
-  - delay: 80
-    content: "      Classify text document topic with tfidf logreg features.\r\n"
-  - delay: 80
-    content: "  \e[96m#2\e[0m  \e[1mnaive-bayes-text-classifier\e[0m     \e[90m0/3\e[0m    \e[90m\u2190 demoted\e[0m\r\n"
-  - delay: 80
-    content: "      Classify text document topic with naive bayes features.\r\n"
-  - delay: 400
-    content: "\r\n"
-  - delay: 300
-    content: "  \e[32m\u2714\e[0m  Same query, same library. Ranking flipped purely from\r\n"
-  - delay: 100
-    content: "     feedback signal. \e[90mNo prompt engineering. No re-indexing.\e[0m\r\n"
-  - delay: 2800
-    content: ""
-
-  # ════════════════════════════════════════════════════
-  # SCENE 5 — Failure triage: a known error category + cause
-  # ════════════════════════════════════════════════════
-  - delay: 400
-    content: "\e[2J\e[H"
-  - delay: 80
-    content: "\r\n"
-  - delay: 60
-    content: "  \e[1m\e[96mScene 4  \u00b7  Failure triage  \u00b7  Fingerprint \u2192 diagnosis \u2192 action\e[0m\r\n"
-  - delay: 60
-    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
-    content: "\r\n"
-  - delay: 400
-    content: "  \e[32m$\e[0m \e[1mkaos dream failures --db plasticity.db\e[0m\r\n"
-  - delay: 400
-    content: "\r\n"
-  - delay: 300
-    content: "  3 distinct failure fingerprints (3 recurring):\r\n"
   - delay: 200
     content: "\r\n"
   - delay: 150
-    content: "  \e[96m#1\e[0m \e[36mtransient\e[0m   \e[90m`http_post` \u00d71\e[0m   \e[90mHTTP 429 rate limit\e[0m\r\n"
-  - delay: 80
-    content: "       cause: Upstream API rate limit hit.\r\n"
-  - delay: 200
-    content: "  \e[96m#2\e[0m \e[33mconfig\e[0m      \e[90m`http_get` \u00d71\e[0m    \e[90mHTTP 401 Unauthorized\e[0m\r\n"
-  - delay: 80
-    content: "       cause: Authentication failed. API key, token, or credentials\r\n"
-  - delay: 80
-    content: "              are missing, expired, or wrong.\r\n"
-  - delay: 200
-    content: "  \e[96m#3\e[0m \e[91minfra\e[0m       \e[90m`llm_call` \u00d74\e[0m    \e[90mConnectionRefusedError: localhost\e[0m\r\n"
-  - delay: 80
-    content: "       cause: Local service not reachable. A service KAOS or an\r\n"
-  - delay: 80
-    content: "              agent is calling on localhost is not running.\r\n"
+    content: "  \e[1m\e[96mScene 3  \u00b7  Weighted rank  \u00b7  Plasticity flips the ordering\e[0m\r\n"
+  - delay: 150
+    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
+  - delay: 800
+    content: "\r\n"
+  - delay: 700
+    content: "  \e[32m$\e[0m \e[1mkaos skills search 'classify text topic' --rank weighted\e[0m\r\n"
+  - delay: 900
+    content: "\r\n"
+  - delay: 600
+    content: "  \e[95m(weighted)\e[0m \e[90mquery: 'classify text topic'\e[0m\r\n"
   - delay: 400
+    content: "  \e[96m#1\e[0m  \e[1m\e[92mtfidf-logreg-classifier\e[0m         \e[90m5/5\e[0m    \e[92m\u2190 now top-1 \u2713\e[0m\r\n"
+  - delay: 250
+    content: "      Classify text document topic with tfidf logreg features.\r\n"
+  - delay: 500
+    content: "  \e[96m#2\e[0m  \e[1mnaive-bayes-text-classifier\e[0m     \e[90m0/3\e[0m    \e[90m\u2190 demoted\e[0m\r\n"
+  - delay: 250
+    content: "      Classify text document topic with naive bayes features.\r\n"
+  - delay: 1400
+    content: "\r\n"
+  - delay: 800
+    content: "  \e[32m\u2714\e[0m  Same query, same library. Ranking flipped purely\r\n"
+  - delay: 400
+    content: "     from the feedback signal. \e[90mNo prompt engineering.\e[0m\r\n"
+  - delay: 400
+    content: "                                  \e[90mNo re-indexing.\e[0m\r\n"
+  - delay: 5000
+    content: ""
+
+  # ════════════════════════════════════════════════════
+  # SCENE 5 — Failure triage: a known error category + cause (~11s)
+  # ════════════════════════════════════════════════════
+  - delay: 500
+    content: "\e[2J\e[H"
+  - delay: 200
+    content: "\r\n"
+  - delay: 150
+    content: "  \e[1m\e[96mScene 4  \u00b7  Failure triage  \u00b7  Fingerprint \u2192 diagnosis \u2192 action\e[0m\r\n"
+  - delay: 150
+    content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
+  - delay: 800
+    content: "\r\n"
+  - delay: 700
+    content: "  \e[32m$\e[0m \e[1mkaos dream failures --db plasticity.db\e[0m\r\n"
+  - delay: 900
     content: "\r\n"
   - delay: 500
-    content: "  \e[91m\u26a0\e[0m  \e[1mSystemic alert active:\e[0m \e[96m#3\e[0m \u00b7 4 agents hit the same fp in 120s\r\n"
+    content: "  3 distinct failure fingerprints (3 recurring):\r\n"
+  - delay: 500
+    content: "\r\n"
+  - delay: 400
+    content: "  \e[96m#1\e[0m \e[36mtransient\e[0m   \e[90m`http_post` \u00d71\e[0m   \e[90mHTTP 429 rate limit\e[0m\r\n"
+  - delay: 250
+    content: "       cause: Upstream API rate limit hit.\r\n"
+  - delay: 700
+    content: "  \e[96m#2\e[0m \e[33mconfig\e[0m      \e[90m`http_get` \u00d71\e[0m    \e[90mHTTP 401 Unauthorized\e[0m\r\n"
+  - delay: 250
+    content: "       cause: Authentication failed. API key, token, or credentials\r\n"
   - delay: 200
+    content: "              are missing, expired, or wrong.\r\n"
+  - delay: 800
+    content: "  \e[96m#3\e[0m \e[91minfra\e[0m       \e[90m`llm_call` \u00d74\e[0m    \e[90mConnectionRefusedError: localhost\e[0m\r\n"
+  - delay: 250
+    content: "       cause: Local service not reachable. A service KAOS or an\r\n"
+  - delay: 200
+    content: "              agent is calling on localhost is not running.\r\n"
+  - delay: 1500
+    content: "\r\n"
+  - delay: 1000
+    content: "  \e[91m\u26a0\e[0m  \e[1mSystemic alert:\e[0m \e[96m#3\e[0m \u00b7 4 agents hit the same fp in 120s\r\n"
+  - delay: 600
     content: "     \e[90mConsumers should refuse to spawn until resolved.\e[0m\r\n"
-  - delay: 2800
+  - delay: 5000
     content: ""
 
   # ════════════════════════════════════════════════════
-  # SCENE 6 — The reveal
+  # SCENE 6 — The reveal (~8s)
   # ════════════════════════════════════════════════════
-  - delay: 400
+  - delay: 500
     content: "\e[2J\e[H"
-  - delay: 80
+  - delay: 200
     content: "\r\n"
-  - delay: 60
+  - delay: 150
     content: "  \e[1m\e[96mMeasured Reality\e[0m\r\n"
-  - delay: 60
+  - delay: 150
     content: "  \e[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\e[0m\r\n"
-  - delay: 300
+  - delay: 1000
     content: "\r\n"
-  - delay: 300
+  - delay: 900
     content: "  \e[92m\u2714\e[0m  \e[1m+10 pp\e[0m top-1 retrieval accuracy  \e[90m(80% \u2192 90%)\e[0m\r\n"
-  - delay: 150
+  - delay: 700
     content: "  \e[92m\u2714\e[0m  \e[1m+15 \u00b5s\e[0m hot-path overhead p50  \e[90m(was 210ms; 14,000\u00d7 faster)\e[0m\r\n"
-  - delay: 150
+  - delay: 700
     content: "  \e[92m\u2714\e[0m  \e[1m181\e[0m scenario validations passing\r\n"
-  - delay: 150
+  - delay: 700
     content: "  \e[92m\u2714\e[0m  \e[1m423\e[0m unit tests passing\r\n"
-  - delay: 300
+  - delay: 1200
     content: "\r\n"
-  - delay: 200
+  - delay: 800
     content: "  \e[90mReproducible. Committed. Auditable.\e[0m\r\n"
-  - delay: 200
-    content: "  \e[90mdemo_neuroplasticity_bench/  demo_plasticity_overhead_bench/\e[0m\r\n"
-  - delay: 200
+  - delay: 600
+    content: "  \e[90mdemo_neuroplasticity_bench/     demo_plasticity_overhead_bench/\e[0m\r\n"
+  - delay: 500
     content: "  \e[90mdemo_failure_intelligence_bench/\e[0m\r\n"
-  - delay: 400
+  - delay: 1000
     content: "\r\n"
-  - delay: 200
-    content: "  \e[96mgithub.com/canivel/kaos\e[0m  \u00b7  \e[96mv0.8.1\e[0m\r\n"
-  - delay: 3000
+  - delay: 700
+    content: "  \e[96mgithub.com/canivel/kaos\e[0m   \u00b7   \e[96mv0.8.1\e[0m\r\n"
+  - delay: 4500
     content: ""
