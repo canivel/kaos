@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuroplasticity in a Multi-Agent System — The Bigger Picture</title>
+<meta name="description" content="What neuroplasticity means when you have N agents writing into the same library: Hebbian co-occurrence at population scale, sleep-style consolidation with no wake cycle, inline synaptic hooks, and the honest limits of the biological analogy. A standalone primer separate from the v0.8.1 growth story.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%A7%A0</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;
+  --pink:#fd79a8;--gold:#ffd166;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:760px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2);display:flex;align-items:center;gap:.4rem}
+nav .back:hover{color:var(--fg);text-decoration:none}
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--pink);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(2rem,4.2vw,3rem);font-weight:800;letter-spacing:-.5px;line-height:1.18;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--pink),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2);display:flex;align-items:center;gap:.35rem}
+.post-meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--fg2);display:inline-block}
+.post-subtitle{font-size:1.12rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.65rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px;color:var(--fg)}
+.post-body h2 .n{display:inline-block;font-family:var(--mono);font-size:.62em;color:var(--pink);background:rgba(253,121,168,.12);padding:.1em .6em;border-radius:6px;margin-right:.55em;vertical-align:.15em;font-weight:600}
+.post-body h3{font-size:1.18rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--pink)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li strong{color:var(--fg)}
+.post-body a{color:var(--accent2)}
+.post-body a:hover{color:var(--cyan)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:3rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.84rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--pink);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.8rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+.callout.green{border-left-color:var(--green)}
+.callout.cyan{border-left-color:var(--cyan)}
+.callout.gold{border-left-color:var(--gold)}
+.callout.red{border-left-color:var(--red)}
+.beat{background:linear-gradient(135deg,rgba(253,121,168,.08),rgba(162,155,254,.05));border:1px solid rgba(253,121,168,.15);border-radius:14px;padding:1.4rem 1.6rem;margin:2rem 0;font-size:1.08rem;line-height:1.65;color:var(--fg)}
+.beat strong{color:var(--pink)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:1.8rem 0}
+.two-col .col{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.1rem 1.3rem}
+.two-col .col h4{font-size:.82rem;color:var(--pink);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.7rem;font-family:var(--mono)}
+.two-col .col.bio h4{color:var(--cyan)}
+.two-col .col p{font-size:.92rem;margin-bottom:.6rem}
+.two-col .col p:last-child{margin-bottom:0}
+.big-number{font-family:var(--mono);font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.2rem}
+.loop-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.3rem 1.5rem;margin:1.5rem 0;position:relative;padding-left:4.2rem}
+.loop-card::before{content:attr(data-n);position:absolute;left:1.2rem;top:1.3rem;font-family:var(--mono);font-size:1.6rem;font-weight:800;color:rgba(253,121,168,.35);letter-spacing:.5px}
+.loop-card h3{color:var(--fg);margin:0 0 .4rem;font-size:1.05rem}
+.loop-card .metric{display:inline-block;font-family:var(--mono);font-size:.75rem;background:rgba(0,230,118,.12);color:var(--green);padding:.2rem .55rem;border-radius:4px;margin-top:.4rem;border:1px solid rgba(0,230,118,.22);font-weight:600}
+.loop-card p{font-size:.92rem;margin-bottom:.4rem;color:var(--fg2)}
+.disclaimer{background:rgba(255,209,102,.05);border:1px solid rgba(255,209,102,.3);border-radius:10px;padding:1.1rem 1.4rem;margin:2rem 0;font-size:.92rem;color:var(--fg2)}
+.disclaimer strong{color:var(--gold)}
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html#blog" class="back">&larr; Back to Writing</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+  <header class="post-header">
+    <span class="post-tag">Primer &bull; Multi-agent systems &bull; Concept piece</span>
+    <h1><em>Neuroplasticity</em> in a Multi-Agent System<br>The bigger picture</h1>
+    <p class="post-subtitle">What "the library learns from itself" really means when you have N agents writing into one SQLite file, no wake/sleep cycle, and a pile of skills and memories that were supposed to help but kept going stale. The bigger picture &mdash; separate from the v0.8.1 growth story or the v0.8.2 patch notes.</p>
+    <div class="post-meta">
+      <span class="post-meta-item">April 24, 2026</span>
+      <span class="post-meta-item"><span class="dot"></span>12 min read</span>
+      <span class="post-meta-item"><span class="dot"></span>6 sections</span>
+    </div>
+  </header>
+
+  <div class="post-body">
+
+    <div class="beat">
+      A multi-agent framework accumulates history fast. Every outcome, every retrieved memory, every failed tool call, every approval &mdash; all of it lands in the database within milliseconds of happening. The open question for the last two years was never <em>how do we store more of it</em>. It was <strong>what should the framework do with it</strong>.
+    </div>
+
+    <hr>
+
+    <h2><span class="n">01</span>Why a multi-agent system needs plasticity at all</h2>
+
+    <p>If you run one agent, feedback loops are easy. The agent sees its own outcomes, reads its own memory, runs its own retries. Any adaptive behaviour you want &mdash; "stop retrying this failing tool", "prefer the skill that worked last time", "don't re-derive this fact" &mdash; is a local decision inside that one agent's loop.</p>
+
+    <p>If you run fifty agents against the same project, none of that is local anymore. Agent A hits a failure and finds a fix. Agent B hits the identical failure ten seconds later, pays the same LLM cost to rediscover the same fix, and stores a near-duplicate skill into the same table. Agent C runs a retrieval and the two near-duplicate skills both surface, each with its own half-learned reliability history. A month later an operator opens the library and sees six skills that solve the same problem, all with partial-credit success rates, none of them clearly preferred.</p>
+
+    <p>This is the shape of the problem a multi-agent framework has to solve and a single-agent one doesn't. <strong>The data that needs to learn is the union across the population, not any individual's own trail.</strong> There is no privileged process that wakes up with the big picture. The big picture has to be something the database itself can derive, on its own, as a side effect of agents doing their normal work.</p>
+
+    <p>That's the gap neuroplasticity closes. Not metaphorically &mdash; structurally. The library itself becomes the thing that learns.</p>
+
+    <hr>
+
+    <h2><span class="n">02</span>The biological analogy, treated honestly</h2>
+
+    <p>Two ideas from neuroscience keep showing up in the design. Both are useful as architectural metaphors. Neither is a biological claim.</p>
+
+    <p><strong>Hebb's rule (1949):</strong> "neurons that fire together wire together." When two cells participate in the same pattern of activation repeatedly, the synapse between them strengthens. This is an inline, synaptic-timescale phenomenon &mdash; it happens as a side effect of firing, not during a scheduled training epoch.</p>
+
+    <p><strong>Sleep consolidation (Tononi &amp; Cirelli 2014, and others):</strong> the brain has a nightly cycle where redundant synapses are pruned and episodic memories get re-encoded as more compact, more general structures. Different timescale, different machinery, different purpose. Structural rather than synaptic.</p>
+
+    <div class="disclaimer">
+      <strong>To be absolutely clear:</strong> what KAOS ships is an architectural analogy borrowed from these concepts, not a neurobiological claim. Real neurons are not Wilson-lower-bound estimators. The algorithms we use (Wilson bound, exponential recency decay, Jaccard similarity, sliding-window co-occurrence counters) are standard primitives from information retrieval and statistical learning, and they stand on their own merit. The biology gave us the <em>shape</em> of the solution, not the <em>math</em> of it.
+    </div>
+
+    <p>The useful takeaway from the analogy is the <strong>two-timescale split</strong>. Anything on the inline path must be cheap enough to fire on every event without blowing up the agent's hot path. Anything structural can be expensive and batched. Conflating the two &mdash; trying to rebuild a full co-occurrence graph on every tool call &mdash; was the first architectural mistake we made, and the benchmark told us about it immediately.</p>
+
+    <hr>
+
+    <h2><span class="n">03</span>Translating it into a multi-agent framework</h2>
+
+    <p>Here's how the biological shape maps into the KAOS world. Read the two columns as a glossary.</p>
+
+    <div class="two-col">
+      <div class="col bio">
+        <h4>In the brain</h4>
+        <p><strong>Firing together &rarr; wiring together.</strong> Co-activation strengthens the synapse.</p>
+        <p><strong>Unused synapses atrophy.</strong> What isn't fired stops being maintained.</p>
+        <p><strong>Sleep consolidates.</strong> Episodic traces become abstract, general memory.</p>
+        <p><strong>Dopamine marks reward.</strong> Positive outcomes bias future selection.</p>
+      </div>
+      <div class="col">
+        <h4>In KAOS</h4>
+        <p><strong>Used-together &rarr; edge weight.</strong> Skills and memories retrieved in the same agent session get an <code>associations</code> edge, reinforced on each recurrence.</p>
+        <p><strong>Low success-rate skills decay.</strong> The Wilson lower bound penalises small-sample failures; consolidation soft-deprecates skills whose measured success drops below a floor.</p>
+        <p><strong>Consolidation runs at agent completion.</strong> Not nightly &mdash; there is no night. Once a threshold of completed sessions accrues, the phase rebuilds the edge graph, fires promotion/prune/merge proposals, and updates ranking weights.</p>
+        <p><strong>Outcome success biases retrieval.</strong> Weighted ranking composes BM25 with Wilson-lower-bound success and exponential recency decay.</p>
+      </div>
+    </div>
+
+    <p>Two translation choices deserve calling out, because they're what "multi-agent" changes from the single-agent case.</p>
+
+    <p><strong>There is no sleep cycle.</strong> A real brain alternates wake and sleep. A multi-agent framework has neither a global clock nor a quiet period. Consolidation runs <em>at agent completion</em>, opportunistically &mdash; and we cap cost by firing the full structural pass only every <code>KAOS_DREAM_THRESHOLD</code> completions rather than every single one. "Sleep" in this setting means "a phase that runs fast enough that batching it into the tail of a completed session is cheap."</p>
+
+    <p><strong>Writes have to be safe under N concurrent agents.</strong> A single-agent learner can afford a heavy upsert on every outcome. N concurrent agents cannot &mdash; the fsync cost compounds and the lock contention blows up. All inline hooks in KAOS write in the <em>caller's</em> existing transaction (zero extra fsync) and defer heavy graph work to the batched pass. This was not an abstract constraint: the v0.8.1 pre-release benchmark showed +210 ms p50 overhead on a per-event upsert design. We threw that design away and measured +15 &micro;s p50 on the batched one. Same concept, four orders of magnitude cheaper.</p>
+
+    <hr>
+
+    <h2><span class="n">04</span>The four loops the library actually closed</h2>
+
+    <p>"Plasticity" isn't one feature; it's a small set of feedback loops that share the same conceptual shape. Each one starts from data KAOS was already collecting, and each one turns that data into something the framework now <em>does</em> automatically.</p>
+
+    <div class="loop-card" data-n="01">
+      <h3>Inline synaptic plasticity</h3>
+      <p>Every time an agent records a skill outcome, retrieves a memory, or completes / fails, a hook fires in the caller's transaction. No extra fsync. The hook is deliberately minimal: it updates a counter, not a graph.</p>
+      <span class="metric">+15 &micro;s p50 overhead on <code>record_outcome</code> (measured)</span>
+    </div>
+
+    <div class="loop-card" data-n="02">
+      <h3>Batched structural consolidation</h3>
+      <p>At agent completion and at every <code>KAOS_DREAM_THRESHOLD</code> sessions, a single <code>executemany</code> rebuilds the Hebbian co-occurrence graph (skill&harr;skill, memory&harr;memory, skill&harr;memory), then a full consolidation pass proposes promotions (memory &rarr; skill), prunes low-success skills, and flags near-duplicate pairs for operator-reviewed merge.</p>
+      <span class="metric">108 ms at 100 skills, 493 ms at 1k, ~38 s at 10k (measured)</span>
+    </div>
+
+    <div class="loop-card" data-n="03">
+      <h3>Policy auto-approval</h3>
+      <p>When the shared log detects a repeated pattern &mdash; "this action gets approved every time" &mdash; it promotes the pattern into a <code>policies</code> row. On the next matching intent, <code>SharedLog.intent_auto()</code> consults the policy and short-circuits the full intent &rarr; vote &rarr; decide cycle with an auto-approve. The consensus loop is still the source of truth; the policy table just memoises its recurring answers.</p>
+      <span class="metric">Closes the feedback loop between recurring consensus and future intents</span>
+    </div>
+
+    <div class="loop-card" data-n="04">
+      <h3>Failure diagnosis with cached LLM fallback</h3>
+      <p>Every failed tool call gets fingerprinted and classified by a registry of heuristic diagnosers (connection refused, rate limit, auth, timeout, resource exhaustion, DNS, missing required argument, Python exception types). Failures no heuristic matches fall through to an opt-in LLM diagnoser whose results are cached by fingerprint &mdash; so the framework pays the model cost at most once per unique failure, then answers in microseconds forever after.</p>
+      <span class="metric">Heuristics handle the high-volume cases; LLM handles the long tail; cache guarantees idempotent cost</span>
+    </div>
+
+    <p>All four loops share one design discipline: <strong>the hot path stays fast, and the smart work is batched or cached</strong>. That's the only way you get plasticity under multi-agent concurrency without re-introducing the latency problem KAOS set out to avoid.</p>
+
+    <hr>
+
+    <h2><span class="n">05</span>What this buys you when you actually run N agents</h2>
+
+    <p>The individual numbers live in the <a href="../papers/kaos-neuroplasticity-whitepaper.html">whitepaper</a> and the committed benchmark folders. What matters here is what those numbers mean in aggregate when you point N agents at a shared library.</p>
+
+    <p><strong>Retrieval gets better, slowly, automatically.</strong> The first time an agent searches for a skill, BM25 is the only signal available. After a few dozen sessions have fed outcome data back into the system, the weighted ranker starts outperforming BM25 by double-digit percentage points on realistic workloads. The agents don't have to know this is happening; the rank is simply better when they ask for results.</p>
+
+    <p><strong>Redundant skills don't silently accumulate.</strong> When two agents independently save skills that do the same thing, consolidation notices the Jaccard overlap and generates a merge proposal. An operator (or an authorised agent) reviews it; acceptance migrates all telemetry, collapses associations, and soft-deprecates the retired skill with a rationale. The library stays lean instead of quietly doubling every few weeks.</p>
+
+    <p><strong>Known failures stop being re-diagnosed.</strong> A failure fingerprint is populated the first time any agent hits the error. Every subsequent agent in the population &mdash; across sessions, across projects &mdash; gets the known diagnosis and suggested action in microseconds. The LLM-backed fallback covers the novel tail; the cache means novelty costs once.</p>
+
+    <p><strong>Consensus becomes policy.</strong> An action the team keeps approving turns into a rule that agents can consult at intent time. Human judgement still makes the call the first N times; after that, the framework has learned the verdict and applies it consistently. The supervisors spend their attention on novel decisions, not re-approvals.</p>
+
+    <p>None of these buy you performance on a single task in isolation. They buy you <strong>coherent behaviour at population scale</strong> &mdash; the thing a single-agent framework doesn't need and a multi-agent one can't ship without.</p>
+
+    <hr>
+
+    <h2><span class="n">06</span>What the analogy does <em>not</em> buy you</h2>
+
+    <p>The honest limits are worth reading slowly.</p>
+
+    <p><strong>Gains are workload-conditional.</strong> Plasticity only helps where feedback is informative and retrieval is ambiguous. If agents never record outcomes, the Wilson bound has nothing to stand on. If the right answer is trivially the BM25 winner on every query, there's no room for plasticity to lift anything. The framework degrades gracefully to BM25 in those cases; it doesn't magically create signal that wasn't there.</p>
+
+    <p><strong>The metaphor is a metaphor.</strong> Biology didn't give us a correctness proof; it gave us a useful two-timescale split and a handful of names. "Wilson lower bound" is not a real synapse. Sleep consolidation in the brain re-encodes representations; KAOS's consolidation phase rewrites a handful of SQL rows. Don't over-read the analogy when debugging &mdash; at 3am, the bug is in the SQL, not the biology.</p>
+
+    <p><strong>Merges stay human-in-the-loop by design.</strong> The library can flag two near-duplicate skills, but it won't auto-collapse them. Two skills that look like duplicates by Jaccard are occasionally genuinely distinct in ways only a human (or an authorised reviewer agent) can see. The accept/reject workflow exists precisely so those cases stay recoverable.</p>
+
+    <p><strong>Population size matters.</strong> With two agents sharing a database you'll see some plasticity effects but they'll be noisy. The system really starts paying for itself once you have enough concurrent activity that the same error, the same skill, the same approval pattern recurs across many independent sessions. "Many" here is tens of sessions per day, not thousands per second.</p>
+
+    <p><strong>The consolidation phase has quadratic cost above 1,000 skills.</strong> The pairwise Jaccard merge scan is O(n&sup2;) by construction; we measured 493 ms at 1k skills and 38 s at 10k. It runs opportunistically, not on the agent hot path, so this is a budget problem, not a latency problem &mdash; but it's a real budget problem worth naming. At very-large scale, shard the merge detection by tag or disable it.</p>
+
+    <hr>
+
+    <div class="beat">
+      Neuroplasticity in a multi-agent framework isn't "the agents got smarter." It's "the <strong>library</strong> got an opinion about its own contents." Ranking learns. Redundancy gets flagged. Failures cache. Consensus turns into policy. All of it happens continuously, at the population level, as a side effect of agents doing their normal work &mdash; which is the only way to make it work at all when there is no orchestrator and no wake/sleep cycle to hang structural work off of.
+    </div>
+
+    <p>The journey is still early. Whatever shape this takes in v0.9 will come from more agents, more workloads, more people actually running into the cases where the library's opinion matters &mdash; and the next round of honest limits we haven't noticed yet.</p>
+
+    <p style="font-size:.92rem;margin-top:2.5rem">Further reading: the <a href="kaos-neuroplasticity.html">v0.8.1 growth story</a> covers how this actually got built and why the first architecture got thrown away. The <a href="../papers/kaos-neuroplasticity-whitepaper.html">whitepaper</a> goes into the formulas and benchmarks. Every number quoted in this post is measured, reproducible, and committed alongside its script.</p>
+
+  </div>
+</div>
+
+<footer>
+  <div class="links">
+    <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a>
+    <a href="../index.html">canivel.github.io/kaos</a>
+    <a href="../index.html#blog">more writing</a>
+  </div>
+  <p>&copy; 2026 Danilo Canivel &middot; KAOS is MIT licensed</p>
+</footer>
+</body>
+</html>
