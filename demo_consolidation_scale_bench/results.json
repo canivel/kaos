@@ -1,0 +1,29 @@
+{
+  "scales": [
+    {
+      "p50_ms": 107.73,
+      "max_ms": 107.81,
+      "min_ms": 97.73,
+      "samples": 3,
+      "n_skills": 100,
+      "seed_seconds": 7.07
+    },
+    {
+      "p50_ms": 492.82,
+      "max_ms": 538.91,
+      "min_ms": 449.62,
+      "samples": 3,
+      "n_skills": 1000,
+      "seed_seconds": 44.78
+    },
+    {
+      "p50_ms": 38065.83,
+      "max_ms": 38170.57,
+      "min_ms": 37801.17,
+      "samples": 3,
+      "n_skills": 10000,
+      "seed_seconds": 442.34
+    }
+  ],
+  "repeats_per_scale": 3
+}

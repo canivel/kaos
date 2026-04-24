@@ -308,6 +308,7 @@ def _mark_applied(conn: sqlite3.Connection, p: Proposal) -> None:
             """
             UPDATE consolidation_proposals
             SET applied = 1,
+                status = 'applied',
                 applied_at = strftime('%Y-%m-%dT%H:%M:%f','now')
             WHERE proposal_id = (
                 SELECT proposal_id FROM consolidation_proposals
@@ -319,3 +320,257 @@ def _mark_applied(conn: sqlite3.Connection, p: Proposal) -> None:
         )
     except sqlite3.OperationalError:
         pass
+
+
+# ── Merge workflow ────────────────────────────────────────────────
+
+
+def list_pending_merges(
+    conn: sqlite3.Connection,
+    *,
+    limit: int = 50,
+) -> list[dict]:
+    """Return all pending merge proposals. Human-in-the-loop workflow:
+    operators review these, then call accept_merge or reject_merge.
+    """
+    prev = conn.row_factory
+    conn.row_factory = sqlite3.Row
+    try:
+        try:
+            rows = conn.execute(
+                """
+                SELECT proposal_id, kind, targets, rationale, created_at
+                FROM consolidation_proposals
+                WHERE kind = 'merge' AND status = 'pending'
+                ORDER BY created_at DESC LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        except sqlite3.OperationalError:
+            return []
+    finally:
+        conn.row_factory = prev
+
+    out = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["targets"] = json.loads(d["targets"])
+        except (json.JSONDecodeError, TypeError):
+            pass
+        out.append(d)
+    return out
+
+
+def accept_merge(
+    conn: sqlite3.Connection,
+    proposal_id: int,
+    *,
+    keep_skill_id: int | None = None,
+) -> dict:
+    """Accept and execute a merge proposal.
+
+    The proposal names a pair of skill_ids. We keep one (``keep_skill_id``
+    if provided, otherwise the lower-id one) and merge the other INTO it:
+      - migrate ``skill_uses`` rows to the kept skill
+      - rewrite ``associations`` edges to point at the kept skill
+      - add the retired skill's use_count / success_count into the keeper
+      - mark the retired skill deprecated with reason "merged into #N"
+      - mark the proposal applied
+
+    Returns a summary dict.
+    """
+    prev = conn.row_factory
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            "SELECT targets, status, kind FROM consolidation_proposals "
+            "WHERE proposal_id = ?",
+            (proposal_id,),
+        ).fetchone()
+        if row is None:
+            return {"error": f"proposal {proposal_id} not found"}
+        if row["kind"] != "merge":
+            return {"error": f"proposal {proposal_id} is not a merge "
+                             f"(kind={row['kind']})"}
+        if row["status"] != "pending":
+            return {"error": f"proposal {proposal_id} already {row['status']}"}
+
+        try:
+            targets = json.loads(row["targets"])
+        except (json.JSONDecodeError, TypeError):
+            return {"error": "malformed targets JSON"}
+        skill_ids = targets.get("skill_ids") or []
+        if len(skill_ids) != 2:
+            return {"error": "merge requires exactly 2 skill_ids; got "
+                             f"{len(skill_ids)}"}
+
+        keep = keep_skill_id if keep_skill_id in skill_ids else min(skill_ids)
+        retire = [sid for sid in skill_ids if sid != keep][0]
+
+        # 1. Pull counters we need to merge
+        keep_row = conn.execute(
+            "SELECT use_count, success_count FROM agent_skills WHERE skill_id = ?",
+            (keep,),
+        ).fetchone()
+        retire_row = conn.execute(
+            "SELECT use_count, success_count FROM agent_skills WHERE skill_id = ?",
+            (retire,),
+        ).fetchone()
+        if keep_row is None or retire_row is None:
+            return {"error": "one of the skills has already been deleted"}
+
+        # 2. Migrate skill_uses telemetry
+        conn.execute(
+            "UPDATE skill_uses SET skill_id = ? WHERE skill_id = ?",
+            (keep, retire),
+        )
+
+        # 3. Collapse associations. Every edge pointing at `retire` now
+        #    points at `keep`. Duplicates against `keep` get their weights
+        #    added into the canonical edge; self-edges are pruned.
+        _collapse_associations(conn, retire, keep)
+
+        # 4. Roll counters into the keeper
+        conn.execute(
+            "UPDATE agent_skills SET "
+            "use_count = use_count + ?, success_count = success_count + ?, "
+            "updated_at = strftime('%Y-%m-%dT%H:%M:%f','now') "
+            "WHERE skill_id = ?",
+            (retire_row["use_count"], retire_row["success_count"], keep),
+        )
+
+        # 5. Retire the duplicate (soft)
+        conn.execute(
+            "UPDATE agent_skills SET "
+            "deprecated = 1, "
+            "deprecated_at = strftime('%Y-%m-%dT%H:%M:%f','now'), "
+            "deprecated_reason = ? "
+            "WHERE skill_id = ?",
+            (f"Merged into skill #{keep} via consolidation proposal #{proposal_id}",
+             retire),
+        )
+
+        # 6. Journal the application
+        conn.execute(
+            "UPDATE consolidation_proposals "
+            "SET applied = 1, status = 'applied', "
+            "applied_at = strftime('%Y-%m-%dT%H:%M:%f','now') "
+            "WHERE proposal_id = ?",
+            (proposal_id,),
+        )
+        conn.commit()
+    finally:
+        conn.row_factory = prev
+
+    return {
+        "proposal_id": proposal_id,
+        "status": "applied",
+        "kept_skill_id": keep,
+        "retired_skill_id": retire,
+        "uses_migrated": retire_row["use_count"],
+        "successes_migrated": retire_row["success_count"],
+    }
+
+
+def reject_merge(
+    conn: sqlite3.Connection,
+    proposal_id: int,
+    *,
+    reason: str | None = None,
+) -> dict:
+    """Mark a merge proposal as rejected so it doesn't keep appearing.
+
+    Rejected proposals stay in the journal for audit; the consolidation
+    phase will notice the existing rejection and avoid re-proposing the
+    exact same pair.
+    """
+    prev = conn.row_factory
+    conn.row_factory = sqlite3.Row
+    try:
+        row = conn.execute(
+            "SELECT status, kind FROM consolidation_proposals "
+            "WHERE proposal_id = ?",
+            (proposal_id,),
+        ).fetchone()
+        if row is None:
+            return {"error": f"proposal {proposal_id} not found"}
+        if row["status"] != "pending":
+            return {"error": f"proposal {proposal_id} already {row['status']}"}
+
+        conn.execute(
+            "UPDATE consolidation_proposals "
+            "SET status = 'rejected', "
+            "applied_at = strftime('%Y-%m-%dT%H:%M:%f','now'), "
+            "rationale = COALESCE(?, rationale) "
+            "WHERE proposal_id = ?",
+            (f"{reason} (rejected)" if reason else None, proposal_id),
+        )
+        conn.commit()
+    finally:
+        conn.row_factory = prev
+
+    return {"proposal_id": proposal_id, "status": "rejected"}
+
+
+def _collapse_associations(
+    conn: sqlite3.Connection,
+    retire_skill_id: int,
+    keep_skill_id: int,
+) -> None:
+    """Redirect every association edge touching ``retire`` to point at
+    ``keep``. If a canonical edge already exists against ``keep`` we add
+    weights together rather than violate the UNIQUE constraint.
+    """
+    # Edges where 'a' was retire → move to keep (or merge into existing)
+    rows = conn.execute(
+        "SELECT kind_b, id_b, weight, uses FROM associations "
+        "WHERE kind_a = 'skill' AND id_a = ?",
+        (retire_skill_id,),
+    ).fetchall()
+    for r in rows:
+        kind_b, id_b, w, u = r[0], r[1], r[2] or 0.0, r[3] or 0
+        if kind_b == "skill" and id_b == keep_skill_id:
+            # Self-edge after merge — drop it.
+            continue
+        conn.execute(
+            "INSERT INTO associations (kind_a, id_a, kind_b, id_b, weight, uses, "
+            "first_seen, last_seen) "
+            "VALUES ('skill', ?, ?, ?, ?, ?, "
+            "strftime('%Y-%m-%dT%H:%M:%f','now'), "
+            "strftime('%Y-%m-%dT%H:%M:%f','now')) "
+            "ON CONFLICT(kind_a, id_a, kind_b, id_b) DO UPDATE SET "
+            "weight = weight + excluded.weight, uses = uses + excluded.uses, "
+            "last_seen = strftime('%Y-%m-%dT%H:%M:%f','now')",
+            (keep_skill_id, kind_b, id_b, w, u),
+        )
+    conn.execute(
+        "DELETE FROM associations WHERE kind_a = 'skill' AND id_a = ?",
+        (retire_skill_id,),
+    )
+
+    # Reverse direction.
+    rows = conn.execute(
+        "SELECT kind_a, id_a, weight, uses FROM associations "
+        "WHERE kind_b = 'skill' AND id_b = ?",
+        (retire_skill_id,),
+    ).fetchall()
+    for r in rows:
+        kind_a, id_a, w, u = r[0], r[1], r[2] or 0.0, r[3] or 0
+        if kind_a == "skill" and id_a == keep_skill_id:
+            continue
+        conn.execute(
+            "INSERT INTO associations (kind_a, id_a, kind_b, id_b, weight, uses, "
+            "first_seen, last_seen) "
+            "VALUES (?, ?, 'skill', ?, ?, ?, "
+            "strftime('%Y-%m-%dT%H:%M:%f','now'), "
+            "strftime('%Y-%m-%dT%H:%M:%f','now')) "
+            "ON CONFLICT(kind_a, id_a, kind_b, id_b) DO UPDATE SET "
+            "weight = weight + excluded.weight, uses = uses + excluded.uses, "
+            "last_seen = strftime('%Y-%m-%dT%H:%M:%f','now')",
+            (kind_a, id_a, keep_skill_id, w, u),
+        )
+    conn.execute(
+        "DELETE FROM associations WHERE kind_b = 'skill' AND id_b = ?",
+        (retire_skill_id,),
+    )

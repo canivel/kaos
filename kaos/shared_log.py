@@ -177,6 +177,78 @@ class SharedLog:
         )
         return entry.log_id
 
+    def intent_auto(
+        self,
+        agent_id: str,
+        action: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> tuple[int, bool]:
+        """Broadcast an intent with automatic policy check.
+
+        If ``action`` matches an enabled, promoted policy in the ``policies``
+        table, the intent is immediately auto-approved: a synthetic vote
+        (approve) and decision row are appended, and the policy's
+        ``applied_count`` / ``last_applied_at`` are bumped.
+
+        Returns ``(intent_id, auto_approved)``. When auto_approved is True,
+        the caller does NOT need to call ``vote`` + ``decide`` — the loop
+        has already been short-circuited. When False, the standard flow
+        applies.
+
+        This is the piece that was missing in v0.8.1: the ``policies`` table
+        was populated by ``policies.run()`` but nothing consulted it at
+        intent time. The loop is now closed.
+        """
+        intent_id = self.intent(agent_id, action, metadata)
+        policy = self._match_enabled_policy(action)
+        if policy is None:
+            return intent_id, False
+
+        # Auto-approve: one synthetic vote + a decision entry.
+        self.vote(
+            agent_id,
+            intent_id,
+            approve=True,
+            reason=f"auto-approved by policy #{policy['policy_id']} "
+                   f"({int(policy['approval_rate'] * 100)}% of {policy['sample_size']})",
+        )
+        self.decide(intent_id, agent_id)
+        self._record_policy_application(policy["policy_id"])
+        return intent_id, True
+
+    def _match_enabled_policy(self, action: str) -> dict[str, Any] | None:
+        """Return the matching enabled+promoted policy, or None. Safe on
+        pre-v5 databases (returns None if policies table is missing)."""
+        try:
+            from kaos.dream.phases.policies import _normalise_action  # lazy
+        except ImportError:
+            return None
+        normalised = _normalise_action(action)
+        try:
+            row = self._conn.execute(
+                "SELECT policy_id, action_pattern, approval_rate, sample_size "
+                "FROM policies WHERE enabled = 1 AND action_pattern = ? LIMIT 1",
+                (normalised,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return None
+        if row is None:
+            return None
+        return dict(row)
+
+    def _record_policy_application(self, policy_id: int) -> None:
+        try:
+            self._conn.execute(
+                "UPDATE policies "
+                "SET applied_count = applied_count + 1, "
+                "    last_applied_at = strftime('%Y-%m-%dT%H:%M:%f','now') "
+                "WHERE policy_id = ?",
+                (policy_id,),
+            )
+            self._conn.commit()
+        except sqlite3.OperationalError:
+            pass
+
     def vote(
         self,
         agent_id: str,

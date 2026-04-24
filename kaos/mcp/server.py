@@ -723,6 +723,32 @@ async def list_tools() -> list[Tool]:
                 },
             },
         ),
+        Tool(
+            name="dream_merges",
+            description=(
+                "List pending merge proposals; accept or reject by proposal_id. "
+                "Merge proposals are never auto-applied — a human (or an agent "
+                "with explicit authority) reviews each one. Accept migrates "
+                "skill_uses, collapses associations, rolls counters, and soft-"
+                "deprecates the retired skill. Reject marks the proposal so it "
+                "does not re-appear in the pending list."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "accept": {"type": "integer",
+                               "description": "proposal_id to accept"},
+                    "reject": {"type": "integer",
+                               "description": "proposal_id to reject"},
+                    "keep": {"type": "integer",
+                             "description": "When accepting: skill_id to keep "
+                                            "(default: lower id)"},
+                    "reason": {"type": "string",
+                               "description": "When rejecting: stored rationale"},
+                    "limit": {"type": "integer", "default": 20},
+                },
+            },
+        ),
         # ── Failure intelligence (M2.5) ──────────────────────────
         Tool(
             name="failure_diagnose",
@@ -1898,6 +1924,24 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
                 "skipped_existing": pol.skipped_existing,
             },
         }, indent=2)
+
+    elif name == "dream_merges":
+        from kaos.dream.phases.consolidation import (
+            accept_merge, list_pending_merges, reject_merge,
+        )
+        if args.get("accept") is not None and args.get("reject") is not None:
+            return json.dumps({"error": "accept and reject are mutually exclusive"},
+                              indent=2)
+        if args.get("accept") is not None:
+            result = accept_merge(_afs.conn, args["accept"],
+                                  keep_skill_id=args.get("keep"))
+            return json.dumps(result, indent=2)
+        if args.get("reject") is not None:
+            result = reject_merge(_afs.conn, args["reject"],
+                                  reason=args.get("reason"))
+            return json.dumps(result, indent=2)
+        pending = list_pending_merges(_afs.conn, limit=args.get("limit", 20))
+        return json.dumps({"pending": pending}, indent=2)
 
     else:
         raise ValueError(f"Unknown tool: {name}")

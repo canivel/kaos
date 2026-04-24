@@ -1,0 +1,61 @@
+{
+  "episodes": 120,
+  "n_queries": 15,
+  "n_skills": 40,
+  "design": "non-adversarial: natural-language queries against realistic skill library",
+  "bm25": {
+    "final_accuracy": 0.7333333333333333,
+    "curve": [
+      0.6333333333333333,
+      0.6666666666666666,
+      0.6333333333333333,
+      0.65
+    ],
+    "per_query": {
+      "I need to move a schema change into production": 0,
+      "snapshot the database before the release": 1,
+      "clear the cache for the feature flag namespace": 1,
+      "new endpoint for the accounts resource": 1,
+      "throttle abusive clients on the search endpoint": 1,
+      "fire off that email send in the background": 1,
+      "drain the failed-payment retry queue": 0,
+      "save the uploaded report into object storage": 1,
+      "load last night's csv extract into the warehouse": 1,
+      "check if the payments service is up": 1,
+      "run the tests before I push": 1,
+      "ship the new image to staging": 0,
+      "someone leaked a key so rotate it": 1,
+      "give me a tl dr of the incident log": 1,
+      "start a branch for the refund handling work": 0
+    }
+  },
+  "weighted": {
+    "final_accuracy": 0.8666666666666667,
+    "curve": [
+      0.6,
+      0.7,
+      0.7,
+      0.7
+    ],
+    "per_query": {
+      "I need to move a schema change into production": 0,
+      "snapshot the database before the release": 1,
+      "clear the cache for the feature flag namespace": 1,
+      "new endpoint for the accounts resource": 1,
+      "throttle abusive clients on the search endpoint": 1,
+      "fire off that email send in the background": 1,
+      "drain the failed-payment retry queue": 1,
+      "save the uploaded report into object storage": 1,
+      "load last night's csv extract into the warehouse": 1,
+      "check if the payments service is up": 1,
+      "run the tests before I push": 1,
+      "ship the new image to staging": 0,
+      "someone leaked a key so rotate it": 1,
+      "give me a tl dr of the incident log": 1,
+      "start a branch for the refund handling work": 1
+    }
+  },
+  "absolute_gain_pp": 13.333333333333341,
+  "relative_gain_pct": 18.181818181818194,
+  "break_even_episode": 60
+}

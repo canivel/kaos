@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -443,6 +443,36 @@ CREATE INDEX IF NOT EXISTS idx_alerts_unresolved
 """
 
 
+# Migration to v7: close the loops flagged in the v0.8.1 whitepaper §6.
+#  1. `consolidation_proposals.status` — lets merge proposals be explicitly
+#     accepted/rejected rather than languishing as pending forever.
+#  2. `llm_diagnosis_cache` — memoises LLM-backed diagnoses per fingerprint
+#     so exotic-error classification doesn't cost a model call per occurrence.
+#  3. Backfill: existing applied=1 rows are now status='applied'; applied=0
+#     rows are status='pending'.
+MIGRATION_V7_SQL = """
+ALTER TABLE consolidation_proposals
+    ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending','applied','rejected','superseded'));
+
+UPDATE consolidation_proposals SET status = 'applied'  WHERE applied = 1;
+UPDATE consolidation_proposals SET status = 'pending'  WHERE applied = 0;
+
+CREATE INDEX IF NOT EXISTS idx_proposals_status
+    ON consolidation_proposals(status, kind);
+
+CREATE TABLE IF NOT EXISTS llm_diagnosis_cache (
+    fingerprint      TEXT PRIMARY KEY,
+    category         TEXT NOT NULL,
+    root_cause       TEXT,
+    suggested_action TEXT,
+    confidence       REAL NOT NULL DEFAULT 0.7,
+    model            TEXT,
+    cached_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
     conn.executescript(SCHEMA_SQL)
@@ -458,6 +488,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
         conn.executescript(MIGRATION_V4_SQL)
         conn.executescript(MIGRATION_V5_SQL)
         conn.executescript(MIGRATION_V6_SQL)
+        conn.executescript(MIGRATION_V7_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -478,6 +509,8 @@ def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: i
         conn.executescript(MIGRATION_V5_SQL)
     if from_version < 6:
         conn.executescript(MIGRATION_V6_SQL)
+    if from_version < 7:
+        conn.executescript(MIGRATION_V7_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )

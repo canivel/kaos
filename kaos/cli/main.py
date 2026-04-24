@@ -1881,6 +1881,92 @@ def dream_consolidate(ctx, db: str, apply: bool):
                       f"skipped {pol.skipped_existing} (already known)")
 
 
+@dream_group.command("merges")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.option("--accept", type=int, default=None,
+              help="Accept the merge with this proposal_id")
+@click.option("--reject", type=int, default=None,
+              help="Reject the merge with this proposal_id")
+@click.option("--keep", type=int, default=None,
+              help="When accepting: which skill_id to keep (default: lower id)")
+@click.option("--reason", default=None,
+              help="When rejecting: short rationale stored on the proposal")
+@click.option("--limit", default=20, help="Max pending merges to list")
+@click.pass_context
+def dream_merges(ctx, db: str, accept: int, reject: int, keep: int,
+                 reason: str, limit: int):
+    """List pending merge proposals; accept or reject by proposal_id.
+
+    Merge proposals are never auto-applied — an operator reviews them and
+    runs one of:
+
+        kaos dream merges --accept 7
+        kaos dream merges --reject 9 --reason "serve different callers"
+    """
+    from kaos.dream.phases.consolidation import (
+        accept_merge, list_pending_merges, reject_merge,
+    )
+    if not Path(db).exists():
+        if _json_err(ctx, f"Database not found: {db}"):
+            return
+        console.print(f"[red]Database not found: {db}[/red]")
+        ctx.exit(1)
+        return
+    if accept is not None and reject is not None:
+        msg = "--accept and --reject are mutually exclusive"
+        if _json_err(ctx, msg):
+            return
+        console.print(f"[red]{msg}[/red]")
+        ctx.exit(1)
+        return
+
+    afs = _get_afs(db)
+    try:
+        if accept is not None:
+            result = accept_merge(afs.conn, accept, keep_skill_id=keep)
+        elif reject is not None:
+            result = reject_merge(afs.conn, reject, reason=reason)
+        else:
+            result = {"pending": list_pending_merges(afs.conn, limit=limit)}
+    finally:
+        afs.close()
+
+    if _json_out(ctx, result):
+        return
+
+    if "error" in result:
+        console.print(f"[red]{result['error']}[/red]")
+        ctx.exit(1)
+        return
+    if accept is not None:
+        console.print(f"[bold green]Merge applied[/bold green]  "
+                      f"proposal #{result['proposal_id']}")
+        console.print(f"  kept skill #{result['kept_skill_id']}, "
+                      f"retired skill #{result['retired_skill_id']}")
+        console.print(f"  migrated {result['uses_migrated']} uses "
+                      f"({result['successes_migrated']} successful)")
+        return
+    if reject is not None:
+        console.print(f"[yellow]Merge rejected[/yellow]  "
+                      f"proposal #{result['proposal_id']}")
+        return
+
+    pending = result.get("pending", [])
+    if not pending:
+        console.print("[dim]No pending merge proposals.[/dim]")
+        return
+    console.print(f"[bold]{len(pending)} pending merge proposal(s)[/bold]")
+    for p in pending:
+        ids = p.get("targets", {}).get("skill_ids", [])
+        console.print(
+            f"  [cyan]#{p['proposal_id']}[/cyan]  "
+            f"skills {ids}  "
+            f"[dim]{p.get('created_at', '')}[/dim]"
+        )
+        if p.get("rationale"):
+            console.print(f"    {p['rationale']}")
+
+
 @dream_group.command("diagnose")
 @click.argument("fp_id", type=int)
 @click.option("--db", default=DEFAULT_DB, help="Database file path")

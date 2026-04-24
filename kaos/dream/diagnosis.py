@@ -24,7 +24,9 @@ majority of real agent failures without ever calling a model.
 
 from __future__ import annotations
 
+import json
 import re
+import sqlite3
 from dataclasses import dataclass
 from typing import Any, Callable, Protocol
 
@@ -257,6 +259,155 @@ class DNSResolutionDiagnoser:
         )
 
 
+# ── LLM-backed diagnoser (opt-in) ─────────────────────────────────
+
+
+LLM_DIAGNOSIS_PROMPT = """You are KAOS's failure diagnoser. Classify the following agent-tool failure and suggest one actionable next step.
+
+Tool: {tool_name}
+Error: {error}
+
+Respond as STRICT JSON with these keys:
+  "category":         one of "transient", "config", "code", "infra", "unknown"
+  "root_cause":       one-sentence explanation of what went wrong
+  "suggested_action": one-sentence concrete next step
+  "confidence":       float in [0, 1]
+
+Return the JSON object and nothing else."""
+
+
+class LLMDiagnoser:
+    """Opt-in diagnoser that asks an LLM to categorise errors the heuristics
+    missed. Results are cached in ``llm_diagnosis_cache`` keyed by the error
+    fingerprint so each unique failure pays the LLM cost at most once.
+
+    Parameters
+    ----------
+    call_fn:
+        Callable that takes a prompt string and returns the model's raw text
+        response. Synchronous. Pass ``None`` to disable network calls (the
+        diagnoser will only serve cache hits).
+    conn:
+        Optional SQLite connection. When provided, cache lookups and writes
+        are served from ``llm_diagnosis_cache``. Pass ``None`` for pure
+        pass-through (e.g. inside unit tests that don't want persistence).
+    model:
+        Label recorded alongside cache entries.
+
+    This class does NOT import anthropic / openai / httpx. The caller wires
+    the model by passing an arbitrary ``call_fn``. This keeps the module
+    fast to import and easy to mock in tests.
+    """
+
+    name = "llm"
+
+    def __init__(
+        self,
+        call_fn: Callable[[str], str] | None,
+        conn: sqlite3.Connection | None = None,
+        model: str = "claude",
+    ) -> None:
+        self._call_fn = call_fn
+        self._conn = conn
+        self._model = model
+
+    def try_diagnose(
+        self,
+        tool_name: str,
+        error: str,
+        context: dict[str, Any],
+    ) -> Diagnosis | None:
+        # Lazy import to avoid a cycle (auto imports diagnosis, diagnosis
+        # imports fingerprint_of from auto).
+        from kaos.dream.auto import fingerprint_of
+        fp = fingerprint_of(tool_name, error)
+
+        cached = self._cache_get(fp)
+        if cached is not None:
+            return cached
+
+        if self._call_fn is None:
+            return None
+
+        prompt = LLM_DIAGNOSIS_PROMPT.format(tool_name=tool_name, error=error)
+        try:
+            raw = self._call_fn(prompt)
+        except Exception:
+            return None
+
+        parsed = _safe_parse_llm_json(raw)
+        if parsed is None:
+            return None
+
+        diag = Diagnosis(
+            category=parsed.get("category", "unknown"),
+            root_cause=parsed.get("root_cause") or "LLM could not determine root cause.",
+            suggested_action=parsed.get("suggested_action"),
+            method="llm",
+            confidence=float(parsed.get("confidence", 0.7) or 0.7),
+        )
+        if diag.category not in CATEGORIES:
+            diag.category = "unknown"
+        self._cache_put(fp, diag)
+        return diag
+
+    def _cache_get(self, fp: str) -> Diagnosis | None:
+        if self._conn is None:
+            return None
+        try:
+            row = self._conn.execute(
+                "SELECT category, root_cause, suggested_action, confidence "
+                "FROM llm_diagnosis_cache WHERE fingerprint = ?",
+                (fp,),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return None
+        if row is None:
+            return None
+        return Diagnosis(
+            category=row[0],
+            root_cause=row[1] or "",
+            suggested_action=row[2],
+            method="llm-cached",
+            confidence=float(row[3] or 0.7),
+        )
+
+    def _cache_put(self, fp: str, diag: Diagnosis) -> None:
+        if self._conn is None:
+            return
+        try:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO llm_diagnosis_cache "
+                "(fingerprint, category, root_cause, suggested_action, "
+                "confidence, model) VALUES (?, ?, ?, ?, ?, ?)",
+                (fp, diag.category, diag.root_cause, diag.suggested_action,
+                 diag.confidence, self._model),
+            )
+            self._conn.commit()
+        except sqlite3.OperationalError:
+            pass
+
+
+_JSON_BLOCK = re.compile(r"\{.*\}", re.DOTALL)
+
+
+def _safe_parse_llm_json(raw: str) -> dict | None:
+    """Extract the first JSON object from a model response. Robust to
+    markdown fencing, leading/trailing prose, or trailing punctuation."""
+    if not raw:
+        return None
+    match = _JSON_BLOCK.search(raw)
+    if match is None:
+        return None
+    try:
+        parsed = json.loads(match.group(0))
+    except (json.JSONDecodeError, ValueError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    return parsed
+
+
 # ── Registry ───────────────────────────────────────────────────────
 
 
@@ -303,11 +454,17 @@ def diagnose(
     tool_name: str,
     error: str,
     context: dict[str, Any] | None = None,
+    *,
+    llm_fallback: LLMDiagnoser | None = None,
 ) -> Diagnosis:
     """Try every registered diagnoser in order. Return the first hit, or a
     ``category='unknown'`` diagnosis if no heuristic matches.
 
-    Deterministic: no randomness, no I/O. Safe to call from hot paths.
+    Deterministic by default: no randomness, no I/O.
+
+    If ``llm_fallback`` is provided and no heuristic matches, the LLM
+    diagnoser is consulted (cache-first). Keep heuristics primary so we pay
+    the LLM cost only for genuinely novel failures.
     """
     ctx = context or {}
     for d in _registry:
@@ -315,6 +472,13 @@ def diagnose(
             result = d.try_diagnose(tool_name, error, ctx)
         except Exception:
             continue
+        if result is not None:
+            return result
+    if llm_fallback is not None:
+        try:
+            result = llm_fallback.try_diagnose(tool_name, error, ctx)
+        except Exception:
+            result = None
         if result is not None:
             return result
     return Diagnosis(
