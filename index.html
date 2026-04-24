@@ -367,7 +367,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
       <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
     </div>
     <div class="badges">
-      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.8.1</span>
+      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.8.2</span>
       <span class="badge" style="color:#fd79a8;border-color:rgba(253,121,168,.35);background:rgba(253,121,168,.08)">neuroplasticity</span>
       <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">8 research integrations</span>
       <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">self-organizing</span>
@@ -1459,9 +1459,48 @@ kaos log decide refactor-agent --intent 2
 
     <div class="release">
       <div class="release-header">
+        <span class="release-version">v0.8.2</span>
+        <span class="release-date">April 24, 2026</span>
+        <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">Addressing the Whitepaper &sect;6 Limitations &mdash; with KAOS itself &mdash; <a href="papers/kaos-neuroplasticity-whitepaper.html#limits" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">see whitepaper &sect;6</a></p>
+      <ul>
+        <li><strong>Policy consumer loop closed</strong> &mdash; <code>SharedLog.intent_auto()</code> now consults the <code>policies</code> table and short-circuits intent &rarr; vote &rarr; decide when a promoted policy matches. Closes &sect;6.3a.</li>
+        <li><strong>Merge workflow loop closed</strong> &mdash; <code>list_pending_merges()</code> / <code>accept_merge()</code> / <code>reject_merge()</code> migrate <code>skill_uses</code>, collapse associations with weight-merging, roll counters, and soft-deprecate the retired skill. CLI: <code>kaos dream merges [--accept N | --reject N]</code>. Closes &sect;6.3b.</li>
+        <li><strong>LLM-backed diagnoser with fingerprint cache</strong> &mdash; <code>LLMDiagnoser</code> (cache-first, heuristic-primary, provider-agnostic) now covers failures no heuristic matches. Each unique failure pays the LLM cost at most once. Closes &sect;6.4.</li>
+        <li><strong>Three new benchmarks with real measured numbers</strong> &mdash;
+          <code>demo_realistic_retrieval_bench/</code> (non-adversarial: BM25 73.3% &rarr; weighted <strong style="color:var(--green)">86.7% (+13.3pp)</strong>);
+          <code>demo_alpha_sweep_bench/</code> (default &alpha;=3.0 sits on a broad plateau at 93.3% covering &alpha; = 2&ndash;12);
+          <code>demo_consolidation_scale_bench/</code> (108 ms / 493 ms / 38.1 s at 100 / 1k / 10k skills).
+        </li>
+        <li><strong>Schema v7</strong> &mdash; adds <code>consolidation_proposals.status</code> (pending/applied/rejected/superseded) and <code>llm_diagnosis_cache</code>.</li>
+        <li><strong>1 new MCP tool</strong>: <code>dream_merges</code>. Total MCP surface now <strong>46 tools</strong>.</li>
+        <li><strong>465 unit tests passing</strong> (+42 from 0.8.1; 0 regressions).</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.8.1</span>
+        <span class="release-date">April 24, 2026</span>
+      </div>
+      <p class="release-category">Neuroplasticity &mdash; <a href="blog/kaos-neuroplasticity.html" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">blog post</a> &middot; <a href="papers/kaos-neuroplasticity-whitepaper.html" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">whitepaper</a></p>
+      <ul>
+        <li><strong>Inline synaptic plasticity</strong> &mdash; <code>record_outcome</code>, <code>memory.search(record_hits=True)</code>, and <code>Kaos.complete/fail/kill</code> all fire hooks inside the caller's transaction. +15 &micro;s p50 overhead on record_outcome (measured).</li>
+        <li><strong>Batched structural consolidation</strong> &mdash; at agent completion, one <code>executemany</code> rebuilds the Hebbian co-occurrence graph (skill&harr;skill, memory&harr;memory, skill&harr;memory). Every <code>KAOS_DREAM_THRESHOLD</code> completions, a full consolidation pass proposes promote / prune / merge changes.</li>
+        <li><strong>Weighted retrieval</strong> &mdash; <code>rank="weighted"</code> on <code>SkillStore.search()</code> and <code>MemoryStore.search()</code>: BM25 &times; Wilson-lower-bound &times; exponential recency. <strong style="color:var(--green)">+10 pp retrieval accuracy</strong> measured on twin-pair benchmark.</li>
+        <li><strong>Failure intelligence</strong> &mdash; 8 heuristic diagnosers (connection refused, rate limit, auth, timeouts, resource exhaustion, DNS, missing args, Python exceptions), fix-outcome tracking with auto-downgrade at &lt;50% success over 5+ attempts, sliding-window systemic alerts.</li>
+        <li><strong>Schema v6 (additive)</strong> &mdash; 10 new tables: <code>skill_uses</code>, <code>memory_hits</code>, <code>episode_signals</code>, <code>dream_runs</code>, <code>associations</code>, <code>failure_fingerprints</code>, <code>failure_occurrences</code>, <code>systemic_alerts</code>, <code>consolidation_proposals</code>, <code>policies</code>.</li>
+        <li><strong>10 new CLI commands</strong> under <code>kaos dream</code>; <strong>8 new MCP tools</strong>. Total MCP surface: 45 tools.</li>
+        <li><strong>Architecture rewrite (measured)</strong> &mdash; initial inline-upsert design hit +210 ms p50 overhead; batched-at-completion rebuild brought it to +15 &micro;s. <strong>14,000&times; faster.</strong></li>
+        <li><strong>423 unit tests passing</strong>. 3 committed benchmark folders with reproducible scripts.</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
         <span class="release-version">v0.7.0</span>
         <span class="release-date">April 15, 2026</span>
-        <span class="release-tag">latest</span>
       </div>
       <p class="release-category">Cross-Agent Skill Library &mdash; <a href="https://arxiv.org/abs/2604.08224" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.08224 &bull; Zhou et al. 2026</a></p>
       <ul>
