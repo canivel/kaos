@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 6
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -235,6 +235,214 @@ END;
 """
 
 
+# Migration to v4: neuroplasticity substrate — usage telemetry + dream runs.
+# Additive only. No existing tables changed. No behavior change until the
+# caller opts in via `rank="weighted"` or invokes `kaos dream`.
+MIGRATION_V4_SQL = """
+-- Per-application record of a skill being used by an agent.
+CREATE TABLE IF NOT EXISTS skill_uses (
+    use_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    skill_id    INTEGER NOT NULL REFERENCES agent_skills(skill_id),
+    agent_id    TEXT REFERENCES agents(agent_id),
+    used_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    success     INTEGER,          -- NULL = unreported, 0/1 otherwise
+    task_hash   TEXT              -- optional bucket id for per-context weighting
+);
+
+CREATE INDEX IF NOT EXISTS idx_skill_uses_skill  ON skill_uses(skill_id, used_at);
+CREATE INDEX IF NOT EXISTS idx_skill_uses_agent  ON skill_uses(agent_id, used_at);
+
+-- Per-retrieval record of a memory entry being searched for / surfaced.
+CREATE TABLE IF NOT EXISTS memory_hits (
+    hit_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    memory_id   INTEGER NOT NULL REFERENCES memory(memory_id),
+    agent_id    TEXT REFERENCES agents(agent_id),
+    hit_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    query       TEXT,
+    rank_pos    INTEGER           -- position in the result set (1-indexed)
+);
+
+CREATE INDEX IF NOT EXISTS idx_memory_hits_mem    ON memory_hits(memory_id, hit_at);
+CREATE INDEX IF NOT EXISTS idx_memory_hits_agent  ON memory_hits(agent_id, hit_at);
+
+-- One row per `kaos dream` invocation.
+CREATE TABLE IF NOT EXISTS dream_runs (
+    run_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    started_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    finished_at    TEXT,
+    since_ts       TEXT,          -- --since parameter (null = all-time)
+    mode           TEXT NOT NULL DEFAULT 'dry_run'
+                   CHECK (mode IN ('dry_run','apply')),
+    episodes       INTEGER NOT NULL DEFAULT 0,
+    skills_scored  INTEGER NOT NULL DEFAULT 0,
+    memories_scored INTEGER NOT NULL DEFAULT 0,
+    digest_path    TEXT,
+    phase_timings  TEXT NOT NULL DEFAULT '{}',
+    summary        TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_dream_runs_started ON dream_runs(started_at);
+
+-- Per-agent-run derived signals produced by the replay phase.
+-- One row per agent completion. If the replay runs again against the same
+-- event history the row is upserted (idempotent).
+CREATE TABLE IF NOT EXISTS episode_signals (
+    agent_id           TEXT PRIMARY KEY REFERENCES agents(agent_id),
+    started_at         TEXT,
+    ended_at           TEXT,
+    status             TEXT,
+    success            INTEGER,        -- 1 if status in (completed), 0 if failed/killed, NULL if running
+    tool_calls_count   INTEGER NOT NULL DEFAULT 0,
+    tool_calls_error   INTEGER NOT NULL DEFAULT 0,
+    total_tokens       INTEGER NOT NULL DEFAULT 0,
+    total_cost_usd     REAL    NOT NULL DEFAULT 0.0,
+    duration_ms        INTEGER,
+    skills_applied     INTEGER NOT NULL DEFAULT 0,
+    memories_written   INTEGER NOT NULL DEFAULT 0,
+    memories_retrieved INTEGER NOT NULL DEFAULT 0,
+    checkpoints_made   INTEGER NOT NULL DEFAULT 0,
+    last_computed_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_episode_signals_success ON episode_signals(success);
+"""
+
+
+# Migration to v5: neuroplasticity mechanism — associations (Hebbian graph),
+# failure fingerprints, auto-promoted shared-log policies, and a proposal
+# journal for consolidation actions. All additive.
+MIGRATION_V5_SQL = """
+-- Hebbian co-occurrence graph.
+-- One row per ordered pair (kind_a, id_a) -> (kind_b, id_b). We store both
+-- directions so lookups are cheap.  `weight` is the decayed co-fire count,
+-- `uses` is the raw unweighted count, `last_seen` drives decay on read.
+CREATE TABLE IF NOT EXISTS associations (
+    kind_a      TEXT NOT NULL,
+    id_a        INTEGER NOT NULL,
+    kind_b      TEXT NOT NULL,
+    id_b        INTEGER NOT NULL,
+    weight      REAL NOT NULL DEFAULT 1.0,
+    uses        INTEGER NOT NULL DEFAULT 1,
+    first_seen  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_seen   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    PRIMARY KEY (kind_a, id_a, kind_b, id_b)
+);
+
+CREATE INDEX IF NOT EXISTS idx_associations_a ON associations(kind_a, id_a);
+CREATE INDEX IF NOT EXISTS idx_associations_b ON associations(kind_b, id_b);
+CREATE INDEX IF NOT EXISTS idx_associations_last_seen ON associations(last_seen);
+
+-- Failure fingerprints — normalised error signatures extracted from tool_calls
+-- when agents fail. Agents can consult this table BEFORE invoking the LLM on
+-- a recurring failure ("this exact error has a known fix").
+CREATE TABLE IF NOT EXISTS failure_fingerprints (
+    fp_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    fingerprint   TEXT UNIQUE NOT NULL,
+    first_seen    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_seen     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    count         INTEGER NOT NULL DEFAULT 1,
+    example_error TEXT,
+    tool_name     TEXT,
+    fix_agent_id  TEXT,
+    fix_summary   TEXT,
+    fix_skill_id  INTEGER REFERENCES agent_skills(skill_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_fp_last_seen ON failure_fingerprints(last_seen);
+CREATE INDEX IF NOT EXISTS idx_fp_count     ON failure_fingerprints(count);
+
+-- Promoted shared-log policies. When a decision pattern repeats above a
+-- confidence threshold, the consolidation phase promotes it here so future
+-- intents matching the pattern can short-circuit the intent/vote loop.
+CREATE TABLE IF NOT EXISTS policies (
+    policy_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    action_pattern  TEXT NOT NULL,
+    approval_rate   REAL NOT NULL,
+    sample_size     INTEGER NOT NULL,
+    promoted_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    last_applied_at TEXT,
+    applied_count   INTEGER NOT NULL DEFAULT 0,
+    enabled         INTEGER NOT NULL DEFAULT 1,
+    source_runs     TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE INDEX IF NOT EXISTS idx_policies_enabled ON policies(enabled);
+
+-- Consolidation proposals journal. Every structural change the consolidation
+-- phase identifies gets a row, even in dry-run mode. Applied proposals flip
+-- `applied=1` and record `applied_at`. This is the audit trail for
+-- structural plasticity.
+CREATE TABLE IF NOT EXISTS consolidation_proposals (
+    proposal_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id       INTEGER REFERENCES dream_runs(run_id),
+    kind         TEXT NOT NULL
+                 CHECK (kind IN ('promote','prune','merge','split')),
+    targets      TEXT NOT NULL,
+    rationale    TEXT,
+    applied      INTEGER NOT NULL DEFAULT 0,
+    applied_at   TEXT,
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_proposals_run     ON consolidation_proposals(run_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_applied ON consolidation_proposals(applied);
+
+-- Mark skills as deprecated without deleting them. Soft-delete preserves
+-- history and references; consolidation writes here rather than DELETE.
+ALTER TABLE agent_skills ADD COLUMN deprecated INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE agent_skills ADD COLUMN deprecated_at TEXT;
+ALTER TABLE agent_skills ADD COLUMN deprecated_reason TEXT;
+"""
+
+
+# Migration to v6: failure intelligence — root-cause categorisation, fix
+# outcome tracking, and systemic detection. Additive.
+MIGRATION_V6_SQL = """
+-- Extend failure_fingerprints with diagnostic metadata.
+ALTER TABLE failure_fingerprints ADD COLUMN category TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE failure_fingerprints ADD COLUMN root_cause TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN suggested_action TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN diagnostic_method TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN diagnosed_at TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN fix_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE failure_fingerprints ADD COLUMN fix_success_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE failure_fingerprints ADD COLUMN last_systemic_alert_at TEXT;
+
+-- Every time an error is seen, record the occurrence. Lets us compute
+-- sliding-window counts per fingerprint (systemic detection) without
+-- parsing the tool_calls table repeatedly.
+CREATE TABLE IF NOT EXISTS failure_occurrences (
+    occurrence_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    fp_id           INTEGER NOT NULL REFERENCES failure_fingerprints(fp_id),
+    agent_id        TEXT,
+    occurred_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_fo_fp_time
+  ON failure_occurrences(fp_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_fo_agent
+  ON failure_occurrences(agent_id);
+
+-- Systemic alerts: when >=N agents hit the same fingerprint in a short
+-- window, we flag it as infrastructure-level and halt auto-spawns.
+CREATE TABLE IF NOT EXISTS systemic_alerts (
+    alert_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    fp_id            INTEGER NOT NULL REFERENCES failure_fingerprints(fp_id),
+    detected_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    agent_count      INTEGER NOT NULL,
+    window_seconds   INTEGER NOT NULL,
+    root_cause       TEXT,
+    acked_at         TEXT,
+    acked_by         TEXT,
+    resolved_at      TEXT,
+    resolved_by      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_alerts_unresolved
+  ON systemic_alerts(resolved_at, detected_at);
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
     conn.executescript(SCHEMA_SQL)
@@ -247,6 +455,9 @@ def init_schema(conn: sqlite3.Connection) -> None:
         # Brand-new DB: apply all migrations up front then stamp version
         conn.executescript(MIGRATION_V2_SQL)
         conn.executescript(MIGRATION_V3_SQL)
+        conn.executescript(MIGRATION_V4_SQL)
+        conn.executescript(MIGRATION_V5_SQL)
+        conn.executescript(MIGRATION_V6_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -261,6 +472,12 @@ def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: i
         conn.executescript(MIGRATION_V2_SQL)
     if from_version < 3:
         conn.executescript(MIGRATION_V3_SQL)
+    if from_version < 4:
+        conn.executescript(MIGRATION_V4_SQL)
+    if from_version < 5:
+        conn.executescript(MIGRATION_V5_SQL)
+    if from_version < 6:
+        conn.executescript(MIGRATION_V6_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )

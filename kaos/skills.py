@@ -165,26 +165,35 @@ class SkillStore:
         query: str,
         limit: int = 10,
         tag: str | None = None,
+        rank: str = "bm25",
     ) -> list[Skill]:
         """Full-text search over skill name, description, tags, and template.
 
         Uses SQLite FTS5 with porter stemming.  Results are ranked by BM25
-        relevance (most relevant first).
+        relevance by default.
 
         Args:
             query: FTS5 query string (supports phrases "like this", NOT, OR, *).
             limit: Maximum number of results.
             tag:   Optional exact-match tag filter applied after FTS ranking.
+            rank:  ``"bm25"`` (default, classic FTS5 ranking) or ``"weighted"``
+                   (bm25 × Wilson-lower-bound success rate × recency decay).
+                   The weighted mode reads the plasticity signals populated by
+                   ``kaos dream``.
 
         Returns:
-            List of Skill sorted by relevance (best first).
+            List of Skill sorted by the chosen ranking (best first).
         """
-        params: list[Any] = [query, limit]
+        # Over-fetch by 4× when weighted so we have enough candidates to
+        # reorder. FTS still filters by relevance; weights re-rank.
+        fetch = limit * 4 if rank == "weighted" else limit
+        params: list[Any] = [query, fetch]
         rows = self._conn.execute(
             """
             SELECT s.skill_id, s.name, s.description, s.template, s.tags,
                    s.source_agent_id, s.use_count, s.success_count,
-                   s.created_at, s.updated_at
+                   s.created_at, s.updated_at,
+                   bm25(agent_skills_fts) AS bm25_raw
             FROM agent_skills_fts f
             JOIN agent_skills s ON s.skill_id = f.rowid
             WHERE agent_skills_fts MATCH ?
@@ -194,9 +203,29 @@ class SkillStore:
             params,
         ).fetchall()
         skills = [Skill.from_row(r) for r in rows]
+
+        if rank == "weighted":
+            # Lazy import: only cost pulled in when weighted ranking requested
+            from kaos.dream.signals import weighted_score
+
+            last_used = _last_used_map(self._conn, [s.skill_id for s in skills])
+            # bm25() returns a negative-leaning score; smaller (more negative)
+            # = more relevant. Convert to positive by negating.
+            bm25_by_id = {r["skill_id"]: -float(r["bm25_raw"] or 0.0) for r in rows}
+
+            def score(s: Skill) -> float:
+                return weighted_score(
+                    bm25_score=bm25_by_id.get(s.skill_id, 1.0),
+                    uses=s.use_count,
+                    successes=s.success_count,
+                    last_used_at=last_used.get(s.skill_id) or s.updated_at,
+                )
+
+            skills = sorted(skills, key=score, reverse=True)
+
         if tag:
             skills = [s for s in skills if tag in s.tags]
-        return skills
+        return skills[:limit]
 
     # ── Get / List ───────────────────────────────────────────────────
 
@@ -261,11 +290,21 @@ class SkillStore:
 
     # ── Outcome tracking ─────────────────────────────────────────────
 
-    def record_outcome(self, skill_id: int, success: bool) -> None:
+    def record_outcome(
+        self,
+        skill_id: int,
+        success: bool,
+        *,
+        agent_id: str | None = None,
+        task_hash: str | None = None,
+    ) -> None:
         """Record whether applying a skill succeeded or failed.
 
-        Increments use_count always; increments success_count only on success.
-        This lets agents rank skills by reliability (success_count / use_count).
+        Increments ``use_count`` always; increments ``success_count`` only on
+        success. Additionally writes a ``skill_uses`` row (plasticity telemetry
+        introduced in schema v4) so ``kaos dream`` can reason about which
+        skills are hot vs cold and which agents drove them. ``skill_uses``
+        failures are swallowed for forward-compat with v3 databases.
         """
         if success:
             self._conn.execute(
@@ -288,7 +327,24 @@ class SkillStore:
                 """,
                 (skill_id,),
             )
+        # Plasticity telemetry: best-effort
+        try:
+            self._conn.execute(
+                "INSERT INTO skill_uses (skill_id, agent_id, success, task_hash) "
+                "VALUES (?, ?, ?, ?)",
+                (skill_id, agent_id, 1 if success else 0, task_hash),
+            )
+        except sqlite3.OperationalError:
+            pass
         self._conn.commit()
+        # Automatic plasticity (Hebbian): associate with prior skills used
+        # by the same agent. Deferred import keeps the module layering clean.
+        try:
+            from kaos.dream import auto as _auto
+            _auto.on_skill_outcome(self._conn, skill_id, agent_id, success)
+        except Exception:
+            # Plasticity is best-effort; never break the caller.
+            pass
 
     # ── Delete ───────────────────────────────────────────────────────
 
@@ -321,3 +377,23 @@ class SkillStore:
             "total": total,
             "top_by_success_rate": [dict(r) for r in top],
         }
+
+
+def _last_used_map(conn: sqlite3.Connection, skill_ids: list[int]) -> dict[int, str]:
+    """Return {skill_id: last_used_at} for the given IDs, from skill_uses.
+
+    Silently returns an empty dict on v3 databases that don't have skill_uses.
+    """
+    if not skill_ids:
+        return {}
+    placeholders = ",".join("?" * len(skill_ids))
+    try:
+        rows = conn.execute(
+            f"SELECT skill_id, MAX(used_at) AS last_used "
+            f"FROM skill_uses WHERE skill_id IN ({placeholders}) "
+            f"GROUP BY skill_id",
+            skill_ids,
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return {}
+    return {r["skill_id"]: r["last_used"] for r in rows if r["last_used"]}
