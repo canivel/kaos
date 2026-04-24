@@ -195,11 +195,17 @@ pass runs in-process — like sleep consolidation.
 No daemon to start. No command to remember. It just happens.
 
 ```bash
-kaos dream run [--dry-run|--apply]     # manual full cycle (7 phases)
-kaos dream related skill <name>         # what fires with this?
-kaos dream failures                     # recurring failure fingerprints
-kaos dream consolidate --dry-run        # preview promote/prune/merge proposals
-kaos dream show <run_id>                # re-print a past digest
+kaos dream run [--dry-run|--apply]                  # manual full cycle (7 phases)
+kaos dream runs                                      # list past dream runs
+kaos dream show <run_id>                             # re-print a past digest
+kaos dream related <skill|memory> <name>             # Hebbian: what co-fires with this?
+kaos dream consolidate [--dry-run|--apply]           # promote/prune/merge proposals
+kaos dream failures [--min-count N]                  # recurring fingerprints + category
+kaos dream diagnose <fp_id>                          # show diagnosis
+kaos dream diagnose <fp_id> --category infra \
+  --root-cause "..." --action "..."                  # manual override
+kaos dream fix-outcome <fp_id> --succeeded           # record whether a fix worked
+kaos dream systemic [--ack N|--resolve N] [--by X]   # systemic alerts lifecycle
 ```
 
 What gets learned automatically:
