@@ -414,7 +414,16 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
     <h2><span class="n">06</span>It all ties together</h2>
 
-    <p>The story I was telling in the first five chapters sounds like a bag of features &mdash; weighted search, Hebbian graph, failure diagnosis, systemic alerts. It's not a bag. It's a loop.</p>
+    <p>The story I was telling in the first five chapters sounds like a bag of features &mdash; weighted search, Hebbian graph, failure diagnosis, systemic alerts. It's not a bag. It's a loop. Here's where the new layer sits in the stack:</p>
+
+    <div style="margin:2rem -1rem;background:var(--bg2);border:1px solid rgba(253,121,168,.15);border-radius:12px;padding:1rem;overflow:hidden">
+      <img src="../architecture.svg"
+           alt="KAOS v0.8.1 architecture — 7 layers. The new Neuroplasticity layer (layer 4, pink) sits between Meta-Harness and the Knowledge Surfaces, with inline hooks firing into three storage surfaces and batched consolidation running at agent-completion."
+           style="width:100%;display:block;max-width:960px;margin:0 auto">
+      <div style="font-size:.78rem;color:var(--fg2);font-family:var(--mono);text-align:center;padding:.7rem 0 .3rem">
+        Layer 4 (pink) is new in v0.8.1 &mdash; inline hooks on top, batched consolidation below, feedback loop back up to the Knowledge Surfaces.
+      </div>
+    </div>
 
     <div class="callout">
       <strong>Every agent operation feeds plasticity.</strong> Every skill outcome writes a <code>skill_uses</code> row. Every memory retrieval writes a <code>memory_hits</code> row. Every agent completion upserts an <code>episode_signals</code> row and rebuilds the association graph for that session. Every failure triggers diagnosis and checks for systemic patterns. Every 100 completions triggers consolidation that promotes hot memory to skills and prunes cold skills.

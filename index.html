@@ -206,6 +206,9 @@ nav a:hover{color:var(--fg)}
 .al-extern .arch-cell .ac-name{color:var(--green)}
 .al-metaharness .arch-cells{border-top:2px solid var(--orange)}
 .al-metaharness .arch-cell{border-top:2px solid rgba(255,145,0,.4)}
+.al-plasticity .arch-cells{border-top:2px solid #fd79a8;background:linear-gradient(180deg,rgba(253,121,168,.04),var(--bg))}
+.al-plasticity .arch-cell{border-top:2px solid rgba(253,121,168,.45)}
+.al-plasticity .arch-cell .ac-name{color:#fd79a8}
 .al-core .arch-cells{border-top:2px solid var(--accent)}
 .al-core .arch-cell{border-top:2px solid rgba(108,92,231,.5)}
 .al-storage .arch-cells{border-top:2px solid rgba(255,255,255,.15);background:var(--bg3)}
@@ -901,7 +904,8 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="architecture">
 <div class="wrap">
   <h2>Architecture</h2>
-  <p class="arch-sub">Six clean layers. Every agent interaction flows through the same stack — from MCP tool call or CLI command down to a single SQLite file.</p>
+  <p class="arch-sub">Seven clean layers. Every agent interaction flows through the same stack — from MCP tool call or CLI command down to a single SQLite file. v0.8.1 added the <strong style="color:#fd79a8">Neuroplasticity</strong> layer: inline hooks that fire on every event, plus batched structural consolidation at agent completion.</p>
+  <p style="text-align:center;font-size:.85rem;color:var(--fg2);margin-top:-.8rem;margin-bottom:2rem">Full diagram: <a href="architecture.svg" style="color:#fd79a8">architecture.svg</a></p>
 
   <div class="arch-diagram">
 
@@ -911,11 +915,11 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
       <div class="arch-cells">
         <div class="arch-cell">
           <div class="ac-name">MCP Server</div>
-          <div class="ac-sub">30 tools<br>Claude Code / Cursor</div>
+          <div class="ac-sub">45 tools<br>Claude Code / Cursor</div>
         </div>
         <div class="arch-cell">
           <div class="ac-name">CLI</div>
-          <div class="ac-sub">20+ commands<br>--json composable</div>
+          <div class="ac-sub">35+ commands<br>--json composable</div>
         </div>
         <div class="arch-cell">
           <div class="ac-name">Python API</div>
@@ -1005,6 +1009,40 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 
     <div class="arch-connector"></div>
 
+    <!-- Neuroplasticity (NEW v0.8.1) -->
+    <div class="arch-layer al-plasticity">
+      <div class="arch-layer-label">Neuroplasticity<br><span style="color:#fd79a8;font-size:.6rem">v0.8.1 &middot; NEW</span></div>
+      <div class="arch-cells">
+        <div class="arch-cell">
+          <div class="ac-name">Inline Hooks</div>
+          <div class="ac-sub">record_outcome, memory hits,<br>agent completion &mdash; same txn</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">synaptic / &lt;20 &micro;s</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Hebbian Graph</div>
+          <div class="ac-sub">co-occurrence edges<br>one executemany per session</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">Hebb, 1949</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Failure Triage</div>
+          <div class="ac-sub">8 heuristic diagnosers<br>category + root cause + fix</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">systemic alerts</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Weighted Retrieval</div>
+          <div class="ac-sub">BM25 &times; Wilson-bound success<br>&times; exponential recency decay</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">+10 pp accuracy</div>
+        </div>
+        <div class="arch-cell">
+          <div class="ac-name">Dream Cycle</div>
+          <div class="ac-sub">7-phase consolidation<br>batch at completion &mdash; "sleep"</div>
+          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">Tononi &amp; Cirelli 2014</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-connector"></div>
+
     <!-- Core Engine -->
     <div class="arch-layer al-core">
       <div class="arch-layer-label">Core Engine</div>
@@ -1049,7 +1087,7 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
           <div class="ac-name" style="color:var(--fg2)">WAL mode</div>
         </div>
         <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">10 tables</div>
+          <div class="ac-name" style="color:var(--fg2)">17 tables &middot; 2 FTS5</div>
         </div>
         <div class="arch-cell">
           <div class="ac-name" style="color:var(--fg2)">plain SQL</div>

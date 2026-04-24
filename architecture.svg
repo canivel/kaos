@@ -1,132 +1,212 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" font-family="Segoe UI,system-ui,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1100" font-family="Segoe UI,system-ui,sans-serif">
   <defs>
     <marker id="a" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6" fill="none" stroke="#6b7280" stroke-width="1.2"/>
     </marker>
+    <marker id="ap" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#fd79a8" stroke-width="1.3"/>
+    </marker>
+    <linearGradient id="glowPink" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#fd79a8" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#a29bfe" stop-opacity="0.08"/>
+    </linearGradient>
   </defs>
 
   <!-- Background -->
-  <rect width="900" height="680" rx="12" fill="#0a0a12"/>
+  <rect width="960" height="1100" rx="14" fill="#0a0a12"/>
 
   <!-- Version -->
-  <text x="860" y="24" text-anchor="end" fill="#4b5563" font-size="10" font-family="monospace">v0.3.1</text>
+  <text x="920" y="26" text-anchor="end" fill="#4b5563" font-size="10" font-family="monospace">v0.8.1</text>
+  <text x="40" y="26" fill="#4b5563" font-size="10" font-family="monospace">KAOS Architecture</text>
 
-  <!-- ═══ INTERFACES ═══ -->
-  <text x="40" y="36" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">INTERFACES</text>
+  <!-- ═══ 1 · INTERFACES ═══ -->
+  <text x="40" y="56" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">1 · INTERFACES</text>
 
-  <rect x="40" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
-  <text x="130" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">CLI</text>
-  <text x="130" y="90" text-anchor="middle" fill="#6b7280" font-size="10">25+ commands &#x00B7; --json</text>
+  <rect x="40" y="68" width="200" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
+  <text x="140" y="92" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">CLI</text>
+  <text x="140" y="110" text-anchor="middle" fill="#6b7280" font-size="10">35+ commands · --json</text>
 
-  <rect x="250" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
-  <text x="340" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">MCP Server</text>
-  <text x="340" y="90" text-anchor="middle" fill="#6b7280" font-size="10">18 tools &#x00B7; stdio / SSE</text>
+  <rect x="260" y="68" width="200" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
+  <text x="360" y="92" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">MCP Server</text>
+  <text x="360" y="110" text-anchor="middle" fill="#6b7280" font-size="10">45 tools · stdio / SSE</text>
 
-  <rect x="460" y="48" width="180" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
-  <text x="550" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">Python SDK</text>
-  <text x="550" y="90" text-anchor="middle" fill="#6b7280" font-size="10">from kaos import Kaos</text>
+  <rect x="480" y="68" width="200" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
+  <text x="580" y="92" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">Python SDK</text>
+  <text x="580" y="110" text-anchor="middle" fill="#6b7280" font-size="10">from kaos import Kaos</text>
 
-  <rect x="670" y="48" width="190" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
-  <text x="765" y="72" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">Dashboard</text>
-  <text x="765" y="90" text-anchor="middle" fill="#6b7280" font-size="10">Textual TUI</text>
+  <rect x="700" y="68" width="220" height="56" rx="8" fill="#1a1730" stroke="#8b7cf7" stroke-width="1.5"/>
+  <text x="810" y="92" text-anchor="middle" fill="#a29bfe" font-size="13" font-weight="600">Dashboard &amp; Obsidian</text>
+  <text x="810" y="110" text-anchor="middle" fill="#6b7280" font-size="10">TUI · web · vault export</text>
 
-  <!-- Arrow -->
-  <path d="M340,104 L340,140" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <path d="M360,124 L360,160" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
 
-  <!-- ═══ ORCHESTRATION ═══ -->
-  <line x1="40" y1="130" x2="860" y2="130" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
-  <text x="40" y="158" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">ORCHESTRATION</text>
+  <!-- ═══ 2 · ORCHESTRATION ═══ -->
+  <line x1="40" y1="150" x2="920" y2="150" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="40" y="178" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">2 · ORCHESTRATION</text>
 
-  <rect x="40" y="170" width="240" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="160" y="194" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">Claude Code Runner (CCR)</text>
-  <text x="160" y="212" text-anchor="middle" fill="#6b7280" font-size="10">plan &#x2192; act &#x2192; observe loop</text>
+  <rect x="40" y="190" width="200" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="140" y="213" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">Claude Code Runner</text>
+  <text x="140" y="230" text-anchor="middle" fill="#6b7280" font-size="10">plan → act → observe loop</text>
 
-  <rect x="310" y="170" width="240" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="430" y="194" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">GEPA Router</text>
-  <text x="430" y="212" text-anchor="middle" fill="#6b7280" font-size="10">classify complexity &#x2192; route model</text>
+  <rect x="260" y="190" width="170" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="345" y="213" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">Intake (--ask)</text>
+  <text x="345" y="230" text-anchor="middle" fill="#6b7280" font-size="10">dynamic clarifying Qs</text>
 
-  <rect x="580" y="170" width="280" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
-  <text x="720" y="190" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">4 Providers (raw httpx)</text>
-  <text x="720" y="208" text-anchor="middle" fill="#6b7280" font-size="10">local &#x00B7; openai &#x00B7; anthropic</text>
-  <text x="720" y="222" text-anchor="middle" fill="#6b7280" font-size="10">claude_code (subprocess)</text>
+  <rect x="450" y="190" width="170" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="535" y="213" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">GEPA Router</text>
+  <text x="535" y="230" text-anchor="middle" fill="#6b7280" font-size="10">classify → route model</text>
 
-  <path d="M280,198 L308,198" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M550,198 L578,198" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M160,226 L160,270" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <rect x="640" y="190" width="280" height="56" rx="8" fill="#0d1a2a" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="780" y="209" text-anchor="middle" fill="#60a5fa" font-size="13" font-weight="600">5 Providers (raw httpx)</text>
+  <text x="780" y="225" text-anchor="middle" fill="#6b7280" font-size="10">local · openai · anthropic</text>
+  <text x="780" y="238" text-anchor="middle" fill="#6b7280" font-size="10">claude_code · agent_sdk</text>
 
-  <!-- ═══ META-HARNESS ═══ -->
-  <line x1="40" y1="248" x2="860" y2="248" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
-  <text x="40" y="276" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">META-HARNESS</text>
+  <path d="M140,246 L140,280" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
 
-  <rect x="40" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="122" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Search Loop</text>
-  <text x="122" y="330" text-anchor="middle" fill="#6b7280" font-size="10">Algorithm 1 orchestrator</text>
+  <!-- ═══ 3 · META-HARNESS ═══ -->
+  <line x1="40" y1="268" x2="920" y2="268" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="40" y="296" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">3 · META-HARNESS · evolutionary search + CORAL co-evolution</text>
 
-  <rect x="215" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="297" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Worker</text>
-  <text x="297" y="330" text-anchor="middle" fill="#6b7280" font-size="10">detached subprocess</text>
+  <rect x="40" y="308" width="168" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="124" y="331" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600">Search Loop</text>
+  <text x="124" y="348" text-anchor="middle" fill="#6b7280" font-size="10">Algorithm 1 orchestrator</text>
 
-  <rect x="390" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="472" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Proposer Agent</text>
-  <text x="472" y="330" text-anchor="middle" fill="#6b7280" font-size="10">reads archive &#x00B7; proposes</text>
+  <rect x="218" y="308" width="168" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="302" y="331" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600">Worker</text>
+  <text x="302" y="348" text-anchor="middle" fill="#6b7280" font-size="10">detached subprocess</text>
 
-  <rect x="565" y="288" width="165" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="647" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Evaluator</text>
-  <text x="647" y="330" text-anchor="middle" fill="#6b7280" font-size="10">llm() injectable &#x00B7; traces</text>
+  <rect x="396" y="308" width="168" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="480" y="331" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600">Proposer Agent</text>
+  <text x="480" y="348" text-anchor="middle" fill="#6b7280" font-size="10">reads archive → proposes</text>
 
-  <rect x="740" y="288" width="120" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
-  <text x="800" y="312" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="600">Pareto</text>
-  <text x="800" y="330" text-anchor="middle" fill="#6b7280" font-size="10">multi-obj frontier</text>
+  <rect x="574" y="308" width="168" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="658" y="331" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600">Evaluator</text>
+  <text x="658" y="348" text-anchor="middle" fill="#6b7280" font-size="10">llm() injectable · traces</text>
 
-  <path d="M205,316 L213,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M380,316 L388,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M555,316 L563,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M730,316 L738,316" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
-  <path d="M472,344 L472,382" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <rect x="752" y="308" width="168" height="56" rx="8" fill="#1a0f24" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="836" y="331" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600">Pareto Frontier</text>
+  <text x="836" y="348" text-anchor="middle" fill="#6b7280" font-size="10">multi-objective best</text>
 
-  <!-- ═══ KAOS CORE ═══ -->
-  <line x1="40" y1="370" x2="860" y2="370" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
-  <text x="40" y="398" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">KAOS CORE — VFS ENGINE</text>
+  <path d="M480,364 L480,398" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
 
-  <rect x="40" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="120" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Namespace</text>
-  <text x="120" y="452" text-anchor="middle" fill="#6b7280" font-size="10">SQL-scoped isolation</text>
+  <!-- ═══ 4 · NEUROPLASTICITY ═══ NEW LAYER -->
+  <line x1="40" y1="386" x2="920" y2="386" stroke="#fd79a8" stroke-width="1" stroke-dasharray="4,4" opacity="0.4"/>
+  <text x="40" y="414" fill="#fd79a8" font-size="11" font-weight="700" letter-spacing="2">4 · NEUROPLASTICITY · continuous consolidation · NEW v0.8.1</text>
 
-  <rect x="215" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="295" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Blob Store</text>
-  <text x="295" y="452" text-anchor="middle" fill="#6b7280" font-size="10">SHA-256 &#x00B7; zstd</text>
+  <!-- Ambient pink frame -->
+  <rect x="32" y="424" width="896" height="172" rx="12" fill="url(#glowPink)" stroke="#fd79a8" stroke-width="1" stroke-opacity="0.3"/>
 
-  <rect x="390" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="470" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Event Journal</text>
-  <text x="470" y="452" text-anchor="middle" fill="#6b7280" font-size="10">14 event types</text>
+  <!-- Row 1: Inline hooks (fast / synaptic) -->
+  <text x="48" y="450" fill="#fd79a8" font-size="10" font-weight="700" letter-spacing="1.5">INLINE HOOKS · synaptic (fast, &lt; 20 µs)</text>
 
-  <rect x="565" y="410" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="645" y="434" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Checkpoints</text>
-  <text x="645" y="452" text-anchor="middle" fill="#6b7280" font-size="10">snapshot &#x00B7; restore &#x00B7; diff</text>
+  <rect x="48" y="458" width="280" height="48" rx="8" fill="#2a0e1e" stroke="#fd79a8" stroke-width="1.2"/>
+  <text x="188" y="478" text-anchor="middle" fill="#fbcfe8" font-size="12" font-weight="600">record_outcome()</text>
+  <text x="188" y="495" text-anchor="middle" fill="#9ca3af" font-size="10">→ skill_uses row</text>
 
-  <rect x="40" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="120" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">State KV Store</text>
-  <text x="120" y="522" text-anchor="middle" fill="#6b7280" font-size="10">JSON-serializable</text>
+  <rect x="340" y="458" width="280" height="48" rx="8" fill="#2a0e1e" stroke="#fd79a8" stroke-width="1.2"/>
+  <text x="480" y="478" text-anchor="middle" fill="#fbcfe8" font-size="12" font-weight="600">memory.search(record_hits=T)</text>
+  <text x="480" y="495" text-anchor="middle" fill="#9ca3af" font-size="10">→ memory_hits row</text>
 
-  <rect x="215" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="295" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Tool Registry</text>
-  <text x="295" y="522" text-anchor="middle" fill="#6b7280" font-size="10">8 built-in &#x00B7; permissions</text>
+  <rect x="632" y="458" width="280" height="48" rx="8" fill="#2a0e1e" stroke="#fd79a8" stroke-width="1.2"/>
+  <text x="772" y="478" text-anchor="middle" fill="#fbcfe8" font-size="12" font-weight="600">complete() / fail() / kill()</text>
+  <text x="772" y="495" text-anchor="middle" fill="#9ca3af" font-size="10">→ episode_signals + fingerprint</text>
 
-  <rect x="390" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="470" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Context Compactor</text>
-  <text x="470" y="522" text-anchor="middle" fill="#6b7280" font-size="10">summarize &#x00B7; truncate</text>
+  <!-- Row 2: Batched structural (slow / sleep) -->
+  <text x="48" y="528" fill="#a29bfe" font-size="10" font-weight="700" letter-spacing="1.5">BATCHED AT COMPLETION · structural (slow, ~1 ms)</text>
 
-  <rect x="565" y="480" width="160" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
-  <text x="645" y="504" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">FUSE Isolation</text>
-  <text x="645" y="522" text-anchor="middle" fill="#6b7280" font-size="10">Linux &#x00B7; optional</text>
+  <rect x="48" y="536" width="178" height="48" rx="8" fill="#1a1730" stroke="#a29bfe" stroke-width="1.2"/>
+  <text x="137" y="556" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">Hebbian graph</text>
+  <text x="137" y="572" text-anchor="middle" fill="#9ca3af" font-size="9">associations table</text>
 
-  <path d="M450,536 L450,580" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+  <rect x="236" y="536" width="178" height="48" rx="8" fill="#1a1730" stroke="#a29bfe" stroke-width="1.2"/>
+  <text x="325" y="556" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">Failure triage</text>
+  <text x="325" y="572" text-anchor="middle" fill="#9ca3af" font-size="9">8 heuristic diagnosers</text>
 
-  <!-- ═══ STORAGE ═══ -->
-  <line x1="40" y1="565" x2="860" y2="565" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
-  <text x="40" y="593" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">STORAGE — SINGLE FILE</text>
+  <rect x="424" y="536" width="178" height="48" rx="8" fill="#1a1730" stroke="#a29bfe" stroke-width="1.2"/>
+  <text x="513" y="556" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">Weighted search</text>
+  <text x="513" y="572" text-anchor="middle" fill="#9ca3af" font-size="9">BM25 × Wilson × recency</text>
 
-  <rect x="40" y="605" width="820" height="56" rx="8" fill="#1f140d" stroke="#f97316" stroke-width="1.5"/>
-  <text x="450" y="629" text-anchor="middle" fill="#fb923c" font-size="13" font-weight="600">SQLite (.db) — portable, queryable, crash-safe</text>
-  <text x="450" y="647" text-anchor="middle" fill="#6b7280" font-size="10">agents &#x00B7; files &#x00B7; blobs &#x00B7; tool_calls &#x00B7; state &#x00B7; events &#x00B7; checkpoints &#x00B7; schema_version</text>
+  <rect x="612" y="536" width="178" height="48" rx="8" fill="#1a1730" stroke="#a29bfe" stroke-width="1.2"/>
+  <text x="701" y="556" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">Systemic alerts</text>
+  <text x="701" y="572" text-anchor="middle" fill="#9ca3af" font-size="9">sliding-window count</text>
+
+  <rect x="800" y="536" width="118" height="48" rx="8" fill="#1a1730" stroke="#a29bfe" stroke-width="1.2"/>
+  <text x="859" y="556" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">Dream cycle</text>
+  <text x="859" y="572" text-anchor="middle" fill="#9ca3af" font-size="9">7 phases</text>
+
+  <path d="M480,596 L480,630" fill="none" stroke="#fd79a8" stroke-width="1.5" marker-end="url(#ap)"/>
+
+  <!-- ═══ 5 · KNOWLEDGE SURFACES ═══ -->
+  <line x1="40" y1="618" x2="920" y2="618" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="40" y="646" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">5 · KNOWLEDGE SURFACES · what agents actually read and write</text>
+
+  <rect x="40" y="658" width="215" height="56" rx="8" fill="#081a1c" stroke="#18ffff" stroke-width="1.5"/>
+  <text x="148" y="681" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600">SkillStore</text>
+  <text x="148" y="699" text-anchor="middle" fill="#6b7280" font-size="10">procedural templates · FTS5</text>
+
+  <rect x="265" y="658" width="215" height="56" rx="8" fill="#081a1c" stroke="#18ffff" stroke-width="1.5"/>
+  <text x="373" y="681" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600">MemoryStore</text>
+  <text x="373" y="699" text-anchor="middle" fill="#6b7280" font-size="10">episodic · FTS5 · BM25</text>
+
+  <rect x="490" y="658" width="215" height="56" rx="8" fill="#081a1c" stroke="#18ffff" stroke-width="1.5"/>
+  <text x="598" y="681" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600">SharedLog (LogAct)</text>
+  <text x="598" y="699" text-anchor="middle" fill="#6b7280" font-size="10">intent → vote → decide</text>
+
+  <rect x="715" y="658" width="205" height="56" rx="8" fill="#081a1c" stroke="#18ffff" stroke-width="1.5"/>
+  <text x="817" y="681" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600">Failure index</text>
+  <text x="817" y="699" text-anchor="middle" fill="#6b7280" font-size="10">fingerprints · diagnoses</text>
+
+  <path d="M480,714 L480,748" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ═══ 6 · KAOS CORE ═══ -->
+  <line x1="40" y1="736" x2="920" y2="736" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="40" y="764" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">6 · KAOS CORE · VFS ENGINE</text>
+
+  <rect x="40" y="776" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="148" y="800" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Namespace</text>
+  <text x="148" y="818" text-anchor="middle" fill="#6b7280" font-size="10">SQL-scoped isolation</text>
+
+  <rect x="265" y="776" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="373" y="800" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Blob Store</text>
+  <text x="373" y="818" text-anchor="middle" fill="#6b7280" font-size="10">SHA-256 · zstd</text>
+
+  <rect x="490" y="776" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="598" y="800" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Event Journal</text>
+  <text x="598" y="818" text-anchor="middle" fill="#6b7280" font-size="10">append-only audit</text>
+
+  <rect x="715" y="776" width="205" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="817" y="800" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Checkpoints</text>
+  <text x="817" y="818" text-anchor="middle" fill="#6b7280" font-size="10">snapshot · restore · diff</text>
+
+  <rect x="40" y="842" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="148" y="866" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">State KV Store</text>
+  <text x="148" y="884" text-anchor="middle" fill="#6b7280" font-size="10">JSON-serialisable</text>
+
+  <rect x="265" y="842" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="373" y="866" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Tool Registry</text>
+  <text x="373" y="884" text-anchor="middle" fill="#6b7280" font-size="10">built-in · permissions</text>
+
+  <rect x="490" y="842" width="215" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="598" y="866" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">Context Compactor</text>
+  <text x="598" y="884" text-anchor="middle" fill="#6b7280" font-size="10">AAAK · MemPalace</text>
+
+  <rect x="715" y="842" width="205" height="56" rx="8" fill="#0a1f18" stroke="#10b981" stroke-width="1.5"/>
+  <text x="817" y="866" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">FUSE Isolation</text>
+  <text x="817" y="884" text-anchor="middle" fill="#6b7280" font-size="10">Linux · optional</text>
+
+  <path d="M480,898 L480,935" fill="none" stroke="#4b5563" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- ═══ 7 · STORAGE ═══ -->
+  <line x1="40" y1="923" x2="920" y2="923" stroke="#1f2937" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="40" y="951" fill="#9ca3af" font-size="11" font-weight="700" letter-spacing="2">7 · STORAGE · single SQLite file · schema v6</text>
+
+  <rect x="40" y="963" width="880" height="84" rx="8" fill="#1f140d" stroke="#f97316" stroke-width="1.5"/>
+  <text x="480" y="989" text-anchor="middle" fill="#fb923c" font-size="14" font-weight="600">SQLite (.db) — WAL mode · portable · queryable · crash-safe</text>
+  <text x="480" y="1010" text-anchor="middle" fill="#9ca3af" font-size="10">agents · files · blobs · tool_calls · state · events · checkpoints · memory · shared_log · agent_skills · skill_uses · memory_hits</text>
+  <text x="480" y="1028" text-anchor="middle" fill="#fbcfe8" font-size="10">episode_signals · associations · failure_fingerprints · failure_occurrences · systemic_alerts · consolidation_proposals · policies · dream_runs</text>
+  <text x="480" y="1042" text-anchor="middle" fill="#6b7280" font-size="9">17 tables + 2 FTS5 indexes · additive migrations · in-place upgrade</text>
+
+  <!-- Side callout: plasticity feedback arrow from storage back up into knowledge -->
+  <path d="M930,1000 C965,1000 965,680 930,680" fill="none" stroke="#fd79a8" stroke-width="1.3" stroke-dasharray="5,3" opacity="0.7"/>
+  <text x="950" y="840" text-anchor="middle" fill="#fd79a8" font-size="9" transform="rotate(90 950 840)" font-weight="600">feedback loop</text>
 </svg>
