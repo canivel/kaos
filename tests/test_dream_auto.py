@@ -37,6 +37,9 @@ def auto_off(monkeypatch):
 
 class TestAutoAssociationsOnSkillOutcome:
     def test_two_skills_same_agent_get_associated(self, afs):
+        """Associations are built at agent-completion time (batched), not
+        per-event. Record outcomes, then complete the agent, then check.
+        """
         aid = afs.spawn("agent")
         sk = SkillStore(afs.conn)
         s1 = sk.save(name="alpha", description="one", template="t1",
@@ -45,6 +48,7 @@ class TestAutoAssociationsOnSkillOutcome:
                      source_agent_id=aid, tags=[])
         sk.record_outcome(s1, success=True, agent_id=aid)
         sk.record_outcome(s2, success=True, agent_id=aid)
+        afs.complete(aid)  # triggers rebuild_associations_for_agent
 
         edges = related(afs.conn, "skill", s1)
         assert edges
@@ -76,24 +80,26 @@ class TestAutoAssociationsOnSkillOutcome:
         edges = related(afs.conn, "skill", s1)
         assert not edges  # hooks didn't fire
 
-    def test_weight_accumulates_on_repeated_coincidences(self, afs):
-        aid = afs.spawn("agent")
+    def test_weight_accumulates_across_sessions(self, afs):
+        """One agent session = one association upsert. Weight accumulates
+        across multiple agent sessions that use the same skill pair."""
         sk = SkillStore(afs.conn)
         s1 = sk.save(name="a", description="d", template="t",
-                     source_agent_id=aid, tags=[])
+                     source_agent_id=None, tags=[])
         s2 = sk.save(name="b", description="d", template="t",
-                     source_agent_id=aid, tags=[])
-        # First call makes both skill_uses visible to each other's sibling query
-        sk.record_outcome(s1, success=True, agent_id=aid)
-        sk.record_outcome(s2, success=True, agent_id=aid)
-        # Subsequent calls should keep bumping the edge weight
-        for _ in range(3):
+                     source_agent_id=None, tags=[])
+
+        # 3 separate agent sessions, each uses both skills
+        for i in range(3):
+            aid = afs.spawn(f"agent-{i}")
             sk.record_outcome(s1, success=True, agent_id=aid)
             sk.record_outcome(s2, success=True, agent_id=aid)
+            afs.complete(aid)
+
         edges = related(afs.conn, "skill", s1)
         edge = next(e for e in edges if e.id_b == s2)
-        # uses reflects unweighted count — should be > 1
-        assert edge.uses >= 2
+        # 3 sessions × 1 batched upsert each = 3 on the uses counter
+        assert edge.uses >= 3
 
 
 # ── Memory hit auto-associations ────────────────────────────────────
@@ -101,20 +107,22 @@ class TestAutoAssociationsOnSkillOutcome:
 
 class TestAutoAssociationsOnMemoryHits:
     def test_co_retrieved_memory_links(self, afs):
+        """Co-retrieved memories become edges after agent completion."""
         aid = afs.spawn("agent")
         mem = MemoryStore(afs.conn)
         m1 = mem.write(agent_id=aid, content="retry jitter backoff",
                        type="insight", key="retry-guide")
         m2 = mem.write(agent_id=aid, content="retry queue deadletter",
                        type="insight", key="dlq-notes")
-        # Search returns both → association fires
         results = mem.search("retry", record_hits=True, requesting_agent_id=aid)
         assert len(results) >= 2
+        afs.complete(aid)
 
         edges = related(afs.conn, "memory", m1)
         assert any(e.id_b == m2 and e.kind_b == "memory" for e in edges)
 
     def test_skill_memory_cross_associations(self, afs):
+        """Skill ↔ memory cross edges appear at agent completion."""
         aid = afs.spawn("agent")
         sk = SkillStore(afs.conn)
         mem = MemoryStore(afs.conn)
@@ -125,6 +133,7 @@ class TestAutoAssociationsOnMemoryHits:
         m_id = mem.write(agent_id=aid, content="JWT validation pattern",
                          type="result", key="jwt-pattern")
         mem.search("JWT", record_hits=True, requesting_agent_id=aid)
+        afs.complete(aid)
 
         edges = related(afs.conn, "skill", skill_id)
         assert any(e.id_b == m_id and e.kind_b == "memory" for e in edges)

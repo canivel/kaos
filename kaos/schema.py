@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 SCHEMA_SQL = """
 -- Agent Registry
@@ -395,6 +395,54 @@ ALTER TABLE agent_skills ADD COLUMN deprecated_reason TEXT;
 """
 
 
+# Migration to v6: failure intelligence — root-cause categorisation, fix
+# outcome tracking, and systemic detection. Additive.
+MIGRATION_V6_SQL = """
+-- Extend failure_fingerprints with diagnostic metadata.
+ALTER TABLE failure_fingerprints ADD COLUMN category TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE failure_fingerprints ADD COLUMN root_cause TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN suggested_action TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN diagnostic_method TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN diagnosed_at TEXT;
+ALTER TABLE failure_fingerprints ADD COLUMN fix_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE failure_fingerprints ADD COLUMN fix_success_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE failure_fingerprints ADD COLUMN last_systemic_alert_at TEXT;
+
+-- Every time an error is seen, record the occurrence. Lets us compute
+-- sliding-window counts per fingerprint (systemic detection) without
+-- parsing the tool_calls table repeatedly.
+CREATE TABLE IF NOT EXISTS failure_occurrences (
+    occurrence_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    fp_id           INTEGER NOT NULL REFERENCES failure_fingerprints(fp_id),
+    agent_id        TEXT,
+    occurred_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_fo_fp_time
+  ON failure_occurrences(fp_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_fo_agent
+  ON failure_occurrences(agent_id);
+
+-- Systemic alerts: when >=N agents hit the same fingerprint in a short
+-- window, we flag it as infrastructure-level and halt auto-spawns.
+CREATE TABLE IF NOT EXISTS systemic_alerts (
+    alert_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    fp_id            INTEGER NOT NULL REFERENCES failure_fingerprints(fp_id),
+    detected_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%f','now')),
+    agent_count      INTEGER NOT NULL,
+    window_seconds   INTEGER NOT NULL,
+    root_cause       TEXT,
+    acked_at         TEXT,
+    acked_by         TEXT,
+    resolved_at      TEXT,
+    resolved_by      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_alerts_unresolved
+  ON systemic_alerts(resolved_at, detected_at);
+"""
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
     """Initialize the database schema, applying migrations if needed."""
     conn.executescript(SCHEMA_SQL)
@@ -409,6 +457,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
         conn.executescript(MIGRATION_V3_SQL)
         conn.executescript(MIGRATION_V4_SQL)
         conn.executescript(MIGRATION_V5_SQL)
+        conn.executescript(MIGRATION_V6_SQL)
         conn.execute(
             "INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,)
         )
@@ -427,6 +476,8 @@ def _apply_migrations(conn: sqlite3.Connection, from_version: int, to_version: i
         conn.executescript(MIGRATION_V4_SQL)
     if from_version < 5:
         conn.executescript(MIGRATION_V5_SQL)
+    if from_version < 6:
+        conn.executescript(MIGRATION_V6_SQL)
     conn.execute(
         "INSERT INTO schema_version (version) VALUES (?)", (to_version,)
     )

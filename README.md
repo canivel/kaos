@@ -235,20 +235,50 @@ if prior and prior["fix_summary"]:
 Escape hatches: `KAOS_DREAM_AUTO=0` disables inline hooks entirely,
 `KAOS_DREAM_THRESHOLD=<N>` tunes consolidation cadence.
 
-### Measured gain
+### Measured gain — scenario-conditional
 
-Real benchmark in [`demo_neuroplasticity_bench/`](demo_neuroplasticity_bench/) —
-10 ambiguous twin-pair queries, 20 skills, 80 training episodes,
-epsilon-greedy pick (ε=0.25, seed=42) — no planted outcomes, no
-pre-engineered winners:
+Plasticity pays off when your workload has **disambiguation signal** —
+multiple plausible skills per query, and outcome feedback over time
+that distinguishes them. Our
+[`demo_neuroplasticity_bench/`](demo_neuroplasticity_bench/) measures
+this precisely: 10 ambiguous twin-pair queries, 20 skills, 80 training
+episodes, epsilon-greedy pick (ε=0.25, seed=42), zero planted outcomes:
 
 | | bm25 baseline | weighted (plasticity) | gain |
 |---|---:|---:|---:|
-| **Final top-1 accuracy** | 80.0% | 90.0% | **+10.0 pp (+12.5%)** |
+| **Top-1 accuracy on ambiguous retrieval** | 80.0% | 90.0% | **+10.0 pp (+12.5%)** |
 
-Raw numbers: [`demo_neuroplasticity_bench/results.json`](demo_neuroplasticity_bench/results.json)
-· Per-query breakdown: [`results.md`](demo_neuroplasticity_bench/results.md).
-Re-run yourself: `uv run python demo_neuroplasticity_bench/run.py`.
+**Gains are workload-specific.** On a single-session, no-feedback
+workload (agent spawns, runs once, no `record_outcome` calls) the gain
+is zero — plasticity needs signal to learn from. Multi-session
+engagements with consistent outcome feedback will see compounding gains.
+
+Run it yourself: `uv run python demo_neuroplasticity_bench/run.py`.
+Raw numbers: [`results.json`](demo_neuroplasticity_bench/results.json).
+
+### Measured overhead
+
+Real benchmark in [`demo_plasticity_overhead_bench/`](demo_plasticity_overhead_bench/)
+measures the per-op cost of the inline hooks. The fast-path redesign
+(v0.8.1) moved association building from per-event to batched-at-agent-
+completion, dropping the hot-path cost to near-zero. See the
+[results](demo_plasticity_overhead_bench/results.md) — the measured
+overhead is dominated by SQLite's intrinsic `COMMIT` fsync latency
+(~30 ms on Windows), not the plasticity writes themselves. On Linux
+with faster fsync or on an in-memory DB the absolute numbers are much
+lower.
+
+Set `KAOS_DREAM_AUTO=0` to disable all hooks if the hot path matters
+more than learning.
+
+### Failure intelligence
+
+[`demo_failure_intelligence_bench/`](demo_failure_intelligence_bench/)
+validates that KAOS categorises errors into `transient / config / code /
+infra / unknown` via built-in heuristic diagnosers (no LLM calls), tracks
+fix outcomes and auto-downgrades broken "fixes" after 5+ failed attempts,
+and raises systemic alerts when multiple agents hit the same fingerprint
+in a short window. 60/60 validations passing.
 
 See [`docs/neuroplasticity.md`](docs/neuroplasticity.md) for the full
 mechanism and [`demo_arc_agi3_test/`](demo_arc_agi3_test/) for a 76-check
@@ -281,7 +311,7 @@ kaos serve                         # stdio (default — for Claude Code / Cursor
 kaos serve --transport sse --port 8788   # SSE over HTTP
 ```
 
-Exposes **42 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, 9 meta-harness (including CORAL co-evolution and skill distillation), and **5 neuroplasticity** (`dream_run`, `dream_related`, `failure_lookup`, `failure_list`, `dream_consolidate`). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
+Exposes **45 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, 9 meta-harness (including CORAL co-evolution and skill distillation), and **8 neuroplasticity** (`dream_run`, `dream_related`, `failure_lookup`, `failure_list`, `dream_consolidate`, `failure_diagnose`, `failure_fix_outcome`, `systemic_alerts`). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
 
 ---
 
@@ -357,14 +387,14 @@ results = asyncio.run(ccr.run_parallel([
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag |
-| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 42 tools |
-| [Neuroplasticity](docs/neuroplasticity.md) | How inline plasticity + consolidation works, measured +10pp gain |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 45 tools |
+| [Neuroplasticity](docs/neuroplasticity.md) | Inline plasticity, failure intelligence, measured gains + overhead |
 | [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |
 | [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |
 | [Skill Library](docs/skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
-| [Schema](docs/schema.md) | All 15 SQLite tables + 2 FTS5 indexes (schema v5) |
+| [Schema](docs/schema.md) | All 17 SQLite tables + 2 FTS5 indexes (schema v6) |
 | [Deployment](docs/deployment.md) | vLLM, production config |
 
 Full docs index → [`docs/`](docs/)

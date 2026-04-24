@@ -45,13 +45,37 @@ def auto_enabled() -> bool:
 
 
 # Default threshold: after every N successful completions, run a lightweight
-# consolidation pass. Configurable via env for easier testing.
+# consolidation pass. Raised from 25 to 100 in v0.8.1 after review feedback
+# that 25 was too eager for production workloads — consolidation mid-session
+# can introduce latency hiccups. Users can still tune via env.
 def episode_threshold() -> int:
-    raw = os.environ.get("KAOS_DREAM_THRESHOLD", "25")
+    raw = os.environ.get("KAOS_DREAM_THRESHOLD", "100")
     try:
         return max(1, int(raw))
     except ValueError:
-        return 25
+        return 100
+
+
+# Systemic-alert tunables. N agents hitting the same fingerprint inside the
+# window → flag as systemic. Debounced so one alert fires at most every
+# `SYSTEMIC_DEBOUNCE_S` seconds per fingerprint.
+def systemic_agent_threshold() -> int:
+    raw = os.environ.get("KAOS_SYSTEMIC_THRESHOLD", "5")
+    try:
+        return max(2, int(raw))
+    except ValueError:
+        return 5
+
+
+def systemic_window_s() -> int:
+    raw = os.environ.get("KAOS_SYSTEMIC_WINDOW_S", "120")
+    try:
+        return max(10, int(raw))
+    except ValueError:
+        return 120
+
+
+SYSTEMIC_DEBOUNCE_S = 60
 
 
 # ── Association upsert primitive ────────────────────────────────────
@@ -108,26 +132,16 @@ def on_skill_outcome(
 ) -> None:
     """Fire after a skill is applied and its outcome recorded.
 
-    Associates this skill with every other skill the same agent has used
-    in its lifetime. Incrementing on every call means the graph weights
-    naturally reflect how often entities co-fire.
+    No-op on the hot path: the raw telemetry (`skill_uses` row) is already
+    written by the caller's transaction. The Hebbian association graph is
+    built periodically by ``rebuild_associations_for_agent`` during the
+    dream cycle (or when the episode threshold fires consolidation),
+    matching how biological sleep consolidation works.
+
+    Kept as a function rather than removed so users with custom hooks can
+    override it.
     """
-    if not auto_enabled() or agent_id is None:
-        return
-    try:
-        siblings = conn.execute(
-            "SELECT DISTINCT skill_id FROM skill_uses "
-            "WHERE agent_id = ? AND skill_id != ?",
-            (agent_id, skill_id),
-        ).fetchall()
-    except sqlite3.OperationalError:
-        return
-    increment = 1.0 if success else 0.3
-    for row in siblings:
-        other = row[0] if not isinstance(row, sqlite3.Row) else row["skill_id"]
-        upsert_association(conn, "skill", skill_id, "skill", other,
-                           increment=increment)
-    conn.commit()
+    return
 
 
 def on_memory_hits(
@@ -136,38 +150,99 @@ def on_memory_hits(
     *,
     requesting_agent_id: str | None,
 ) -> None:
-    """Fire after a memory search returns results that were recorded as hits.
+    """Fire after a memory search returned results that were recorded as hits.
 
-    Two kinds of edges are created:
-      - memory↔memory: the set of results that just co-occurred in one search.
-      - skill↔memory: if the requesting agent has already used skills, each
-        skill gets an edge to each retrieved memory (cross-modal plasticity).
+    No-op on the hot path (see on_skill_outcome). The `memory_hits` rows
+    were already written by the caller. Associations are derived offline.
     """
-    if not auto_enabled() or not memory_ids:
-        return
-    for i, a in enumerate(memory_ids):
-        for b in memory_ids[i + 1:]:
-            upsert_association(conn, "memory", a, "memory", b)
+    return
 
-    if requesting_agent_id is None:
-        conn.commit()
-        return
 
+def rebuild_associations_for_agent(
+    conn: sqlite3.Connection,
+    agent_id: str,
+) -> dict[str, int]:
+    """Derive the Hebbian associations this agent's session would produce.
+
+    Runs once per agent (typically at completion time in the threshold-
+    triggered consolidation, or on demand via ``kaos dream run``). Uses
+    set-based queries + a single ``executemany`` instead of N-per-event
+    upserts — keeps the cost O(skills_touched × memories_touched) rather
+    than O(all_sibling_pairs × N_events).
+
+    Returns counts: {"skill_skill": n, "skill_memory": n, "memory_memory": n}.
+    """
+    counts = {"skill_skill": 0, "skill_memory": 0, "memory_memory": 0}
     try:
         skill_rows = conn.execute(
             "SELECT DISTINCT skill_id FROM skill_uses WHERE agent_id = ?",
-            (requesting_agent_id,),
+            (agent_id,),
+        ).fetchall()
+        mem_hit_rows = conn.execute(
+            "SELECT DISTINCT memory_id FROM memory_hits WHERE agent_id = ?",
+            (agent_id,),
+        ).fetchall()
+        mem_written_rows = conn.execute(
+            "SELECT DISTINCT memory_id FROM memory WHERE agent_id = ?",
+            (agent_id,),
         ).fetchall()
     except sqlite3.OperationalError:
-        conn.commit()
-        return
+        return counts
 
-    for srow in skill_rows:
-        sid = srow[0] if not isinstance(srow, sqlite3.Row) else srow["skill_id"]
+    def _ids(rows: list) -> list[int]:
+        out = []
+        for r in rows:
+            val = r[0] if not isinstance(r, sqlite3.Row) else list(r)[0]
+            if val is not None:
+                out.append(int(val))
+        return out
+
+    skill_ids = _ids(skill_rows)
+    memory_ids = _ids(mem_hit_rows) + _ids(mem_written_rows)
+    # Dedup preserving order
+    seen = set()
+    memory_ids = [m for m in memory_ids if not (m in seen or seen.add(m))]
+
+    # Build the edges we want
+    edges: list[tuple[str, int, str, int, float]] = []
+    # skill ↔ skill
+    for i, a in enumerate(skill_ids):
+        for b in skill_ids[i + 1:]:
+            edges.append(("skill", a, "skill", b, 1.0))
+            edges.append(("skill", b, "skill", a, 1.0))
+            counts["skill_skill"] += 1
+    # memory ↔ memory
+    for i, a in enumerate(memory_ids):
+        for b in memory_ids[i + 1:]:
+            edges.append(("memory", a, "memory", b, 1.0))
+            edges.append(("memory", b, "memory", a, 1.0))
+            counts["memory_memory"] += 1
+    # skill ↔ memory
+    for sid in skill_ids:
         for mid in memory_ids:
-            upsert_association(conn, "skill", sid, "memory", mid,
-                               increment=0.5)
-    conn.commit()
+            edges.append(("skill", sid, "memory", mid, 0.5))
+            edges.append(("memory", mid, "skill", sid, 0.5))
+            counts["skill_memory"] += 1
+
+    if not edges:
+        return counts
+
+    try:
+        conn.executemany(
+            """
+            INSERT INTO associations (kind_a, id_a, kind_b, id_b, weight, uses)
+            VALUES (?, ?, ?, ?, ?, 1)
+            ON CONFLICT(kind_a, id_a, kind_b, id_b) DO UPDATE SET
+                weight = weight + excluded.weight,
+                uses   = uses + 1,
+                last_seen = strftime('%Y-%m-%dT%H:%M:%f','now')
+            """,
+            edges,
+        )
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+    return counts
 
 
 def on_agent_completion(
@@ -177,15 +252,15 @@ def on_agent_completion(
 ) -> "AutoTriggerResult":
     """Fire when an agent reaches a terminal state.
 
-    Side effects:
-      - Upsert episode_signals row via the replay helpers.
-      - On failure: extract a fingerprint from the latest errored tool_call.
-      - Cross-link skill↔memory associations for everything the agent touched.
-      - Enqueue a lightweight consolidation pass if the episode_threshold is
-        crossed (see trigger_consolidation()).
+    Fast path: only touches rows for THIS agent. The expensive full-replay
+    scan lives in the periodic dream cycle (`kaos dream run`), not here.
 
-    Returns an AutoTriggerResult so callers can observe whether consolidation
-    ran.
+    Side effects:
+      - Upsert this one agent's episode_signals row.
+      - On failure: extract a fingerprint from the latest errored tool_call.
+      - Cross-link skill↔memory associations for entities this agent touched.
+      - Trigger consolidation if episode_threshold is crossed (bounded cost —
+        only runs the count query when we're at a pre-computed boundary).
     """
     result = AutoTriggerResult()
 
@@ -193,11 +268,7 @@ def on_agent_completion(
         return result
 
     try:
-        # Upsert this one agent's episode_signals immediately. Replay would
-        # also do this but we want it visible right after completion for
-        # subsequent hooks (failure lookup etc).
-        from kaos.dream.phases.replay import run as replay_run
-        replay_run(conn, since_ts=None, apply=True)
+        _upsert_episode_signal_for(conn, agent_id, status)
     except sqlite3.OperationalError:
         return result
 
@@ -207,9 +278,16 @@ def on_agent_completion(
         except sqlite3.OperationalError:
             pass
 
-    _crosslink_skills_and_memory(conn, agent_id)
+    # Rebuild associations for this agent's session. One batched
+    # executemany at completion time — much cheaper than per-event writes.
+    try:
+        rebuild_associations_for_agent(conn, agent_id)
+    except sqlite3.OperationalError:
+        pass
 
-    # Trigger consolidation if threshold crossed
+    # Trigger consolidation if threshold crossed. Only COUNT(*) here, not
+    # a full aggregation. The COUNT is cheap on an indexed column and lets
+    # us avoid the consolidation pass most of the time.
     try:
         count_row = conn.execute(
             "SELECT COUNT(*) FROM episode_signals WHERE success IS NOT NULL"
@@ -231,29 +309,96 @@ def on_agent_completion(
     return result
 
 
-def _crosslink_skills_and_memory(conn: sqlite3.Connection, agent_id: str) -> None:
-    """At agent completion, pair every skill the agent used with every memory
-    it wrote. Lighter than doing it on every individual write."""
-    try:
-        skills = conn.execute(
-            "SELECT DISTINCT skill_id FROM skill_uses WHERE agent_id = ?",
-            (agent_id,),
-        ).fetchall()
-        memories = conn.execute(
-            "SELECT DISTINCT memory_id FROM memory WHERE agent_id = ?",
-            (agent_id,),
-        ).fetchall()
-    except sqlite3.OperationalError:
+# Status → success flag mapping shared with replay.
+_SUCCESS_STATUSES = {"completed"}
+_FAILURE_STATUSES = {"failed", "killed"}
+
+
+def _upsert_episode_signal_for(
+    conn: sqlite3.Connection,
+    agent_id: str,
+    status: str,
+) -> None:
+    """Cheap single-agent upsert. Runs at most 4 small queries + one upsert,
+    all keyed on indexes — O(1)-ish regardless of library size."""
+    success = 1 if status in _SUCCESS_STATUSES else (
+        0 if status in _FAILURE_STATUSES else None
+    )
+    # Pre-fetch this agent's aggregates in a single round-trip each.
+    row = conn.execute(
+        """
+        SELECT
+          (SELECT created_at FROM agents WHERE agent_id = ?) AS started_at,
+          (SELECT last_heartbeat FROM agents WHERE agent_id = ?) AS ended_at,
+          (SELECT COUNT(*) FROM tool_calls WHERE agent_id = ?) AS tc_count,
+          (SELECT COALESCE(SUM(CASE WHEN status='error' THEN 1 ELSE 0 END), 0)
+             FROM tool_calls WHERE agent_id = ?) AS tc_err,
+          (SELECT COALESCE(SUM(token_count), 0)
+             FROM tool_calls WHERE agent_id = ?) AS tokens,
+          (SELECT COALESCE(SUM(cost_usd), 0.0)
+             FROM tool_calls WHERE agent_id = ?) AS cost,
+          (SELECT COUNT(*) FROM skill_uses WHERE agent_id = ?) AS sk_applied,
+          (SELECT COUNT(*) FROM memory WHERE agent_id = ?) AS mem_w,
+          (SELECT COUNT(*) FROM memory_hits WHERE agent_id = ?) AS mem_r,
+          (SELECT COUNT(*) FROM checkpoints WHERE agent_id = ?) AS cp
+        """,
+        (agent_id,) * 10,
+    ).fetchone()
+    if row is None:
         return
-    if not skills or not memories:
-        return
-    for srow in skills:
-        sid = srow[0] if not isinstance(srow, sqlite3.Row) else srow["skill_id"]
-        for mrow in memories:
-            mid = mrow[0] if not isinstance(mrow, sqlite3.Row) else mrow["memory_id"]
-            upsert_association(conn, "skill", sid, "memory", mid,
-                               increment=0.5)
+    started_at, ended_at, tc_count, tc_err, tokens, cost, sk_applied, mem_w, mem_r, cp = row
+
+    duration_ms = None
+    if started_at and ended_at:
+        from datetime import datetime, timezone
+        try:
+            s = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+            e = datetime.fromisoformat(ended_at.replace("Z", "+00:00"))
+            if s.tzinfo is None:
+                s = s.replace(tzinfo=timezone.utc)
+            if e.tzinfo is None:
+                e = e.replace(tzinfo=timezone.utc)
+            duration_ms = max(0, int((e - s).total_seconds() * 1000))
+        except ValueError:
+            pass
+
+    conn.execute(
+        """
+        INSERT INTO episode_signals
+            (agent_id, started_at, ended_at, status, success,
+             tool_calls_count, tool_calls_error,
+             total_tokens, total_cost_usd, duration_ms,
+             skills_applied, memories_written, memories_retrieved, checkpoints_made,
+             last_computed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                strftime('%Y-%m-%dT%H:%M:%f','now'))
+        ON CONFLICT(agent_id) DO UPDATE SET
+            started_at=excluded.started_at,
+            ended_at=excluded.ended_at,
+            status=excluded.status,
+            success=excluded.success,
+            tool_calls_count=excluded.tool_calls_count,
+            tool_calls_error=excluded.tool_calls_error,
+            total_tokens=excluded.total_tokens,
+            total_cost_usd=excluded.total_cost_usd,
+            duration_ms=excluded.duration_ms,
+            skills_applied=excluded.skills_applied,
+            memories_written=excluded.memories_written,
+            memories_retrieved=excluded.memories_retrieved,
+            checkpoints_made=excluded.checkpoints_made,
+            last_computed_at=strftime('%Y-%m-%dT%H:%M:%f','now')
+        """,
+        (agent_id, started_at, ended_at, status, success,
+         tc_count, tc_err, tokens, cost, duration_ms,
+         sk_applied, mem_w, mem_r, cp),
+    )
     conn.commit()
+
+
+def _crosslink_skills_and_memory(conn: sqlite3.Connection, agent_id: str) -> None:
+    """Deprecated alias for rebuild_associations_for_agent (kept for
+    backward compatibility with any custom code that imported it)."""
+    rebuild_associations_for_agent(conn, agent_id)
 
 
 # ── Failure fingerprint extraction ──────────────────────────────────
@@ -293,8 +438,12 @@ def record_failure_fingerprint(
     conn: sqlite3.Connection,
     agent_id: str,
 ) -> int | None:
-    """Look up the most recent errored tool_call for this agent and upsert
-    a failure_fingerprints row. Returns the fp_id or None if nothing to record.
+    """Look up the most recent errored tool_call for this agent, upsert a
+    failure_fingerprints row, record the occurrence, diagnose it if new,
+    and check for systemic patterns.
+
+    Returns the fp_id, or None if the agent had no error to fingerprint.
+    Idempotent — multiple calls for the same agent re-record occurrences.
     """
     row = conn.execute(
         """
@@ -310,6 +459,8 @@ def record_failure_fingerprint(
     message = row[1]
     fp = fingerprint_of(tool_name, message)
     normalised = normalise_error(message)
+
+    # Upsert fingerprint row (count bump on existing, insert on new)
     conn.execute(
         """
         INSERT INTO failure_fingerprints
@@ -321,11 +472,138 @@ def record_failure_fingerprint(
         """,
         (fp, normalised[:500], tool_name),
     )
-    conn.commit()
-    return conn.execute(
-        "SELECT fp_id FROM failure_fingerprints WHERE fingerprint = ?",
+
+    # Fetch the fp_id and current diagnostic status
+    fp_row = conn.execute(
+        "SELECT fp_id, category, diagnosed_at FROM failure_fingerprints "
+        "WHERE fingerprint = ?",
         (fp,),
-    ).fetchone()[0]
+    ).fetchone()
+    fp_id = fp_row[0]
+    current_category = fp_row[1] if fp_row[1] else "unknown"
+    diagnosed_at = fp_row[2]
+
+    # Record the occurrence — lets systemic detection compute sliding counts
+    try:
+        conn.execute(
+            "INSERT INTO failure_occurrences (fp_id, agent_id) VALUES (?, ?)",
+            (fp_id, agent_id),
+        )
+    except sqlite3.OperationalError:
+        pass
+
+    # Diagnose if never diagnosed (or diagnosed as unknown — give heuristics
+    # another chance in case a new diagnoser was registered since).
+    if diagnosed_at is None or current_category == "unknown":
+        _attempt_diagnosis(conn, fp_id, tool_name, normalised, agent_id)
+
+    # Check for systemic pattern (many agents, same fingerprint, short window)
+    _check_systemic(conn, fp_id)
+
+    conn.commit()
+    return fp_id
+
+
+def _attempt_diagnosis(
+    conn: sqlite3.Connection,
+    fp_id: int,
+    tool_name: str,
+    normalised_error: str,
+    agent_id: str,
+) -> None:
+    """Run the heuristic diagnosers and persist the result if confident enough."""
+    try:
+        from kaos.dream.diagnosis import diagnose
+    except ImportError:
+        return
+    result = diagnose(tool_name, normalised_error,
+                      context={"agent_id": agent_id})
+    # Even 'unknown' is recorded so we don't re-diagnose forever — but we
+    # leave category='unknown' so a future run with a new diagnoser can
+    # retry. If confidence is 0 we don't overwrite an existing diagnosis.
+    if result.confidence == 0.0:
+        conn.execute(
+            "UPDATE failure_fingerprints SET diagnosed_at = "
+            "strftime('%Y-%m-%dT%H:%M:%f','now') WHERE fp_id = ?",
+            (fp_id,),
+        )
+        return
+    conn.execute(
+        """
+        UPDATE failure_fingerprints
+        SET category = ?,
+            root_cause = ?,
+            suggested_action = ?,
+            diagnostic_method = ?,
+            diagnosed_at = strftime('%Y-%m-%dT%H:%M:%f','now')
+        WHERE fp_id = ?
+        """,
+        (result.category, result.root_cause, result.suggested_action,
+         result.method, fp_id),
+    )
+
+
+def _check_systemic(conn: sqlite3.Connection, fp_id: int) -> None:
+    """If ≥N distinct agents have hit this fingerprint within the sliding
+    window, create a systemic_alerts row (subject to debouncing)."""
+    from datetime import datetime, timedelta, timezone
+
+    threshold = systemic_agent_threshold()
+    window = systemic_window_s()
+
+    cutoff = (datetime.now(timezone.utc)
+              - timedelta(seconds=window)).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+
+    try:
+        row = conn.execute(
+            "SELECT COUNT(DISTINCT agent_id) FROM failure_occurrences "
+            "WHERE fp_id = ? AND occurred_at >= ?",
+            (fp_id, cutoff),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        return
+    agent_count = row[0] if row else 0
+    if agent_count < threshold:
+        return
+
+    # Debounce: one alert per fp within SYSTEMIC_DEBOUNCE_S seconds
+    last_alert = conn.execute(
+        "SELECT last_systemic_alert_at FROM failure_fingerprints WHERE fp_id = ?",
+        (fp_id,),
+    ).fetchone()
+    if last_alert and last_alert[0]:
+        try:
+            from datetime import datetime as _dt
+            last_dt = _dt.fromisoformat(last_alert[0].replace("Z", "+00:00"))
+            if last_dt.tzinfo is None:
+                last_dt = last_dt.replace(tzinfo=timezone.utc)
+            age = (datetime.now(timezone.utc) - last_dt).total_seconds()
+            if age < SYSTEMIC_DEBOUNCE_S:
+                return
+        except ValueError:
+            pass
+
+    # Pull root cause for the alert row
+    fp_info = conn.execute(
+        "SELECT root_cause FROM failure_fingerprints WHERE fp_id = ?",
+        (fp_id,),
+    ).fetchone()
+    root_cause = fp_info[0] if fp_info and fp_info[0] else None
+
+    try:
+        conn.execute(
+            "INSERT INTO systemic_alerts (fp_id, agent_count, window_seconds, root_cause) "
+            "VALUES (?, ?, ?, ?)",
+            (fp_id, agent_count, window, root_cause),
+        )
+        conn.execute(
+            "UPDATE failure_fingerprints "
+            "SET last_systemic_alert_at = strftime('%Y-%m-%dT%H:%M:%f','now') "
+            "WHERE fp_id = ?",
+            (fp_id,),
+        )
+    except sqlite3.OperationalError:
+        pass
 
 
 # ── Threshold-triggered consolidation ───────────────────────────────

@@ -723,6 +723,69 @@ async def list_tools() -> list[Tool]:
                 },
             },
         ),
+        # ── Failure intelligence (M2.5) ──────────────────────────
+        Tool(
+            name="failure_diagnose",
+            description=(
+                "Return the diagnosis for a failure fingerprint (category, root "
+                "cause, suggested action) or manually set one. Categories: "
+                "transient (retry), config (human action), code (pattern bug), "
+                "infra (systemic), unknown (needs triage)."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "fp_id": {"type": "integer", "description": "Fingerprint id"},
+                    "category": {
+                        "type": "string",
+                        "enum": ["transient", "config", "code", "infra", "unknown"],
+                        "description": "Override the category (optional)",
+                    },
+                    "root_cause": {"type": "string"},
+                    "suggested_action": {"type": "string"},
+                },
+                "required": ["fp_id"],
+            },
+        ),
+        Tool(
+            name="failure_fix_outcome",
+            description=(
+                "Record whether a previously-suggested fix actually resolved "
+                "the error. Agents should call this after trying a known fix. "
+                "Fixes that drop below 50% success after 5+ attempts auto-"
+                "downgrade so future agents stop applying broken suggestions."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "fp_id": {"type": "integer"},
+                    "succeeded": {"type": "boolean"},
+                },
+                "required": ["fp_id", "succeeded"],
+            },
+        ),
+        Tool(
+            name="systemic_alerts",
+            description=(
+                "List active systemic alerts. An alert fires when >=N agents "
+                "hit the same fingerprint in a short window — usually means "
+                "infrastructure is down and auto-spawning more agents will "
+                "make it worse. Callers should refuse to spawn when alerts "
+                "are unresolved."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "limit": {"type": "integer", "default": 20},
+                    "ack": {"type": "integer",
+                            "description": "Acknowledge alert by id"},
+                    "resolve": {"type": "integer",
+                                "description": "Resolve alert by id"},
+                    "by": {"type": "string",
+                           "description": "Who is acking/resolving"},
+                },
+            },
+        ),
     ]
 
 
@@ -1759,6 +1822,54 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
                 "last_seen": e.last_seen,
             } for e in report.recurring
         ], indent=2)
+
+    elif name == "failure_diagnose":
+        from kaos.dream.phases.failures import set_category
+        fp_id = args["fp_id"]
+        if args.get("category"):
+            set_category(
+                _afs.conn, fp_id,
+                category=args["category"],
+                root_cause=args.get("root_cause"),
+                suggested_action=args.get("suggested_action"),
+            )
+        # Always return the current state
+        import sqlite3 as _sq
+        prev = _afs.conn.row_factory
+        _afs.conn.row_factory = _sq.Row
+        try:
+            row = _afs.conn.execute(
+                "SELECT fp_id, fingerprint, tool_name, example_error, count, "
+                "category, root_cause, suggested_action, diagnostic_method, "
+                "diagnosed_at, fix_attempts, fix_success_count, fix_summary "
+                "FROM failure_fingerprints WHERE fp_id = ?",
+                (fp_id,),
+            ).fetchone()
+        finally:
+            _afs.conn.row_factory = prev
+        return json.dumps(dict(row) if row else None, indent=2)
+
+    elif name == "failure_fix_outcome":
+        from kaos.dream.phases.failures import record_fix_outcome
+        result = record_fix_outcome(
+            _afs.conn, args["fp_id"], succeeded=args["succeeded"],
+        )
+        return json.dumps(result, indent=2)
+
+    elif name == "systemic_alerts":
+        from kaos.dream.phases.failures import (
+            ack_alert, list_active_alerts, resolve_alert,
+        )
+        if args.get("ack") is not None:
+            ok = ack_alert(_afs.conn, args["ack"], acked_by=args.get("by"))
+            return json.dumps({"alert_id": args["ack"], "acked": ok}, indent=2)
+        if args.get("resolve") is not None:
+            ok = resolve_alert(_afs.conn, args["resolve"],
+                               resolved_by=args.get("by"))
+            return json.dumps({"alert_id": args["resolve"], "resolved": ok},
+                              indent=2)
+        alerts = list_active_alerts(_afs.conn, limit=args.get("limit", 20))
+        return json.dumps(alerts, indent=2)
 
     elif name == "dream_consolidate":
         from kaos.dream.phases.consolidation import run as run_consolidation

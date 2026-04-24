@@ -54,6 +54,133 @@ bm25 plateaus at 80%.
 Raw JSON: [`demo_neuroplasticity_bench/results.json`](../demo_neuroplasticity_bench/results.json).
 Rerun anytime: `uv run python demo_neuroplasticity_bench/run.py`.
 
+## Measured overhead
+
+[`demo_plasticity_overhead_bench/`](../demo_plasticity_overhead_bench/)
+runs each agent-facing op 200 times with plasticity hooks ON and OFF,
+against a library pre-seeded with 100 skills and 50 memory entries.
+Measures **overhead** — what plasticity ADDS on top of the intrinsic
+SQLite commit cost (which is not our problem to optimise):
+
+| Op | Baseline (hooks OFF) p50 | With plasticity p50 | **Overhead p50** | Overhead p99 |
+|---|---:|---:|---:|---:|
+| `record_outcome` | 934 µs | 949 µs | **+15 µs** | 10.5 ms |
+| `memory_search` | 1.08 ms | 1.04 ms | **~0 µs** (noise) | 1.3 ms |
+| `agent_complete` | 2.08 ms | 2.95 ms | **+872 µs** | 1.5 ms |
+
+The p50 cost is essentially free on the hot path. The `agent_complete`
+overhead (~900 µs) is the batched association-graph rebuild for the
+completing agent — a single `executemany` instead of N inline upserts.
+The p99 tail is dominated by OS fsync variance, not the hooks themselves.
+
+**Design win (v0.8.1):** an earlier M2 design fired inline association
+upserts on every `record_outcome`, making the p50 overhead **~210 ms**
+(the bench caught it). The fix: move Hebbian graph construction from
+per-event to batched-at-agent-completion — matches how biological sleep
+consolidation actually works and drops the inline cost to near zero.
+
+Rerun anytime: `uv run python demo_plasticity_overhead_bench/run.py`.
+
+## Failure intelligence (M2.5)
+
+Pattern-matching alone tells you an error has happened before.
+Diagnosis tells you **why** — and what to do about it. Every failure
+fingerprint now carries:
+
+- **category**: `transient` / `config` / `code` / `infra` / `unknown`
+- **root_cause**: normalised explanation (not the symptom)
+- **suggested_action**: one-line guidance
+- **fix_attempts** / **fix_success_count**: plasticity on the fix itself.
+  A "known fix" that keeps failing auto-downgrades after 5+ attempts
+  with <50% success so future agents stop applying a broken suggestion.
+
+Built-in heuristic diagnosers cover the high-volume cases — connection
+refused, rate limits, auth failures, DNS, disk-full, Python tracebacks —
+without any LLM calls. Users can register project-specific diagnosers:
+
+```python
+from kaos.dream.diagnosis import Diagnosis, register_diagnoser
+
+class MyDomainDiagnoser:
+    name = "my_domain"
+
+    def try_diagnose(self, tool_name, error, context):
+        if "specific pattern" in error:
+            return Diagnosis(
+                category="config",
+                root_cause="The X service is misconfigured.",
+                suggested_action="Update $FOO_ENDPOINT",
+                method="heuristic",
+                confidence=0.9,
+            )
+        return None
+
+register_diagnoser(MyDomainDiagnoser())
+```
+
+### Systemic alerts
+
+When `>= KAOS_SYSTEMIC_THRESHOLD` (default 5) agents hit the same
+fingerprint inside `KAOS_SYSTEMIC_WINDOW_S` (default 120s), KAOS writes
+a row to the `systemic_alerts` table and sets `last_systemic_alert_at`
+on the fingerprint (debounced against retriggers for 60s).
+
+Consumers of KAOS should consult `list_active_alerts()` before spawning
+agents — if the infrastructure is down, spawning more agents makes it
+worse:
+
+```python
+from kaos.dream.phases.failures import list_active_alerts
+
+alerts = list_active_alerts(kaos.conn)
+if alerts:
+    print(f"Systemic issue active: {alerts[0]['root_cause']}")
+    return  # don't spawn
+```
+
+Alerts are lifecycled via `ack_alert` (seen but not fixed) and
+`resolve_alert` (resolved by human action).
+
+### CLI
+
+```bash
+kaos dream failures [--min-count N]             # recurring fingerprints with category
+kaos dream diagnose <fp_id>                     # show + optionally set category
+kaos dream diagnose <fp_id> --category config \
+  --root-cause "..." --action "..."             # manual override
+kaos dream fix-outcome <fp_id> --succeeded      # did the known fix work?
+kaos dream systemic                              # list active alerts
+kaos dream systemic --ack <alert_id>             # ack (seen)
+kaos dream systemic --resolve <alert_id>         # resolved
+```
+
+### MCP (3 new tools, v0.8.1)
+
+| Tool | What it does |
+|---|---|
+| `failure_diagnose` | Return or set diagnosis for a fingerprint |
+| `failure_fix_outcome` | Record whether a suggested fix actually worked |
+| `systemic_alerts` | List active alerts; ack; resolve |
+
+Combined with the v0.8.0 tools (`dream_run`, `dream_related`,
+`failure_lookup`, `failure_list`, `dream_consolidate`), KAOS exposes
+8 neuroplasticity tools in total.
+
+### Validation
+
+[`demo_failure_intelligence_bench/`](../demo_failure_intelligence_bench/)
+plants a realistic mix of failures (rate-limit, auth, code bugs, infra,
+DNS, disk-full) and verifies:
+
+- each gets categorised correctly via heuristic alone
+- root_cause + suggested_action are populated
+- bad fix auto-downgrades after 5 failed attempts
+- systemic alert fires when ≥3 agents hit the same fp in 60s
+- alert ack/resolve lifecycle works
+- recategorise_all catches up fingerprints after new diagnosers register
+
+60/60 validations passing.
+
 ## Why this is really plasticity
 
 Biological plasticity has four properties. KAOS matches all four:
