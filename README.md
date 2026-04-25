@@ -24,20 +24,6 @@ local) and sleep-consolidation (slow, structural).
 
 ---
 
-## Adoption
-
-Snapshot of the GitHub Traffic API for `canivel/kaos` — the only public
-download signal currently available (the package is consumed via
-`uv sync` from the repo, so PyPI counters do not apply).
-
-![KAOS GitHub clones, last 14 days](docs/github-clones-14d.png)
-
-Spikes correlate with release events. The chart is regenerated on demand
-from `gh api repos/canivel/kaos/traffic/clones` — see
-[scripts/make_traffic_chart.py](scripts/make_traffic_chart.py).
-
----
-
 ## Install
 
 ```bash
