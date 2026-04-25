@@ -49,14 +49,15 @@ The useful takeaway from the analogy is the **two-timescale split.** Anything on
 
 ## 3. Translating it into a multi-agent framework
 
-Here's how the biological shape maps into the KAOS world. Read the two columns as a glossary.
+Here's how the biological shape maps into the KAOS world. Four pairs, read each as *brain → KAOS*.
 
-| In the brain | In KAOS |
-|---|---|
-| **Firing together → wiring together.** Co-activation strengthens the synapse. | **Used-together → edge weight.** Skills and memories retrieved in the same agent session get an `associations` edge, reinforced on each recurrence. |
-| **Unused synapses atrophy.** What isn't fired stops being maintained. | **Low success-rate skills decay.** The Wilson lower bound penalises small-sample failures; consolidation soft-deprecates skills whose measured success drops below a floor. |
-| **Sleep consolidates.** Episodic traces become abstract, general memory. | **Consolidation runs at agent completion.** Not nightly — there is no night. Once a threshold of completed sessions accrues, the phase rebuilds the edge graph and fires promotion / prune / merge proposals. |
-| **Dopamine marks reward.** Positive outcomes bias future selection. | **Outcome success biases retrieval.** Weighted ranking composes BM25 with Wilson-lower-bound success and exponential recency decay. |
+**Firing together → wiring together.** In the brain, co-activation strengthens the synapse. In KAOS, skills and memories retrieved in the same agent session get an `associations` edge, reinforced on each recurrence. Used-together becomes edge weight.
+
+**Unused synapses atrophy.** In the brain, what isn't fired stops being maintained. In KAOS, low success-rate skills decay: the Wilson lower bound penalises small-sample failures, and consolidation soft-deprecates skills whose measured success drops below a floor.
+
+**Sleep consolidates.** In the brain, episodic traces become abstract, general memory during a nightly cycle. In KAOS, consolidation runs at agent completion — not nightly, because there is no night. Once a threshold of completed sessions accrues, the phase rebuilds the edge graph and fires promotion / prune / merge proposals.
+
+**Dopamine marks reward.** In the brain, positive outcomes bias future selection. In KAOS, outcome success biases retrieval: weighted ranking composes BM25 with Wilson-lower-bound success and exponential recency decay.
 
 Two translation choices deserve calling out, because they're what "multi-agent" changes from the single-agent case.
 

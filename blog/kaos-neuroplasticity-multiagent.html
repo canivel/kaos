@@ -61,6 +61,10 @@ nav .back:hover{color:var(--fg);text-decoration:none}
 .callout.red{border-left-color:var(--red)}
 .beat{background:linear-gradient(135deg,rgba(253,121,168,.08),rgba(162,155,254,.05));border:1px solid rgba(253,121,168,.15);border-radius:14px;padding:1.4rem 1.6rem;margin:2rem 0;font-size:1.08rem;line-height:1.65;color:var(--fg)}
 .beat strong{color:var(--pink)}
+.fig{margin:2rem -1rem;border-radius:14px;overflow:hidden;border:1px solid rgba(253,121,168,.18);box-shadow:0 10px 40px rgba(0,0,0,.35);background:var(--bg)}
+.fig img{width:100%;display:block}
+.fig .cap{background:var(--bg2);padding:.7rem 1.1rem;font-size:.78rem;color:var(--fg2);text-align:center;font-style:italic;border-top:1px solid rgba(255,255,255,.05)}
+.fig.arch{margin-top:1rem}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin:1.8rem 0}
 .two-col .col{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:1.1rem 1.3rem}
 .two-col .col h4{font-size:.82rem;color:var(--pink);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.7rem;font-family:var(--mono)}
@@ -108,6 +112,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
       A multi-agent framework accumulates history fast. Every outcome, every retrieved memory, every failed tool call, every approval &mdash; all of it lands in the database within milliseconds of happening. The open question for the last two years was never <em>how do we store more of it</em>. It was <strong>what should the framework do with it</strong>.
     </div>
 
+    <figure class="fig arch">
+      <img src="../architecture.svg" alt="KAOS seven-layer architecture with the Neuroplasticity layer highlighted">
+      <figcaption class="cap">KAOS &mdash; seven layers. Layer 4, <strong style="color:var(--pink)">Neuroplasticity</strong>, is what this post is about.</figcaption>
+    </figure>
+
     <hr>
 
     <h2><span class="n">01</span>Why a multi-agent system needs plasticity at all</h2>
@@ -136,28 +145,24 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
     <p>The useful takeaway from the analogy is the <strong>two-timescale split</strong>. Anything on the inline path must be cheap enough to fire on every event without blowing up the agent's hot path. Anything structural can be expensive and batched. Conflating the two &mdash; trying to rebuild a full co-occurrence graph on every tool call &mdash; was the first architectural mistake we made, and the benchmark told us about it immediately.</p>
 
+    <figure class="fig">
+      <img src="charts-multiagent/04-two-timescale.png" alt="Two-timescale split chart: synaptic-inline events in microseconds, sleep-batched consolidation in milliseconds to seconds">
+      <figcaption class="cap">Six orders of magnitude separate the synaptic hot path from the batched sleep phase. Mixing the two breaks the system; respecting the split makes it cheap.</figcaption>
+    </figure>
+
     <hr>
 
     <h2><span class="n">03</span>Translating it into a multi-agent framework</h2>
 
-    <p>Here's how the biological shape maps into the KAOS world. Read the two columns as a glossary.</p>
+    <p>Here's how the biological shape maps into the KAOS world. Four pairs, read each as <em>brain &rarr; KAOS</em>.</p>
 
-    <div class="two-col">
-      <div class="col bio">
-        <h4>In the brain</h4>
-        <p><strong>Firing together &rarr; wiring together.</strong> Co-activation strengthens the synapse.</p>
-        <p><strong>Unused synapses atrophy.</strong> What isn't fired stops being maintained.</p>
-        <p><strong>Sleep consolidates.</strong> Episodic traces become abstract, general memory.</p>
-        <p><strong>Dopamine marks reward.</strong> Positive outcomes bias future selection.</p>
-      </div>
-      <div class="col">
-        <h4>In KAOS</h4>
-        <p><strong>Used-together &rarr; edge weight.</strong> Skills and memories retrieved in the same agent session get an <code>associations</code> edge, reinforced on each recurrence.</p>
-        <p><strong>Low success-rate skills decay.</strong> The Wilson lower bound penalises small-sample failures; consolidation soft-deprecates skills whose measured success drops below a floor.</p>
-        <p><strong>Consolidation runs at agent completion.</strong> Not nightly &mdash; there is no night. Once a threshold of completed sessions accrues, the phase rebuilds the edge graph, fires promotion/prune/merge proposals, and updates ranking weights.</p>
-        <p><strong>Outcome success biases retrieval.</strong> Weighted ranking composes BM25 with Wilson-lower-bound success and exponential recency decay.</p>
-      </div>
-    </div>
+    <p><strong>Firing together &rarr; wiring together.</strong> In the brain, co-activation strengthens the synapse. In KAOS, skills and memories retrieved in the same agent session get an <code>associations</code> edge, reinforced on each recurrence. Used-together becomes edge weight.</p>
+
+    <p><strong>Unused synapses atrophy.</strong> In the brain, what isn't fired stops being maintained. In KAOS, low success-rate skills decay: the Wilson lower bound penalises small-sample failures, and consolidation soft-deprecates skills whose measured success drops below a floor.</p>
+
+    <p><strong>Sleep consolidates.</strong> In the brain, episodic traces become abstract, general memory during a nightly cycle. In KAOS, consolidation runs at agent completion &mdash; not nightly, because there is no night. Once a threshold of completed sessions accrues, the phase rebuilds the edge graph and fires promotion / prune / merge proposals.</p>
+
+    <p><strong>Dopamine marks reward.</strong> In the brain, positive outcomes bias future selection. In KAOS, outcome success biases retrieval: weighted ranking composes BM25 with Wilson-lower-bound success and exponential recency decay.</p>
 
     <p>Two translation choices deserve calling out, because they're what "multi-agent" changes from the single-agent case.</p>
 
@@ -170,6 +175,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
     <h2><span class="n">04</span>The four loops the library actually closed</h2>
 
     <p>"Plasticity" isn't one feature; it's a small set of feedback loops that share the same conceptual shape. Each one starts from data KAOS was already collecting, and each one turns that data into something the framework now <em>does</em> automatically.</p>
+
+    <figure class="fig">
+      <img src="charts-multiagent/05-four-loops.png" alt="Four-loops summary: inline plasticity, structural consolidation, policy auto-approval, failure diagnosis with cached LLM fallback">
+      <figcaption class="cap">Four loops, one design discipline: hot path stays cheap, smart work batches or caches.</figcaption>
+    </figure>
 
     <div class="loop-card" data-n="01">
       <h3>Inline synaptic plasticity</h3>
@@ -203,7 +213,17 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
 
     <p>The individual numbers live in the <a href="../papers/kaos-neuroplasticity-whitepaper.html">whitepaper</a> and the committed benchmark folders. What matters here is what those numbers mean in aggregate when you point N agents at a shared library.</p>
 
+    <figure class="fig">
+      <img src="charts-multiagent/01-retrieval-accuracy.png" alt="Retrieval accuracy: BM25 vs plasticity-weighted on adversarial and realistic benchmarks">
+      <figcaption class="cap">Two benchmarks, two different ground-truth designs. Plasticity wins on both. Numbers are measured, reproducible, committed.</figcaption>
+    </figure>
+
     <p><strong>Retrieval gets better, slowly, automatically.</strong> The first time an agent searches for a skill, BM25 is the only signal available. After a few dozen sessions have fed outcome data back into the system, the weighted ranker starts outperforming BM25 by double-digit percentage points on realistic workloads. The agents don't have to know this is happening; the rank is simply better when they ask for results.</p>
+
+    <figure class="fig">
+      <img src="charts-multiagent/02-alpha-sensitivity.png" alt="Alpha sensitivity sweep: accuracy plateau across alpha 2 through 12">
+      <figcaption class="cap">Sensitivity sweep over the plasticity weight. The shipped default &alpha;=3.0 sits on a broad plateau covering &alpha;=2 through &alpha;=12. Not a knife-edge choice.</figcaption>
+    </figure>
 
     <p><strong>Redundant skills don't silently accumulate.</strong> When two agents independently save skills that do the same thing, consolidation notices the Jaccard overlap and generates a merge proposal. An operator (or an authorised agent) reviews it; acceptance migrates all telemetry, collapses associations, and soft-deprecates the retired skill with a rationale. The library stays lean instead of quietly doubling every few weeks.</p>
 
@@ -218,6 +238,11 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem;fl
     <h2><span class="n">06</span>What the analogy does <em>not</em> buy you</h2>
 
     <p>The honest limits are worth reading slowly.</p>
+
+    <figure class="fig">
+      <img src="charts-multiagent/03-consolidation-scale.png" alt="Consolidation phase wall-clock cost vs library size, log-log">
+      <figcaption class="cap">Sub-linear up to 1k skills. Above that, the pairwise Jaccard merge scan dominates and growth turns near-quadratic. A budget problem, not a latency problem &mdash; but a real one to name.</figcaption>
+    </figure>
 
     <p><strong>Gains are workload-conditional.</strong> Plasticity only helps where feedback is informative and retrieval is ambiguous. If agents never record outcomes, the Wilson bound has nothing to stand on. If the right answer is trivially the BM25 winner on every query, there's no room for plasticity to lift anything. The framework degrades gracefully to BM25 in those cases; it doesn't magically create signal that wasn't there.</p>
 
