@@ -15,3 +15,6 @@ build/
 htmlcov/
 *.log
 .env
+
+# Generated demo recordings (canonical copies live in docs/demos/)
+video_scripts/kaos/recordings/*.gif
