@@ -67,6 +67,22 @@ nav a:hover{color:var(--fg)}
 .badge{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.06)}
 .badge.green{color:var(--green);border-color:rgba(0,230,118,.2)}
 .badge.blue{color:var(--cyan);border-color:rgba(24,255,255,.2)}
+/* ── ARC-AGI-3 leaderboard tracker ─────────────────── */
+.arc-tracker{display:inline-flex;align-items:center;gap:.7rem;flex-wrap:wrap;justify-content:center;margin:2.4rem auto 0;padding:.7rem 1.1rem;border-radius:14px;background:linear-gradient(135deg,rgba(32,190,255,.1),rgba(162,155,254,.08));border:1px solid rgba(32,190,255,.3);font-family:var(--mono);font-size:.82rem;color:var(--fg2);transition:all .2s;box-shadow:0 8px 30px rgba(32,190,255,.06)}
+.arc-tracker:hover{border-color:rgba(32,190,255,.6);transform:translateY(-1px);box-shadow:0 10px 40px rgba(32,190,255,.14)}
+.arc-pulse{width:9px;height:9px;border-radius:50%;background:#20beff;box-shadow:0 0 0 0 rgba(32,190,255,.6);animation:arcPulse 2s infinite}
+@keyframes arcPulse{0%{box-shadow:0 0 0 0 rgba(32,190,255,.55)}70%{box-shadow:0 0 0 8px rgba(32,190,255,0)}100%{box-shadow:0 0 0 0 rgba(32,190,255,0)}}
+.arc-eyebrow{letter-spacing:1.2px;text-transform:uppercase;font-size:.7rem;color:#20beff;font-weight:700}
+.arc-divider{width:1px;height:16px;background:rgba(255,255,255,.12)}
+.arc-rank{font-size:1.15rem;font-weight:800;color:var(--fg);letter-spacing:-.5px}
+.arc-of{font-size:.75rem;color:var(--fg2)}
+.arc-medal{font-size:1rem;line-height:1}
+.arc-meta{font-size:.78rem;color:var(--fg2)}
+.arc-meta strong{color:var(--cyan);font-weight:700}
+.arc-cta{font-size:.75rem;color:#20beff;font-weight:600}
+.arc-asof{font-family:var(--mono);font-size:.7rem;color:var(--fg2);opacity:.7;text-align:center;margin:.7rem auto 0}
+.arc-asof code{color:#20beff;font-size:.95em}
+@media(max-width:600px){.arc-tracker{font-size:.75rem;padding:.6rem .8rem}.arc-divider,.arc-cta{display:none}}
 /* Terminal sits below copy, bleeds edge-to-edge inside a max-width container */
 .hero-terminal{position:relative;max-width:1060px;margin:0 auto;padding:0 2rem}
 .hero-terminal::before{content:'';position:absolute;top:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:1}
@@ -374,6 +390,19 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
       <span class="badge">safe by design</span>
       <span class="badge">local-first</span>
     </div>
+
+    <!-- ── ARC-AGI-3 live tracker ───────────────────────────────────── -->
+    <a class="arc-tracker" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel" target="_blank" rel="noopener" aria-label="KAOS on the ARC-AGI-3 Kaggle leaderboard, rank 47">
+      <span class="arc-pulse" aria-hidden="true"></span>
+      <span class="arc-eyebrow">ARC-AGI-3 &middot; ARC Prize 2026</span>
+      <span class="arc-divider" aria-hidden="true"></span>
+      <span class="arc-rank">#47</span>
+      <span class="arc-of">of ~1,100 teams</span>
+      <span class="arc-medal" title="Silver medal zone">&#129352;</span>
+      <span class="arc-meta">KAOS competing <strong>autonomously</strong> &middot; score 0.43</span>
+      <span class="arc-cta" aria-hidden="true">View leaderboard &rarr;</span>
+    </a>
+    <p class="arc-asof">Standing as of Jun 8, 2026 &mdash; entered solo by <code>canivel</code>, run by KAOS itself.</p>
   </div>
 </div>
 
