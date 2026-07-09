@@ -251,8 +251,17 @@ class TestConfigurablePragmas:
         assert wal == 1000
         k.close()
 
-    def test_defaults_preserve_full_100(self, tmp_path):
+    def test_default_is_normal_1000(self, tmp_path):
+        # v0.10: default flipped FULL/100 -> NORMAL/1000 after
+        # demo_storage_scale_bench measured NORMAL ~125x faster on write p95.
         k = Kaos(db_path=str(tmp_path / "k.db"))
+        assert k.conn.execute("PRAGMA synchronous").fetchone()[0] == 1  # NORMAL
+        assert k.conn.execute("PRAGMA wal_autocheckpoint").fetchone()[0] == 1000
+        k.close()
+
+    def test_full_still_selectable(self, tmp_path):
+        k = Kaos(db_path=str(tmp_path / "k.db"), synchronous="FULL",
+                 wal_autocheckpoint=100)
         assert k.conn.execute("PRAGMA synchronous").fetchone()[0] == 2  # FULL
         assert k.conn.execute("PRAGMA wal_autocheckpoint").fetchone()[0] == 100
         k.close()

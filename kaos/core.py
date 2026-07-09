@@ -35,16 +35,20 @@ class Kaos:
     """
 
     def __init__(self, db_path: str = "agents.db", compression: str = "zstd",
-                 *, synchronous: str = "FULL", wal_autocheckpoint: int = 100):
+                 *, synchronous: str = "NORMAL", wal_autocheckpoint: int = 1000):
         self.db_path = db_path
         self._local = threading.local()
         self._compression = compression
         # Durability/throughput knobs applied to every thread-local connection.
-        # Defaults preserve prior behavior (FULL + 100). synchronous=NORMAL is
-        # the SQLite-recommended WAL setting and trades a small crash-durability
-        # window for large throughput gains under write contention (see
-        # demo_storage_scale_bench). These are per-connection pragmas, so they
-        # MUST be set here rather than once on the file.
+        # Default is synchronous=NORMAL — the SQLite-recommended WAL setting.
+        # demo_storage_scale_bench measured NORMAL as ~125x faster on write p95
+        # (1895ms -> 15ms) and ~38x higher throughput (29 -> 1118 ops/s) under
+        # 8-thread contention vs the old FULL default, with zero lock errors.
+        # The only trade is that an OS crash / power loss (NOT an application
+        # crash) may lose the last few committed transactions — the database
+        # stays consistent and uncorrupted. Pass synchronous="FULL" for the
+        # strictest durability. These are per-connection pragmas, so they MUST
+        # be set on each connection rather than once on the file.
         self._synchronous = str(synchronous).upper()
         self._wal_autocheckpoint = int(wal_autocheckpoint)
 
@@ -65,9 +69,9 @@ class Kaos:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=30000")
-            conn.execute(f"PRAGMA synchronous={getattr(self, '_synchronous', 'FULL')}")
+            conn.execute(f"PRAGMA synchronous={getattr(self, '_synchronous', 'NORMAL')}")
             conn.execute(
-                f"PRAGMA wal_autocheckpoint={getattr(self, '_wal_autocheckpoint', 100)}"
+                f"PRAGMA wal_autocheckpoint={getattr(self, '_wal_autocheckpoint', 1000)}"
             )
             self._local.conn = conn
         return self._local.conn

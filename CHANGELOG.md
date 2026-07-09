@@ -2,6 +2,13 @@
 
 All notable changes to KAOS are documented here.
 
+## [Unreleased] — v0.10 Tier-1 (measure & harden)
+
+Follow-through on the v0.10 scoping panel (`docs/roadmap/v0.10-candidates.md`). In progress; will be cut as v0.10.0 when the Tier-1 wave lands.
+
+- **`storage-scale-bench` — single-DB does NOT saturate; per-agent-DB sharding REJECT-by-measurement.** Built `demo_storage_scale_bench/`; at 10k agents cross-agent FTS5 `memory_search` p95 is 9.2 ms (~55× under the sanity line). The real cost is write-commit contention, flat with scale. See the bench README.
+- **Default `synchronous` flipped `FULL` → `NORMAL` (behavior change).** The bench measured NORMAL ~125× faster on write p95 (1895 ms → 15 ms) and ~38× higher throughput (29 → 1118 ops/s) under 8-thread contention, zero lock errors. NORMAL is SQLite's recommended WAL setting; the only trade is that an OS crash / power loss (not an application crash) may lose the last few committed transactions — the database stays consistent and uncorrupted. `synchronous`/`wal_autocheckpoint` are now constructor args on `Kaos(...)`; pass `synchronous="FULL"` for the strictest durability. (Test suite also ~2× faster as a side effect.)
+
 ## [0.9.2] - 2026-06-24
 
 ### Tier-0 correctness debt — fix the instrument before building anything new
