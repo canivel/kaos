@@ -360,8 +360,13 @@ def _install_mcp_server(config_path: str, preset: str) -> None:
     # Write back
     settings_path.write_text(json_mod.dumps(existing, indent=2) + "\n")
 
+    from kaos.mcp.server import mcp_tool_count
+
     console.print(f"\n[green]MCP server installed ({scope_label}):[/] {settings_path}")
-    console.print(f"[dim]KAOS will be available as 18 tools in Claude Code after restart.[/]")
+    console.print(
+        f"[dim]KAOS will be available as {mcp_tool_count()} tools in Claude Code "
+        f"after restart.[/]"
+    )
 
 
 def _print_next_steps(preset: str, config_path: str, mcp_installed: bool) -> None:

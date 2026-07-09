@@ -46,7 +46,15 @@ def init_server(afs: Kaos, ccr: ClaudeCodeRunner) -> Server:
 
 @server.list_tools()
 async def list_tools() -> list[Tool]:
-    """List all available Kaos tools."""
+    """List all available Kaos tools (MCP async entrypoint)."""
+    return build_tool_list()
+
+
+def build_tool_list() -> list[Tool]:
+    """The single source of truth for the MCP tool surface. Both the async
+    list_tools() handler and tool_count() derive from this — no doc or string
+    should hardcode the number (they drifted across 17/18/25/45/50/58 before
+    this was centralized)."""
     return [
         # ── Agent Lifecycle ──────────────────────────────────────
         Tool(
@@ -1081,6 +1089,19 @@ async def list_tools() -> list[Tool]:
             },
         ),
     ]
+
+
+def mcp_tool_count() -> int:
+    """The authoritative MCP tool count. Anything user-facing that states a
+    number (CLI output, docs consistency tests) should call this, never a
+    literal."""
+    return len(build_tool_list())
+
+
+def mcp_tool_names() -> list[str]:
+    """Sorted list of registered MCP tool names — the single source of truth
+    for schema/dispatch consistency checks."""
+    return sorted(t.name for t in build_tool_list())
 
 
 @server.call_tool()

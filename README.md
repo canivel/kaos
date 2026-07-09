@@ -2,7 +2,7 @@
 
 **The living synthesis of agentic AI research.** Eight research breakthroughs — neuroplasticity that rewires the library automatically, skills that compound across projects, memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
 
-[![Version](https://img.shields.io/badge/version-0.9.1-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.9.2-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![Research](https://img.shields.io/badge/research%20integrations-8-brightgreen)]()
@@ -329,7 +329,7 @@ kaos serve                         # stdio (default — for Claude Code / Cursor
 kaos serve --transport sse --port 8788   # SSE over HTTP
 ```
 
-Exposes **45 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, 9 meta-harness (including CORAL co-evolution and skill distillation), and **8 neuroplasticity** (`dream_run`, `dream_related`, `failure_lookup`, `failure_list`, `dream_consolidate`, `failure_diagnose`, `failure_fix_outcome`, `systemic_alerts`). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
+Exposes **58 tools** to any MCP client: 18 agent lifecycle/VFS/checkpoint/query/parallel, 5 skill, 3 cross-agent memory, 5 shared-log, 9 meta-harness (including CORAL co-evolution and skill distillation), and **8 neuroplasticity** (`dream_run`, `dream_related`, `failure_lookup`, `failure_list`, `dream_consolidate`, `failure_diagnose`, `failure_fix_outcome`, `systemic_alerts`). See [`docs/mcp-integration.md`](docs/mcp-integration.md).
 
 ---
 
@@ -405,7 +405,7 @@ results = asyncio.run(ccr.run_parallel([
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag |
-| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 45 tools |
+| [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 58 tools |
 | [Neuroplasticity](docs/neuroplasticity.md) | Inline plasticity, failure intelligence, measured gains + overhead |
 | [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |
 | [Cross-Agent Memory](docs/memory.md) | FTS5 searchable memory across agents and sessions |

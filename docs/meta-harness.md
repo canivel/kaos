@@ -313,7 +313,7 @@ print(result.summary())
 
 ### MCP Tool
 
-The `mh_resume` tool is available via the MCP server (18 tools total):
+The `mh_resume` tool is available via the MCP server (58 tools total):
 
 ```json
 {

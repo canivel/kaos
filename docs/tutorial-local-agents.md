@@ -41,7 +41,7 @@ Here's the architecture:
           ▼
 ┌──────────────────────────────┐
 │       KAOS MCP Server        │  ← Orchestration layer
-│  18 tools: spawn, read,      │
+│  58 tools: spawn, read,      │
 │  write, checkpoint, query,   │
 │  pause, resume, mh_search... │
 └─────────┬────────────────────┘

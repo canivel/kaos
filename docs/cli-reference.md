@@ -225,7 +225,7 @@ kaos dashboard --db ./project.db
 ## MCP Server
 
 ### `kaos serve`
-Start the MCP server (50 tools — surface held flat in v0.9) for Claude Code and other MCP-compatible clients.
+Start the MCP server (58 tools) for Claude Code and other MCP-compatible clients.
 
 ```bash
 kaos serve --transport stdio       # for Claude Code / most clients

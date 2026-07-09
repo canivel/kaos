@@ -1,7 +1,7 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.9.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
+KAOS is a local-first multi-agent orchestration framework (v0.9.2). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
 
 ## Package & CLI
 - Package: `kaos` (import with `from kaos import Kaos`)
@@ -38,7 +38,7 @@ kaos/router/providers.py     → 5 providers (claude_code: streaming + idle/wall
 kaos/router/agent_sdk.py     → Claude Agent SDK provider (agent_sdk)
 kaos/router/classifier.py    → LLM + heuristic classifier
 kaos/router/vllm_client.py   → Raw httpx vLLM client
-kaos/mcp/server.py           → MCP server (50 tools — held flat in v0.9)
+kaos/mcp/server.py           → MCP server (58 tools, v0.9.1)
 kaos/cli/main.py             → CLI (now includes doctor/eval/experiment groups)
 kaos/metaharness/worker.py   → Detached worker for background mh_search
 kaos/metaharness/search.py   → Meta-Harness loop (catches ProposerStalled, v0.9)

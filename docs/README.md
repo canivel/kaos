@@ -32,7 +32,7 @@ kaos demo        # see it in action — no API keys needed
 | [Dashboard](dashboard.md) | Gantt timeline, agent inspector, live events, multi-project |
 | [Checkpoints](checkpoints.md) | Snapshot, restore, diff, auto-checkpointing, storage |
 | [Use Cases](use-cases.md) | Code review swarm, parallel refactor, self-healing, post-mortem, incident response, ML research |
-| [MCP Integration](mcp-integration.md) | Claude Code / Cursor setup, all 25 MCP tools |
+| [MCP Integration](mcp-integration.md) | Claude Code / Cursor setup, all 58 MCP tools |
 | [Meta-Harness](meta-harness.md) | Automated prompt/strategy optimization search |
 | [CLI Reference](cli-reference.md) | Every command, every flag |
 | [Cross-Agent Memory](memory.md) | FTS5 searchable memory across agents and sessions |
