@@ -727,7 +727,7 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
         **kwargs: Provider-specific config (api_key, endpoint, etc.)
     """
     if provider_type == "anthropic":
-        api_key = kwargs.get("api_key") or os.environ.get(kwargs.get("api_key_env", "ANTHROPIC_API_KEY"), "")
+        api_key = kwargs.get("api_key") or os.environ.get(kwargs.get("api_key_env") or "ANTHROPIC_API_KEY", "")
         if not api_key:
             raise ValueError(
                 "Anthropic API key required. Set ANTHROPIC_API_KEY environment variable "
@@ -736,17 +736,17 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
         return AnthropicProvider(api_key=api_key, timeout=kwargs.get("timeout", 120.0))
 
     elif provider_type == "openai":
-        api_key = kwargs.get("api_key") or os.environ.get(kwargs.get("api_key_env", "OPENAI_API_KEY"), "")
+        api_key = kwargs.get("api_key") or os.environ.get(kwargs.get("api_key_env") or "OPENAI_API_KEY", "")
         if not api_key:
             raise ValueError(
                 "OpenAI API key required. Set OPENAI_API_KEY environment variable "
                 "or add api_key_env to your model config."
             )
-        base_url = kwargs.get("endpoint", "https://api.openai.com/v1")
+        base_url = kwargs.get("endpoint") or "https://api.openai.com/v1"
         return OpenAIProvider(base_url=base_url, api_key=api_key, timeout=kwargs.get("timeout", 120.0))
 
     elif provider_type == "local":
-        endpoint = kwargs.get("endpoint", "http://localhost:8000/v1")
+        endpoint = kwargs.get("endpoint") or "http://localhost:8000/v1"
         return LocalProvider(endpoint=endpoint, timeout=kwargs.get("timeout", 120.0))
 
     elif provider_type == "claude_code":

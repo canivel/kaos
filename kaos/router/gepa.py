@@ -6,6 +6,7 @@ context length, and available compute.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from dataclasses import dataclass, field
@@ -16,7 +17,7 @@ import yaml
 from kaos.ccr.runner import ModelResponse, ToolCall
 from kaos.router.classifier import HeuristicClassifier, LLMClassifier
 from kaos.router.context import ContextCompressor
-from kaos.router.providers import LLMProvider, create_provider
+from kaos.router.providers import LLMProvider, ProposerStalled, create_provider
 from kaos.router.vllm_client import VLLMClient
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,15 @@ class GEPARouter:
         self.max_retries = max_retries
         self.context_compression = context_compression
         self.compressor = ContextCompressor()
+        # Exponential backoff base between retries of the SAME client
+        # (0.5s, 1s, 2s, ...). Tests set 0 for speed.
+        self.retry_backoff = 0.5
+        # Router-level absolute wall over each call = cfg.timeout + margin.
+        # httpx read timeouts are between-bytes, so a slow-drip server never
+        # trips them; this ceiling is the safety net. The margin gives
+        # providers with their own wall (claude_code, agent_sdk) room to fire
+        # first with their richer error taxonomy.
+        self.wall_margin = 30.0
 
         # Routing table: complexity -> model name
         self.routing_table = routing_table or self._build_routing_table()
@@ -79,6 +89,7 @@ class GEPARouter:
                     cfg.provider,
                     api_key_env=cfg.api_key_env,
                     endpoint=cfg.vllm_endpoint or None,
+                    timeout=cfg.timeout,
                 )
             elif cfg.provider in ("claude_code", "agent_sdk"):
                 self.clients[name] = create_provider(
@@ -88,7 +99,8 @@ class GEPARouter:
                 )
             else:
                 # Default: local vLLM/ollama endpoint
-                self.clients[name] = VLLMClient(base_url=cfg.vllm_endpoint)
+                self.clients[name] = VLLMClient(base_url=cfg.vllm_endpoint,
+                                                timeout=cfg.timeout)
 
         # Initialize classifier: LLM if a classifier model is available, else heuristic
         if classifier_model and classifier_model in models:
@@ -209,6 +221,18 @@ class GEPARouter:
         client = self.clients[model_name]
         return await self._call_model(client, model_name, messages, tools, config)
 
+    @staticmethod
+    def _is_auth_error(e: Exception) -> bool:
+        """Credential problems don't heal on retry — fail fast."""
+        status = getattr(getattr(e, "response", None), "status_code", None)
+        if status in (401, 403):
+            return True
+        s = str(e).lower()
+        return any(marker in s for marker in (
+            "401", "403", "unauthorized", "forbidden",
+            "invalid api key", "authentication",
+        ))
+
     async def _call_model(
         self,
         client: VLLMClient | LLMProvider,
@@ -217,49 +241,86 @@ class GEPARouter:
         tools: list[dict],
         config: dict,
     ) -> ModelResponse:
-        """Call a model via any provider (local vLLM, OpenAI, or Anthropic)."""
-        # Use model_id for API providers (e.g. "gpt-4o"), model_name for local
-        model_config = self.models.get(model_name)
-        actual_model = model_config.model_id if model_config and model_config.model_id else model_name
+        """Call a model via any provider, with an honest failure policy:
 
-        last_error = None
-        for attempt in range(self.max_retries):
-            try:
-                response = await client.chat(
-                    model=actual_model,
-                    messages=messages,
-                    temperature=config.get("temperature", 0.1),
-                    max_tokens=config.get("max_tokens", 4096),
-                    tools=tools or None,
-                    tool_choice="auto" if tools else None,
-                )
-                return self._parse_response(response)
-            except Exception as e:
-                last_error = e
-                logger.warning(
-                    "Model call attempt %d/%d failed for %s: %s",
-                    attempt + 1,
-                    self.max_retries,
-                    model_name,
-                    e,
-                )
-                if attempt < self.max_retries - 1:
-                    if model_name != self.fallback_model:
-                        logger.info("Falling back to %s", self.fallback_model)
-                        client = self.clients[self.fallback_model]
-                        model_name = self.fallback_model
+        - ``ProposerStalled`` / ``TimeoutError`` re-raise UNTOUCHED. The
+          meta-harness search loop's survival contract (P0 #11) depends on
+          catching these types; the old blanket RuntimeError rewrap silently
+          defeated that fix whenever the call went through the router.
+        - Auth errors (401/403/invalid key) are never retried on the same
+          client — a credential problem doesn't heal on attempt 2.
+        - The fallback model is tried AFTER the primary's retries are
+          exhausted, independent of max_retries. (Previously fallback lived
+          inside `if attempt < max_retries - 1`, which at the shipped default
+          max_retries=1 made fallback_model dead config.)
+        - Each call runs under an absolute wall of cfg.timeout + wall_margin,
+          because httpx read timeouts are between-bytes and a slow-drip
+          server never trips them.
+        - Retries of the same client back off exponentially.
+        """
+        candidates = [model_name]
+        if self.fallback_model and self.fallback_model != model_name \
+                and self.fallback_model in self.clients:
+            candidates.append(self.fallback_model)
+
+        last_error: Exception | None = None
+        failed_name = model_name
+        for idx, cand in enumerate(candidates):
+            cand_client = client if cand == model_name else self.clients[cand]
+            cand_cfg = self.models.get(cand)
+            actual_model = cand_cfg.model_id if cand_cfg and cand_cfg.model_id else cand
+            wall = (cand_cfg.timeout if cand_cfg else 300.0) + self.wall_margin
+            if idx > 0:
+                logger.info("Falling back to %s", cand)
+
+            for attempt in range(max(1, self.max_retries)):
+                try:
+                    response = await asyncio.wait_for(
+                        cand_client.chat(
+                            model=actual_model,
+                            messages=messages,
+                            temperature=config.get("temperature", 0.1),
+                            max_tokens=config.get("max_tokens", 4096),
+                            tools=tools or None,
+                            tool_choice="auto" if tools else None,
+                        ),
+                        timeout=wall,
+                    )
+                    return self._parse_response(response)
+                except (ProposerStalled, TimeoutError):
+                    # Taxonomy the caller depends on — propagate untouched.
+                    # (asyncio.TimeoutError IS TimeoutError on 3.11+, so the
+                    # router wall surfaces the same way a provider wall does.)
+                    raise
+                except Exception as e:
+                    last_error = e
+                    failed_name = cand
+                    logger.warning(
+                        "Model call attempt %d/%d failed for %s: %s",
+                        attempt + 1, max(1, self.max_retries), cand, e,
+                    )
+                    if self._is_auth_error(e):
+                        # Try the next candidate (may use different creds),
+                        # but never re-drive the same client.
+                        break
+                    if attempt < max(1, self.max_retries) - 1 and self.retry_backoff:
+                        await asyncio.sleep(
+                            min(self.retry_backoff * (2 ** attempt), 8.0)
+                        )
 
         # Build an actionable error message
         err_str = str(last_error)
         hint = ""
         if "Connection" in err_str or "refused" in err_str.lower():
-            model_cfg = self.models.get(model_name)
+            model_cfg = self.models.get(failed_name)
             endpoint = model_cfg.vllm_endpoint if model_cfg else "unknown"
             hint = f" Is the model server running at {endpoint}?"
+        elif self._is_auth_error(last_error) if last_error else False:
+            hint = " Check the API key env var in kaos.yaml (api_key_env)."
         elif "timeout" in err_str.lower():
             hint = " Try increasing the timeout in kaos.yaml."
         raise RuntimeError(
-            f"Model call failed for '{model_name}': {last_error}.{hint}"
+            f"Model call failed for '{failed_name}': {last_error}.{hint}"
         )
 
     @staticmethod
@@ -271,11 +332,23 @@ class GEPARouter:
         tool_calls = []
         if message.tool_calls:
             for tc in message.tool_calls:
+                raw_args = tc["function"]["arguments"]
+                if isinstance(raw_args, dict):
+                    parsed_args = raw_args
+                else:
+                    try:
+                        parsed_args = json.loads(raw_args)
+                    except (json.JSONDecodeError, TypeError):
+                        # Models occasionally emit malformed JSON args. Don't
+                        # crash routing — surface the raw text so the tool
+                        # layer (or a future action-realization gate) can
+                        # decide what to do with it.
+                        parsed_args = {"raw": raw_args}
                 tool_calls.append(
                     ToolCall(
                         id=tc["id"],
                         name=tc["function"]["name"],
-                        input=json.loads(tc["function"]["arguments"]),
+                        input=parsed_args,
                     )
                 )
 

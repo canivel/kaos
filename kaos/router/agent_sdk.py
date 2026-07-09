@@ -63,6 +63,18 @@ class AgentSDKProvider(LLMProvider):
         system_prompt, user_prompt = self._split_messages(messages)
         effective_model = model or self.model_id
 
+        if tools:
+            # The Agent SDK's ClaudeAgentOptions.tools takes built-in tool
+            # NAMES, not OpenAI-style tool schemas — there is no faithful
+            # conversion, so tool-calling silently degrades to text-only on
+            # this provider. Say so instead of dropping them silently.
+            logger.warning(
+                "agent_sdk provider cannot forward %d OpenAI-style tool "
+                "schema(s); the call proceeds text-only. Use claude_code, "
+                "anthropic, openai, or local for tool-calling.",
+                len(tools),
+            )
+
         result_text = ""
         content_parts: list[str] = []
 
