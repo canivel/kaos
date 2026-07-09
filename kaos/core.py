@@ -34,10 +34,19 @@ class Kaos:
     checkpoint/restore, and a full audit trail — all backed by a single SQLite file.
     """
 
-    def __init__(self, db_path: str = "agents.db", compression: str = "zstd"):
+    def __init__(self, db_path: str = "agents.db", compression: str = "zstd",
+                 *, synchronous: str = "FULL", wal_autocheckpoint: int = 100):
         self.db_path = db_path
         self._local = threading.local()
         self._compression = compression
+        # Durability/throughput knobs applied to every thread-local connection.
+        # Defaults preserve prior behavior (FULL + 100). synchronous=NORMAL is
+        # the SQLite-recommended WAL setting and trades a small crash-durability
+        # window for large throughput gains under write contention (see
+        # demo_storage_scale_bench). These are per-connection pragmas, so they
+        # MUST be set here rather than once on the file.
+        self._synchronous = str(synchronous).upper()
+        self._wal_autocheckpoint = int(wal_autocheckpoint)
 
         # Initialize with a primary connection
         conn = self._get_conn()
@@ -56,7 +65,10 @@ class Kaos:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA foreign_keys=ON")
             conn.execute("PRAGMA busy_timeout=30000")
-            conn.execute("PRAGMA wal_autocheckpoint=100")
+            conn.execute(f"PRAGMA synchronous={getattr(self, '_synchronous', 'FULL')}")
+            conn.execute(
+                f"PRAGMA wal_autocheckpoint={getattr(self, '_wal_autocheckpoint', 100)}"
+            )
             self._local.conn = conn
         return self._local.conn
 

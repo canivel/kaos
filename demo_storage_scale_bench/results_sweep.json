@@ -1,0 +1,188 @@
+[
+  {
+    "scale": 1000,
+    "pragmas": {
+      "synchronous": "FULL",
+      "wal_autocheckpoint": 100
+    },
+    "populate": {
+      "n_agents": 1000,
+      "populate_seconds": 1.14,
+      "agents_per_sec": 880.6
+    },
+    "measure": {
+      "threads": 8,
+      "ops_per_thread": 400,
+      "total_ops": 3200,
+      "wall_seconds": 110.22,
+      "throughput_ops_per_sec": 29.0,
+      "lock_errors": 0,
+      "latency_ms": {
+        "vfs_write": {
+          "n": 933,
+          "p50": 96.848,
+          "p95": 1894.837,
+          "p99": 6059.257,
+          "max": 20437.926
+        },
+        "vfs_read": {
+          "n": 994,
+          "p50": 86.347,
+          "p95": 1290.439,
+          "p99": 4751.454,
+          "max": 15420.068
+        },
+        "memory_search": {
+          "n": 1102,
+          "p50": 1.303,
+          "p95": 2.096,
+          "p99": 2.634,
+          "max": 45.778
+        },
+        "checkpoint": {
+          "n": 171,
+          "p50": 95.48,
+          "p95": 2074.506,
+          "p99": 4725.695,
+          "max": 6926.392
+        }
+      }
+    },
+    "disk_after_populate": {
+      "db_bytes": 6422528,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 6.4
+    },
+    "disk_after_measure": {
+      "db_bytes": 7757824,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 7.8
+    }
+  },
+  {
+    "scale": 1000,
+    "pragmas": {
+      "synchronous": "NORMAL",
+      "wal_autocheckpoint": 1000
+    },
+    "populate": {
+      "n_agents": 1000,
+      "populate_seconds": 0.96,
+      "agents_per_sec": 1037.2
+    },
+    "measure": {
+      "threads": 8,
+      "ops_per_thread": 400,
+      "total_ops": 3200,
+      "wall_seconds": 2.86,
+      "throughput_ops_per_sec": 1118.1,
+      "lock_errors": 0,
+      "latency_ms": {
+        "vfs_write": {
+          "n": 933,
+          "p50": 0.449,
+          "p95": 15.433,
+          "p99": 106.546,
+          "max": 1301.783
+        },
+        "vfs_read": {
+          "n": 994,
+          "p50": 0.178,
+          "p95": 0.565,
+          "p99": 103.71,
+          "max": 978.465
+        },
+        "memory_search": {
+          "n": 1102,
+          "p50": 1.005,
+          "p95": 1.861,
+          "p99": 2.252,
+          "max": 123.696
+        },
+        "checkpoint": {
+          "n": 171,
+          "p50": 0.304,
+          "p95": 29.673,
+          "p99": 61.879,
+          "max": 261.774
+        }
+      }
+    },
+    "disk_after_populate": {
+      "db_bytes": 6422528,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 6.4
+    },
+    "disk_after_measure": {
+      "db_bytes": 7725056,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 7.7
+    }
+  },
+  {
+    "scale": 1000,
+    "pragmas": {
+      "synchronous": "NORMAL",
+      "wal_autocheckpoint": 4000
+    },
+    "populate": {
+      "n_agents": 1000,
+      "populate_seconds": 1.71,
+      "agents_per_sec": 583.3
+    },
+    "measure": {
+      "threads": 8,
+      "ops_per_thread": 400,
+      "total_ops": 3200,
+      "wall_seconds": 3.83,
+      "throughput_ops_per_sec": 835.3,
+      "lock_errors": 0,
+      "latency_ms": {
+        "vfs_write": {
+          "n": 933,
+          "p50": 0.433,
+          "p95": 21.088,
+          "p99": 77.705,
+          "max": 2604.236
+        },
+        "vfs_read": {
+          "n": 994,
+          "p50": 0.171,
+          "p95": 0.537,
+          "p99": 78.01,
+          "max": 2386.475
+        },
+        "memory_search": {
+          "n": 1102,
+          "p50": 0.967,
+          "p95": 1.74,
+          "p99": 2.132,
+          "max": 3.21
+        },
+        "checkpoint": {
+          "n": 171,
+          "p50": 0.293,
+          "p95": 2.478,
+          "p99": 76.447,
+          "max": 1424.955
+        }
+      }
+    },
+    "disk_after_populate": {
+      "db_bytes": 6422528,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 6.4
+    },
+    "disk_after_measure": {
+      "db_bytes": 7733248,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 7.7
+    }
+  }
+]

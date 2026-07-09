@@ -236,3 +236,30 @@ class TestSharedLogPosition:
         k2.close()
         assert len(positions) == n_threads * per
         assert len(positions) == len(set(positions)), "duplicate positions"
+
+
+# ── v0.10 storage-scale: Kaos durability/throughput pragmas configurable ──
+
+
+class TestConfigurablePragmas:
+    def test_synchronous_and_autocheckpoint_apply(self, tmp_path):
+        k = Kaos(db_path=str(tmp_path / "k.db"),
+                 synchronous="NORMAL", wal_autocheckpoint=1000)
+        sync = k.conn.execute("PRAGMA synchronous").fetchone()[0]
+        wal = k.conn.execute("PRAGMA wal_autocheckpoint").fetchone()[0]
+        assert sync == 1  # NORMAL==1, FULL==2
+        assert wal == 1000
+        k.close()
+
+    def test_defaults_preserve_full_100(self, tmp_path):
+        k = Kaos(db_path=str(tmp_path / "k.db"))
+        assert k.conn.execute("PRAGMA synchronous").fetchone()[0] == 2  # FULL
+        assert k.conn.execute("PRAGMA wal_autocheckpoint").fetchone()[0] == 100
+        k.close()
+
+    def test_writes_work_under_normal(self, tmp_path):
+        k = Kaos(db_path=str(tmp_path / "k.db"), synchronous="NORMAL")
+        a = k.spawn("agent")
+        k.write(a, "/f.txt", b"data")
+        assert k.read(a, "/f.txt") == b"data"
+        k.close()

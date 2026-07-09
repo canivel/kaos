@@ -1,0 +1,126 @@
+[
+  {
+    "scale": 1000,
+    "pragmas": {
+      "synchronous": "default",
+      "wal_autocheckpoint": 100
+    },
+    "populate": {
+      "n_agents": 1000,
+      "populate_seconds": 0.7,
+      "agents_per_sec": 1430.7
+    },
+    "measure": {
+      "threads": 8,
+      "ops_per_thread": 400,
+      "total_ops": 3200,
+      "wall_seconds": 111.53,
+      "throughput_ops_per_sec": 28.7,
+      "lock_errors": 0,
+      "latency_ms": {
+        "vfs_write": {
+          "n": 933,
+          "p50": 93.032,
+          "p95": 1768.714,
+          "p99": 5441.443,
+          "max": 18361.28
+        },
+        "vfs_read": {
+          "n": 994,
+          "p50": 81.11,
+          "p95": 1610.447,
+          "p99": 5206.796,
+          "max": 20248.145
+        },
+        "memory_search": {
+          "n": 1102,
+          "p50": 1.185,
+          "p95": 1.537,
+          "p99": 2.83,
+          "max": 23.548
+        },
+        "checkpoint": {
+          "n": 171,
+          "p50": 128.905,
+          "p95": 2174.087,
+          "p99": 6994.366,
+          "max": 21288.241
+        }
+      }
+    },
+    "disk_after_populate": {
+      "db_bytes": 6422528,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 6.4
+    },
+    "disk_after_measure": {
+      "db_bytes": 7716864,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 7.7
+    }
+  },
+  {
+    "scale": 10000,
+    "pragmas": {
+      "synchronous": "default",
+      "wal_autocheckpoint": 100
+    },
+    "populate": {
+      "n_agents": 10000,
+      "populate_seconds": 13.81,
+      "agents_per_sec": 724.1
+    },
+    "measure": {
+      "threads": 8,
+      "ops_per_thread": 400,
+      "total_ops": 3200,
+      "wall_seconds": 115.54,
+      "throughput_ops_per_sec": 27.7,
+      "lock_errors": 0,
+      "latency_ms": {
+        "vfs_write": {
+          "n": 945,
+          "p50": 143.63,
+          "p95": 2048.722,
+          "p99": 5048.56,
+          "max": 9751.96
+        },
+        "vfs_read": {
+          "n": 976,
+          "p50": 131.668,
+          "p95": 1789.296,
+          "p99": 4753.06,
+          "max": 10472.001
+        },
+        "memory_search": {
+          "n": 1111,
+          "p50": 6.352,
+          "p95": 9.214,
+          "p99": 10.533,
+          "max": 32.289
+        },
+        "checkpoint": {
+          "n": 168,
+          "p50": 132.91,
+          "p95": 2114.805,
+          "p99": 4705.705,
+          "max": 10825.959
+        }
+      }
+    },
+    "disk_after_populate": {
+      "db_bytes": 60731392,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 60.7
+    },
+    "disk_after_measure": {
+      "db_bytes": 61911040,
+      "wal_bytes": 0,
+      "shm_bytes": 0,
+      "db_mb": 61.9
+    }
+  }
+]
