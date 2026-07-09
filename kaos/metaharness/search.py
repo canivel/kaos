@@ -117,6 +117,7 @@ class MetaHarnessSearch:
             # 3a. Proposer inspects archive and proposes candidates
             stagnant = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
             pivot_fired_at = self.afs.get_state_or(self.search_agent_id, "pivot_fired_at")
+            pivot_pending = bool(self.afs.get_state_or(self.search_agent_id, "pivot_pending"))
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -128,6 +129,7 @@ class MetaHarnessSearch:
                         stagnant_iterations=stagnant,
                         stagnation_threshold=self.config.stagnation_threshold,
                         pivot_fired_at=pivot_fired_at,
+                        pivot_pending=pivot_pending,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -351,6 +353,7 @@ class MetaHarnessSearch:
 
             stagnant_r = self.afs.get_state_or(search_agent_id, "stagnant_iterations") or 0
             pivot_fired_at_r = self.afs.get_state_or(search_agent_id, "pivot_fired_at")
+            pivot_pending_r = bool(self.afs.get_state_or(search_agent_id, "pivot_pending"))
             try:
                 candidates = await asyncio.wait_for(
                     proposer.propose(
@@ -362,6 +365,7 @@ class MetaHarnessSearch:
                         stagnant_iterations=stagnant_r,
                         stagnation_threshold=self.config.stagnation_threshold,
                         pivot_fired_at=pivot_fired_at_r,
+                        pivot_pending=pivot_pending_r,
                     ),
                     timeout=self.config.proposer_timeout_seconds,
                 )
@@ -461,20 +465,26 @@ class MetaHarnessSearch:
         self.afs.set_state(self.search_agent_id, "prev_frontier_size", len(frontier.points))
 
         threshold = self.config.stagnation_threshold
-        # Cooldown check: fire pivot only if stagnant >= threshold AND
-        # we haven't fired recently (or never fired)
+        # SINGLE AUTHORITY for the pivot decision. Fire only if stagnant reaches
+        # the threshold and we have not fired recently (cooldown). When we fire,
+        # raise `pivot_pending` for the NEXT proposer call to consume — the
+        # proposer no longer recomputes this predicate (which used to be defeated
+        # by pivot_fired_at being stamped here first: the "pivot is dead code" P0).
         should_pivot = (
             stagnant >= threshold
             and (pivot_fired_at is None or stagnant - pivot_fired_at >= threshold)
         )
         if should_pivot:
             self.afs.set_state(self.search_agent_id, "pivot_fired_at", stagnant)
+            self.afs.set_state(self.search_agent_id, "pivot_pending", True)
             logger.warning(
                 "Iteration %d: pivot prompt fired (stagnant=%d, threshold=%d)",
                 iteration, stagnant, threshold,
             )
-        elif pivot_fired_at is not None and improved:
+        elif improved:
+            # An improving iteration clears both the cooldown and any pending pivot.
             self.afs.set_state(self.search_agent_id, "pivot_fired_at", None)
+            self.afs.set_state(self.search_agent_id, "pivot_pending", False)
 
         return stagnant
 

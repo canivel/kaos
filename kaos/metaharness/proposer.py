@@ -151,24 +151,28 @@ class ProposerAgent:
             handler=self._submit_harness,
         ))
 
-    async def propose(
+    def _assemble_prompt(
         self,
+        *,
         iteration: int,
         n_candidates: int,
         benchmark_name: str,
         frontier: ParetoFrontier,
         compaction_level: int = 5,
-        stagnant_iterations: int = 0,
-        stagnation_threshold: int = 3,
-        pivot_fired_at: int | None = None,
-    ) -> list[HarnessCandidate]:
-        """Run the proposer agent and collect submitted harness candidates.
+        pivot_pending: bool = False,
+    ) -> str:
+        """Assemble the full proposer prompt (proposer + digest + reflect +
+        optional pivot + optional consolidation).
 
-        Returns a list of HarnessCandidate objects submitted via mh_submit_harness.
+        The CORAL Tier-1 pivot is driven by a single ``pivot_pending`` flag
+        raised by ``MetaHarnessSearch._update_stagnation`` — the SOLE authority
+        for the pivot decision. Previously both this method and
+        _update_stagnation recomputed the same stagnation predicate; the latter
+        stamped pivot_fired_at first, which made this predicate permanently
+        False (the reproduced "pivot is dead code" P0). When the flag is set we
+        fire the pivot prompt and CONSUME the flag so it does not re-fire every
+        subsequent iteration.
         """
-        self._submitted = []
-
-        # Build the frontier summary for the prompt
         objective_summary = ", ".join(
             f"{name} ({direction})"
             for name, direction in frontier.objectives.items()
@@ -192,9 +196,7 @@ class ProposerAgent:
         )
 
         if archive_digest:
-            # Prepend any reusable skills discovered so far
             skills_text = self._load_skills_text()
-            # Query cross-agent memory for relevant prior context (claude-mem inspired)
             memory_context = self._load_memory_context(benchmark_name)
             prompt += (
                 "\n\n## Pre-loaded Archive Digest\n\n"
@@ -210,13 +212,9 @@ class ProposerAgent:
         # CORAL: per-iteration reflect (always fires)
         prompt += build_reflect_prompt(iteration)
 
-        # CORAL Tier 1: stagnation pivot — cooldown-protected
-        # Only fire if stagnant >= threshold AND (never fired OR enough new stagnant iters since last fire)
-        should_pivot = (
-            stagnant_iterations >= stagnation_threshold
-            and (pivot_fired_at is None or stagnant_iterations - pivot_fired_at >= stagnation_threshold)
-        )
-        if should_pivot and frontier.points:
+        # CORAL Tier 1: stagnation pivot — fire iff the single authority raised
+        # the flag, then consume it.
+        if pivot_pending and frontier.points:
             best_src = ""
             try:
                 best_hid = frontier.points[0].harness_id
@@ -224,7 +222,11 @@ class ProposerAgent:
                 best_src = raw[:300] + ("..." if len(raw) > 300 else "")
             except Exception:
                 pass
-            prompt += build_pivot_prompt(stagnant_iterations, best_src)
+            # stagnant count is informational in the pivot prompt; the flag is
+            # the decision. Read the current count for the message only.
+            stagnant = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
+            prompt += build_pivot_prompt(stagnant, best_src)
+            self.afs.set_state(self.search_agent_id, "pivot_pending", False)
 
         # CORAL Tier 2: consolidation heartbeat
         try:
@@ -234,6 +236,35 @@ class ProposerAgent:
             cons_interval = 5
         if iteration > 0 and iteration % cons_interval == 0:
             prompt += build_consolidation_prompt(iteration)
+
+        return prompt
+
+    async def propose(
+        self,
+        iteration: int,
+        n_candidates: int,
+        benchmark_name: str,
+        frontier: ParetoFrontier,
+        compaction_level: int = 5,
+        stagnant_iterations: int = 0,
+        stagnation_threshold: int = 3,
+        pivot_fired_at: int | None = None,
+        pivot_pending: bool = False,
+    ) -> list[HarnessCandidate]:
+        """Run the proposer agent and collect submitted harness candidates.
+
+        Returns a list of HarnessCandidate objects submitted via mh_submit_harness.
+        """
+        self._submitted = []
+
+        prompt = self._assemble_prompt(
+            iteration=iteration,
+            n_candidates=n_candidates,
+            benchmark_name=benchmark_name,
+            frontier=frontier,
+            compaction_level=compaction_level,
+            pivot_pending=pivot_pending,
+        )
 
         # Single-shot mode: send the full prompt once, extract python blocks.
         # This avoids the multi-turn CCR loop where each turn replays the

@@ -2,6 +2,28 @@
 
 All notable changes to KAOS are documented here.
 
+## [0.9.2] - 2026-06-24
+
+### Tier-0 correctness debt — fix the instrument before building anything new
+
+A 48-agent scoping panel (see `docs/roadmap/v0.10-candidates.md`) reviewed every subsystem and turned up reproduced P0 bugs — including two in the v0.9 eval harness itself. The framework's pitch is verified reliability; shipping new mechanisms on top of a VFS that crashes on delete-then-rewrite and an eval harness whose judge cannot fail would be theater. v0.9.2 fixes the P0s, red-first (each test fails on pre-fix HEAD, passes after). No new features. **650 tests passing (+27), 1 skipped.**
+
+**Core storage correctness + concurrency** (`kaos/core.py`, `blobs.py`, `events.py`, `checkpoints.py`, `shared_log.py`, `memory.py`):
+- **write() version collision** — next version was `MAX(version)` over `deleted=0` rows only, against `UNIQUE(agent_id,path,version)` which spans tombstones; delete-then-rewrite and restore-then-write reset the counter to 1 and crashed with `IntegrityError`, defeating checkpoint/time-travel. Now computes over all rows and is wrapped in a transaction with rollback.
+- **read() held an open write transaction** — the FILE_READ audit event is an INSERT that implicitly begins a write txn; leaving it open pinned the single WAL writer lock and blocked every other connection's writes. Now commits immediately after logging.
+- **Helpers pinned the init-thread connection** — BlobStore/EventJournal/CheckpointManager captured the connection at construction, splitting a cross-thread `write()` across two connections. They now resolve the calling thread's connection via a getter.
+- **query() read-only bypass** — the keyword-prefix blacklist passed `REPLACE`/`WITH..DELETE`/`PRAGMA`/`ATTACH`/`VACUUM` on the full-privilege connection, and query() is agent-reachable via MCP `agent_query`. Now enforced at the SQLite parse layer via an authorizer callback; an 11-payload adversarial suite all raise `PermissionError`.
+- **SharedLog position race** — read-then-insert let concurrent appenders collide on `UNIQUE(position)`; now a single atomic `INSERT..SELECT`.
+
+**Eval-harness integrity** (`kaos/eval/harness/`) — the verdict instrument was unsound:
+- **Empty kill-gate list computed ACCEPT** (`all([])` is True) — a probe that gated nothing auto-passed. Now VOID.
+- **Blind-judge kappa was a tautology** — `jq.correct == jq.correct`, always 1.0, so the kappa VOID gate was dead code. Now a real agreement statistic over an optional independent second label, or explicitly `None` (kappa-exempt) for mechanical-ground-truth probes — never a silent 1.0.
+- **Probe.verify() crashed** on the results.json shapes `run()` actually produces (KeyError on missing per_query; KeyError on the empty-arms VOID file). Now short-circuits VOID runs, reconstructs from persisted per_query, and raises a clear error on legacy files.
+
+**Meta-harness CORAL pivot was dead code** (`kaos/metaharness/search.py`, `proposer.py`) — the Tier-1 stagnation pivot (a v0.6 headline feature) could never fire: `_update_stagnation` stamped `pivot_fired_at` the moment stagnation hit the threshold, and the proposer's identical predicate then computed `stagnant - pivot_fired_at = 0 < threshold`. Now a single authority raises a `pivot_pending` flag that the proposer consumes; regression-tested that the pivot prompt is actually assembled.
+
+**Also:** `kaos --version` reported a hardcoded `0.7.0` (three majors stale); now reads `kaos.__version__`, guarded by a consistency test. `MemoryStore.get_by_key` tie-breaks by `memory_id` (a same-millisecond flake).
+
 ## [0.9.1] - 2026-05-26
 
 ### MCP exposure of v0.9 surfaces — 50 → 58 tools

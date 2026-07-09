@@ -19,6 +19,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
+from kaos import __version__ as _kaos_version
 from kaos.core import Kaos
 
 console = Console()
@@ -50,7 +51,7 @@ def _json_err(ctx, msg: str):
 
 
 @click.group()
-@click.version_option(version="0.7.0", prog_name="kaos")
+@click.version_option(version=_kaos_version, prog_name="kaos")
 @click.option("--json", "json_output", is_flag=True, default=False,
               help="Output structured JSON (auto-enabled when piped)")
 @click.pass_context
