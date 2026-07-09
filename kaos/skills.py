@@ -39,10 +39,12 @@ class Skill:
     success_count: int
     created_at: str
     updated_at: str
+    deprecated: bool = False
 
     @classmethod
     def from_row(cls, row: sqlite3.Row) -> "Skill":
         tags = row["tags"]
+        keys = row.keys()
         return cls(
             skill_id=row["skill_id"],
             name=row["name"],
@@ -54,6 +56,7 @@ class Skill:
             success_count=row["success_count"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            deprecated=bool(row["deprecated"]) if "deprecated" in keys else False,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -166,6 +169,7 @@ class SkillStore:
         limit: int = 10,
         tag: str | None = None,
         rank: str = "bm25",
+        include_deprecated: bool = False,
     ) -> list[Skill]:
         """Full-text search over skill name, description, tags, and template.
 
@@ -187,16 +191,21 @@ class SkillStore:
         # Over-fetch by 4× when weighted so we have enough candidates to
         # reorder. FTS still filters by relevance; weights re-rank.
         fetch = limit * 4 if rank == "weighted" else limit
+        # Deprecated skills are soft-deleted by consolidation/merge; excluding
+        # them here is what makes prune/merge actually take effect on retrieval
+        # (before this they still ranked and were handed to agents).
+        dep_clause = "" if include_deprecated else \
+            "AND COALESCE(s.deprecated, 0) = 0"
         params: list[Any] = [query, fetch]
         rows = self._conn.execute(
-            """
+            f"""
             SELECT s.skill_id, s.name, s.description, s.template, s.tags,
                    s.source_agent_id, s.use_count, s.success_count,
-                   s.created_at, s.updated_at,
+                   s.created_at, s.updated_at, s.deprecated,
                    bm25(agent_skills_fts) AS bm25_raw
             FROM agent_skills_fts f
             JOIN agent_skills s ON s.skill_id = f.rowid
-            WHERE agent_skills_fts MATCH ?
+            WHERE agent_skills_fts MATCH ? {dep_clause}
             ORDER BY rank
             LIMIT ?
             """,
@@ -255,6 +264,7 @@ class SkillStore:
         order_by: str = "created_at",
         limit: int = 50,
         offset: int = 0,
+        include_deprecated: bool = False,
     ) -> list[Skill]:
         """List skills (most recent first by default), with optional filters.
 
@@ -264,6 +274,7 @@ class SkillStore:
             order_by:         Column to sort by: created_at | success_count | use_count.
             limit:            Page size.
             offset:           Pagination offset.
+            include_deprecated: Include soft-deprecated skills (default False).
         """
         allowed = {"created_at", "success_count", "use_count", "name"}
         if order_by not in allowed:
@@ -275,6 +286,8 @@ class SkillStore:
         if source_agent_id:
             clauses.append("source_agent_id = ?")
             params.append(source_agent_id)
+        if not include_deprecated:
+            clauses.append("COALESCE(deprecated, 0) = 0")
 
         where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
         params += [limit, offset]
@@ -282,7 +295,8 @@ class SkillStore:
         rows = self._conn.execute(
             f"""
             SELECT skill_id, name, description, template, tags,
-                   source_agent_id, use_count, success_count, created_at, updated_at
+                   source_agent_id, use_count, success_count, created_at,
+                   updated_at, deprecated
             FROM agent_skills
             {where}
             ORDER BY {order_by} DESC

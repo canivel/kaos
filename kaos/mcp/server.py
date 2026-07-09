@@ -445,6 +445,21 @@ def build_tool_list() -> list[Tool]:
                         "description": "Filter by memory type (optional)",
                     },
                     "agent_id": {"type": "string", "description": "Restrict to one agent (optional)"},
+                    "requesting_agent_id": {
+                        "type": "string",
+                        "description": (
+                            "The agent performing the search. Attributes the "
+                            "retrieval in memory_hits so the neuroplasticity "
+                            "layer learns which memories this agent consults."
+                        ),
+                    },
+                    "record_hits": {
+                        "type": "boolean", "default": True,
+                        "description": (
+                            "Record each returned entry in memory_hits (feeds "
+                            "plasticity-weighted ranking + Hebbian associations)."
+                        ),
+                    },
                 },
                 "required": ["query"],
             },
@@ -1965,6 +1980,11 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
             limit=args.get("limit", 10),
             type=args.get("type"),
             agent_id=args.get("agent_id"),
+            # Feed the neuroplasticity loop: a real agent consulting memory IS
+            # the signal the plasticity ranker + Hebbian rebuild learn from.
+            # Without this the whole layer was dark for the MCP surface.
+            record_hits=args.get("record_hits", True),
+            requesting_agent_id=args.get("requesting_agent_id"),
         )
         return json.dumps([h.to_dict() for h in hits], indent=2)
 
