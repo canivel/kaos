@@ -13,7 +13,7 @@ Public API:
 """
 
 from kaos.eval.harness.types import ArmResults, QueryResult, GateOutcome
-from kaos.eval.harness.stats import bootstrap_diff_ci
+from kaos.eval.harness.stats import bootstrap_diff_ci, cluster_bootstrap_diff_ci, check_power_budget
 from kaos.eval.harness.manifest import load_lock, sha256_file, LockTamperError
 from kaos.eval.harness.judge import judge_arm
 from kaos.eval.harness.verdict import compute_verdict
@@ -24,6 +24,8 @@ __all__ = [
     "QueryResult",
     "GateOutcome",
     "bootstrap_diff_ci",
+    "cluster_bootstrap_diff_ci",
+    "check_power_budget",
     "load_lock",
     "sha256_file",
     "LockTamperError",
