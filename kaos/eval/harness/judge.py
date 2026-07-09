@@ -30,11 +30,20 @@ class JudgedQuery:
     canonical equality, etc.). qclass and split are passed through as
     QueryResult fields; extras is opaque domain metadata that is NEVER
     shown to the verifier (so arm leakage is impossible by construction).
+
+    ``independent`` is an OPTIONAL second correctness label from a labeler
+    that is genuinely independent of the mechanical one (e.g. a human spot
+    check or a distinct grader). When present on any item, judge_arm
+    computes a REAL kappa = agreement(correct, independent). When absent
+    everywhere, the probe is a mechanical-ground-truth probe with no second
+    labeler, and kappa is returned as ``None`` (kappa-exempt) rather than a
+    tautological 1.0.
     """
     qid: str
     qclass: str
     split: str
     correct: bool
+    independent: bool | None = None
     extras: dict = None  # type: ignore[assignment]
 
 
@@ -44,15 +53,16 @@ def judge_arm(
     *,
     seed: int = 99,
     benchmark_objectives: list[str] | None = None,
-) -> tuple[list[QueryResult], float]:
+) -> tuple[list[QueryResult], float | None]:
     """Run the anonymised stream through SurrogateVerifier and return
     ``(per_query_results, judge_kappa)``.
 
-    judge_kappa is agreement between the verifier's correctness signal
-    and the mechanical label on a frozen 50-query sample. With a
-    mechanical label there is no drift, so it is 1.0 by construction
-    whenever the sample is non-empty; we still compute it honestly so a
-    real verifier defect would surface.
+    judge_kappa is agreement between an INDEPENDENT second label and the
+    mechanical label over the items that carry one. If no item carries an
+    independent label, the probe has no second labeler and kappa is
+    ``None`` (the kappa audit is not applicable and is skipped downstream —
+    it is NOT silently reported as 1.0, which was the old tautology
+    ``jq.correct == jq.correct``).
     """
     rng = random.Random(seed)
     order = list(range(len(judged)))
@@ -86,10 +96,19 @@ def judge_arm(
         for jq in judged
     ]
 
-    sample = judged[:50] if len(judged) >= 50 else judged
-    if sample:
-        agree = sum(1 for jq in sample if jq.correct == jq.correct)
-        kappa = agree / len(sample)
+    # Real kappa over items that carry an independent second label (either the
+    # `independent` field or extras["independent"]). If none do, the probe is a
+    # mechanical-ground-truth probe with no second labeler -> kappa-exempt.
+    def _independent(jq: JudgedQuery):
+        if jq.independent is not None:
+            return jq.independent
+        return (jq.extras or {}).get("independent")
+
+    labeled = [jq for jq in judged if _independent(jq) is not None]
+    if not labeled:
+        kappa: float | None = None
     else:
-        kappa = 1.0
+        sample = labeled[:50]
+        agree = sum(1 for jq in sample if bool(jq.correct) == bool(_independent(jq)))
+        kappa = agree / len(sample)
     return results, kappa

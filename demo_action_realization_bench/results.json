@@ -1,7 +1,7 @@
 {
   "lock_sha256": "3ca89983c5914d1f1f77377cf124bac223dba4bc391a59d5e329e671b79187e2",
   "verdict": "VOID#1: insufficient organic action-class sample: n_action=2 < 200. Lock forbids synthetic substitution; collect more organic data.",
-  "judge_kappa": 1.0,
+  "judge_kappa": null,
   "arms": {},
   "gates": [],
   "workload": {

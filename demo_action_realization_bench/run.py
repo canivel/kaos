@@ -72,7 +72,7 @@ def main(out_dir: str | Path = "demo_action_realization_bench",
         result = {
             "lock_sha256": lock_hash,
             "verdict": msg,
-            "judge_kappa": 1.0,
+            "judge_kappa": None,
             "arms": {},
             "gates": [],
             "workload": {"action": len(wl.action),
@@ -112,7 +112,11 @@ def main(out_dir: str | Path = "demo_action_realization_bench",
         qr, kappa = judge_arm(arm_name, judged)
         arm_results[arm_name] = ArmResults(arm=arm_name, per_query=qr)
         kappa_min_per_arm.append(kappa)
-    judge_kappa = min(kappa_min_per_arm) if kappa_min_per_arm else 1.0
+    # This probe uses mechanical decisive-evidence labels with no independent
+    # second labeler, so judge_arm returns None (kappa-exempt) per arm. Keep it
+    # None rather than coercing to 1.0 — compute_verdict skips the kappa gate.
+    real_kappas = [k for k in kappa_min_per_arm if k is not None]
+    judge_kappa = min(real_kappas) if real_kappas else None
 
     # ── Gates + verdict ───────────────────────────────────────────
     outcomes = compute_gates(arm_results, inline_overhead_us_by_arm=inline_us)
@@ -128,7 +132,8 @@ def main(out_dir: str | Path = "demo_action_realization_bench",
         print(f"  [{flag:9}] {g.gate}  {g.name}")
         print(f"             {g.detail}")
     print("-" * 70)
-    print(f"  judge_kappa = {judge_kappa:.3f}")
+    _kappa_str = "exempt (mechanical label)" if judge_kappa is None else f"{judge_kappa:.3f}"
+    print(f"  judge_kappa = {_kappa_str}")
     print(f"  VERDICT     = {verdict}")
     print("-" * 70)
 
@@ -148,6 +153,13 @@ def main(out_dir: str | Path = "demo_action_realization_bench",
                 "p95_us": (sorted(inline_us[name])[int(
                     0.95 * (len(inline_us[name]) - 1))]
                     if inline_us[name] else None),
+                # Persist per_query so `kaos eval probe verify` can reconstruct
+                # the arms and recompute the verdict against HEAD's gate code.
+                "per_query": [
+                    {"qid": q.qid, "qclass": q.qclass, "correct": q.correct,
+                     "split": q.split, "extras": q.extras}
+                    for q in ar.per_query
+                ],
             }
             for name, ar in arm_results.items()
         },

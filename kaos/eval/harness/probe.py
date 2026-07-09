@@ -61,21 +61,43 @@ class Probe(ABC):
     def verify(self, results_path: str | Path) -> str:
         """Re-compute the verdict from a saved results.json. Confirms
         the verdict on file matches what the current gate code emits.
+
+        A VOID run (e.g. insufficient workload) has nothing to recompute —
+        it was uninterpretable by construction and often carries an empty
+        ``arms`` map. verify() short-circuits and returns the stored verdict
+        rather than crashing on missing arms/per_query.
         """
         data = json.loads(Path(results_path).read_text())
-        arms = {
-            name: ArmResults(
-                arm=name,
-                per_query=[
-                    _qr_from_dict(q) for q in arr["per_query"]
-                ],
+        stored = str(data.get("verdict", ""))
+        if stored.startswith("VOID"):
+            return stored
+
+        arms_data = data.get("arms", {})
+        if not arms_data:
+            raise ValueError(
+                f"results.json has no arms to recompute a "
+                f"{stored or 'non-VOID'} verdict from: {results_path}"
             )
-            for name, arr in data["arms"].items()
-        }
+        try:
+            arms = {
+                name: ArmResults(
+                    arm=name,
+                    per_query=[_qr_from_dict(q) for q in arr["per_query"]],
+                )
+                for name, arr in arms_data.items()
+            }
+        except (KeyError, TypeError) as exc:
+            raise ValueError(
+                f"results.json at {results_path} does not persist per-arm "
+                f"per_query and cannot be re-verified (predates per_query "
+                f"persistence). Re-run the probe to produce a verifiable file."
+            ) from exc
+
         outcomes = self.gates(arms)
+        kappa = data.get("judge_kappa", None)
         verdict = compute_verdict(
             outcomes,
-            judge_kappa=float(data.get("judge_kappa", 1.0)),
+            judge_kappa=kappa,
             kappa_min=self.kappa_min,
         )
         return verdict
