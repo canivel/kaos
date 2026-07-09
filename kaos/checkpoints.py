@@ -12,8 +12,16 @@ import ulid
 class CheckpointManager:
     """Manages agent checkpoints for snapshot and restore."""
 
-    def __init__(self, conn: sqlite3.Connection):
-        self.conn = conn
+    def __init__(self, conn):
+        # `conn` may be a live sqlite3.Connection OR a zero-arg callable that
+        # returns the current thread's connection (see BlobStore for rationale).
+        self._conn_ref = conn
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        # sqlite3.Connection is itself callable — discriminate by type.
+        ref = self._conn_ref
+        return ref if isinstance(ref, sqlite3.Connection) else ref()
 
     def create(
         self,

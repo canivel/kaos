@@ -11,12 +11,25 @@ import zstandard as zstd
 class BlobStore:
     """Manages content-addressable blob storage with dedup and compression."""
 
-    def __init__(self, conn: sqlite3.Connection, compression: str = "zstd"):
-        self.conn = conn
+    def __init__(self, conn, compression: str = "zstd"):
+        # `conn` may be a live sqlite3.Connection OR a zero-arg callable that
+        # returns the current thread's connection. The callable form lets the
+        # store resolve a thread-local connection instead of pinning the one
+        # present at construction time (which would split cross-thread writes
+        # across two connections).
+        self._conn_ref = conn
         self.use_compression = compression == "zstd"
         if self.use_compression:
             self._compressor = zstd.ZstdCompressor(level=3)
             self._decompressor = zstd.ZstdDecompressor()
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        # NB: sqlite3.Connection is itself callable, so discriminate by type
+        # rather than callable() — a raw Connection is returned as-is; a getter
+        # callable is invoked to resolve the current thread's connection.
+        ref = self._conn_ref
+        return ref if isinstance(ref, sqlite3.Connection) else ref()
 
     def store(self, content: bytes) -> tuple[str, int]:
         """Store content, returning (content_hash, size). Deduplicates automatically."""

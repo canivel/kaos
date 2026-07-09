@@ -28,8 +28,16 @@ class EventJournal:
     ERROR = "error"
     WARNING = "warning"
 
-    def __init__(self, conn: sqlite3.Connection):
-        self.conn = conn
+    def __init__(self, conn):
+        # `conn` may be a live sqlite3.Connection OR a zero-arg callable that
+        # returns the current thread's connection (see BlobStore for rationale).
+        self._conn_ref = conn
+
+    @property
+    def conn(self) -> sqlite3.Connection:
+        # sqlite3.Connection is itself callable — discriminate by type.
+        ref = self._conn_ref
+        return ref if isinstance(ref, sqlite3.Connection) else ref()
 
     def log(self, agent_id: str, event_type: str, payload: dict[str, Any] | None = None) -> int:
         """Append an event to the journal. Returns the event_id."""

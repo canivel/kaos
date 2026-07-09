@@ -115,12 +115,6 @@ class SharedLog:
 
     # ── Internal ──────────────────────────────────────────────────────
 
-    def _next_position(self) -> int:
-        row = self._conn.execute(
-            "SELECT COALESCE(MAX(position), -1) + 1 FROM shared_log"
-        ).fetchone()
-        return row[0]
-
     def _append(
         self,
         type: str,
@@ -131,13 +125,16 @@ class SharedLog:
         if type not in LOG_TYPES:
             raise ValueError(f"type must be one of {LOG_TYPES!r}, got {type!r}")
 
-        position = self._next_position()
+        # Compute the next position and insert it in a SINGLE atomic statement.
+        # A read-then-insert (SELECT MAX+1, then INSERT) lets two concurrent
+        # appenders read the same MAX and collide on UNIQUE(position).
         cur = self._conn.execute(
             """
             INSERT INTO shared_log (position, type, agent_id, ref_id, payload)
-            VALUES (?, ?, ?, ?, ?)
+            SELECT COALESCE(MAX(position), -1) + 1, ?, ?, ?, ?
+            FROM shared_log
             """,
-            (position, type, agent_id, ref_id, json.dumps(payload)),
+            (type, agent_id, ref_id, json.dumps(payload)),
         )
         self._conn.commit()
         log_id = cur.lastrowid

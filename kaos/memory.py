@@ -292,7 +292,7 @@ class MemoryStore:
             SELECT memory_id, agent_id, type, key, content, metadata, created_at
             FROM memory
             WHERE key = ? {extra}
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, memory_id DESC
             LIMIT 1
             """,
             params,

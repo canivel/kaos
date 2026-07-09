@@ -43,9 +43,11 @@ class Kaos:
         conn = self._get_conn()
         init_schema(conn)
 
-        self.blobs = BlobStore(conn, compression=compression)
-        self.events = EventJournal(conn)
-        self.checkpoints = CheckpointManager(conn)
+        # Pass the thread-local connection getter (not the init-thread conn) so
+        # every helper call resolves to the calling thread's own connection.
+        self.blobs = BlobStore(self._get_conn, compression=compression)
+        self.events = EventJournal(self._get_conn)
+        self.checkpoints = CheckpointManager(self._get_conn)
 
     def _get_conn(self) -> sqlite3.Connection:
         """Get a thread-local database connection."""
@@ -274,7 +276,12 @@ class Kaos:
         if not row:
             raise FileNotFoundError(f"{agent_id}:{path}")
 
+        # Log the read as an audit event, then COMMIT immediately. The event
+        # INSERT implicitly opens a write transaction; leaving it open would
+        # hold the single WAL writer lock and block every other connection's
+        # writes until this thread's next commit.
         self.events.log(agent_id, EventJournal.FILE_READ, {"path": path})
+        self.conn.commit()
         return self.blobs.retrieve(row[0])
 
     def write(self, agent_id: str, path: str, content: bytes) -> None:
@@ -287,35 +294,38 @@ class Kaos:
 
         content_hash, size = self.blobs.store(content)
 
-        # Get current version
-        current = self.conn.execute(
-            "SELECT MAX(version), content_hash FROM files "
-            "WHERE agent_id = ? AND path = ? AND deleted = 0",
+        # Next version number must be computed over ALL historical rows for this
+        # (agent, path) — including soft-deleted tombstones — because
+        # UNIQUE(agent_id, path, version) spans them. Filtering by deleted=0 here
+        # would reset the counter to 1 after a delete and collide with the
+        # existing version-1 tombstone (the reproduced delete-then-rewrite P0).
+        max_row = self.conn.execute(
+            "SELECT MAX(version) FROM files WHERE agent_id = ? AND path = ?",
             (agent_id, path),
         ).fetchone()
+        new_version = 1 if (max_row is None or max_row[0] is None) else max_row[0] + 1
 
-        if current and current[0] is not None:
-            new_version = current[0] + 1
-            # Soft-delete old version (keep blob for history/checkpoint restore)
+        try:
+            # Soft-delete any currently-live version (no-op if none).
             self.conn.execute(
                 "UPDATE files SET deleted = 1 WHERE agent_id = ? AND path = ? AND deleted = 0",
                 (agent_id, path),
             )
-        else:
-            new_version = 1
-
-        self.conn.execute(
-            "INSERT INTO files (agent_id, path, content_hash, size, version) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (agent_id, path, content_hash, size, new_version),
-        )
-
-        self.events.log(
-            agent_id,
-            EventJournal.FILE_WRITE,
-            {"path": path, "size": size, "version": new_version},
-        )
-        self.conn.commit()
+            self.conn.execute(
+                "INSERT INTO files (agent_id, path, content_hash, size, version) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (agent_id, path, content_hash, size, new_version),
+            )
+            self.events.log(
+                agent_id,
+                EventJournal.FILE_WRITE,
+                {"path": path, "size": size, "version": new_version},
+            )
+            self.conn.commit()
+        except Exception:
+            # Leave no partial state (orphan tombstone / half-written row).
+            self.conn.rollback()
+            raise
 
     def delete(self, agent_id: str, path: str) -> None:
         """Soft-delete a file from an agent's virtual filesystem."""
@@ -631,18 +641,43 @@ class Kaos:
     # ── Querying ─────────────────────────────────────────────────────
 
     def query(self, sql: str, params: tuple = ()) -> list[dict]:
-        """Run a read-only SQL query against the agent database."""
-        # Enforce read-only by checking for write keywords
-        normalized = sql.strip().upper()
-        if any(
-            normalized.startswith(kw)
-            for kw in ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE")
-        ):
-            raise PermissionError("Only SELECT queries are allowed via query()")
+        """Run a read-only SQL query against the agent database.
 
-        cursor = self.conn.execute(sql, params)
-        columns = [desc[0] for desc in cursor.description] if cursor.description else []
-        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+        Read-only is enforced at the SQLite parse layer via an authorizer
+        callback, not a keyword prefix check. The old prefix blacklist let
+        REPLACE / WITH..DELETE / PRAGMA / ATTACH / VACUUM through on the
+        full-privilege connection — and query() is reachable by agents via the
+        MCP ``agent_query`` tool, so that was a live isolation breach.
+        """
+        conn = self.conn
+
+        def _authorizer(action, arg1, arg2, db_name, trigger):
+            # Allow only pure-read operations. Everything else (INSERT, UPDATE,
+            # DELETE, CREATE*, DROP*, ALTER, ATTACH, PRAGMA, TRANSACTION, ...)
+            # is denied at parse time.
+            if action in (
+                sqlite3.SQLITE_SELECT,
+                sqlite3.SQLITE_READ,
+                sqlite3.SQLITE_FUNCTION,
+                sqlite3.SQLITE_RECURSIVE,
+            ):
+                return sqlite3.SQLITE_OK
+            return sqlite3.SQLITE_DENY
+
+        conn.set_authorizer(_authorizer)
+        try:
+            cursor = conn.execute(sql, params)
+            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            rows = cursor.fetchall()
+        except (sqlite3.DatabaseError, sqlite3.ProgrammingError) as exc:
+            # "not authorized" from the authorizer, or "only one statement"
+            # from a multi-statement payload — both mean "not a read-only query".
+            raise PermissionError(
+                f"query() allows only read-only SQL; rejected: {exc}"
+            ) from exc
+        finally:
+            conn.set_authorizer(None)
+        return [dict(zip(columns, row)) for row in rows]
 
     # ── Index ────────────────────────────────────────────────────────
 
