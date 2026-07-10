@@ -4,2018 +4,389 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KAOS — The Living Synthesis of Agentic AI Research</title>
-<meta name="description" content="Seven research breakthroughs unified in one framework: memory that learns, skills that compound, coordination that requires consensus, context that compresses, agents that co-evolve. Safe, reliable, self-improving. All local, all free.">
+<meta name="description" content="A local-first multi-agent orchestration framework. Every agent gets an isolated, auditable SQLite-backed runtime. Nine research integrations, a falsifiable-eval discipline, 58 MCP tools — measured, not claimed.">
 <meta property="og:title" content="KAOS — The Living Synthesis of Agentic AI Research">
-<meta property="og:description" content="KAOS doesn't build from scratch — it synthesizes what's best. Seven proven research integrations, production-grade by default, constantly improving itself. One SQLite file. Zero cloud.">
+<meta property="og:description" content="Local-first multi-agent orchestration. Isolated SQLite runtimes, falsifiable evaluation, self-improving by design. One file. Zero cloud.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
-/* ── Reset & Base ─────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a0f;
-  --bg2:#12121a;
-  --bg3:#1a1a26;
-  --fg:#e4e4ef;
-  --fg2:#9494a8;
-  --accent:#6c5ce7;
-  --accent2:#a29bfe;
-  --green:#00e676;
-  --orange:#ff9100;
-  --red:#ff5252;
-  --cyan:#18ffff;
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;--fg3:#6b6b80;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--pink:#fd79a8;--cyan:#18ffff;--amber:#ffd166;
+  --line:rgba(255,255,255,.07);
   --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;
-  --max:1100px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:1080px;
 }
-html{scroll-behavior:smooth;font-size:16px}
-body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
-a{color:var(--accent2);text-decoration:none;transition:color .2s}
+html{scroll-behavior:smooth;font-size:16px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.65;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .18s}
 a:hover{color:var(--cyan)}
 code,pre{font-family:var(--mono)}
+code{font-size:.86em}
 ::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+h1,h2,h3{letter-spacing:-.02em;line-height:1.15}
 
-/* ── Layout ───────────────────────────────────────── */
-.wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
-section{padding:5rem 0}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 1.5rem}
+section{padding:4.5rem 0;border-top:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:.9rem}
+.grad{background:linear-gradient(120deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-/* ── Nav ──────────────────────────────────────────── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
-nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
-nav .logo{font-family:var(--mono);font-weight:700;font-size:1.2rem;color:var(--fg);letter-spacing:2px}
+/* ── Nav ── */
+nav{position:fixed;inset:0 0 auto 0;z-index:100;background:rgba(10,10,15,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;letter-spacing:.15em;color:var(--fg)}
 nav .logo span{color:var(--accent2)}
-nav ul{list-style:none;display:flex;gap:1.8rem}
-nav a{color:var(--fg2);font-size:.9rem;font-weight:500;transition:color .2s}
-nav a:hover{color:var(--fg)}
-.nav-cta{background:var(--accent);color:#fff !important;padding:.4rem 1rem;border-radius:6px;font-size:.85rem}
-.nav-cta:hover{background:var(--accent2);color:#fff !important}
+nav ul{list-style:none;display:flex;gap:1.5rem;align-items:center}
+nav ul a{color:var(--fg2);font-size:.86rem;font-weight:500}
+nav ul a:hover{color:var(--fg)}
+.nav-cta{background:var(--accent);color:#fff!important;padding:.42rem 1rem;border-radius:7px;font-size:.84rem;font-weight:600}
+.nav-cta:hover{background:var(--accent2)}
+@media(max-width:760px){nav ul li.hide-sm{display:none}}
 
-/* ── Hero ─────────────────────────────────────────── */
-.hero{padding:9rem 0 0;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:900px;height:600px;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,.18) 0%,transparent 70%);pointer-events:none}
-.hero-copy{position:relative;padding-bottom:4rem}
-.hero h1{font-size:clamp(2.6rem,5.5vw,4.4rem);font-weight:800;letter-spacing:-1.5px;line-height:1.12;margin-bottom:1.4rem}
-.hero h1 .highlight{background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero .subtitle{font-size:clamp(1rem,2vw,1.2rem);color:var(--fg2);max-width:680px;margin:0 auto 2.2rem;line-height:1.7}
-.hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:8px;font-weight:600;font-size:.95rem;transition:all .2s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent2);color:#fff;transform:translateY(-1px);box-shadow:0 8px 30px rgba(108,92,231,.3)}
-.btn-secondary{background:var(--bg3);color:var(--fg);border:1px solid rgba(255,255,255,.1)}
-.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);transform:translateY(-1px)}
-.badges{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:2rem}
-.badge{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:.3rem .7rem;border-radius:20px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.06)}
-.badge.green{color:var(--green);border-color:rgba(0,230,118,.2)}
-.badge.blue{color:var(--cyan);border-color:rgba(24,255,255,.2)}
-/* ── ARC-AGI-3 leaderboard tracker ─────────────────── */
-.arc-tracker{display:inline-flex;align-items:center;gap:.7rem;flex-wrap:wrap;justify-content:center;margin:2.4rem auto 0;padding:.7rem 1.1rem;border-radius:14px;background:linear-gradient(135deg,rgba(32,190,255,.1),rgba(162,155,254,.08));border:1px solid rgba(32,190,255,.3);font-family:var(--mono);font-size:.82rem;color:var(--fg2);transition:all .2s;box-shadow:0 8px 30px rgba(32,190,255,.06)}
-.arc-tracker:hover{border-color:rgba(32,190,255,.6);transform:translateY(-1px);box-shadow:0 10px 40px rgba(32,190,255,.14)}
-.arc-pulse{width:9px;height:9px;border-radius:50%;background:#20beff;box-shadow:0 0 0 0 rgba(32,190,255,.6);animation:arcPulse 2s infinite}
-@keyframes arcPulse{0%{box-shadow:0 0 0 0 rgba(32,190,255,.55)}70%{box-shadow:0 0 0 8px rgba(32,190,255,0)}100%{box-shadow:0 0 0 0 rgba(32,190,255,0)}}
-.arc-eyebrow{letter-spacing:1.2px;text-transform:uppercase;font-size:.7rem;color:#20beff;font-weight:700}
-.arc-divider{width:1px;height:16px;background:rgba(255,255,255,.12)}
-.arc-rank{font-size:1.15rem;font-weight:800;color:var(--fg);letter-spacing:-.5px}
-.arc-of{font-size:.75rem;color:var(--fg2)}
-.arc-medal{font-size:1rem;line-height:1}
-.arc-meta{font-size:.78rem;color:var(--fg2)}
-.arc-meta strong{color:var(--cyan);font-weight:700}
-.arc-cta{font-size:.75rem;color:#20beff;font-weight:600}
-.arc-asof{font-family:var(--mono);font-size:.7rem;color:var(--fg2);opacity:.7;text-align:center;margin:.7rem auto 0}
-.arc-asof code{color:#20beff;font-size:.95em}
-@media(max-width:600px){.arc-tracker{font-size:.75rem;padding:.6rem .8rem}.arc-divider,.arc-cta{display:none}}
-/* Terminal sits below copy, bleeds edge-to-edge inside a max-width container */
-.hero-terminal{position:relative;max-width:1060px;margin:0 auto;padding:0 2rem}
-.hero-terminal::before{content:'';position:absolute;top:-60px;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:1}
-.hero-screen{border-radius:14px 14px 0 0;overflow:hidden;border:1px solid rgba(108,92,231,.3);border-bottom:none;box-shadow:0 -8px 60px rgba(108,92,231,.15),0 32px 80px rgba(0,0,0,.7)}
-.hero-screen img{width:100%;display:block}
+/* ── Hero ── */
+.hero{padding:8rem 0 3.5rem;text-align:center;position:relative;overflow:hidden;border-top:none}
+.hero::before{content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:min(900px,120vw);height:520px;background:radial-gradient(ellipse at 50% 0,rgba(108,92,231,.2),transparent 68%);pointer-events:none}
+.hero-inner{position:relative}
+.hero h1{font-size:clamp(2.3rem,5.4vw,4rem);font-weight:800;margin-bottom:1.2rem}
+.hero .sub{font-size:clamp(1rem,1.9vw,1.18rem);color:var(--fg2);max-width:640px;margin:0 auto 2rem;line-height:1.6}
+.btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.8rem}
+.btn{padding:.72rem 1.4rem;border-radius:9px;font-weight:600;font-size:.92rem;transition:transform .15s,background .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:#fff!important}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:var(--bg2);color:var(--fg)!important;border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--accent2);color:var(--accent2)!important}
+.install{display:inline-flex;align-items:center;gap:.7rem;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:.7rem 1.1rem;font-family:var(--mono);font-size:.82rem;max-width:100%;overflow-x:auto;margin-bottom:1.8rem}
+.install .p{color:var(--green)}
+.install .c{color:var(--fg2);white-space:nowrap}
+.badges{display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:.72rem;padding:.32rem .7rem;border-radius:20px;background:var(--bg3);border:1px solid var(--line);color:var(--fg2)}
+.badge.v{color:var(--accent2);border-color:rgba(162,155,254,.35)}
+.badge.p{color:var(--pink);border-color:rgba(253,121,168,.35);background:rgba(253,121,168,.07)}
+.badge.g{color:var(--green);border-color:rgba(0,230,118,.28)}
 
-/* ── Install bar ──────────────────────────────────── */
-.install-bar{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1rem 1.5rem;display:inline-flex;align-items:center;gap:1rem;font-family:var(--mono);font-size:.9rem;color:var(--fg2)}
-.install-bar .prompt{color:var(--green)}
-.install-bar .cmd{color:var(--fg)}
+/* ARC tracker */
+.arc{display:inline-flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:2rem;background:var(--bg2);border:1px solid rgba(255,209,102,.25);border-radius:12px;padding:.7rem 1.1rem;font-size:.82rem}
+.arc:hover{border-color:rgba(255,209,102,.5)}
+.arc .rank{font-family:var(--mono);font-weight:800;color:var(--amber);font-size:1.05rem}
+.arc .dim{color:var(--fg2)}
+.arc-as{font-size:.74rem;color:var(--fg3);margin-top:.6rem}
 
-/* ── Research Foundation ──────────────────────────── */
-.research-banner{background:var(--bg2);padding:4.5rem 0;border-top:1px solid rgba(108,92,231,.15);border-bottom:1px solid rgba(108,92,231,.1)}
-.rb-header{text-align:center;margin-bottom:3rem}
-.rb-eyebrow{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:.7rem}
-.rb-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.5px}
-.rb-sub{color:var(--fg2);font-size:1rem;max-width:640px;margin:0 auto;line-height:1.7}
-.rb-papers{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-.rb-paper{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.5rem;border-top:3px solid var(--accent);transition:border-color .2s,transform .2s}
-.rb-paper:hover{transform:translateY(-3px)}
-.rb-paper:nth-child(1){border-top-color:var(--accent2)}
-.rb-paper:nth-child(2){border-top-color:var(--cyan)}
-.rb-paper:nth-child(3){border-top-color:var(--green)}
-.rb-paper:nth-child(4){border-top-color:var(--orange)}
-.rb-paper:nth-child(5){border-top-color:#fd79a8}
-.rb-paper:nth-child(6){border-top-color:#55efc4}
-.rb-paper:nth-child(7){border-top-color:#b2bec3}
-.rb-paper-tag{font-family:var(--mono);font-size:.68rem;color:var(--fg2);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem}
-.rb-paper h3{font-size:1.05rem;font-weight:700;margin-bottom:.3rem;color:var(--fg)}
-.rb-paper-source{font-size:.78rem;color:var(--fg2);margin-bottom:.7rem}
-.rb-paper-source a{color:var(--accent2);text-decoration:none}
-.rb-paper-source a:hover{color:var(--cyan)}
-.rb-paper p{font-size:.87rem;color:var(--fg2);line-height:1.55;margin-bottom:.8rem}
-.rb-paper-used{font-size:.78rem;color:var(--fg2);border-top:1px solid rgba(255,255,255,.05);padding-top:.7rem;margin-top:.3rem}
-.rb-paper-badges{display:flex;gap:.4rem;align-items:center;margin-bottom:.6rem;flex-wrap:wrap}
-.rb-badge-new{font-family:var(--mono);font-size:.62rem;font-weight:700;padding:.15rem .5rem;border-radius:4px;background:rgba(0,206,201,.15);color:#00cec9;border:1px solid rgba(0,206,201,.35);letter-spacing:.5px;text-transform:uppercase}
-.rb-badge-ver{font-family:var(--mono);font-size:.62rem;padding:.15rem .5rem;border-radius:4px;background:rgba(162,155,254,.1);color:var(--accent2);border:1px solid rgba(162,155,254,.25);letter-spacing:.3px}
-.rb-paper-used code{background:var(--bg3);padding:.1rem .35rem;border-radius:3px;font-size:.75rem;color:var(--accent2)}
-.rb-paper-demo{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-family:var(--mono);color:var(--accent2);border:1px solid rgba(162,155,254,.25);border-radius:4px;padding:.2rem .55rem;margin-top:.6rem;transition:color .2s,border-color .2s,background .2s}
-.rb-paper-demo:hover{color:var(--cyan);border-color:rgba(24,255,255,.4);background:rgba(24,255,255,.05)}
+/* hero shot */
+.shot{margin:3rem auto 0;max-width:920px;border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.28);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.shot .cap{background:var(--bg2);padding:.7rem 1rem;font-family:var(--mono);font-size:.78rem;color:var(--fg2);text-align:center;border-top:1px solid var(--line)}
 
-/* ── Problem ──────────────────────────────────────── */
-.problem{background:var(--bg2)}
-.problem h2{text-align:center;font-size:2rem;margin-bottom:1rem}
-.problem .lead{text-align:center;color:var(--fg2);margin-bottom:3rem;font-size:1.1rem}
-.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
-.pain-card{background:var(--bg);border:1px solid rgba(255,82,82,.15);border-radius:10px;padding:1.5rem}
-.pain-card h3{color:var(--red);font-size:1rem;margin-bottom:.5rem;font-family:var(--mono)}
-.pain-card p{color:var(--fg2);font-size:.92rem;line-height:1.6}
+/* ── generic section head ── */
+.head{max-width:680px;margin:0 auto 2.6rem;text-align:center}
+.head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:800;margin-bottom:.8rem}
+.head p{color:var(--fg2);font-size:1.02rem;line-height:1.65}
 
-/* ── Solution ─────────────────────────────────────── */
-.solution h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
-.code-block{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;margin:0 auto;max-width:800px}
-.code-header{display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);font-size:.8rem;color:var(--fg2);font-family:var(--mono)}
-.code-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.code-dot.r{background:var(--red)}.code-dot.y{background:var(--orange)}.code-dot.g{background:var(--green)}
-.code-block pre{padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.7;color:var(--fg2)}
-.code-block pre .comment{color:#636378}
-.code-block pre .keyword{color:var(--accent2)}
-.code-block pre .string{color:var(--green)}
-.code-block pre .func{color:var(--cyan)}
-.code-block pre .highlight-line{color:var(--fg);font-weight:500}
-.solution .note{text-align:center;margin-top:2rem;color:var(--fg2);font-size:1.05rem}
-.solution .note strong{color:var(--fg)}
+/* ── research pills ── */
+.pills{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:900px;margin:0 auto}
+.pill{display:inline-flex;flex-direction:column;gap:.15rem;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:.7rem 1rem;min-width:0}
+.pill:hover{border-color:var(--accent2)}
+.pill b{font-size:.9rem;color:var(--fg)}
+.pill span{font-family:var(--mono);font-size:.7rem;color:var(--fg3)}
 
-/* ── Comparison ───────────────────────────────────── */
-.comparison{background:var(--bg2)}
-.comparison h2{text-align:center;font-size:2rem;margin-bottom:.8rem}
-.comparison .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1.05rem}
-.comp-table{width:100%;border-collapse:collapse;font-size:.9rem}
-.comp-table th{text-align:left;padding:.8rem 1rem;border-bottom:2px solid var(--accent);color:var(--fg);font-weight:600}
-.comp-table td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.05)}
-.comp-table td:first-child{color:var(--fg);font-weight:500}
-.comp-table td:nth-child(2){color:var(--fg2)}
-.comp-table td:nth-child(3){color:var(--green);font-family:var(--mono);font-size:.85rem}
-.comp-table tr:hover td{background:rgba(108,92,231,.05)}
-.comp-note{text-align:center;margin-top:2rem;color:var(--fg2);font-size:.95rem;font-style:italic}
+/* ── capability grid ── */
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.cap-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.4rem;border-top:2px solid var(--accent)}
+.cap-card:nth-child(3n+2){border-top-color:var(--cyan)}
+.cap-card:nth-child(3n){border-top-color:var(--pink)}
+.cap-card h3{font-size:1.02rem;margin-bottom:.5rem}
+.cap-card p{font-size:.88rem;color:var(--fg2);line-height:1.6}
+.cap-card .src{font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.7rem}
 
-/* ── Features ─────────────────────────────────────── */
-.features h2{text-align:center;font-size:2rem;margin-bottom:3rem}
-.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
-.feat-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem}
-.feat-card .icon{font-size:1.6rem;margin-bottom:.8rem}
-.feat-card h3{font-size:1.05rem;margin-bottom:.5rem}
-.feat-card p{color:var(--fg2);font-size:.9rem;line-height:1.6}
-.feat-card code{background:var(--bg3);padding:.15rem .4rem;border-radius:4px;font-size:.8rem;color:var(--accent2)}
+/* ── discipline ── */
+.disc{background:radial-gradient(ellipse at 50% 0,rgba(253,121,168,.06),transparent 60%)}
+.disc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:840px;margin:0 auto 2.4rem}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.2rem 1rem;text-align:center}
+.stat .n{font-family:var(--mono);font-size:1.9rem;font-weight:800;color:var(--cyan);line-height:1}
+.stat .l{font-size:.74rem;color:var(--fg2);margin-top:.4rem;text-transform:uppercase;letter-spacing:.06em}
+.disc-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:900px;margin:0 auto}
+.step{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.3rem}
+.step .k{font-family:var(--mono);font-size:.7rem;color:var(--pink);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.6rem}
+.step h4{font-size:.98rem;margin-bottom:.4rem}
+.step p{font-size:.86rem;color:var(--fg2);line-height:1.6}
+.disc-note{max-width:720px;margin:2rem auto 0;text-align:center;font-size:.92rem;color:var(--fg2);line-height:1.7}
 
-/* ── Compaction ───────────────────────────────────── */
-.compaction h2{text-align:center;font-size:2rem;margin-bottom:1rem}
-.compaction .lead{text-align:center;color:var(--fg2);margin-bottom:2.5rem;font-size:1.05rem}
-.compaction-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;max-width:900px;margin:0 auto;align-items:start}
-@media(max-width:768px){.compaction-grid{grid-template-columns:1fr}}
-.compaction-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.85rem}
-.compaction-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
-.compaction-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
-.compaction-table tr:hover td{background:rgba(108,92,231,.05)}
-.compaction-table .bar-cell{padding:.5rem .8rem}
-.savings-bar{height:8px;border-radius:4px;background:var(--bg3)}
-.savings-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--cyan))}
-.quality-badge{display:inline-block;font-size:.75rem;padding:.15rem .5rem;border-radius:10px;background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.2);font-weight:600}
-.compaction-benefits{list-style:none;padding:0}
-.compaction-benefits li{padding:.6rem 0 .6rem 1.5rem;color:var(--fg2);font-size:.92rem;line-height:1.55;position:relative}
-.compaction-benefits li::before{content:'';position:absolute;left:0;top:.85rem;width:8px;height:8px;border-radius:50%}
-.compaction-benefits li:nth-child(1)::before{background:var(--green)}
-.compaction-benefits li:nth-child(2)::before{background:var(--cyan)}
-.compaction-benefits li:nth-child(3)::before{background:var(--accent2)}
-.compaction-benefits li:nth-child(4)::before{background:var(--orange)}
-.stat-row{display:flex;gap:2rem;justify-content:center;margin-top:2.5rem;flex-wrap:wrap}
-.stat-box{text-align:center;padding:1.2rem 1.8rem;background:var(--bg3);border-radius:10px;border:1px solid rgba(255,255,255,.06)}
-.stat-box .num{font-size:2rem;font-weight:800;font-family:var(--mono);display:block;line-height:1}
-.stat-box .num.green{color:var(--green)}
-.stat-box .num.cyan{color:var(--cyan)}
-.stat-box .num.accent{color:var(--accent2)}
-.stat-box .label{font-size:.78rem;color:var(--fg2);margin-top:.3rem;display:block;text-transform:uppercase;letter-spacing:.5px}
+/* ── demos ── */
+.demos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.3rem}
+.demo{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
+.demo img{width:100%}
+.demo .d{padding:.9rem 1.1rem}
+.demo .d h4{font-size:.95rem;margin-bottom:.25rem}
+.demo .d p{font-size:.82rem;color:var(--fg2);line-height:1.55}
 
-/* ── Architecture ─────────────────────────────────── */
-.architecture{background:var(--bg2)}
-.architecture h2{text-align:center;font-size:2rem;margin-bottom:.6rem}
-.architecture .arch-sub{text-align:center;color:var(--fg2);font-size:.95rem;margin-bottom:2.5rem}
-.arch-diagram{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:0}
-.arch-layer{display:grid;grid-template-columns:120px 1fr;gap:1rem;align-items:center}
-.arch-layer-label{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--fg2);text-align:right;padding-right:.5rem;opacity:.7;line-height:1.4}
-.arch-cells{display:flex;gap:.6rem;flex-wrap:wrap;padding:.8rem;background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:10px}
-.arch-cell{flex:1;min-width:110px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:.65rem .8rem;text-align:center}
-.arch-cell .ac-name{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--fg);line-height:1.3;margin-bottom:.2rem}
-.arch-cell .ac-sub{font-size:.68rem;color:var(--fg2);line-height:1.4}
-.arch-cell .ac-badge{font-family:var(--mono);font-size:.6rem;padding:.1rem .35rem;border-radius:3px;margin-top:.3rem;display:inline-block}
-.arch-connector{display:flex;align-items:center;justify-content:center;height:20px;margin-left:128px}
-.arch-connector::after{content:'↓';color:var(--accent);opacity:.4;font-size:1rem}
-/* layer accent colors */
-.al-interfaces .arch-cells{border-top:2px solid var(--accent2)}
-.al-interfaces .arch-cell{border-top:2px solid var(--accent2)}
-.al-orchestration .arch-cells{border-top:2px solid var(--cyan)}
-.al-orchestration .arch-cell{border-top:2px solid rgba(24,255,255,.4)}
-.al-extern .arch-cells{border-top:2px solid var(--green)}
-.al-extern .arch-cell{border-top:2px solid rgba(0,230,118,.5)}
-.al-extern .arch-cell .ac-name{color:var(--green)}
-.al-metaharness .arch-cells{border-top:2px solid var(--orange)}
-.al-metaharness .arch-cell{border-top:2px solid rgba(255,145,0,.4)}
-.al-plasticity .arch-cells{border-top:2px solid #fd79a8;background:linear-gradient(180deg,rgba(253,121,168,.04),var(--bg))}
-.al-plasticity .arch-cell{border-top:2px solid rgba(253,121,168,.45)}
-.al-plasticity .arch-cell .ac-name{color:#fd79a8}
-.al-core .arch-cells{border-top:2px solid var(--accent)}
-.al-core .arch-cell{border-top:2px solid rgba(108,92,231,.5)}
-.al-storage .arch-cells{border-top:2px solid rgba(255,255,255,.15);background:var(--bg3)}
-.al-storage .arch-cell{border:none;background:transparent;flex:unset;min-width:auto}
-.al-storage .arch-cell .ac-name{color:var(--fg2)}
-@media(max-width:700px){.arch-layer{grid-template-columns:1fr}.arch-layer-label{text-align:left;padding-right:0}.arch-connector{margin-left:0}.arch-cell{min-width:90px}}
+/* ── changelog ── */
+.rel{max-width:760px;margin:0 auto 1.4rem;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.6rem}
+.rel-h{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.5rem}
+.rel-v{font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--accent2)}
+.rel-d{font-family:var(--mono);font-size:.76rem;color:var(--fg3)}
+.rel-t{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;background:var(--accent);color:#fff;padding:.16rem .5rem;border-radius:5px;font-weight:700}
+.rel-t.wip{background:rgba(255,209,102,.15);color:var(--amber);border:1px solid rgba(255,209,102,.35)}
+.rel-sum{font-size:.82rem;color:var(--fg3);margin-bottom:.8rem}
+.rel ul{list-style:none;padding:0}
+.rel li{font-size:.9rem;color:var(--fg2);line-height:1.6;padding:.3rem 0 .3rem 1.1rem;position:relative}
+.rel li::before{content:'▸';position:absolute;left:0;color:var(--accent2)}
+.rel li b{color:var(--fg)}
+.cl-more{text-align:center;margin-top:1.4rem}
 
-/* ── Use Cases ────────────────────────────────────── */
-.use-cases h2{text-align:center;font-size:2rem;margin-bottom:3rem}
-.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem}
-.uc-card{background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:1.8rem;transition:border-color .2s}
-.uc-card:hover{border-color:var(--accent)}
-.uc-card h3{font-size:1.05rem;margin-bottom:.5rem;color:var(--accent2)}
-.uc-card p{color:var(--fg2);font-size:.9rem;line-height:1.6;margin-bottom:.8rem}
-.uc-card code{display:block;background:var(--bg);padding:.8rem 1rem;border-radius:6px;font-size:.78rem;color:var(--fg2);line-height:1.6;overflow-x:auto;white-space:pre}
+/* ── blog ── */
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.post{display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.2rem;border-top:2px solid var(--lp,var(--accent))}
+.post:hover{border-color:var(--lp,var(--accent2))}
+.post .tag{font-family:var(--mono);font-size:.68rem;color:var(--lp,var(--accent2));text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.post h4{font-size:.98rem;line-height:1.3;margin-bottom:.4rem;color:var(--fg)}
+.post p{font-size:.83rem;color:var(--fg2);line-height:1.55;flex:1}
+.post .m{font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.7rem}
 
-/* ── Changelog ───────────────────────────────────── */
-.changelog{background:var(--bg2)}
-.changelog h2{text-align:center;font-size:2rem;margin-bottom:2.5rem}
-.changelog-releases{max-width:800px;margin:0 auto}
-.release{margin-bottom:2.5rem}
-.release-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1rem}
-.release-version{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--accent2)}
-.release-date{color:var(--fg2);font-size:.9rem}
-.release-tag{font-family:var(--mono);font-size:.75rem;padding:.2rem .5rem;border-radius:12px;background:rgba(108,92,231,.15);color:var(--accent2);border:1px solid rgba(108,92,231,.2)}
-.release ul{list-style:none;padding:0}
-.release li{padding:.35rem 0 .35rem 1.2rem;color:var(--fg2);font-size:.9rem;line-height:1.5;position:relative}
-.release li::before{content:'';position:absolute;left:0;top:.65rem;width:6px;height:6px;border-radius:50%;background:var(--accent)}
-.release li strong{color:var(--fg);font-weight:600}
-.release li code{background:var(--bg);padding:.1rem .35rem;border-radius:3px;font-size:.8rem;color:var(--accent2)}
-.release-category{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-top:1rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:1px}
+/* ── CTA ── */
+.cta{text-align:center;background:radial-gradient(ellipse at 50% 100%,rgba(108,92,231,.12),transparent 65%)}
+.cta h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800;margin-bottom:.9rem}
+.cta p{color:var(--fg2);max-width:560px;margin:0 auto 1.8rem}
 
-/* ── Self-Improving ───────────────────────────────── */
-.self-improving{background:var(--bg2);padding:5rem 0;border-top:1px solid rgba(108,92,231,.12)}
-.si-header{text-align:center;margin-bottom:3.5rem}
-.si-eyebrow{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:.7rem}
-.si-sub{color:var(--fg2);font-size:1rem;max-width:680px;margin:.8rem auto 0;line-height:1.75}
-.si-loop{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:start;gap:.5rem;max-width:1000px;margin:0 auto 3rem}
-.si-arrow{font-size:1.8rem;color:var(--accent);align-self:center;padding-top:1rem;opacity:.5}
-.si-step{background:var(--bg);border:1px solid rgba(108,92,231,.15);border-radius:10px;padding:1.5rem;text-align:center;transition:border-color .2s,transform .2s}
-.si-step:hover{border-color:var(--accent2);transform:translateY(-3px)}
-.si-step-num{font-family:var(--mono);font-size:.7rem;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem;opacity:.7}
-.si-step h3{font-size:1rem;font-weight:700;color:var(--fg);margin-bottom:.4rem}
-.si-step p{color:var(--fg2);font-size:.85rem;line-height:1.55}
-.si-evidence{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;padding-top:2.5rem;border-top:1px solid rgba(255,255,255,.05)}
-.si-ev-item{text-align:center;padding:1rem 1.5rem}
-.si-ev-num{display:block;font-family:var(--mono);font-size:2rem;font-weight:800;color:var(--accent2);line-height:1}
-.si-ev-label{display:block;font-size:.78rem;color:var(--fg2);margin-top:.3rem;text-transform:uppercase;letter-spacing:.5px}
-@media(max-width:900px){.si-loop{grid-template-columns:1fr 1fr;gap:1rem}.si-arrow{display:none}}
-@media(max-width:600px){.si-loop{grid-template-columns:1fr}}
+/* ── footer ── */
+footer{border-top:1px solid var(--line);padding:2.5rem 0;text-align:center;color:var(--fg3);font-size:.84rem}
+footer .links{display:flex;gap:1.3rem;justify-content:center;flex-wrap:wrap;margin-bottom:.9rem}
+footer .links a{color:var(--fg2)}
 
-/* ── CTA ──────────────────────────────────────────── */
-.cta{background:linear-gradient(135deg,rgba(108,92,231,.15),rgba(24,255,255,.05));text-align:center;border-top:1px solid rgba(108,92,231,.2);border-bottom:1px solid rgba(108,92,231,.2)}
-.cta h2{font-size:2rem;margin-bottom:1rem}
-.cta p{color:var(--fg2);margin-bottom:2rem;font-size:1.1rem}
-.cta .install-bar{margin-top:1.5rem;margin-bottom:0}
-
-/* ── Footer ───────────────────────────────────────── */
-footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem}
-footer a{color:var(--fg2)}
-footer a:hover{color:var(--accent2)}
-footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
-
-/* ── Demos Gallery ────────────────────────────────── */
-.demos{background:var(--bg2);padding:5rem 0}
-.demos>div>h2{text-align:center;font-size:2rem;margin-bottom:.6rem}
-.demos .lead{text-align:center;color:var(--fg2);margin-bottom:.5rem;font-size:1rem;max-width:660px;margin-left:auto;margin-right:auto}
-.demo-section-label{text-align:center;font-family:var(--mono);font-size:.75rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin:3rem 0 2rem;display:flex;align-items:center;gap:1rem}
-.demo-section-label::before,.demo-section-label::after{content:'';flex:1;height:1px;background:rgba(108,92,231,.2)}
-.demo-gallery{display:flex;flex-direction:column;gap:3.5rem}
-.demo-card{max-width:960px;margin:0 auto;width:100%}
-.demo-card-meta{margin-bottom:.9rem}
-.demo-card-num{font-family:var(--mono);font-size:.72rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:.25rem}
-.demo-card h3{font-size:1.35rem;font-weight:700;margin-bottom:.35rem;color:var(--fg)}
-.demo-card p{color:var(--fg2);font-size:.92rem;line-height:1.55}
-.demo-card-screen{border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 50px rgba(0,0,0,.5);margin-top:.9rem}
-.demo-card-screen img{width:100%;display:block}
-/* Use-case GIF preview */
-.uc-gif{margin-top:1rem;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
-.uc-gif img{width:100%;display:block}
-
-/* ── Mobile ───────────────────────────────────────── */
-/* ── Latest posts strip ─────────────────────────────── */
-.latest-posts{max-width:960px;margin:2.8rem auto 0;padding:0 2rem}
-.lp-eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--fg2);text-align:center;margin-bottom:1.1rem}
-.lp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-.lp-card{display:flex;flex-direction:column;text-decoration:none;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-top:2px solid var(--lp-clr,var(--accent2));border-radius:10px;padding:1.2rem 1.4rem;transition:transform .2s,border-color .2s}
-.lp-card:hover{transform:translateY(-3px);border-color:var(--lp-clr,var(--accent2));border-top-color:var(--lp-clr,var(--accent2))}
-.lp-tag{font-family:var(--mono);font-size:.64rem;color:var(--lp-clr,var(--accent2));letter-spacing:2px;text-transform:uppercase;margin-bottom:.45rem}
-.lp-title{font-size:.95rem;font-weight:700;color:var(--fg);line-height:1.35;margin-bottom:.35rem}
-.lp-meta{font-family:var(--mono);font-size:.66rem;color:var(--fg2);margin-bottom:.5rem}
-.lp-desc{font-size:.82rem;color:var(--fg2);line-height:1.55;flex:1;margin-bottom:.7rem}
-.lp-read{font-family:var(--mono);font-size:.72rem;color:var(--lp-clr,var(--accent2))}
-/* ── Hero examples (kept for code reference) ────────── */
-.hero-ex-panel{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
-.hero-ex-label{font-family:var(--mono);font-size:.68rem;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;padding:.55rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);background:var(--bg3);display:flex;align-items:center;gap:.5rem}
-.hero-ex-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent2);display:inline-block}
-.hero-ex-panel pre{padding:1.1rem 1.2rem;font-size:.78rem;color:var(--fg2);line-height:1.65;overflow-x:auto;white-space:pre}
-.hero-ex-panel pre .kw{color:var(--accent2)}
-.hero-ex-panel pre .cm{color:#636378;font-style:italic}
-.hero-ex-panel pre .st{color:var(--green)}
-.hero-ex-panel pre .hi{color:var(--cyan)}
-@media(max-width:900px){
-  .rb-papers{grid-template-columns:repeat(2,1fr)}
-  .lp-grid{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  nav ul{display:none}
-  .hero{padding:7rem 0 0}
-  .hero-terminal{padding:0 0}
-  section{padding:3.5rem 0}
-  .wrap{padding:0 1.2rem}
-  .pain-grid,.feat-grid,.uc-grid{grid-template-columns:1fr}
-  .comp-table{font-size:.8rem}
-  .comp-table th,.comp-table td{padding:.5rem .6rem}
-  .install-bar{font-size:.8rem;padding:.8rem 1rem}
-  .demo-card h3{font-size:1.1rem}
-  .rb-papers{grid-template-columns:1fr}
+@media(max-width:820px){
+  .cap-grid,.disc-steps,.blog-grid{grid-template-columns:1fr}
+  .disc-stats{grid-template-columns:repeat(2,1fr)}
+  .demos-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- Nav -->
 <nav>
 <div class="wrap">
-  <div class="logo"><span>K</span>AOS</div>
+  <a href="#top" class="logo"><span>K</span>AOS</a>
   <ul>
-    <li><a href="#research">Research</a></li>
-    <li><a href="#self-improving">Philosophy</a></li>
-    <li><a href="#comparison">vs Others</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#compaction">Compaction</a></li>
-    <li><a href="#demos">Demos</a></li>
-    <li><a href="#use-cases">Use Cases</a></li>
-    <li><a href="#changelog">Changelog</a></li>
-    <li><a href="#blog">Blog</a></li>
-    <li><a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a></li>
+    <li class="hide-sm"><a href="#research">Research</a></li>
+    <li class="hide-sm"><a href="#discipline">Discipline</a></li>
+    <li class="hide-sm"><a href="#demos">Demos</a></li>
+    <li class="hide-sm"><a href="#changelog">Changelog</a></li>
+    <li class="hide-sm"><a href="#blog">Blog</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
   </ul>
 </div>
 </nav>
 
-<!-- Hero -->
-<section class="hero">
+<!-- ── Hero ── -->
+<header class="hero" id="top">
+<div class="wrap hero-inner">
+  <h1>The Living Synthesis of<br><span class="grad">Agentic AI Research</span></h1>
+  <p class="sub">A local-first framework for orchestrating multi-agent systems. Every agent gets an isolated, auditable runtime backed by a single SQLite file. Nine proven research integrations, unified — self-improving by design, <strong style="color:var(--fg)">measured, not claimed</strong>.</p>
+  <div class="btns">
+    <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
+    <a href="#discipline" class="btn btn-ghost">How we ship &darr;</a>
+  </div>
+  <div class="install"><span class="p">$</span><span class="c">git clone https://github.com/canivel/kaos.git &amp;&amp; cd kaos &amp;&amp; uv sync</span></div>
+  <div class="badges">
+    <span class="badge v">v0.9.2</span>
+    <span class="badge p">falsifiable eval</span>
+    <span class="badge g">9 research integrations</span>
+    <span class="badge">58 MCP tools</span>
+    <span class="badge">701 tests</span>
+    <span class="badge">local-first</span>
+  </div>
+
+  <a class="arc" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel" target="_blank" rel="noopener">
+    <span class="dim" style="font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em">ARC-AGI-3 · ARC Prize 2026</span>
+    <span class="rank">#47</span><span class="dim">of ~1,100 teams</span>
+    <span title="silver zone">🥈</span>
+    <span class="dim">KAOS competing <strong style="color:var(--fg)">autonomously</strong> · score 0.43 · view leaderboard →</span>
+  </a>
+  <p class="arc-as">Standing as of Jun 8, 2026 — entered solo by <code>canivel</code>, run by KAOS itself.</p>
+
+  <div class="shot">
+    <img src="docs/demos/kaos_mh_full_demo.gif" alt="KAOS Meta-Harness: a text classifier improves from 45% to 87% accuracy across 10 automated search iterations, in the terminal">
+    <div class="cap">Meta-Harness: 45% → 87% classifier accuracy in 10 automated iterations · <code>uv run kaos mh search</code></div>
+  </div>
+</div>
+</header>
+
+<!-- ── Research ── -->
+<section id="research">
 <div class="wrap">
-  <div class="hero-copy">
-    <h1>The Living Synthesis of<br><span class="highlight">Agentic AI Research</span></h1>
-    <p class="subtitle">Six research breakthroughs — memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously. Unified. Local-first. Self-improving.</p>
-    <div class="hero-buttons">
-      <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-      <a href="#research" class="btn btn-secondary">See the research &darr;</a>
-    </div>
-    <div class="install-bar">
-      <span class="prompt">$</span>
-      <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
-    </div>
-    <div class="badges">
-      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.9.1</span>
-      <span class="badge" style="color:#fd79a8;border-color:rgba(253,121,168,.35);background:rgba(253,121,168,.08)">falsifiable eval</span>
-      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">8 research integrations</span>
-      <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">self-organizing</span>
-      <span class="badge">safe by design</span>
-      <span class="badge">local-first</span>
-    </div>
-
-    <!-- ── ARC-AGI-3 live tracker ───────────────────────────────────── -->
-    <a class="arc-tracker" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel" target="_blank" rel="noopener" aria-label="KAOS on the ARC-AGI-3 Kaggle leaderboard, rank 47">
-      <span class="arc-pulse" aria-hidden="true"></span>
-      <span class="arc-eyebrow">ARC-AGI-3 &middot; ARC Prize 2026</span>
-      <span class="arc-divider" aria-hidden="true"></span>
-      <span class="arc-rank">#47</span>
-      <span class="arc-of">of ~1,100 teams</span>
-      <span class="arc-medal" title="Silver medal zone">&#129352;</span>
-      <span class="arc-meta">KAOS competing <strong>autonomously</strong> &middot; score 0.43</span>
-      <span class="arc-cta" aria-hidden="true">View leaderboard &rarr;</span>
-    </a>
-    <p class="arc-asof">Standing as of Jun 8, 2026 &mdash; entered solo by <code>canivel</code>, run by KAOS itself.</p>
+  <div class="head">
+    <div class="eyebrow">Research Synthesis</div>
+    <h2>Not invented here. Curated from the best.</h2>
+    <p>The best ideas for safe, reliable, capable agents already exist — they just live in scattered papers and repos. KAOS picks the strongest solution to each hard problem, implements it faithfully, and makes it compose.</p>
   </div>
-</div>
-
-<!-- ───────────────────────────── Neuroplasticity spotlight (v0.8.1) ─────────────────────────── -->
-<div id="neuroplasticity" style="max-width:1100px;margin:3.5rem auto 1rem;padding:0 2rem">
-  <div style="text-align:center;max-width:820px;margin:0 auto 2rem">
-    <div style="display:inline-block;font-family:var(--mono);font-size:.72rem;background:rgba(253,121,168,.15);color:#fd79a8;padding:.3rem .85rem;border-radius:20px;border:1px solid rgba(253,121,168,.35);margin-bottom:1.3rem;letter-spacing:2px;text-transform:uppercase;font-weight:700">v0.8.1 &bull; Shipping Now</div>
-    <h2 style="font-size:clamp(2.4rem,6vw,4rem);font-weight:800;letter-spacing:-1.5px;line-height:1;margin-bottom:.8rem;background:linear-gradient(135deg,#fd79a8,#a29bfe 60%,#18ffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Neuroplasticity</h2>
-    <p style="font-size:clamp(1.1rem,2.2vw,1.45rem);color:var(--fg);line-height:1.3;margin-bottom:1.6rem;font-weight:500;letter-spacing:-.2px">The library starts learning from itself.</p>
-    <p style="font-size:1.02rem;color:var(--fg2);line-height:1.7;margin:0 auto;max-width:720px"><strong style="color:var(--fg)">Based on the brain's neuroplasticity process.</strong> In neuroscience, neuroplasticity is how the cortex rewires itself as a side effect of normal thinking &mdash; neurons that fire together strengthen their synapse (<a href="https://en.wikipedia.org/wiki/Donald_O._Hebb" style="color:var(--accent2)">Hebb, 1949</a>), unused pathways atrophy, and structural rewiring happens offline during sleep (<a href="https://www.cell.com/neuron/fulltext/S0896-6273(13)01186-0" style="color:var(--accent2)">Tononi &amp; Cirelli, 2014</a>). The cortex doesn't run a batch job to keep itself tidy &mdash; the rewiring <em>is</em> part of the thinking.</p>
-  </div>
-
-  <!-- Origin → Application mapping -->
-  <div style="max-width:960px;margin:0 auto 2.5rem">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.3rem" class="np-bio">
-      <div style="background:var(--bg2);border:1px solid rgba(162,155,254,.2);border-radius:12px;padding:1.4rem 1.5rem;border-top:3px solid #a29bfe">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="font-size:1.3rem">&#129504;</span>
-          <div style="font-family:var(--mono);font-size:.72rem;color:#a29bfe;letter-spacing:1.8px;text-transform:uppercase;font-weight:700">In the brain</div>
-        </div>
-        <ul style="list-style:none;padding:0;margin:0;font-size:.92rem;color:var(--fg2);line-height:1.65">
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">A neuron fires &mdash; every signal passing through a synapse is a local event.</li>
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">Coincident firing strengthens the synapse &mdash; <em>cells that fire together wire together</em>.</li>
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">Unused pathways fade over time.</li>
-          <li style="padding:.4rem 0">Sleep consolidates: structural rewiring runs offline from perception, on a slower clock.</li>
-        </ul>
-      </div>
-
-      <div style="background:var(--bg2);border:1px solid rgba(253,121,168,.2);border-radius:12px;padding:1.4rem 1.5rem;border-top:3px solid #fd79a8">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="font-size:1.3rem">&#127760;</span>
-          <div style="font-family:var(--mono);font-size:.72rem;color:#fd79a8;letter-spacing:1.8px;text-transform:uppercase;font-weight:700">In KAOS</div>
-        </div>
-        <ul style="list-style:none;padding:0;margin:0;font-size:.92rem;color:var(--fg2);line-height:1.65">
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">Every <code style="font-size:.85em">record_outcome()</code>, every memory hit, every agent completion is a "firing".</li>
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">Skills used in the same agent session get a Hebbian edge in the association graph.</li>
-          <li style="padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04)">Cold skills get flagged for pruning; dead fixes auto-downgrade.</li>
-          <li style="padding:.4rem 0">Structural consolidation (promote / prune / merge) runs in batch at agent-completion &mdash; our "sleep".</li>
-        </ul>
-      </div>
-    </div>
-    <p style="text-align:center;font-size:.87rem;color:var(--fg2);margin-top:1.2rem;font-style:italic">The claim is an <em>architectural analogy</em>, not a neurobiological one: we borrow the <em>scale separation</em> between fast synaptic updates and slow structural consolidation. The algorithms are classical &mdash; <a href="https://en.wikipedia.org/wiki/Wilson_score_interval" style="color:var(--accent2)">Wilson lower bounds</a>, exponential decay, Jaccard similarity, sliding-window counters &mdash; arranged to flow continuously through normal agent operation.</p>
-  </div>
-
-  <p style="text-align:center;font-size:1rem;color:var(--fg2);line-height:1.7;max-width:720px;margin:0 auto 2rem">What that gives us in practice: the skill library, memory store, and shared log have been collecting real signal for a while &mdash; <code>use_count</code>, <code>success_count</code>, every retrieval, every completion. v0.8.1 makes KAOS <strong style="color:var(--fg)">read that signal continuously</strong> and reshape retrieval rankings, build a co-occurrence graph, and triage failures automatically.</p>
-
-  <!-- Demo GIF -->
-  <div style="max-width:960px;margin:0 auto 2.5rem;border-radius:14px;overflow:hidden;border:1px solid rgba(253,121,168,.22);box-shadow:0 20px 60px rgba(253,121,168,.08),0 10px 40px rgba(0,0,0,.4)">
-    <img src="docs/demos/kaos_neuroplasticity.gif"
-         alt="KAOS plasticity demo: BM25 baseline retrieval, agents report outcomes, weighted rank flips the top-1, failure triage surfaces categorised fingerprints, systemic alert fires on an infra wave."
-         style="width:100%;display:block">
-    <div style="background:var(--bg2);padding:.85rem 1.2rem;font-size:.83rem;color:var(--fg2);font-family:var(--mono);text-align:center;border-top:1px solid rgba(255,255,255,.05)">Six scenes. Real CLI. Reproducible via <code style="color:#fd79a8">uv run kaos skills search --rank weighted</code> + <code style="color:#fd79a8">kaos dream failures</code>.</div>
-  </div>
-
-  <!-- Why / What / How three-column — positive-framing rewrite -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;margin-bottom:2rem" class="np-cols">
-    <!-- WHY -->
-    <div style="background:var(--bg2);border:1px solid rgba(253,121,168,.15);border-radius:12px;padding:1.6rem 1.5rem;border-top:3px solid #fd79a8">
-      <div style="font-family:var(--mono);font-size:.7rem;color:#fd79a8;letter-spacing:2px;text-transform:uppercase;margin-bottom:.8rem;font-weight:700">01 &middot; Why now</div>
-      <h3 style="font-size:1.08rem;font-weight:700;margin-bottom:.7rem;line-height:1.3">The signal was already there</h3>
-      <p style="font-size:.92rem;color:var(--fg2);line-height:1.7;margin-bottom:.9rem">KAOS already records every skill outcome, every memory retrieval, every error. By v0.7, most real projects had thousands of those events sitting in the database.</p>
-      <p style="font-size:.9rem;color:var(--fg2);line-height:1.7">v0.8.1 is the moment we start <strong style="color:var(--fg)">using</strong> that history &mdash; to rank, to associate, to diagnose, to alert. Same data, new feedback loop.</p>
-    </div>
-
-    <!-- WHAT -->
-    <div style="background:var(--bg2);border:1px solid rgba(162,155,254,.18);border-radius:12px;padding:1.6rem 1.5rem;border-top:3px solid #a29bfe">
-      <div style="font-family:var(--mono);font-size:.7rem;color:#a29bfe;letter-spacing:2px;text-transform:uppercase;margin-bottom:.8rem;font-weight:700">02 &middot; What runs</div>
-      <h3 style="font-size:1.08rem;font-weight:700;margin-bottom:.7rem;line-height:1.3">Continuous consolidation</h3>
-      <ul style="list-style:none;padding:0;margin:0;font-size:.91rem;color:var(--fg2);line-height:1.6">
-        <li style="padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04)"><b style="color:var(--fg)">Weighted retrieval</b> &mdash; BM25 &times; Wilson-bound success &times; recency decay (opt-in per call)</li>
-        <li style="padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04)"><b style="color:var(--fg)">Hebbian graph</b> &mdash; one <code style="font-size:.85em">executemany</code> per session; skills that co-fire get linked</li>
-        <li style="padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04)"><b style="color:var(--fg)">Failure triage</b> &mdash; errors get categorised (transient / config / code / infra), fixes tracked</li>
-        <li style="padding:.35rem 0"><b style="color:var(--fg)">Systemic alerts</b> &mdash; N agents hitting the same fingerprint in a window raises an incident</li>
-      </ul>
-    </div>
-
-    <!-- HOW (measured) -->
-    <div style="background:var(--bg2);border:1px solid rgba(0,230,118,.18);border-radius:12px;padding:1.6rem 1.5rem;border-top:3px solid #00e676">
-      <div style="font-family:var(--mono);font-size:.7rem;color:#00e676;letter-spacing:2px;text-transform:uppercase;margin-bottom:.8rem;font-weight:700">03 &middot; How it measures</div>
-      <h3 style="font-size:1.08rem;font-weight:700;margin-bottom:1rem;line-height:1.3">Reproducible benchmarks</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">
-        <div style="background:var(--bg3);border-radius:8px;padding:.7rem .8rem"><div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#00e676;line-height:1">+10pp</div><div style="font-size:.7rem;color:var(--fg2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem">retrieval</div></div>
-        <div style="background:var(--bg3);border-radius:8px;padding:.7rem .8rem"><div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#00e676;line-height:1">+15&micro;s</div><div style="font-size:.7rem;color:var(--fg2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem">p50 overhead</div></div>
-        <div style="background:var(--bg3);border-radius:8px;padding:.7rem .8rem"><div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#00e676;line-height:1">181</div><div style="font-size:.7rem;color:var(--fg2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem">scenario checks</div></div>
-        <div style="background:var(--bg3);border-radius:8px;padding:.7rem .8rem"><div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#00e676;line-height:1">423</div><div style="font-size:.7rem;color:var(--fg2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem">unit tests</div></div>
-      </div>
-      <p style="font-size:.84rem;color:var(--fg2);line-height:1.6">Every number committed next to the benchmark that produced it. <code style="font-size:.85em;color:#00e676">uv run python demo_neuroplasticity_bench/run.py</code></p>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-    <a href="blog/kaos-neuroplasticity.html" style="display:inline-block;background:linear-gradient(135deg,#fd79a8,#a29bfe);color:#0a0a0f;font-weight:700;padding:.8rem 1.5rem;border-radius:10px;text-decoration:none;font-size:.93rem">Read the growth story &rarr;</a>
-    <a href="papers/kaos-neuroplasticity-whitepaper.html" style="display:inline-block;background:var(--bg2);color:var(--fg);font-weight:600;padding:.8rem 1.5rem;border-radius:10px;text-decoration:none;font-size:.93rem;border:1px solid rgba(162,155,254,.3)">Read the whitepaper</a>
-    <a href="https://github.com/canivel/kaos/tree/main/demo_neuroplasticity_bench" style="display:inline-block;background:var(--bg2);color:var(--fg);font-weight:600;padding:.8rem 1.5rem;border-radius:10px;text-decoration:none;font-size:.93rem;border:1px solid rgba(0,230,118,.3)">See the benchmarks</a>
-  </div>
-</div>
-
-<style>
-@media(max-width:820px){
-  #neuroplasticity .np-cols{grid-template-columns:1fr!important}
-  #neuroplasticity .np-bio{grid-template-columns:1fr!important}
-}
-</style>
-
-<!-- Latest posts strip -->
-<div class="latest-posts">
-  <div class="lp-eyebrow">Latest from the blog</div>
-  <div class="lp-grid">
-
-    <a href="blog/kaos-neuroplasticity.html" class="lp-card" style="--lp-clr:#fd79a8">
-      <div class="lp-tag">Neuroplasticity &bull; v0.8.1</div>
-      <div class="lp-title">Neuroplasticity in KAOS — The Library Starts Learning from Itself</div>
-      <div class="lp-meta">April 24, 2026 &bull; 18 min read</div>
-      <div class="lp-desc">Inline synaptic plasticity, Hebbian associations, failure triage, systemic alerts. <strong>Measured +10pp retrieval accuracy</strong> on a real benchmark, +15&micro;s hot-path overhead.</div>
-      <div class="lp-read">Read &rarr;</div>
-    </a>
-
-    <a href="blog/kaos-full-engagement.html" class="lp-card" style="--lp-clr:#ffd166">
-      <div class="lp-tag">End-to-End &bull; Walkthrough</div>
-      <div class="lp-title">What a Full KAOS Engagement Looks Like</div>
-      <div class="lp-meta">April 15, 2026 &bull; 25 min read</div>
-      <div class="lp-desc">Payment platform modernization from <code>kaos init</code> to production — every wave, every agent, real CLI output. All 7 capabilities in one session.</div>
-      <div class="lp-read">Read &rarr;</div>
-    </a>
-
-    <a href="blog/kaos-skill-library.html" class="lp-card" style="--lp-clr:#18ffff">
-      <div class="lp-tag">Skills &bull; v0.7.0</div>
-      <div class="lp-title">The Skill Library: Agents That Learn Procedures</div>
-      <div class="lp-meta">April 14, 2026 &bull; 12 min read</div>
-      <div class="lp-desc">Memory stores what happened. Skills store <em>how to do it</em> — parameterized templates that accumulate reliability across sessions and projects.</div>
-      <div class="lp-read">Read &rarr;</div>
-    </a>
-
-    <a href="blog/kaos-cross-agent-memory.html" class="lp-card" style="--lp-clr:#00cec9">
-      <div class="lp-tag">Memory &bull; FTS5</div>
-      <div class="lp-title">How KAOS Agents Learn Across Sessions</div>
-      <div class="lp-meta">April 13, 2026 &bull; 10 min read</div>
-      <div class="lp-desc">Cross-agent memory with FTS5/BM25 full-text search. Any agent writes a lesson; any agent on any future project finds it in milliseconds.</div>
-      <div class="lp-read">Read &rarr;</div>
-    </a>
-
-  </div>
-</div>
-
-<div class="hero-terminal">
-  <div class="hero-screen">
-    <img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="KAOS Meta-Harness: classifier goes from 45% to 87% accuracy in 10 automated iterations">
+  <div class="pills">
+    <a class="pill" href="https://arxiv.org/abs/2604.08224"><b>Skill Externalization</b><span>arXiv:2604.08224 · v0.7</span></a>
+    <a class="pill" href="https://github.com/thedotmack/claude-mem"><b>Cross-agent Memory (FTS5)</b><span>claude-mem · v0.6</span></a>
+    <a class="pill" href="https://arxiv.org/abs/2604.07988"><b>SharedLog consensus</b><span>LogAct arXiv:2604.07988 · v0.6</span></a>
+    <a class="pill" href="https://arxiv.org/abs/2604.01658"><b>CORAL co-evolution</b><span>arXiv:2604.01658 · v0.6</span></a>
+    <a class="pill" href="https://arxiv.org/abs/2604.01687"><b>Surrogate Verifier</b><span>EvoSkills arXiv:2604.01687 · v0.5</span></a>
+    <a class="pill" href="https://github.com/milla-jovovich/mempalace"><b>AAAK compaction</b><span>MemPalace · v0.5</span></a>
+    <a class="pill" href="https://arxiv.org/abs/2603.28052"><b>Meta-Harness search</b><span>arXiv:2603.28052 · v0.2</span></a>
+    <a class="pill" href="https://en.wikipedia.org/wiki/Donald_O._Hebb"><b>Neuroplasticity (Hebbian)</b><span>Hebb 1949 · v0.8</span></a>
+    <a class="pill" href="https://github.com/canivel/kaos"><b>Falsifiable-eval discipline</b><span>KAOS core · v0.9</span></a>
   </div>
 </div>
 </section>
 
-<!-- Research Foundation -->
-<section class="research-banner" id="research">
+<!-- ── Capabilities ── -->
+<section id="capabilities">
 <div class="wrap">
-  <div class="rb-header">
-    <div class="rb-eyebrow">Research Synthesis</div>
-    <h2 class="rb-title">Not Invented Here.<br>Curated From the Best.</h2>
-    <p class="rb-sub">The best ideas for making AI agents safe, reliable, and capable already exist — they just live in different papers and repositories. KAOS identifies the solution that best addresses each hard problem, implements it faithfully, and makes sure it composes cleanly with everything else. We add new integrations as we find synergy and reason to include them.</p>
+  <div class="head">
+    <div class="eyebrow">What it does</div>
+    <h2>One framework. Every solved problem.</h2>
+    <p>Each capability traces to a proven source. Nothing is invented that doesn't need to be.</p>
   </div>
-  <div class="rb-papers">
-    <div class="rb-paper" style="border-top-color:#00cec9">
-      <div class="rb-paper-badges"><span class="rb-badge-new">New</span><span class="rb-badge-ver">v0.7.0</span></div>
-      <div class="rb-paper-tag">Skill Externalization</div>
-      <h3>Externalization in LLM Agents</h3>
-      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.08224">arXiv:2604.08224</a> &bull; Zhou et al. 2026</div>
-      <p>Skills are <em>procedural</em> artifacts &mdash; parameterized templates that encode reliable solution strategies. Agents save them, any agent searches and applies them. Usage and success are tracked for reliability ranking.</p>
-      <div class="rb-paper-used">Used in: <code>SkillStore</code> &bull; <code>kaos skills</code> &bull; <code>skill_*</code> MCP tools</div>
-      <a class="rb-paper-demo" href="blog/kaos-skill-library.html">&#9654; blog &amp; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
-      <div class="rb-paper-tag">Cross-Agent Memory</div>
-      <h3>claude-mem</h3>
-      <div class="rb-paper-source"><a href="https://github.com/thedotmack/claude-mem">github.com/thedotmack/claude-mem</a> &bull; Alex Newman &bull; AGPL-3.0</div>
-      <p>Agents write compact, searchable memories — results, skills, errors, observations — accessible to every agent via FTS5/BM25 full-text search. Knowledge persists across sessions and projects.</p>
-      <div class="rb-paper-used">Used in: <code>MemoryStore</code> &bull; <code>kaos memory</code> &bull; <code>agent_memory_*</code> MCP tools</div>
-      <a class="rb-paper-demo" href="blog/kaos-cross-agent-memory.html">&#9654; blog &amp; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
-      <div class="rb-paper-tag">Multi-Agent Coordination</div>
-      <h3>LogAct</h3>
-      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.07988">arXiv:2604.07988</a> &bull; Balakrishnan et al., Meta 2026</div>
-      <p>Append-only shared log with a 4-stage intent/vote/decision/commit loop. No agent can act without consensus. Every action is auditable, reversible, and queryable with SQL.</p>
-      <div class="rb-paper-used">Used in: <code>SharedLog</code> &bull; <code>kaos log</code> &bull; <code>shared_log_*</code> MCP tools</div>
-      <a class="rb-paper-demo" href="blog/kaos-shared-log.html">&#9654; blog &amp; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.6.0</span></div>
-      <div class="rb-paper-tag">Multi-Agent Co-Evolution</div>
-      <h3>CORAL</h3>
-      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01658">arXiv:2604.01658</a></div>
-      <p>Shared persistent memory, per-iteration reflection, stagnation-triggered pivot, and live skill sharing across co-evolving agents. 3&ndash;10&times; higher improvement rates.</p>
-      <div class="rb-paper-used">Used in: <code>mh_spawn_coevolution</code> &bull; <code>mh_hub_sync</code></div>
-      <a class="rb-paper-demo" href="docs/demos/kaos_07_coral_coevolution.gif" target="_blank">&#9654; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.5.1</span></div>
-      <div class="rb-paper-tag">Failure Diagnosis</div>
-      <h3>EvoSkills</h3>
-      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2604.01687">arXiv:2604.01687</a></div>
-      <p>Surrogate Verifier &mdash; informationally isolated failure diagnostics. Reads execution outputs only, never source code. Gives the proposer structured &ldquo;why it failed + how to fix it&rdquo;.</p>
-      <div class="rb-paper-used">Used in: <code>SurrogateVerifier</code></div>
-      <a class="rb-paper-demo" href="docs/demos/kaos_uc03_post_mortem_debug.gif" target="_blank">&#9654; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.5.2</span></div>
-      <div class="rb-paper-tag">Context Compression</div>
-      <h3>MemPalace</h3>
-      <div class="rb-paper-source"><a href="https://github.com/milla-jovovich/mempalace">github.com/milla-jovovich/mempalace</a></div>
-      <p>AAAK compact notation &mdash; dense shorthand that any LLM reads without decoders. 57% context savings at default, 95% at ultra, with 100% quality retained.</p>
-      <div class="rb-paper-used">Used in: <code>Compactor</code> &bull; <code>kaos mh search</code></div>
-      <a class="rb-paper-demo" href="docs/demos/kaos_06_meta_harness.gif" target="_blank">&#9654; demo</a>
-    </div>
-    <div class="rb-paper">
-      <div class="rb-paper-badges"><span class="rb-badge-ver">v0.2.0</span></div>
-      <div class="rb-paper-tag">Automated Optimization</div>
-      <h3>Meta-Harness</h3>
-      <div class="rb-paper-source"><a href="https://arxiv.org/abs/2603.28052">arXiv:2603.28052</a> &bull; Stanford / MIT / KRAFTON</div>
-      <p>Evolutionary proposer reads full execution traces and automatically searches for the best prompt strategy, retrieval approach, and context design.</p>
-      <div class="rb-paper-used">Used in: <code>kaos mh search</code></div>
-      <a class="rb-paper-demo" href="docs/demos/kaos_mh_full_demo.gif" target="_blank">&#9654; demo</a>
-    </div>
+  <div class="cap-grid">
+    <div class="cap-card"><h3>Isolated agent runtimes</h3><p>Every agent gets its own virtual filesystem, KV state, and full event journal — all in one auditable SQLite file. Checkpoint, restore, diff, time-travel.</p><div class="src">KAOS core · v0.1</div></div>
+    <div class="cap-card"><h3>Cross-agent memory &amp; skills</h3><p>FTS5/BM25 memory any agent can search; parameterized skill templates that accumulate reliability. Lessons learned on one project surface on the next.</p><div class="src">v0.6 · v0.7</div></div>
+    <div class="cap-card"><h3>Consensus coordination</h3><p>SharedLog intent → vote → decide. Agents coordinate through an append-only log instead of acting unilaterally.</p><div class="src">LogAct · v0.6</div></div>
+    <div class="cap-card"><h3>Neuroplasticity</h3><p>Hebbian associations, weighted retrieval, failure fingerprints, and offline consolidation — the library rewires itself as a side effect of normal use.</p><div class="src">v0.8.1</div></div>
+    <div class="cap-card"><h3>Strategy optimization</h3><p>Meta-Harness treats prompt/harness engineering as search: an evolutionary proposer reads execution traces and proposes structurally better harnesses.</p><div class="src">arXiv:2603.28052 · v0.2+</div></div>
+    <div class="cap-card"><h3>Failure intelligence</h3><p>Reasoning-class taxonomy, a critical-step localizer that points at the earliest decisive error, and systemic alerts when many agents hit the same fingerprint.</p><div class="src">v0.8.3</div></div>
   </div>
 </div>
 </section>
 
-<!-- Problem -->
-<section class="problem" id="problem">
+<!-- ── The Discipline ── -->
+<section id="discipline" class="disc">
 <div class="wrap">
-  <h2>Why Production Agentic Systems Are Still Hard</h2>
-  <p class="lead">The research on every individual problem exists. The problem is nobody has put the pieces together into a coherent, composable system.</p>
-  <div class="pain-grid">
-    <div class="pain-card">
-      <h3>Research is scattered</h3>
-      <p>Memory isolation from one paper. Coordination protocols from another. Context compression from a third repo. Each solves one problem — none were designed to work together.</p>
-    </div>
-    <div class="pain-card">
-      <h3>Agents step on each other</h3>
-      <p>Two agents write to the same file. One overwrites the other's work. You don't find out until production. There's a proven solution: enforced per-agent VFS.</p>
-    </div>
-    <div class="pain-card">
-      <h3>Agents repeat past mistakes</h3>
-      <p>Every session starts from zero. The agent hits the same JSON parse error it hit last week. Cross-session memory with FTS5 search is a solved problem — just not integrated anywhere.</p>
-    </div>
-    <div class="pain-card">
-      <h3>Agents act without oversight</h3>
-      <p>An autonomous agent drops a production table. There's an established protocol for consensus-based coordination — intent, vote, decide — but nobody ships it.</p>
-    </div>
-    <div class="pain-card">
-      <h3>You can't roll back one agent</h3>
-      <p>The refactor agent broke everything. You <code>git reset --hard</code> and lose the work of the 3 other agents that were fine. Surgical checkpoint/restore is a solved problem.</p>
-    </div>
-    <div class="pain-card">
-      <h3>Context explodes, quality doesn't</h3>
-      <p>Agents bloat their context with raw traces. AAAK compact notation cuts 57% at default with zero quality loss — proven across 5 domains — and it sits unused in a GitHub repo.</p>
-    </div>
-    <div class="pain-card">
-      <h3>You can't debug what happened</h3>
-      <p>47 tool calls, 12 files modified, one broken codebase. An append-only event journal with SQL queries is the right answer. It just needs to be the default.</p>
-    </div>
+  <div class="head">
+    <div class="eyebrow" style="color:var(--pink)">The differentiator</div>
+    <h2>Nothing ships without a probe it could fail.</h2>
+    <p>Most frameworks add mechanisms and report the demo that worked. KAOS evaluates every mechanism candidate against a pre-registered, hash-locked, falsifiable probe <em>before</em> shipping it — and reports the verdict either way.</p>
+  </div>
+  <div class="disc-stats">
+    <div class="stat"><div class="n">9</div><div class="l">candidates evaluated</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">shipped on hope</div></div>
+    <div class="stat"><div class="n">701</div><div class="l">tests passing</div></div>
+    <div class="stat"><div class="n">125×</div><div class="l">measured write speedup</div></div>
+  </div>
+  <div class="disc-steps">
+    <div class="step"><div class="k">01 · Pre-register</div><h4>Gates before code</h4><p>Kill gates are written into an <code>ISA.lock.json</code> and sha256-locked <em>before</em> any feature code exists. The harness refuses to run on an edited lock — goalpost moves are mechanically impossible.</p></div>
+    <div class="step"><div class="k">02 · Falsify</div><h4>Prove it can lose</h4><p>A self-test substitutes the feature with its baseline and confirms the gate fires. A harness in which the feature <em>can't</em> lose is inadmissible; its later "pass" is meaningless.</p></div>
+    <div class="step"><div class="k">03 · Report honestly</div><h4>ACCEPT / REJECT / VOID</h4><p>The binding verdict is committed as-is. No retune-and-rerun. REJECT and VOID are successful outcomes — they keep unproven mechanisms out of the framework.</p></div>
+  </div>
+  <p class="disc-note">The apparatus that has rejected eight of nine mechanism ideas is itself a shipped, tested primitive: <code>kaos eval probe {run,verify,falsify}</code>. KAOS is the first agent framework that ships its own kill-switch. <a href="blog/kaos-v0.9.0.html">Read the v0.9 story →</a></p>
+</div>
+</section>
+
+<!-- ── Demos ── -->
+<section id="demos">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">See it run</div>
+    <h2>Real CLI. Reproducible.</h2>
+    <p>Every demo is a recording of the actual terminal surface — reproducible from the commands shown.</p>
+  </div>
+  <div class="demos-grid">
+    <div class="demo"><img src="docs/demos/kaos_03_parallel_agents.gif" alt="Parallel agents on a Gantt dashboard with live events" loading="lazy"><div class="d"><h4>Parallel agents + dashboard</h4><p>Spawn a swarm; watch each agent as a Gantt bar with a live event feed.</p></div></div>
+    <div class="demo"><img src="docs/demos/kaos_04_mcp_server.gif" alt="KAOS MCP server exposing 58 tools to Claude Code" loading="lazy"><div class="d"><h4>MCP server · 58 tools</h4><p>Drive KAOS from Claude Code, Cursor, or any MCP client with natural language.</p></div></div>
+    <div class="demo"><img src="docs/demos/kaos_neuroplasticity.gif" alt="Neuroplasticity: weighted rank flips top-1, failure triage, systemic alert" loading="lazy"><div class="d"><h4>Neuroplasticity in action</h4><p>Outcomes reported → weighted rank flips the top result → failures triaged → systemic alert fires.</p></div></div>
+    <div class="demo"><img src="docs/demos/kaos_v083.gif" alt="v0.8.3: quality score, failure taxonomy, critical-step localizer, war room" loading="lazy"><div class="d"><h4>Failure intelligence &amp; war room</h4><p>Quality scores, taxonomy, critical-step localization, and the war-room UI.</p></div></div>
   </div>
 </div>
 </section>
 
-<!-- Solution -->
-<section class="solution" id="solution">
+<!-- ── Changelog ── -->
+<section id="changelog">
 <div class="wrap">
-  <h2>One Framework. Every Solved Problem.</h2>
-  <p style="text-align:center;color:var(--fg2);margin-bottom:2rem;font-size:1rem;max-width:620px;margin-left:auto;margin-right:auto">KAOS doesn&rsquo;t solve these problems from scratch. It identifies who already solved them &mdash; and integrates their solutions into a single, composable system.</p>
-  <div class="code-block">
-    <div class="code-header">
-      <span class="code-dot r"></span>
-      <span class="code-dot y"></span>
-      <span class="code-dot g"></span>
-      &nbsp;example.py
-    </div>
-    <pre><span class="keyword">from</span> kaos <span class="keyword">import</span> Kaos
-
-db = <span class="func">Kaos</span>(<span class="string">"project.db"</span>)
-
-<span class="comment"># Each agent is isolated — they cannot see each other's files</span>
-agent_a = db.<span class="func">spawn</span>(<span class="string">"refactorer"</span>)
-agent_b = db.<span class="func">spawn</span>(<span class="string">"test-writer"</span>)
-
-<span class="highlight-line">db.write(agent_a, "/src/auth.py", b"# refactored auth module")</span>
-<span class="highlight-line">db.write(agent_b, "/src/auth.py", b"# test stubs for auth")</span>
-<span class="comment"># Both wrote to "/src/auth.py" — no conflict. Each has their own copy.</span>
-
-<span class="comment"># Checkpoint before risky operations</span>
-cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string">"before-migration"</span>)
-<span class="comment"># ... agent does something dangerous ...</span>
-<span class="highlight-line">db.restore(agent_a, cp)  <span class="comment"># roll back just this agent, others untouched</span></span>
-
-<span class="comment"># What exactly did it do? Query the audit trail with SQL.</span>
-<span class="highlight-line">db.query(<span class="string">"SELECT event_type, payload FROM events WHERE agent_id = ?"</span>, [agent_a])</span></pre>
-  </div>
-  <p class="note"><strong>Everything lives in one <code>.db</code> file.</strong> Copy it to back up. Send it to a teammate. Query with any SQLite client.</p>
-</div>
-</section>
-
-<!-- Comparison -->
-<section class="comparison" id="comparison">
-<div class="wrap">
-  <h2>KAOS vs. The Alternatives</h2>
-  <p class="lead">Other frameworks focus on prompt chaining. KAOS focuses on the runtime infrastructure underneath.</p>
-  <table class="comp-table">
-    <thead>
-      <tr><th>Problem</th><th>LangChain / CrewAI / AutoGen</th><th>KAOS</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Agent isolation</td><td>Shared filesystem</td><td>Enforced per-agent VFS</td></tr>
-      <tr><td>Audit trail</td><td>DIY logging</td><td>Append-only event journal</td></tr>
-      <tr><td>Rollback one agent</td><td>Not possible</td><td>db.restore(agent, cp)</td></tr>
-      <tr><td>Debug a failed agent</td><td>Read logs, hope for the best</td><td>SELECT * FROM events</td></tr>
-      <tr><td>Portable runtime</td><td>Cloud-dependent / in-memory</td><td>Single .db file, anywhere</td></tr>
-      <tr><td>State persistence</td><td>Framework-specific, lost on crash</td><td>SQLite &mdash; crash-safe</td></tr>
-      <tr><td>Token / cost tracking</td><td>Varies, often manual</td><td>SELECT SUM(token_count) ...</td></tr>
-      <tr><td>Context efficiency</td><td>Full context every call</td><td>Smart compaction: 57–95% smaller, 100% quality at default</td></tr>
-      <tr><td>Cross-session learning</td><td>Starts from scratch</td><td>Knowledge compounds across searches</td></tr>
-      <tr><td>Agents repeat past mistakes</td><td>No memory across runs</td><td>FTS5 memory — write once, search everywhere</td></tr>
-      <tr><td>Agents act without consensus</td><td>Each agent is autonomous</td><td>SharedLog: intent &rarr; vote &rarr; decide — nothing moves without approval</td></tr>
-    </tbody>
-  </table>
-  <p class="comp-note">KAOS is what you get when you ask: what would an agentic framework look like if every capability came from the best available research, instead of being built from scratch? Use it standalone or underneath any orchestration layer.</p>
-</div>
-</section>
-
-<!-- Features -->
-<section class="features" id="features">
-<div class="wrap">
-  <h2>Key Capabilities</h2>
-  <div class="feat-grid">
-    <div class="feat-card">
-      <div class="icon">&#x1f512;</div>
-      <h3>Enforced Agent Isolation</h3>
-      <p>Every VFS operation is SQL-scoped with <code>WHERE agent_id = ?</code>. Physically impossible for one agent to access another's files. Optional FUSE tier adds OS-level mount + namespace isolation.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f4dc;</div>
-      <h3>Append-Only Audit Trail</h3>
-      <p>14 event types cover every operation: file reads, writes, deletes, tool calls with timing and token counts, state changes, lifecycle events. Query with SQL.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x23ea;</div>
-      <h3>Checkpoint / Restore / Diff</h3>
-      <p>Snapshot files + state at any point. Restore to any checkpoint. Diff two checkpoints to see exactly what changed. Auto-checkpoints every N iterations.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f9e0;</div>
-      <h3>Intelligent Model Routing</h3>
-      <p>GEPA router classifies task complexity and picks the right model. Trivial task? 7B. Complex architecture? 70B. Works with any OpenAI-compatible endpoint.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f4e6;</div>
-      <h3>Content-Addressable Blobs</h3>
-      <p>Files stored as SHA-256 blobs with zstd compression. Identical files across agents are deduplicated automatically. Reference counting with GC.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f4be;</div>
-      <h3>Single-File Portability</h3>
-      <p>The entire runtime is one <code>.db</code> file. Back it up with <code>cp</code>. Send it to a colleague. Query with DBeaver, DataGrip, or <code>sqlite3</code>. No cloud, no Docker.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f680;</div>
-      <h3>Parallel Execution</h3>
-      <p>Run up to 8 concurrent agents (configurable) with semaphore control. Thread-local DB connections. MVCC isolation via SQLite WAL mode.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f6e0;</div>
-      <h3>Zero Bloat Dependencies</h3>
-      <p>No <code>openai</code>, no <code>litellm</code>, no <code>langchain</code>. Just httpx, click, rich, textual, mcp, pyyaml, zstandard, ulid-py. 44 packages total.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f4bb;</div>
-      <h3>CLI-First + JSON Output</h3>
-      <p><code>kaos --json ls</code> gives structured JSON on every command. Pipe to <code>jq</code>, compose with any agent framework. 10-32x cheaper than MCP on tokens.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f50c;</div>
-      <h3>MCP Server + Claude Code</h3>
-      <p>18 MCP tools for tight IDE integration. <code>mh_search</code> spawns a detached worker process that survives MCP disconnection.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x2699;</div>
-      <h3>Background Worker Process</h3>
-      <p>Long-running searches run as detached subprocesses. Parent dies? Search continues. Poll progress via <code>kaos mh status</code> or SQL.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f9e0;</div>
-      <h3>Smart Context Compaction</h3>
-      <p>Tunable compression (0-10) tested across 5 domains: classification, code gen, research, tool calling, ML. 100% quality retained at default level. Structured extraction &gt; raw data. Notation inspired by <a href="https://github.com/milla-jovovich/mempalace">MemPalace</a>.</p>
-    </div>
-    <div class="feat-card">
-      <div class="icon">&#x1f4da;</div>
-      <h3>Knowledge Compounding</h3>
-      <p>Winning harnesses persist across searches. New searches load prior discoveries as seeds. <code>kaos mh knowledge</code> shows all discoveries. Full-text search across all agents.</p>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- Knowledge visual -->
-<section style="background:var(--bg);padding:3rem 0">
-<div class="wrap" style="text-align:center">
-  <h2 style="font-size:1.6rem;margin-bottom:1rem">Knowledge Compounds Across Searches</h2>
-  <p style="color:var(--fg2);margin-bottom:2rem;font-size:1rem">Each search builds on prior discoveries. Winners become seeds. The proposer starts where the last search left off.</p>
-  <div style="max-width:800px;margin:0 auto">
-    <img src="blog/knowledge-compound.png" alt="Search 1 discovers keyword classifier → Search 2 starts from it and finds TF-IDF variant → Search 3 builds on both" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
-  </div>
-</div>
-</section>
-
-<!-- Compaction -->
-<section class="compaction" id="compaction">
-<div class="wrap">
-  <h2>Smart Context Compaction</h2>
-  <p class="lead">Tested across classification, code generation, research, tool calling, and ML training. Default level (5): 100% quality at 57% savings. Ultra level (10): 95% savings, scores always preserved.</p>
-
-  <!-- Compaction flow diagram — generated from blog prompt -->
-  <div style="max-width:800px;margin:0 auto 2.5rem">
-    <img src="blog/compaction-flow.png" alt="Raw archive → AAAK Compactor → Dense digest (57% smaller at default, 0% quality loss)" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+  <div class="head">
+    <div class="eyebrow">Release history</div>
+    <h2>Shipped, in the open.</h2>
+    <p>Every release traces its numbers to a committed benchmark. Full history on GitHub.</p>
   </div>
 
-  <!-- Full matrix: domains x levels -->
-  <div style="overflow-x:auto;margin-bottom:2rem">
-    <table class="compaction-table" style="min-width:700px">
-      <thead>
-        <tr>
-          <th>Domain</th>
-          <th>Level 0</th>
-          <th>Level 3</th>
-          <th style="border-bottom-color:var(--accent2)">Level 5 <span style="color:var(--accent2);font-size:.65rem">(default)</span></th>
-          <th>Level 7</th>
-          <th>Level 10</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="font-weight:600">Classification</td>
-          <td>29% <span class="quality-badge">100%</span></td>
-          <td>72% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">72% <span class="quality-badge">100%</span></td>
-          <td>72% <span class="quality-badge">100%</span></td>
-          <td>97% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">38%</span></td>
-        </tr>
-        <tr>
-          <td style="font-weight:600">Code Generation</td>
-          <td>31% <span class="quality-badge">100%</span></td>
-          <td>58% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">58% <span class="quality-badge">100%</span></td>
-          <td>58% <span class="quality-badge">100%</span></td>
-          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">30%</span></td>
-        </tr>
-        <tr>
-          <td style="font-weight:600">Research / RAG</td>
-          <td>24% <span class="quality-badge">100%</span></td>
-          <td>49% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">49% <span class="quality-badge">100%</span></td>
-          <td>49% <span class="quality-badge">100%</span></td>
-          <td>95% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">33%</span></td>
-        </tr>
-        <tr>
-          <td style="font-weight:600">Tool Calling</td>
-          <td>30% <span class="quality-badge">100%</span></td>
-          <td>57% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">57% <span class="quality-badge">100%</span></td>
-          <td>57% <span class="quality-badge">100%</span></td>
-          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">38%</span></td>
-        </tr>
-        <tr>
-          <td style="font-weight:600">ML Training</td>
-          <td>28% <span class="quality-badge">100%</span></td>
-          <td>49% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06)">49% <span class="quality-badge">100%</span></td>
-          <td>49% <span class="quality-badge">100%</span></td>
-          <td>94% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">25%</span></td>
-        </tr>
-        <tr style="border-top:2px solid var(--accent)">
-          <td style="font-weight:700;color:var(--fg)">Aggregate</td>
-          <td>28% <span class="quality-badge">100%</span></td>
-          <td>57% <span class="quality-badge">100%</span></td>
-          <td style="background:rgba(108,92,231,.06);font-weight:600">57% <span class="quality-badge">100%</span></td>
-          <td>57% <span class="quality-badge">100%</span></td>
-          <td>95% <span class="quality-badge" style="background:rgba(255,145,0,.12);color:var(--orange);border-color:rgba(255,145,0,.2)">33%</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <p style="font-size:.8rem;color:var(--fg2);text-align:center;margin-bottom:2rem">Each cell: context saved &bull; quality retained. Levels 3–7 produce identical AAAK-compact output (same tier). Level 10 ultra drops source code &amp; samples — scores &amp; error types always preserved. Powered by AAAK-style notation (<a href="https://github.com/milla-jovovich/mempalace" style="color:var(--accent2)">MemPalace</a>).</p>
-
-  <div style="max-width:600px;margin:0 auto">
-    <ul class="compaction-benefits">
-      <li><strong>Scores &amp; source code</strong> &mdash; always lossless. The proposer needs exact numbers and full code.</li>
-      <li><strong>Error patterns extracted</strong> &mdash; "3/8 wrong: science&rarr;technology (2x), timeout (1x)" beats raw traces.</li>
-      <li><strong>Failure samples tunable</strong> &mdash; 20 at level 0, 3 at default, 0 at max. See why problems fail, not just that they fail.</li>
-      <li><strong>Conversation auto-compacted</strong> &mdash; old tool results compressed to <code>[tool result: N chars]</code>. Recent turns kept verbatim.</li>
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v0.10</span><span class="rel-d">in progress</span><span class="rel-t wip">unreleased</span></div>
+    <div class="rel-sum">Tier-1: measure &amp; harden — 701 tests passing</div>
+    <ul>
+      <li><b>storage-scale-bench:</b> single-DB does <em>not</em> saturate — cross-agent FTS5 search is 9 ms p95 at 10k agents. Per-agent-DB sharding rejected by measurement.</li>
+      <li><b>synchronous=NORMAL default</b> — measured <b>~125× faster</b> write p95 (1895 ms → 15 ms) and ~38× throughput under contention.</li>
+      <li><b>Router reliability + verdict rigor</b> — timeout taxonomy preserved end-to-end, cluster-bootstrap CIs for run-to-run variance, tool-count single source of truth.</li>
     </ul>
   </div>
 
-  <div class="stat-row">
-    <div class="stat-box">
-      <span class="num green">100%</span>
-      <span class="label">Quality at default level</span>
-    </div>
-    <div class="stat-box">
-      <span class="num cyan">57%</span>
-      <span class="label">Context saved at default (L5)</span>
-    </div>
-    <div class="stat-box">
-      <span class="num accent">95%</span>
-      <span class="label">Context saved at ultra (L10)</span>
-    </div>
-    <div class="stat-box">
-      <span class="num green">5/5</span>
-      <span class="label">Domains pass quality validation</span>
-    </div>
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v0.9.2</span><span class="rel-d">Jun 24, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-sum">Tier-0 correctness debt — 650 tests passing</div>
+    <ul>
+      <li><b>Storage hardening:</b> fixed a version-collision crash, a reader-lock that blocked writers, and a <code>query()</code> read-only bypass — now enforced at the SQLite parse layer.</li>
+      <li><b>Eval-harness integrity:</b> the verdict instrument's own bugs (a tautological judge, empty-gates auto-ACCEPT) fixed red-first.</li>
+      <li><b>CORAL pivot un-deadlocked</b> — the stagnation pivot could never fire; now it does, with regression coverage.</li>
+    </ul>
   </div>
 
-  <!-- Token savings chart — generated from blog prompt -->
-  <div style="max-width:800px;margin:2.5rem auto 0">
-    <img src="blog/compaction-chart.png" alt="Token savings by domain — 57% at default, 95% at ultra across classification, code gen, research, tool calling, ML" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.06)" loading="lazy">
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v0.9.0–0.9.1</span><span class="rel-d">May 24–26, 2026</span></div>
+    <div class="rel-sum">Falsifiable-eval primitive + MCP exposure (50 → 58 tools)</div>
+    <ul>
+      <li><b>Six candidates evaluated, zero mechanisms shipped</b> — the discipline is the deliverable. Each verdict on disk with its audit trail.</li>
+      <li><b>kaos.eval.harness</b> — hash-locked probes, blind judge, uniform ACCEPT/REJECT/VOID rule; <code>kaos eval probe</code> + an <code>experiments</code> journal.</li>
+      <li>P0 proposer-timeout fix (streaming + idle/wall timeouts); 58 MCP tools. <a href="blog/kaos-v0.9.0.html">Read the post →</a></li>
+    </ul>
   </div>
+
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v0.8.3</span><span class="rel-d">May 13, 2026</span></div>
+    <div class="rel-sum">Finer-grained outcomes, failures, objectives — and a war room</div>
+    <ul>
+      <li>Quality score [0,1], reasoning-class failure taxonomy, and a critical-step localizer (<b>5/5</b> planted bugs localized within ±1 step).</li>
+      <li>Ideal-State Artifacts (declare what "done" means) and a war-room UI — a single static file, no stack change.</li>
+    </ul>
+  </div>
+
+  <div class="cl-more"><a class="btn btn-ghost" href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Full changelog (v0.1 → today) →</a></div>
 </div>
 </section>
 
-<!-- Architecture -->
-<section class="architecture">
+<!-- ── Blog ── -->
+<section id="blog">
 <div class="wrap">
-  <h2>Architecture</h2>
-  <p class="arch-sub">Seven clean layers. Every agent interaction flows through the same stack — from MCP tool call or CLI command down to a single SQLite file. v0.8.1 added the <strong style="color:#fd79a8">Neuroplasticity</strong> layer: inline hooks that fire on every event, plus batched structural consolidation at agent completion.</p>
-  <p style="text-align:center;font-size:.85rem;color:var(--fg2);margin-top:-.8rem;margin-bottom:2rem">Full diagram: <a href="architecture.svg" style="color:#fd79a8">architecture.svg</a></p>
-
-  <div class="arch-diagram">
-
-    <!-- Interfaces -->
-    <div class="arch-layer al-interfaces">
-      <div class="arch-layer-label">Interfaces</div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">MCP Server</div>
-          <div class="ac-sub">45 tools<br>Claude Code / Cursor</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">CLI</div>
-          <div class="ac-sub">35+ commands<br>--json composable</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Python API</div>
-          <div class="ac-sub">from kaos import Kaos<br>full programmatic control</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Web Dashboard</div>
-          <div class="ac-sub">Gantt timeline<br>agent inspector, live events</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Orchestration -->
-    <div class="arch-layer al-orchestration">
-      <div class="arch-layer-label">Orchestration</div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">CCR Runner</div>
-          <div class="ac-sub">agent execution loop<br>parallel waves, isolation</div>
-        </div>
-        <div class="arch-cell" style="flex:2;min-width:220px">
-          <div class="ac-name">GEPA Router</div>
-          <div class="ac-sub" style="display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-top:.2rem">
-            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">local-fast</span>
-            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">local-strong</span>
-            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">openai</span>
-            <span style="font-family:var(--mono);font-size:.64rem;background:var(--bg3);padding:.1rem .35rem;border-radius:3px;color:var(--fg2)">anthropic</span>
-            <span style="font-family:var(--mono);font-size:.64rem;background:rgba(0,230,118,.1);padding:.1rem .35rem;border-radius:3px;color:var(--green)">agent_sdk</span>
-          </div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Tool Registry</div>
-          <div class="ac-sub">per-agent tool dispatch<br>VFS, checkpoints, events</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Externalization -->
-    <div class="arch-layer al-extern">
-      <div class="arch-layer-label">Externalization<br><span style="color:var(--green);font-size:.6rem">v0.6 &ndash; v0.7</span></div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">MemoryStore</div>
-          <div class="ac-sub">FTS5 / BM25<br>cross-agent episodic memory</div>
-          <div class="ac-badge" style="background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2)">claude-mem</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">SkillStore</div>
-          <div class="ac-sub">FTS5 / BM25<br>parameterized templates</div>
-          <div class="ac-badge" style="background:rgba(0,206,201,.1);color:#00cec9;border:1px solid rgba(0,206,201,.2)">arXiv:2604.08224</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">SharedLog</div>
-          <div class="ac-sub">intent → vote → decide<br>append-only, WAL mode</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.2)">LogAct arXiv:2604.07988</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Meta-Harness -->
-    <div class="arch-layer al-metaharness">
-      <div class="arch-layer-label">Meta-Harness</div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">Search Loop</div>
-          <div class="ac-sub">evolutionary proposer<br>reads full execution traces</div>
-          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2603.28052</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Surrogate Verifier</div>
-          <div class="ac-sub">isolated failure diagnosis<br>why it failed + how to fix</div>
-          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2604.01687</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">CORAL Co-Evolution</div>
-          <div class="ac-sub">stagnation detection<br>parallel agent skill sharing</div>
-          <div class="ac-badge" style="background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.2)">arXiv:2604.01658</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Neuroplasticity (NEW v0.8.1) -->
-    <div class="arch-layer al-plasticity">
-      <div class="arch-layer-label">Neuroplasticity<br><span style="color:#fd79a8;font-size:.6rem">v0.8.1 &middot; NEW</span></div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">Inline Hooks</div>
-          <div class="ac-sub">record_outcome, memory hits,<br>agent completion &mdash; same txn</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">synaptic / &lt;20 &micro;s</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Hebbian Graph</div>
-          <div class="ac-sub">co-occurrence edges<br>one executemany per session</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">Hebb, 1949</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Failure Triage</div>
-          <div class="ac-sub">8 heuristic diagnosers<br>category + root cause + fix</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">systemic alerts</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Weighted Retrieval</div>
-          <div class="ac-sub">BM25 &times; Wilson-bound success<br>&times; exponential recency decay</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">+10 pp accuracy</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Dream Cycle</div>
-          <div class="ac-sub">7-phase consolidation<br>batch at completion &mdash; "sleep"</div>
-          <div class="ac-badge" style="background:rgba(253,121,168,.1);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">Tononi &amp; Cirelli 2014</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Core Engine -->
-    <div class="arch-layer al-core">
-      <div class="arch-layer-label">Core Engine</div>
-      <div class="arch-cells">
-        <div class="arch-cell">
-          <div class="ac-name">Kaos VFS</div>
-          <div class="ac-sub">per-agent isolation<br>enforced at query level</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Checkpoints</div>
-          <div class="ac-sub">snapshot / restore / diff<br>named, surgical rollback</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Events Journal</div>
-          <div class="ac-sub">append-only audit log<br>every tool call recorded</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">Blob Store</div>
-          <div class="ac-sub">content-addressable<br>SHA-256, deduped</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name">MemPalace</div>
-          <div class="ac-sub">AAAK compaction<br>57% context savings</div>
-          <div class="ac-badge" style="background:rgba(24,255,255,.08);color:var(--cyan);border:1px solid rgba(24,255,255,.2)">mempalace</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="arch-connector"></div>
-
-    <!-- Storage -->
-    <div class="arch-layer al-storage">
-      <div class="arch-layer-label">Storage</div>
-      <div class="arch-cells" style="justify-content:center;gap:1.5rem">
-        <div class="arch-cell">
-          <div class="ac-name">SQLite</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">single .db file</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">WAL mode</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">17 tables &middot; 2 FTS5</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">plain SQL</div>
-        </div>
-        <div class="arch-cell">
-          <div class="ac-name" style="color:var(--fg2)">copy &amp; share</div>
-        </div>
-      </div>
-    </div>
-
+  <div class="head">
+    <div class="eyebrow">Writing</div>
+    <h2>How it works, in depth.</h2>
+    <p>Long-form walkthroughs with real CLI output and measured results.</p>
+  </div>
+  <div class="blog-grid">
+    <a class="post" href="blog/kaos-v0.9.0.html" style="--lp:var(--accent2)"><div class="tag">Discipline · v0.9</div><h4>The kill-switch primitive</h4><p>Six candidates evaluated, zero shipped. How a falsifiable-eval harness became a first-class KAOS feature — and why REJECT is a success.</p><div class="m">May 25, 2026 · 10 min</div></a>
+    <a class="post" href="blog/kaos-neuroplasticity.html" style="--lp:var(--pink)"><div class="tag">Neuroplasticity · v0.8.1</div><h4>The library learns from itself</h4><p>Inline synaptic plasticity, Hebbian associations, failure triage. Measured +10pp retrieval accuracy, +15µs hot-path overhead.</p><div class="m">Apr 24, 2026 · 18 min</div></a>
+    <a class="post" href="blog/kaos-full-engagement.html" style="--lp:var(--amber)"><div class="tag">End-to-end</div><h4>A full KAOS engagement</h4><p>Payment-platform modernization from <code>kaos init</code> to production — every wave, every agent, real output.</p><div class="m">Apr 15, 2026 · 25 min</div></a>
+    <a class="post" href="blog/kaos-skill-library.html" style="--lp:var(--cyan)"><div class="tag">Skills · v0.7</div><h4>Agents that learn procedures</h4><p>Memory stores what happened; skills store <em>how to do it</em> — templates that accumulate reliability across projects.</p><div class="m">Apr 14, 2026 · 12 min</div></a>
+    <a class="post" href="blog/kaos-cross-agent-memory.html" style="--lp:#00cec9"><div class="tag">Memory · FTS5</div><h4>Learning across sessions</h4><p>Cross-agent memory with FTS5/BM25. Any agent writes a lesson; any future agent finds it in milliseconds.</p><div class="m">Apr 13, 2026 · 10 min</div></a>
+    <a class="post" href="blog/kaos-hundred-agents-scale.html" style="--lp:var(--green)"><div class="tag">Scale</div><h4>A hundred agents, one file</h4><p>What it takes to run a large agent fleet against a single SQLite database — and where the real limits are.</p><div class="m">Apr 10, 2026 · 14 min</div></a>
   </div>
 </div>
 </section>
 
-<!-- Self-Improving -->
-<section class="self-improving" id="self-improving">
-<div class="wrap">
-  <div class="si-header">
-    <div class="si-eyebrow">Continuously Evolving</div>
-    <h2>A Framework That Improves Itself</h2>
-    <p class="si-sub">Every session makes the next one better. Skills record what worked. Memory accumulates what was learned. The meta-harness reads execution traces and proposes better strategies. KAOS compounds knowledge the same way it compounds capability &mdash; automatically, across every run.</p>
-  </div>
-  <div class="si-loop">
-    <div class="si-step">
-      <div class="si-step-num">01 &mdash; Discover</div>
-      <h3>Find the best solution</h3>
-      <p>Every hard problem in agentic AI has already been solved somewhere &mdash; in a paper or open-source project. We identify it, read it carefully, and integrate it faithfully. Seven so far.</p>
-    </div>
-    <div class="si-arrow">&rarr;</div>
-    <div class="si-step">
-      <div class="si-step-num">02 &mdash; Integrate</div>
-      <h3>Wire into every interface</h3>
-      <p>Each integration lands in the CLI, MCP server, and Python API simultaneously. Tests at 90%+. Source credited. SharedLog coordinates any risky change before it ships &mdash; no agent acts without consensus.</p>
-    </div>
-    <div class="si-arrow">&rarr;</div>
-    <div class="si-step">
-      <div class="si-step-num">03 &mdash; Run &amp; Record</div>
-      <h3>Every session writes back</h3>
-      <p>Agents save reusable patterns to SkillStore. Lessons, tradeoffs, and error fixes go to MemoryStore. The SurrogateVerifier diagnoses failures automatically. MemPalace keeps long runs coherent. Nothing is lost.</p>
-    </div>
-    <div class="si-arrow">&rarr;</div>
-    <div class="si-step">
-      <div class="si-step-num">04 &mdash; Compound</div>
-      <h3>Each project starts smarter</h3>
-      <p>The next session searches skills before writing a single line. The next agent loads prior memory before exploring. The meta-harness reads traces from every prior run. The gap vs. a blank-slate system grows with every session.</p>
-    </div>
-  </div>
-  <div class="si-evidence">
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--accent2)">7</span>
-      <span class="si-ev-label">Research integrations</span>
-    </div>
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--green)">256</span>
-      <span class="si-ev-label">Tests, all passing</span>
-    </div>
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--cyan)">30</span>
-      <span class="si-ev-label">MCP tools</span>
-    </div>
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--orange)">v0.1&rarr;v0.7</span>
-      <span class="si-ev-label">7 versions in 2 weeks</span>
-    </div>
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:#00cec9">10</span>
-      <span class="si-ev-label">SQLite tables</span>
-    </div>
-    <div class="si-ev-item">
-      <span class="si-ev-num" style="color:var(--gold,#ffd166)">5</span>
-      <span class="si-ev-label">LLM providers</span>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- Demo Recordings -->
-<section class="demos" id="demos">
-<div class="wrap">
-  <h2>See KAOS in Action</h2>
-  <p class="lead">Real terminal recordings. Real CLI. Real results — no voiceover, no slides.</p>
-
-  <div class="demo-section-label">Full End-to-End Demo</div>
-  <div class="demo-gallery">
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">Full Demo &mdash; ~2 min</div>
-        <h3>Code Review Classifier: 48% &rarr; 83% &mdash; Nothing Skipped</h3>
-        <p>A complete walkthrough of every step: define the benchmark, run <code>kaos mh search</code>, watch 15 iterations of the proposer reading traces and proposing new harnesses, see the CORAL plateau pivot fire and break a 4-iteration stall at 74%, hit 83% with the two-step decomposition, view the Pareto frontier, inspect the knowledge base, and export the winning harness code.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_mh_full_demo.gif" alt="Meta-Harness end-to-end: code review classifier 48% to 83% in 15 iterations" loading="lazy"></div>
-    </div>
-
-  </div>
-
-  <div class="demo-section-label">Tutorial Series</div>
-  <div class="demo-gallery">
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">01 &mdash; Tutorial</div>
-        <h3>Getting Started in 2 Minutes</h3>
-        <p>Install KAOS, initialize the database, spawn your first agent, write files to its isolated VFS, and query the full audit trail with SQL &mdash; all from the terminal.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_01_getting_started.gif" alt="Getting Started — kaos init, spawn, write, read, query" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">02 &mdash; Tutorial</div>
-        <h3>Checkpoint, Diff &amp; Surgical Restore</h3>
-        <p>Snapshot an agent before a risky operation, make changes, compare the diff, and roll back exactly that one agent &mdash; without touching any other.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_02_checkpoints.gif" alt="Checkpoints — snapshot, diff, restore" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">03 &mdash; Tutorial</div>
-        <h3>Parallel Agents &amp; the GEPA Router</h3>
-        <p>Spawn multiple agents simultaneously. GEPA classifies each task by complexity and routes to the right model tier &mdash; local fast, local strong, or cloud &mdash; automatically.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_03_parallel_agents.gif" alt="Parallel Agents — GEPA routing, concurrent execution" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">04 &mdash; Tutorial</div>
-        <h3>MCP Server &mdash; 18 Tools for Claude Code</h3>
-        <p>Connect KAOS as an MCP server. Claude Code gains direct access to agent spawning, VFS reads/writes, checkpoints, and meta-harness search &mdash; all without leaving the IDE.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_04_mcp_server.gif" alt="MCP Server — kaos mcp setup, tool list, agent_spawn" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">05 &mdash; Tutorial</div>
-        <h3>Full Audit Trail &amp; SQL Queries</h3>
-        <p>Every tool call, file write, and state change is journaled. Query across all agents with plain SQL &mdash; find failures, measure token costs, trace exactly what each agent did.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_05_audit_trail.gif" alt="Audit Trail — kaos logs, SQL queries, kaos search" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">06 &mdash; Tutorial</div>
-        <h3>Meta-Harness: Automated Search Loop</h3>
-        <p>Seed with your baseline, let the proposer read full execution traces, generate better harnesses, evaluate them, update the Pareto frontier. Knowledge compounds across runs.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_06_meta_harness.gif" alt="Meta-Harness CLI — kaos mh search, frontier, knowledge" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">07 &mdash; Tutorial</div>
-        <h3>CORAL Co-Evolution</h3>
-        <p>Multiple specialized agents evolve solutions in parallel. A hub agent periodically syncs the best discoveries &mdash; architectures, optimizers, regularization &mdash; back to the whole team. Inspired by <a href="https://arxiv.org/abs/2604.01658">CORAL (arXiv:2604.01658)</a> — Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_07_coral_coevolution.gif" alt="CORAL — co-evolution, hub sync, skill compounding" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">08 &mdash; Tutorial</div>
-        <h3>Custom Benchmarks</h3>
-        <p>Define your own task harness in Python, plug it into the meta-harness search loop, and let KAOS optimize the prompt strategy automatically against your real data.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_08_custom_benchmark.gif" alt="Custom Benchmarks — define harness, run mh search" loading="lazy"></div>
-    </div>
-
-  </div>
-
-  <div class="demo-section-label">End-to-End Use Cases</div>
-  <div class="demo-gallery">
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-01 &mdash; Use Case</div>
-        <h3>Code Review Swarm</h3>
-        <p>4 agents review the same codebase from different angles &mdash; security vulnerabilities, performance, code style, and test coverage &mdash; all in parallel, fully isolated, results queryable by SQL.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc01_code_review_swarm.gif" alt="Code Review Swarm — 4 parallel agents, findings, SQL summary" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-02 &mdash; Use Case</div>
-        <h3>Self-Healing Agent</h3>
-        <p>Checkpoint before a risky database migration, simulate a failure mid-operation, watch the agent automatically restore to the clean state &mdash; while other agents keep running unaffected.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc02_self_healing_agent.gif" alt="Self-Healing Agent — checkpoint, failure, auto-restore" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-03 &mdash; Use Case</div>
-        <h3>Post-Mortem Debugging</h3>
-        <p>An agent broke production. Walk through the complete audit trail: stream logs, run SQL queries against the event journal, search across all agents, and diff checkpoints to pinpoint exactly what changed.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc03_post_mortem_debug.gif" alt="Post-Mortem — logs, SQL queries, search, diff" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-04 &mdash; Use Case</div>
-        <h3>Meta-Harness: Classifier 45% &rarr; 87%</h3>
-        <p>Start with a broken text classifier at 45% accuracy. Meta-Harness runs 10 automated iterations &mdash; reading traces, proposing strategies, evaluating candidates &mdash; and finds an approach hitting 87%.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="Meta-Harness Classifier — 45% to 87% in 10 iterations" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-05 &mdash; Use Case</div>
-        <h3>Parallel Refactor: Tests + Impl + Docs</h3>
-        <p>3 agents tackle the same module simultaneously &mdash; one writes tests, one refactors the implementation, one updates documentation. All isolated, all checkpointed, merged when done.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc05_parallel_refactor.gif" alt="Parallel Refactor — 3 agents: tests, impl, docs" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-06 &mdash; Use Case</div>
-        <h3>Fraud Detection: F1 0.58 &rarr; 0.81</h3>
-        <p>Fraud classifier stuck at 65% recall with 30% false positives. <a href="https://arxiv.org/abs/2604.01658">CORAL</a> pivot prompts kick in at stagnation, co-evolution shares discoveries across agents, and F1 improves from 0.58 to 0.81.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc06_fraud_detection.gif" alt="Fraud Detection — CORAL pivot, F1 0.58 to 0.81" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-07 &mdash; Use Case</div>
-        <h3>Autonomous Research Lab</h3>
-        <p>4 ML hypothesis agents run in parallel overnight &mdash; architecture search, optimizer tuning, scaling laws, regularization. Each isolated in its own VFS, results queryable with SQL when they finish. Inspired by <a href="https://github.com/karpathy/autoresearch">Karpathy's autoresearch</a>.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc07_autonomous_research.gif" alt="Autonomous Research Lab — 4 hypothesis agents in parallel" loading="lazy"></div>
-    </div>
-
-    <div class="demo-card">
-      <div class="demo-card-meta">
-        <div class="demo-card-num">UC-08 &mdash; Use Case</div>
-        <h3>CORAL Co-Evolution End-to-End</h3>
-        <p>3 specialized agents co-evolve solutions: reflect every iteration, pivot on plateau, consolidate shared skills every N steps. The hub syncs discoveries back to the team in real time. Based on <a href="https://arxiv.org/abs/2604.01658">CORAL (arXiv:2604.01658)</a>.</p>
-      </div>
-      <div class="demo-card-screen"><img src="docs/demos/kaos_uc08_coevolution_coral.gif" alt="CORAL Co-Evolution end-to-end — hub sync, skill sharing" loading="lazy"></div>
-    </div>
-
-  </div>
-</div>
-</section>
-
-<!-- Use Cases -->
-<section class="use-cases" id="use-cases">
-<div class="wrap">
-  <h2>Use Cases</h2>
-  <div class="uc-grid">
-    <div class="uc-card">
-      <h3>Meta-Harness: Auto-Optimize Your LLM</h3>
-      <p>Your classifier gets 45% accuracy. Meta-Harness searches for a better strategy by learning from execution traces. 0%&rarr;100% in 2 iterations. Smart compaction saves 57% context with full quality retention.</p>
-      <code>kaos mh search -b text_classify -n 10
-kaos mh knowledge  # prior wins used as seeds
-# 57% less context, same quality, fewer timeouts</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc04_meta_harness_classifier.gif" alt="Meta-Harness: classifier 45%→87% in 10 iterations" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Autonomous Research Lab</h3>
-      <p>Run N research agents in parallel, each exploring a different hypothesis &mdash; architecture, optimizer, scaling. All isolated, all SQL-queryable. Inspired by <a href="https://github.com/karpathy/autoresearch">Karpathy's autoresearch</a>.</p>
-      <code>results = await ccr.run_parallel([
-  {"name": "arch",  "prompt": "Try LoRA..."},
-  {"name": "optim", "prompt": "Try AdamW..."},
-  {"name": "scale", "prompt": "Try 2x batch..."},
-])</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc07_autonomous_research.gif" alt="Autonomous Research Lab — 4 hypothesis agents running in parallel" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Code Review Swarm</h3>
-      <p>4 agents review code from different angles &mdash; security, performance, style, test coverage &mdash; all in parallel with full isolation.</p>
-      <code>results = await ccr.run_parallel([
-  {"name": "security",  "prompt": "Find vulns..."},
-  {"name": "perf",      "prompt": "Find perf..."},
-  {"name": "style",     "prompt": "Review..."},
-  {"name": "tests",     "prompt": "What's missing?"},
-])</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc01_code_review_swarm.gif" alt="Code Review Swarm — 4 parallel agents with isolated VFS" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Self-Healing Agent</h3>
-      <p>Checkpoint before risky operations, automatically restore on failure. Other agents keep running, unaffected.</p>
-      <code>cp = db.checkpoint(agent, label="pre-migration")
-try:
-    await ccr.run_agent(agent, "Migrate DB")
-except Exception:
-    db.restore(agent, cp)  # rollback this one</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc02_self_healing_agent.gif" alt="Self-Healing Agent — checkpoint, simulate failure, auto-restore" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Fraud Detection Optimization</h3>
-      <p>Your fraud classifier has 65% recall with 30% false positives. Meta-Harness finds a red-flag checklist + contrastive examples approach that improves F1 by 20 points.</p>
-      <code>kaos mh search -b fraud_detection -n 8
-# Pareto: [high recall] vs [balanced F1]</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc06_fraud_detection.gif" alt="Fraud Detection — F1 0.58→0.81 via CORAL pivot prompts" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Post-Mortem Debugging</h3>
-      <p>An agent broke something. Query the complete audit trail &mdash; every file, tool call, and state change.</p>
-      <code>kaos logs &lt;agent-id&gt;
-kaos --json query "SELECT tool_name, error
-  FROM tool_calls
-  WHERE agent_id = ? AND status = 'error'"</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc03_post_mortem_debug.gif" alt="Post-Mortem Debugging — SQL audit trail, log search, diff" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>CLI-Composable Pipelines</h3>
-      <p>Chain KAOS with any tool via JSON output. 10-32x cheaper than MCP on tokens. Works with jq, scripts, other agents.</p>
-      <code># Find running agents, kill them
-kaos --json ls \
-  | jq '.[] | select(.status=="running")' \
-  | jq -r .agent_id \
-  | xargs -I{} kaos kill {}</code>
-    </div>
-    <div class="uc-card">
-      <h3>Cost & Token Tracking</h3>
-      <p>Know exactly how much each agent consumed. Query across all agents with SQL. No more surprise bills.</p>
-      <code>kaos --json query "
-  SELECT a.name, SUM(tc.token_count) as tokens
-  FROM agents a
-  JOIN tool_calls tc ON a.agent_id = tc.agent_id
-  GROUP BY a.agent_id ORDER BY tokens DESC"</code>
-    </div>
-    <div class="uc-card">
-      <h3>Export & Share Agent State</h3>
-      <p>Export an agent's complete state to a standalone .db file. Send to a teammate, import on another machine.</p>
-      <code>kaos export &lt;agent-id&gt; -o snapshot.db
-kaos import snapshot.db
-# Or just: cp kaos.db backup.db</code>
-    </div>
-    <div class="uc-card">
-      <h3>Cross-Agent Memory: Agents Learn Across Sessions</h3>
-      <p>Agents write compact, typed memories — results, skills, errors. Every future agent searches them with BM25. A new meta-harness search starts at accuracy 0.86 instead of 0.64 — because it read what worked last time.</p>
-      <code>kaos memory write agent-a "ensemble voting hit 0.87" \
-  --type result --key iter6-best
-kaos memory search "ensemble accuracy"
-# => [result] iter6-best: ensemble voting hit 0.87
-kaos memory ls --type error  # what went wrong before</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc_memory.gif" alt="Cross-Agent Memory — FTS5 search across sessions" loading="lazy"></div>
-    </div>
-    <div class="uc-card">
-      <h3>Safety Gate: Agents Vote Before Acting</h3>
-      <p>No agent can execute a risky action without consensus. A human supervisor can veto. The rejection reason is saved to memory so the agent learns not to propose the same thing again.</p>
-      <code>kaos log intent refactor-agent \
-  "DROP TABLE legacy_sessions"
-kaos log vote safety-bot   --intent 2 --approve true
-kaos log vote human-review --intent 2 --approve false \
-  --reason "BI service uses this table"
-kaos log decide refactor-agent --intent 2
-# => passed=False — action blocked</code>
-      <div class="uc-gif"><img src="docs/demos/kaos_uc_safety.gif" alt="Safety Gate — intent/vote/decide via shared log" loading="lazy"></div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- Changelog -->
-<section class="changelog" id="changelog">
-<div class="wrap">
-  <h2>Changelog</h2>
-  <div class="changelog-releases">
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.9.1</span>
-        <span class="release-date">May 26, 2026</span>
-        <span class="release-tag">latest</span>
-      </div>
-      <p class="release-category">MCP exposure of v0.9 surfaces &mdash; 50 &rarr; 58 tools &mdash; <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">changelog</a></p>
-      <ul>
-        <li><strong>8 new MCP tools</strong> wrap every v0.9 CLI surface: <code>doctor_proposer</code> (parallel provider smoke), <code>eval_probe_{falsify,run,verify}</code> (gate-first falsification + binding-verdict runs + on-disk verify), <code>experiment_{log,list,show,compare}</code> (append-only journal of probe / mh_search / benchmark runs).</li>
-        <li><strong>Why a patch release, not v0.9.0:</strong> v0.9.0 deliberately held the MCP surface flat while the CLI groups stabilized. Two days of real use confirmed the read-side of the experiment journal is a legitimate mid-conversation need ("what mechanisms have we evaluated?"), and the eval-probe + doctor surfaces compose cleanly into agent-driven research workflows. v0.9.1 wraps the whole thing.</li>
-        <li><strong>Error containment</strong>: each new tool returns <code>Error: &lt;type&gt;: &lt;msg&gt;</code> JSON strings rather than crashing the dispatcher &mdash; the same rule the existing 50 tools follow.</li>
-        <li><strong>Wiring fix</strong>: removed the blanket <code>assert _ccr is not None</code> from <code>_dispatch</code>. _ccr is only required by tools that orchestrate agents (agent_spawn / agent_parallel / mh_*); the per-branch assertion now lives with those tools.</li>
-        <li><strong>20 new MCP tests</strong> in <code>tests/test_mcp_v091.py</code> exercise the FULL dispatch path (list_tools + call_tool, JSON serialization, error containment) against the action-realization probe adapter and a real <code>ExperimentStore</code>. Catches schema mismatches and wiring bugs that unit-testing the primitives alone misses. <strong>613 tests passing</strong> + 1 expected skip.</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.9.0</span>
-        <span class="release-date">May 24, 2026</span>
-      </div>
-      <p class="release-category">Reliability, queryability, and a falsifiable-eval primitive &mdash; <a href="https://github.com/canivel/kaos/blob/main/docs/roadmap/v0.9.md" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">v0.9 spec</a> &middot; <a href="blog/kaos-v0.9.0.html" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">blog post</a></p>
-      <ul>
-        <li><strong>Six candidates evaluated, zero mechanisms shipped &mdash; the discipline IS the deliverable.</strong> SAGE, synthesis-as-consolidation (LLM + extractive), AutoResearchClaw, HASP, and the Life-Harness action-realization slice all evaluated against the v0.8.3 native baseline. Outcomes: REJECT, REJECT, DO NOT BUILD (structural impossibility), mostly orthogonal, REVIEWED-REJECTED, and VOID#1. Each verdict is on disk, alongside the audit trail.</li>
-        <li><strong>PR-1 (closes #11)</strong>: <code>claude_code</code> provider switched from blocking <code>subprocess.run(timeout=300)</code> to <code>asyncio.create_subprocess_exec</code> with incremental streaming + idle/wall timeouts. New <code>ProposerStalled</code> exception (recoverable) distinct from <code>TimeoutError</code> (hard). Meta-harness search loop catches both and continues to next iteration instead of dying. New CLI: <code>kaos doctor proposer</code> for cheap regression detection.</li>
-        <li><strong>PR-2 (kaos.eval.harness)</strong>: 6-file module codifying the falsifiable-eval apparatus that produced 4 of 5 REJECTs this cycle. <code>ArmResults</code>, <code>GateOutcome</code>, seeded <code>bootstrap_diff_ci</code>, hash-locked <code>load_lock</code> with <code>LockTamperError</code>, blind <code>judge_arm</code> via <code>SurrogateVerifier</code> on anonymised stream, uniform <code>compute_verdict</code> (ACCEPT/REJECT/VOID) no probe can override, and a <code>Probe</code> ABC. New CLI: <code>kaos eval probe {run,verify,falsify}</code>.</li>
-        <li><strong>PR-3 (closes #8)</strong>: schema v8 &rarr; v9 with one additive <code>experiments</code> table (append-only, indexed on name/family/verdict/git_sha). <code>ExperimentStore</code> + <code>kaos experiment {log,list,show,compare}</code> CLI. <code>git_sha</code> auto-fills from <code>git rev-parse HEAD</code>. Closes the "what changed since the last run?" gap without metric duplication.</li>
-        <li><strong>PR-4 (action-realization probe, PROBE ONLY)</strong>: Life-Harness narrow slice. Lock pre-registered at sha256 <code>3ca89983...</code> BEFORE any probe code existed (gate-first invariant). Kill gates G1&ndash;G4 byte-frozen: +4.0pp over v0.8.3 native on action-class slice with bootstrap95 lo &gt; 0, +3.0pp/+2.0pp over lesions, no &gt;-1.0pp regression on control, p95 inline &lt;500&micro;s. Falsification self-test ADMISSIBLE. <strong>Binding verdict: VOID#1 (insufficient organic sample)</strong> &mdash; n_action=2 in dev DB &lt; 200, lock forbids synthetic substitution. Mechanism stays parked. v0.10 NOT pre-committed.</li>
-        <li><strong>Schema v9</strong>: one additive migration; v8 &rarr; v9 upgrade tested with row preservation. <strong>50 MCP tools</strong> (held flat in v0.9.0; expanded to 58 in v0.9.1).</li>
-        <li><strong>586 unit tests passing</strong> at v0.9.0 release (+36 over v0.8.3): proposer streaming + idle/wall timeouts (7), eval-harness primitives (20), experiments journal (9). No banned-package use (no <code>litellm</code>, no <code>openai</code> SDK; raw httpx + <code>claude_code</code> + <code>agent_sdk</code> only).</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.8.3</span>
-        <span class="release-date">May 13, 2026</span>
-      </div>
-      <p class="release-category">Finer-grained outcomes, failures, objectives &mdash; and a war-room UI &mdash; <a href="https://github.com/canivel/kaos/blob/main/docs/roadmap/v0.8.3.md" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">full plan</a></p>
-      <div style="margin:1.2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(162,155,254,.18);box-shadow:0 8px 30px rgba(0,0,0,.4)">
-        <img src="docs/demos/kaos_v083.gif" alt="KAOS v0.8.3 — quality score, failure taxonomy, critical-step localizer, ISA/ISC, war room — in the terminal" style="width:100%;display:block">
-        <div style="background:var(--bg2);padding:.6rem .9rem;font-size:.74rem;color:var(--fg2);text-align:center;font-style:italic;border-top:1px solid rgba(255,255,255,.05)">7 scenes, real CLI surface. Quality score &middot; failure taxonomy &middot; critical-step localizer &middot; ISA/ISC &middot; war room.</div>
-      </div>
-      <ul>
-        <li><strong>Track A &mdash; quality score [0,1]</strong> &mdash; <code>record_outcome(quality=...)</code> gives near-misses partial credit; the Wilson ranker reads <code>SUM(quality)</code>. Measured <strong style="color:var(--green)">+4.0pp accuracy</strong> (85.3% &rarr; 89.3%). The variance-reduction hypothesis was measured and did <em>not</em> hold &mdash; reported, not hidden.</li>
-        <li><strong>Track B1 &mdash; failure taxonomy</strong> (arXiv:2509.25370) &mdash; reasoning-class <code>taxonomy_class</code> (memory/reflection/planning/action/system) orthogonal to the execution category. CLI: <code>kaos dream failures --taxonomy-class planning</code>.</li>
-        <li><strong>Track B2 &mdash; critical-step localizer</strong> &mdash; points at the <em>earliest decisive</em> step, not the visible error. Heuristic-first, LLM cached by trajectory shape. <strong style="color:var(--green)">5/5</strong> planted bugs localized within &plusmn;1 step. CLI: <code>kaos dream localize</code>.</li>
-        <li><strong>Track B3 &mdash; Ideal State Artifacts</strong> &mdash; declare what "done" means as verifiable criteria; per-criterion pass/fail is a finer plasticity signal. Composes with A (quality), B1 (taxonomy), B2 (localized step). CLI: <code>kaos ideal-state create|mark|show|list</code>.</li>
-        <li><strong>Track C &mdash; gated out</strong> &mdash; Aegean incremental-quorum columns ship for forward-compat; the decide-side code stays unbuilt per the documented gating rule. Honest no-op.</li>
-        <li><strong>Track D &mdash; war-room UI</strong> &mdash; split layout, colored agent discs, click-to-dossier, LogAct intent kanban, opt-in light theme. <strong>No stack change</strong> &mdash; vanilla single static file + the existing server.</li>
-        <li><strong>Schema v7 &rarr; v8</strong> &mdash; one additive migration; fresh + faithful v7&rarr;v8 upgrade both tested.</li>
-        <li><strong>4 new MCP tools</strong> (<code>dream_localize</code>, <code>ideal_state_create/mark/get</code>). Total surface now <strong>50 tools</strong>.</li>
-        <li><strong>550 unit tests passing</strong> (+85 from 0.8.2; 0 regressions).</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.8.2</span>
-        <span class="release-date">April 24, 2026</span>
-      </div>
-      <p class="release-category">Addressing the Whitepaper &sect;6 Limitations &mdash; with KAOS itself &mdash; <a href="papers/kaos-neuroplasticity-whitepaper.html#limits" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">see whitepaper &sect;6</a></p>
-      <ul>
-        <li><strong>Policy consumer loop closed</strong> &mdash; <code>SharedLog.intent_auto()</code> now consults the <code>policies</code> table and short-circuits intent &rarr; vote &rarr; decide when a promoted policy matches. Closes &sect;6.3a.</li>
-        <li><strong>Merge workflow loop closed</strong> &mdash; <code>list_pending_merges()</code> / <code>accept_merge()</code> / <code>reject_merge()</code> migrate <code>skill_uses</code>, collapse associations with weight-merging, roll counters, and soft-deprecate the retired skill. CLI: <code>kaos dream merges [--accept N | --reject N]</code>. Closes &sect;6.3b.</li>
-        <li><strong>LLM-backed diagnoser with fingerprint cache</strong> &mdash; <code>LLMDiagnoser</code> (cache-first, heuristic-primary, provider-agnostic) now covers failures no heuristic matches. Each unique failure pays the LLM cost at most once. Closes &sect;6.4.</li>
-        <li><strong>Three new benchmarks with real measured numbers</strong> &mdash;
-          <code>demo_realistic_retrieval_bench/</code> (non-adversarial: BM25 73.3% &rarr; weighted <strong style="color:var(--green)">86.7% (+13.3pp)</strong>);
-          <code>demo_alpha_sweep_bench/</code> (default &alpha;=3.0 sits on a broad plateau at 93.3% covering &alpha; = 2&ndash;12);
-          <code>demo_consolidation_scale_bench/</code> (108 ms / 493 ms / 38.1 s at 100 / 1k / 10k skills).
-        </li>
-        <li><strong>Schema v7</strong> &mdash; adds <code>consolidation_proposals.status</code> (pending/applied/rejected/superseded) and <code>llm_diagnosis_cache</code>.</li>
-        <li><strong>1 new MCP tool</strong>: <code>dream_merges</code>. Total MCP surface now <strong>46 tools</strong>.</li>
-        <li><strong>465 unit tests passing</strong> (+42 from 0.8.1; 0 regressions).</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.8.1</span>
-        <span class="release-date">April 24, 2026</span>
-      </div>
-      <p class="release-category">Neuroplasticity &mdash; <a href="blog/kaos-neuroplasticity.html" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">blog post</a> &middot; <a href="papers/kaos-neuroplasticity-whitepaper.html" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">whitepaper</a></p>
-      <ul>
-        <li><strong>Inline synaptic plasticity</strong> &mdash; <code>record_outcome</code>, <code>memory.search(record_hits=True)</code>, and <code>Kaos.complete/fail/kill</code> all fire hooks inside the caller's transaction. +15 &micro;s p50 overhead on record_outcome (measured).</li>
-        <li><strong>Batched structural consolidation</strong> &mdash; at agent completion, one <code>executemany</code> rebuilds the Hebbian co-occurrence graph (skill&harr;skill, memory&harr;memory, skill&harr;memory). Every <code>KAOS_DREAM_THRESHOLD</code> completions, a full consolidation pass proposes promote / prune / merge changes.</li>
-        <li><strong>Weighted retrieval</strong> &mdash; <code>rank="weighted"</code> on <code>SkillStore.search()</code> and <code>MemoryStore.search()</code>: BM25 &times; Wilson-lower-bound &times; exponential recency. <strong style="color:var(--green)">+10 pp retrieval accuracy</strong> measured on twin-pair benchmark.</li>
-        <li><strong>Failure intelligence</strong> &mdash; 8 heuristic diagnosers (connection refused, rate limit, auth, timeouts, resource exhaustion, DNS, missing args, Python exceptions), fix-outcome tracking with auto-downgrade at &lt;50% success over 5+ attempts, sliding-window systemic alerts.</li>
-        <li><strong>Schema v6 (additive)</strong> &mdash; 10 new tables: <code>skill_uses</code>, <code>memory_hits</code>, <code>episode_signals</code>, <code>dream_runs</code>, <code>associations</code>, <code>failure_fingerprints</code>, <code>failure_occurrences</code>, <code>systemic_alerts</code>, <code>consolidation_proposals</code>, <code>policies</code>.</li>
-        <li><strong>10 new CLI commands</strong> under <code>kaos dream</code>; <strong>8 new MCP tools</strong>. Total MCP surface: 45 tools.</li>
-        <li><strong>Architecture rewrite (measured)</strong> &mdash; initial inline-upsert design hit +210 ms p50 overhead; batched-at-completion rebuild brought it to +15 &micro;s. <strong>14,000&times; faster.</strong></li>
-        <li><strong>423 unit tests passing</strong>. 3 committed benchmark folders with reproducible scripts.</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.7.0</span>
-        <span class="release-date">April 15, 2026</span>
-      </div>
-      <p class="release-category">Cross-Agent Skill Library &mdash; <a href="https://arxiv.org/abs/2604.08224" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.08224 &bull; Zhou et al. 2026</a></p>
-      <ul>
-        <li><strong>SkillStore</strong> &mdash; dedicated skill library distinct from memory. Skills are parameterized prompt templates (<code>{param}</code> placeholders) — procedural patterns any agent can save, search, and apply.</li>
-        <li><strong>FTS5 + BM25 search</strong> &mdash; searches across name, description, tags, and template body with porter stemming. <code>kaos skills search "classification accuracy"</code> finds relevant patterns across all agents and sessions.</li>
-        <li><strong>Outcome tracking</strong> &mdash; every applied skill records success or failure. Skills accumulate reliability scores over time. <code>kaos skills ls --order success_count</code> surfaces what actually works.</li>
-        <li><strong>5 new MCP tools</strong> &mdash; <code>skill_save</code>, <code>skill_search</code>, <code>skill_apply</code>, <code>skill_list</code>, <code>skill_outcome</code>. 30 MCP tools total.</li>
-        <li>CLI: <code>kaos skills save / search / ls / apply / delete</code></li>
-        <li><strong>Schema v3</strong> &mdash; <code>agent_skills</code> table + FTS5 virtual table + sync triggers. Migration applied automatically.</li>
-        <li><strong>MIT license</strong> &mdash; switched from Apache 2.0. Third-party license notices (claude-mem AGPL-3.0, research papers) preserved in LICENSE file.</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.6.0</span>
-        <span class="release-date">April 13, 2026</span>
-      </div>
-      <p class="release-category">Cross-Agent Memory &mdash; <a href="https://github.com/thedotmack/claude-mem" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">claude-mem by @thedotmack</a></p>
-      <ul>
-        <li><strong>MemoryStore</strong> &mdash; agents write typed memories (result, skill, error, observation, insight) to a shared SQLite FTS5 table with porter unicode61 tokenizer and BM25 ranking.</li>
-        <li><strong>Cross-session search</strong> &mdash; <code>kaos memory search "ensemble accuracy"</code> returns BM25-ranked results from all agents, all projects, all time. Write once, find everywhere.</li>
-        <li><strong>Meta-harness integration</strong> &mdash; proposer queries memory before proposing. Improved harnesses auto-persist as <code>result</code> entries. Failed runs saved as <code>error</code> entries. Non-fatal.</li>
-        <li><strong>4 new MCP tools</strong> &mdash; <code>agent_memory_write</code>, <code>agent_memory_search</code>, <code>agent_memory_list</code>, <code>agent_memory_get</code></li>
-        <li>CLI: <code>kaos memory write / search / ls</code></li>
-      </ul>
-      <p class="release-category">Shared Log / LogAct Protocol &mdash; <a href="https://arxiv.org/abs/2604.07988" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.07988</a></p>
-      <ul>
-        <li><strong>SharedLog</strong> &mdash; append-only, position-ordered log implementing the LogAct 4-stage loop: intent &rarr; vote &rarr; tally &rarr; decide. Nothing executes without consensus.</li>
-        <li><strong>Policy + mail entry types</strong> &mdash; supervisors inject standing rules; agents send typed messages. All entries are append-only and queryable with SQL.</li>
-        <li><strong>Human-in-the-loop</strong> &mdash; human votes block any action. Rejection reasons are saved to memory so agents don't repeat the same proposal.</li>
-        <li><strong>4 new MCP tools</strong> &mdash; <code>shared_log_intent</code>, <code>shared_log_vote</code>, <code>shared_log_decide</code>, <code>shared_log_read</code></li>
-        <li>CLI: <code>kaos log intent / vote / decide / tail / ls / append</code></li>
-        <li><strong>Schema v2</strong> &mdash; 10 SQLite tables total. Migration applied automatically to existing databases.</li>
-      </ul>
-      <p class="release-category">CORAL: Autonomous Multi-Agent Evolution &mdash; <a href="https://arxiv.org/abs/2604.01658" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.01658</a></p>
-      <ul>
-        <li><strong>Stagnation detection</strong> &mdash; after N non-improving iterations, proposer receives a <code>PIVOT REQUIRED</code> block demanding an orthogonal approach. Tracks <code>stagnant_iterations</code> and <code>delta</code> per iteration.</li>
-        <li><strong>Three-tier memory</strong> &mdash; <code>/attempts/</code> (compact eval summaries), <code>/notes/</code> (proposer observations via <code>notes=</code> param), <code>/skills/</code> (reusable patterns). Skills persist cross-search via knowledge agent.</li>
-        <li><strong>Consolidation heartbeat</strong> &mdash; every K iterations, digest includes a prompt to extract reusable skills with <code>mh_write_skill</code></li>
-        <li><strong>Co-evolution</strong> &mdash; <code>mh_spawn_coevolution(benchmark, n_agents=3)</code> + <code>mh_hub_sync</code> share best harnesses &amp; skills across N agents in real-time. Auto-sync every 2 iterations.</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.5.3</span>
-        <span class="release-date">April 7, 2026</span>
-      </div>
-      <p class="release-category">ARC-AGI-3 Benchmark</p>
-      <ul>
-        <li><strong>New benchmark: <code>arc-agi-3</code></strong> &mdash; interactive game-playing. Harnesses define <code>choose_action(grid, available_actions, state)</code>. Scoring via RHAE (Relative Human Action Efficiency).</li>
-        <li>4 seed strategies: random, systematic, productive-first, click-objects</li>
-        <li>MCP-safe: monkeypatches <code>StreamHandler</code> to prevent <code>arc_agi.Arcade()</code> from corrupting MCP stdio transport</li>
-      </ul>
-      <p class="release-category">Fix: Search Hanging</p>
-      <ul>
-        <li>Root cause: <code>asyncio.wait_for</code> cannot cancel <code>run_in_executor</code> threads &mdash; 10 games × 120s × 4 seeds = 80 min freeze</li>
-        <li><code>time_per_game=25s</code>, <code>max_actions=800</code>, <code>n_search_games=6</code> &mdash; seed eval now ~1.5 min</li>
-        <li><code>SearchConfig.harness_timeout_seconds</code> 300 → 60 (per-problem cap)</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.5.2</span>
-        <span class="release-date">April 6, 2026</span>
-      </div>
-      <p class="release-category">Knowledge Compounding</p>
-      <ul>
-        <li><strong>Cross-search memory</strong> &mdash; persistent knowledge agent stores winning harnesses. New searches build on prior discoveries.</li>
-        <li><code>kaos search "query"</code> &mdash; full-text search across all agent VFS contents</li>
-        <li><code>kaos index &lt;agent-id&gt;</code> &mdash; build navigable /index.md</li>
-        <li><code>kaos mh lint &lt;id&gt;</code> &mdash; health-check search archives</li>
-        <li><code>kaos mh knowledge</code> &mdash; view persistent discoveries by benchmark</li>
-      </ul>
-      <p class="release-category">Smart Compaction &mdash; <a href="https://github.com/milla-jovovich/mempalace" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">MemPalace</a></p>
-      <ul>
-        <li>Tunable context compression (level 0-10) &mdash; reduces proposer turns from ~10 to 1-2</li>
-        <li>Pre-built archive digest injected into proposer prompt</li>
-        <li>Conversation auto-compaction for long tool-use chains</li>
-      </ul>
-      <p class="release-category">Compatibility</p>
-      <ul>
-        <li><strong>#27 Text extraction fallback</strong> &mdash; proposer extracts <code>```python</code> blocks when tool-use unavailable (<code>claude --print</code>)</li>
-        <li>Multi-domain eval: 100% quality across classification, code gen, research, tool calling, ML</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.3.1</span>
-        <span class="release-date">April 5, 2026</span>
-      </div>
-      <ul>
-        <li>Bug fixes: #1 Unicode, #2 WAL contention, #7 truncation, #16 write lock</li>
-        <li>New: <code>kaos read</code>, <code>kaos logs</code>, <code>mh search --dry-run</code></li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.3.0</span>
-        <span class="release-date">April 4, 2026</span>
-      </div>
-      <p class="release-category">CLI-First Architecture</p>
-      <ul>
-        <li><code>--json</code> flag on all commands &mdash; composable with any agent framework, 10-32x cheaper than MCP</li>
-        <li>Background worker subprocess for <code>mh search</code> &mdash; survives parent exit</li>
-        <li><code>provider: claude_code</code> &mdash; no API key needed, uses CC subscription</li>
-        <li>Pluggable <code>llm()</code> callable injected into harnesses &mdash; any provider works</li>
-      </ul>
-      <p class="release-category">Reliability</p>
-      <ul>
-        <li>Fail-fast retries (default 3 &rarr; 1), proposer timeout + error handling</li>
-        <li>DB locking fix &mdash; <code>_force_kill()</code> with fresh connection fallback</li>
-        <li>Evaluator bugs fixed &mdash; <code>_truncate()</code> and score key prefix issues</li>
-        <li>Objectives inherit from benchmark when not explicitly set</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.2.0</span>
-        <span class="release-date">April 2, 2026</span>
-      </div>
-      <ul>
-        <li>Paper-aligned Meta-Harness (arXiv:2603.28052) &mdash; automated harness optimization</li>
-        <li>Multi-provider support: local, OpenAI, Anthropic (all raw httpx)</li>
-        <li><code>kaos setup</code> interactive wizard with 6 presets</li>
-        <li>18 MCP tools, resume interrupted searches, dashboard Meta-Harness panel</li>
-      </ul>
-    </div>
-
-    <div class="release">
-      <div class="release-header">
-        <span class="release-version">v0.1.0</span>
-        <span class="release-date">March 30, 2026</span>
-      </div>
-      <ul>
-        <li>Initial release &mdash; VFS engine, checkpoint/restore, event journal, GEPA router</li>
-        <li>CLI (15 commands), MCP server, TUI dashboard, FUSE isolation</li>
-      </ul>
-    </div>
-
-    <p style="text-align:center;margin-top:1rem"><a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md" style="font-size:.9rem">Full changelog on GitHub &rarr;</a></p>
-  </div>
-</div>
-</section>
-
-<!-- Blog -->
-<section style="background:var(--bg);padding:5rem 0" id="blog">
-<div class="wrap">
-  <h2 style="text-align:center;font-size:2rem;margin-bottom:.6rem">Writing</h2>
-  <p style="text-align:center;color:var(--fg2);margin-bottom:3rem;font-size:1rem">Deep dives into KAOS, multi-agent research, and what we're building.</p>
-  <div style="max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem">
-
-    <a href="blog/kaos-neuroplasticity-multiagent.html" style="display:block;background:var(--bg2);border:1px solid rgba(253,121,168,.3);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#fd79a8';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(253,121,168,.3)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(253,121,168,.18);color:#fd79a8;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(253,121,168,.4);font-weight:700">NEW</span>
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(253,121,168,.1);color:#fd79a8;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(253,121,168,.2)">Primer &middot; Multi-agent</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 24, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 12 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">Neuroplasticity in a Multi-Agent System &mdash; The Bigger Picture</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">Why a multi-agent framework needs plasticity in the first place, the biological analogy treated honestly, the translation into a system with N concurrent agents and no sleep cycle, and the four loops KAOS closes &mdash; plus the limits the analogy does not buy you. A standalone primer, separate from the v0.8.1 growth story.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">concept piece</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">hebbian at scale</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">two-timescale split</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">honest limits</span>
-        <span style="color:#fd79a8;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-neuroplasticity.html" style="display:block;background:var(--bg2);border:1px solid rgba(253,121,168,.3);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#fd79a8';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(253,121,168,.3)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(253,121,168,.1);color:#fd79a8;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(253,121,168,.2)">Growth story &middot; v0.8.1</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 24, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 20 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">Neuroplasticity in KAOS &mdash; The Library Starts Learning from Itself</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A seven-chapter growth story: how the library went from a passive filing cabinet to a self-organizing graph, and how an honest benchmark forced us to throw away the first architecture (<strong>+210ms overhead</strong>) and build it right (<strong>+15µs</strong>). With a ~45-second real-CLI demo GIF, four inline charts, and the measured reality: <strong>BM25 80% &rarr; weighted 90%</strong> on a disambiguation benchmark.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">hebbian graph</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">failure triage</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">systemic alerts</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">real benchmarks</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:rgba(253,121,168,.12);color:#fd79a8;border:1px solid rgba(253,121,168,.25)">v0.8.1</span>
-        <span style="color:#fd79a8;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-full-engagement.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,209,102,.25);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#ffd166';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,209,102,.25)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(255,209,102,.1);color:#ffd166;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(255,209,102,.2)">Walkthrough</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 15, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 25 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">What a Full KAOS Engagement Looks Like — End to End</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A complete walkthrough using a payment platform modernization as the example: every wave, every agent, every real CLI command. Skills search, memory search, <code>kaos ls</code> — actual output from a real run. All 7 KAOS capabilities in one engagement, from <code>kaos init</code> to production deployment.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">end-to-end</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">all features</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">real CLI</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:rgba(255,209,102,.1);color:#ffd166;border:1px solid rgba(255,209,102,.2)">v0.7.0</span>
-        <span style="color:#ffd166;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-skill-library.html" style="display:block;background:var(--bg2);border:1px solid rgba(0,206,201,.2);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#00cec9';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(0,206,201,.2)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(0,206,201,.15);color:#00cec9;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(0,206,201,.3);font-weight:700">NEW</span>
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(0,206,201,.1);color:#00cec9;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(0,206,201,.2)">Skill Library</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 15, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">Skills vs Memory: How KAOS Agents Share Procedural Knowledge Across Sessions</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">Memory stores what happened. Skills store how to do it. A new cross-agent skill library lets agents save parameterized solution templates — and every future agent finds them via BM25 search. What took 6 iterations and $19.40 now takes 1 iteration and $3.20. Inspired by arXiv:2604.08224.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">skill library</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">FTS5</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">externalization</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:rgba(0,206,201,.1);color:#00cec9;border:1px solid rgba(0,206,201,.2)">v0.7.0</span>
-        <span style="color:#00cec9;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-cross-agent-memory.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#fd79a8';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(253,121,168,.12);color:#fd79a8;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(253,121,168,.2)">Memory</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 13, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS Agents Learn Across Sessions: Cross-Agent Memory with FTS5</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">Agents write compact, searchable memories — results, skills, errors — and every future agent retrieves them via BM25 full-text search. A meta-harness search that took 6 iterations last week now starts at iteration 1 with the best pattern pre-loaded. Inspired by claude-mem by @thedotmack.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">cross-agent memory</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">FTS5</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">meta-harness</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.7.0</span>
-        <span style="color:#fd79a8;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-shared-log.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#55efc4';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(85,239,196,.12);color:#55efc4;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(85,239,196,.2)">Coordination</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 13, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 9 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">The Shared Log: How KAOS Agents Coordinate With Intent, Vote, and Decide</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">Autonomous agents that can act without oversight are a liability. The Shared Log gives every agent a veto over every other agent's risky moves — and keeps a full, immutable audit trail in SQL. Four stages, one append-only log, zero trust required. Implements the LogAct protocol (Balakrishnan et al., Meta 2026).</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">shared log</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">LogAct</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">coordination</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">safety gate</span>
-        <span style="color:#55efc4;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-v060.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='var(--accent2)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(108,92,231,.15);color:var(--accent2);padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(108,92,231,.2)">v0.7.0</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 10, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 10 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">From 48% to 83%: How KAOS v0.7.0 Automates Multi-Agent AI Research</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A complete walkthrough of the Meta-Harness search loop — seed evaluation, 15 iterations, the CORAL plateau pivot that breaks a 4-iteration stall, the two-step decomposition breakthrough, and the winning harness. Nothing skipped.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">Meta-Harness</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">CORAL</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">co-evolution</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">v0.7.0</span>
-        <span style="color:var(--accent2);font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-sdlc-self-healing.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#00b894';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(0,184,148,.15);color:#00b894;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(0,184,148,.2)">Code Quality</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 11, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS AI Agents Roll Back a Cascading CI Failure in 0.3 Seconds</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">One bad fix cascades to four failures. A repo-wide git reset would blow up every other agent's work. KAOS AI agents roll back one agent's VFS in 0.3 seconds — surgically — while the rest of the pipeline keeps running.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">checkpoint</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">restore</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">SDLC</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">self-healing</span>
-        <span style="color:#00b894;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-security-swarm.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#e17055';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(225,112,85,.15);color:#e17055;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(225,112,85,.2)">Security</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 12, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 9 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS Runs 4 Specialized AI Security Agents in Parallel — and Aggregates Every Finding in SQL</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">4 specialized agents audit a PR in parallel: SQL injection, secrets leakage, auth flaws, and deserialization. Each works in full VFS isolation. Findings are aggregated via a SQL query across agent filesystems. CRITICAL blocks merge. Full audit trail is queryable forever.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">security</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">parallel agents</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">VFS isolation</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">audit trail</span>
-        <span style="color:#e17055;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-migration-rollback.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#fdcb6e';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(253,203,110,.15);color:#fdcb6e;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(253,203,110,.2)">Data Engineering</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 13, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">KAOS AI Agents Detected Data Corruption at Row 847K and Rolled Back the Migration in 0.3 Seconds</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A database backfill hits 7.6% unexpected NULLs at row 847,412. KAOS restores the migration agent's pre-backfill checkpoint in 0.3 seconds — while 3 analytics agents keep running on untouched data. Surgical VFS rollback, not a full database restore.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">migration</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">rollback</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">VFS isolation</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">data safety</span>
-        <span style="color:#fdcb6e;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-incident-response.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#74b9ff';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(116,185,255,.15);color:#74b9ff;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(116,185,255,.2)">SRE / Ops</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 14, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 7 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS AI Agents Found a Production Root Cause in 12 Seconds</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A production incident brings 23% error rate. An agent queries the event journal, finds 847 ConnectionPoolErrors, traces them to a config change 47 minutes ago — pool_size dropped from 5 to 2. One-line fix, incident closed, full post-mortem written automatically.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">incident response</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">audit trail</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">SRE</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">observability</span>
-        <span style="color:#74b9ff;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-ml-research-lab.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#a29bfe';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(162,155,254,.15);color:#a29bfe;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(162,155,254,.2)">ML Research</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 15, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 9 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS Runs a Full ML Research Lab Overnight with 4 Parallel AI Agents</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">4 agents explore orthogonal dimensions simultaneously: LoRA architecture, Lion optimizer, batch scaling, and regularization. Each gets isolated compute and a private VFS. The winner (LoRA + val_loss=1.89) is checkpointed. The research compendium writes itself.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">ML research</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">parallel agents</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">LoRA</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">autoresearch</span>
-        <span style="color:#a29bfe;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-regression-guard.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#55efc4';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(85,239,196,.15);color:#55efc4;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(85,239,196,.2)">MLOps</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 16, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 8 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">How KAOS AI Agents Caught an 8% Model Regression Before It Left CI</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">A model swap drops code_review accuracy from 0.83 to 0.76. The CI gate catches it, blocks the deploy, and triggers a 5-iteration Meta-Harness re-run that restores 0.83 — automatically. No human in the loop until the fix is ready to review.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">regression</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">CI/CD</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">Meta-Harness</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">MLOps</span>
-        <span style="color:#55efc4;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-    <a href="blog/kaos-hundred-agents-scale.html" style="display:block;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:2rem;transition:border-color .2s,transform .2s;text-decoration:none" onmouseover="this.style.borderColor='#ff7675';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.transform='none'">
-      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.7rem;background:rgba(255,118,117,.15);color:#ff7675;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(255,118,117,.2)">Scale</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">April 17, 2026</span>
-        <span style="font-family:var(--mono);font-size:.7rem;color:var(--fg2)">&bull; 10 min read</span>
-      </div>
-      <h3 style="font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:.7rem;line-height:1.3">847 KAOS AI Agents. One Codebase. $18.40. Here's the Receipt.</h3>
-      <p style="color:var(--fg2);font-size:.95rem;line-height:1.65;margin-bottom:1.2rem">847 agents run a Python 2→3 migration in parallel — one per file. AAAK compression saves $7.35 in tokens. Blob deduplication saves 147MB. 31 agents roll back individually without touching the other 816. Full SQL audit across every agent in one query.</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">scale</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">847 agents</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">compression</span>
-        <span style="font-family:var(--mono);font-size:.72rem;padding:.2rem .55rem;border-radius:10px;background:var(--bg3);color:var(--fg2);border:1px solid rgba(255,255,255,.05)">deduplication</span>
-        <span style="color:#ff7675;font-size:.85rem;margin-left:auto;align-self:center">Read &rarr;</span>
-      </div>
-    </a>
-
-  </div>
-</div>
-</section>
-
-<!-- CTA -->
+<!-- ── CTA ── -->
 <section class="cta">
 <div class="wrap">
-  <h2>Join the Synthesis</h2>
-  <p>KAOS is open source and growing. New research gets integrated as we find it. Every version is more capable than the last &mdash; not by accident, but because KAOS uses its own tools to find what works. Your GPU. Your models. Your data. All local, all free.</p>
-  <div class="hero-buttons">
-    <a href="https://github.com/canivel/kaos" class="btn btn-primary">Get Started on GitHub</a>
-    <a href="#self-improving" class="btn btn-secondary">How it improves itself &darr;</a>
-  </div>
-  <div class="install-bar">
-    <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos init</span>
+  <h2>Join the synthesis.</h2>
+  <p>Open source, local-first, self-improving. Clone it, run the demo, read the code — everything is on GitHub.</p>
+  <div class="btns">
+    <a href="https://github.com/canivel/kaos" class="btn btn-primary">Star on GitHub</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-ghost">Read the tutorial</a>
   </div>
 </div>
 </section>
 
-<!-- Footer -->
 <footer>
 <div class="wrap">
   <div class="links">
     <a href="https://github.com/canivel/kaos">GitHub</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
-    <a href="https://github.com/canivel/kaos/blob/main/docs/mcp-integration.md">MCP Docs</a>
     <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
-    <a href="blog/kaos-v060.html">Blog</a>
-    <a href="https://github.com/canivel/kaos/blob/main/LICENSE">MIT</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
+    <a href="#research">Research</a>
+    <a href="#blog">Blog</a>
   </div>
-  <p>KAOS &mdash; The Living Synthesis of Agentic AI Research. Built by <a href="https://github.com/canivel">Danilo Canivel</a>.</p>
-  <p style="margin-top:.4rem;font-style:italic;color:#636378">Named after the enemy spy agency in Get Smart (1965). Because KAOS is how you control your agents.</p>
+  <p>KAOS — Kernel for Agent Orchestration &amp; Sandboxing — by <a href="https://github.com/canivel">Danilo Canivel</a>. Local-first, MIT-licensed.</p>
 </div>
 </footer>
 
