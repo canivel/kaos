@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAOS — The Living Synthesis of Agentic AI Research</title>
-<meta name="description" content="A local-first multi-agent orchestration framework. Every agent gets an isolated, auditable SQLite-backed runtime. Nine research integrations, a falsifiable-eval discipline, 58 MCP tools — measured, not claimed.">
-<meta property="og:title" content="KAOS — The Living Synthesis of Agentic AI Research">
-<meta property="og:description" content="Local-first multi-agent orchestration. Isolated SQLite runtimes, falsifiable evaluation, self-improving by design. One file. Zero cloud.">
+<title>KAOS — The Harness That Proves Itself</title>
+<meta name="description" content="The field agreed the harness matters more than the model. KAOS is the local-first agent harness built on that premise — isolated auditable SQLite runtimes, self-tuning memory, and the only pre-registered falsifiable-eval gate in any framework. Measured, not claimed.">
+<meta property="og:title" content="KAOS — The Harness That Proves Itself">
+<meta property="og:description" content="Local-first multi-agent harness: one SQLite file per project holding every agent's VFS, append-only audit journal, and checkpoints. The only framework whose own changes must pass pre-registered falsifiable kill gates.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
@@ -15,11 +15,11 @@
   --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
   --fg:#e4e4ef;--fg2:#9494a8;--fg3:#6b6b80;
   --accent:#6c5ce7;--accent2:#a29bfe;
-  --green:#00e676;--pink:#fd79a8;--cyan:#18ffff;--amber:#ffd166;
+  --green:#00e676;--pink:#fd79a8;--cyan:#18ffff;--amber:#ffd166;--red:#ff6b6b;
   --line:rgba(255,255,255,.07);
   --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --max:1080px;
+  --max:1100px;
 }
 html{scroll-behavior:smooth;font-size:16px;-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.65;overflow-x:hidden}
@@ -35,25 +35,30 @@ h1,h2,h3{letter-spacing:-.02em;line-height:1.15}
 section{padding:4.5rem 0;border-top:1px solid var(--line)}
 .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:.9rem}
 .grad{background:linear-gradient(120deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.head{max-width:720px;margin:0 auto 2.6rem;text-align:center}
+.head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:800;margin-bottom:.8rem}
+.head p{color:var(--fg2);font-size:1.02rem;line-height:1.65}
 
-/* ── Nav ── */
-nav{position:fixed;inset:0 0 auto 0;z-index:100;background:rgba(10,10,15,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+/* Nav */
+nav{position:fixed;inset:0 0 auto 0;z-index:100;background:rgba(10,10,15,.84);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
 nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;letter-spacing:.15em;color:var(--fg)}
 nav .logo span{color:var(--accent2)}
-nav ul{list-style:none;display:flex;gap:1.5rem;align-items:center}
-nav ul a{color:var(--fg2);font-size:.86rem;font-weight:500}
+nav ul{list-style:none;display:flex;gap:1.4rem;align-items:center}
+nav ul a{color:var(--fg2);font-size:.85rem;font-weight:500}
 nav ul a:hover{color:var(--fg)}
 .nav-cta{background:var(--accent);color:#fff!important;padding:.42rem 1rem;border-radius:7px;font-size:.84rem;font-weight:600}
 .nav-cta:hover{background:var(--accent2)}
-@media(max-width:760px){nav ul li.hide-sm{display:none}}
+@media(max-width:820px){nav ul li.hide-sm{display:none}}
 
-/* ── Hero ── */
+/* Hero */
 .hero{padding:8rem 0 3.5rem;text-align:center;position:relative;overflow:hidden;border-top:none}
-.hero::before{content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:min(900px,120vw);height:520px;background:radial-gradient(ellipse at 50% 0,rgba(108,92,231,.2),transparent 68%);pointer-events:none}
+.hero::before{content:'';position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:min(920px,120vw);height:540px;background:radial-gradient(ellipse at 50% 0,rgba(108,92,231,.2),transparent 68%);pointer-events:none}
 .hero-inner{position:relative}
-.hero h1{font-size:clamp(2.3rem,5.4vw,4rem);font-weight:800;margin-bottom:1.2rem}
-.hero .sub{font-size:clamp(1rem,1.9vw,1.18rem);color:var(--fg2);max-width:640px;margin:0 auto 2rem;line-height:1.6}
+.hero .kicker{font-family:var(--mono);font-size:.78rem;color:var(--fg2);letter-spacing:.08em;margin-bottom:1.1rem}
+.hero .kicker a{color:var(--fg2);border-bottom:1px dotted var(--fg3)}
+.hero h1{font-size:clamp(2.2rem,5.2vw,3.9rem);font-weight:800;margin-bottom:1.2rem}
+.hero .sub{font-size:clamp(1rem,1.9vw,1.16rem);color:var(--fg2);max-width:700px;margin:0 auto 2rem;line-height:1.65}
 .btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.8rem}
 .btn{padding:.72rem 1.4rem;border-radius:9px;font-weight:600;font-size:.92rem;transition:transform .15s,background .2s}
 .btn:hover{transform:translateY(-1px)}
@@ -69,53 +74,73 @@ nav ul a:hover{color:var(--fg)}
 .badge.v{color:var(--accent2);border-color:rgba(162,155,254,.35)}
 .badge.p{color:var(--pink);border-color:rgba(253,121,168,.35);background:rgba(253,121,168,.07)}
 .badge.g{color:var(--green);border-color:rgba(0,230,118,.28)}
-
-/* ARC tracker */
 .arc{display:inline-flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:2rem;background:var(--bg2);border:1px solid rgba(255,209,102,.25);border-radius:12px;padding:.7rem 1.1rem;font-size:.82rem}
 .arc:hover{border-color:rgba(255,209,102,.5)}
 .arc .rank{font-family:var(--mono);font-weight:800;color:var(--amber);font-size:1.05rem}
 .arc .dim{color:var(--fg2)}
 .arc-as{font-size:.74rem;color:var(--fg3);margin-top:.6rem}
-
-/* hero shot */
 .shot{margin:3rem auto 0;max-width:920px;border-radius:14px;overflow:hidden;border:1px solid rgba(108,92,231,.28);box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .shot .cap{background:var(--bg2);padding:.7rem 1rem;font-family:var(--mono);font-size:.78rem;color:var(--fg2);text-align:center;border-top:1px solid var(--line)}
 
-/* ── generic section head ── */
-.head{max-width:680px;margin:0 auto 2.6rem;text-align:center}
-.head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:800;margin-bottom:.8rem}
-.head p{color:var(--fg2);font-size:1.02rem;line-height:1.65}
+/* Era strip */
+.era-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:980px;margin:0 auto}
+.era{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.4rem}
+.era q{font-size:.95rem;color:var(--fg);line-height:1.55;display:block;margin-bottom:.7rem;quotes:'\201C' '\201D'}
+.era .who{font-family:var(--mono);font-size:.72rem;color:var(--fg3)}
+.era .who a{color:var(--fg2)}
+.era.gap{border-color:rgba(253,121,168,.3)}
+.era.gap q{color:var(--pink)}
 
-/* ── research pills ── */
-.pills{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;max-width:900px;margin:0 auto}
-.pill{display:inline-flex;flex-direction:column;gap:.15rem;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:.7rem 1rem;min-width:0}
-.pill:hover{border-color:var(--accent2)}
-.pill b{font-size:.9rem;color:var(--fg)}
-.pill span{font-family:var(--mono);font-size:.7rem;color:var(--fg3)}
+/* Moat */
+.moat{background:radial-gradient(ellipse at 50% 0,rgba(108,92,231,.07),transparent 60%)}
+.moat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem}
+.pillar{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.6rem;border-top:3px solid var(--accent)}
+.pillar:nth-child(2){border-top-color:var(--cyan)}
+.pillar:nth-child(3){border-top-color:var(--pink)}
+.pillar:nth-child(4){border-top-color:var(--green)}
+.pillar .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fg3);font-weight:700;margin-bottom:.6rem}
+.pillar h3{font-size:1.15rem;margin-bottom:.6rem}
+.pillar p{font-size:.9rem;color:var(--fg2);line-height:1.65}
+.pillar .proof{margin-top:.9rem;font-family:var(--mono);font-size:.76rem;color:var(--fg3);border-top:1px solid var(--line);padding-top:.7rem}
+.pillar .proof b{color:var(--green)}
 
-/* ── capability grid ── */
-.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.cap-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.4rem;border-top:2px solid var(--accent)}
-.cap-card:nth-child(3n+2){border-top-color:var(--cyan)}
-.cap-card:nth-child(3n){border-top-color:var(--pink)}
-.cap-card h3{font-size:1.02rem;margin-bottom:.5rem}
-.cap-card p{font-size:.88rem;color:var(--fg2);line-height:1.6}
-.cap-card .src{font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.7rem}
+/* Compare */
+.cmp-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table.cmp{width:100%;min-width:880px;border-collapse:collapse;font-size:.84rem;background:var(--bg2)}
+.cmp th{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--fg2);text-align:left;padding:.8rem .9rem;border-bottom:2px solid var(--accent);white-space:nowrap}
+.cmp td{padding:.65rem .9rem;border-bottom:1px solid var(--line);color:var(--fg2);vertical-align:top}
+.cmp tr:last-child td{border-bottom:none}
+.cmp td:first-child{color:var(--fg);font-weight:600;white-space:nowrap}
+.cmp .y{color:var(--green);font-weight:700}
+.cmp .part{color:var(--amber)}
+.cmp .n{color:var(--fg3)}
+.cmp tr.kaos td{background:rgba(108,92,231,.08)}
+.cmp-notes{max-width:860px;margin:1.3rem auto 0;font-size:.8rem;color:var(--fg3);line-height:1.7}
+.cmp-notes a{color:var(--fg2)}
 
-/* ── discipline ── */
-.disc{background:radial-gradient(ellipse at 50% 0,rgba(253,121,168,.06),transparent 60%)}
-.disc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;max-width:840px;margin:0 auto 2.4rem}
-.stat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.2rem 1rem;text-align:center}
-.stat .n{font-family:var(--mono);font-size:1.9rem;font-weight:800;color:var(--cyan);line-height:1}
-.stat .l{font-size:.74rem;color:var(--fg2);margin-top:.4rem;text-transform:uppercase;letter-spacing:.06em}
-.disc-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:900px;margin:0 auto}
-.step{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.3rem}
-.step .k{font-family:var(--mono);font-size:.7rem;color:var(--pink);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:.6rem}
-.step h4{font-size:.98rem;margin-bottom:.4rem}
-.step p{font-size:.86rem;color:var(--fg2);line-height:1.6}
-.disc-note{max-width:720px;margin:2rem auto 0;text-align:center;font-size:.92rem;color:var(--fg2);line-height:1.7}
+/* Examples */
+.ex-grid{display:grid;grid-template-columns:1fr;gap:1.4rem;max-width:880px;margin:0 auto}
+.ex{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ex .ex-h{display:flex;align-items:baseline;gap:.8rem;padding:.9rem 1.2rem;border-bottom:1px solid var(--line)}
+.ex .ex-h .n{font-family:var(--mono);font-size:.72rem;color:var(--accent2);font-weight:700}
+.ex .ex-h h3{font-size:1rem}
+.ex .ex-h .d{font-size:.8rem;color:var(--fg3);margin-left:auto;text-align:right}
+.ex pre{padding:1.1rem 1.3rem;overflow-x:auto;font-size:.8rem;line-height:1.6;color:var(--fg2)}
+.ex pre .c{color:var(--fg3)}
+.ex pre .s{color:var(--green)}
+.ex pre .k{color:var(--accent2)}
+.ex pre .hl{color:var(--pink)}
 
-/* ── demos ── */
+/* Enterprise */
+.ent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.ent{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.3rem}
+.ent .req{font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:.55rem}
+.ent h4{font-size:.96rem;margin-bottom:.45rem}
+.ent p{font-size:.84rem;color:var(--fg2);line-height:1.6}
+.ent .src{font-size:.72rem;color:var(--fg3);margin-top:.6rem}
+.ent-line{max-width:760px;margin:2.2rem auto 0;text-align:center;font-size:.95rem;color:var(--fg2);line-height:1.7}
+
+/* Demos */
 .demos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.3rem}
 .demo{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
 .demo img{width:100%}
@@ -123,7 +148,7 @@ nav ul a:hover{color:var(--fg)}
 .demo .d h4{font-size:.95rem;margin-bottom:.25rem}
 .demo .d p{font-size:.82rem;color:var(--fg2);line-height:1.55}
 
-/* ── changelog ── */
+/* Changelog */
 .rel{max-width:760px;margin:0 auto 1.4rem;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.6rem}
 .rel-h{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.5rem}
 .rel-v{font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--accent2)}
@@ -137,7 +162,7 @@ nav ul a:hover{color:var(--fg)}
 .rel li b{color:var(--fg)}
 .cl-more{text-align:center;margin-top:1.4rem}
 
-/* ── blog ── */
+/* Blog */
 .blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
 .post{display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.2rem;border-top:2px solid var(--lp,var(--accent))}
 .post:hover{border-color:var(--lp,var(--accent2))}
@@ -146,20 +171,17 @@ nav ul a:hover{color:var(--fg)}
 .post p{font-size:.83rem;color:var(--fg2);line-height:1.55;flex:1}
 .post .m{font-family:var(--mono);font-size:.7rem;color:var(--fg3);margin-top:.7rem}
 
-/* ── CTA ── */
+/* CTA / footer */
 .cta{text-align:center;background:radial-gradient(ellipse at 50% 100%,rgba(108,92,231,.12),transparent 65%)}
 .cta h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800;margin-bottom:.9rem}
-.cta p{color:var(--fg2);max-width:560px;margin:0 auto 1.8rem}
-
-/* ── footer ── */
+.cta p{color:var(--fg2);max-width:600px;margin:0 auto 1.8rem}
 footer{border-top:1px solid var(--line);padding:2.5rem 0;text-align:center;color:var(--fg3);font-size:.84rem}
 footer .links{display:flex;gap:1.3rem;justify-content:center;flex-wrap:wrap;margin-bottom:.9rem}
 footer .links a{color:var(--fg2)}
 
-@media(max-width:820px){
-  .cap-grid,.disc-steps,.blog-grid{grid-template-columns:1fr}
-  .disc-stats{grid-template-columns:repeat(2,1fr)}
-  .demos-grid{grid-template-columns:1fr}
+@media(max-width:900px){
+  .era-grid,.ent-grid,.blog-grid{grid-template-columns:1fr}
+  .moat-grid,.demos-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -169,9 +191,10 @@ footer .links a{color:var(--fg2)}
 <div class="wrap">
   <a href="#top" class="logo"><span>K</span>AOS</a>
   <ul>
-    <li class="hide-sm"><a href="#research">Research</a></li>
-    <li class="hide-sm"><a href="#discipline">Discipline</a></li>
-    <li class="hide-sm"><a href="#demos">Demos</a></li>
+    <li class="hide-sm"><a href="#moat">Moat</a></li>
+    <li class="hide-sm"><a href="#compare">Compare</a></li>
+    <li class="hide-sm"><a href="#examples">Examples</a></li>
+    <li class="hide-sm"><a href="#enterprise">Enterprise</a></li>
     <li class="hide-sm"><a href="#changelog">Changelog</a></li>
     <li class="hide-sm"><a href="#blog">Blog</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
@@ -182,20 +205,21 @@ footer .links a{color:var(--fg2)}
 <!-- ── Hero ── -->
 <header class="hero" id="top">
 <div class="wrap hero-inner">
-  <h1>The Living Synthesis of<br><span class="grad">Agentic AI Research</span></h1>
-  <p class="sub">A local-first framework for orchestrating multi-agent systems. Every agent gets an isolated, auditable runtime backed by a single SQLite file. Nine proven research integrations, unified — self-improving by design, <strong style="color:var(--fg)">measured, not claimed</strong>.</p>
+  <p class="kicker">The industry finally agreed: <a href="https://addyosmani.com/blog/agent-harness-engineering/" target="_blank" rel="noopener">the harness matters more than the model</a>.</p>
+  <h1>The harness that<br><span class="grad">proves itself.</span></h1>
+  <p class="sub">KAOS is a local-first multi-agent harness. Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use. And it's the only framework whose own mechanisms must pass <strong style="color:var(--fg)">pre-registered, falsifiable kill gates</strong> before they ship. Measured, not claimed.</p>
   <div class="btns">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="#discipline" class="btn btn-ghost">How we ship &darr;</a>
+    <a href="#moat" class="btn btn-ghost">Why it wins &darr;</a>
   </div>
   <div class="install"><span class="p">$</span><span class="c">git clone https://github.com/canivel/kaos.git &amp;&amp; cd kaos &amp;&amp; uv sync</span></div>
   <div class="badges">
     <span class="badge v">v0.9.2</span>
     <span class="badge p">falsifiable eval</span>
-    <span class="badge g">9 research integrations</span>
+    <span class="badge g">10 mechanisms evaluated · 0 shipped on hope</span>
     <span class="badge">58 MCP tools</span>
     <span class="badge">701 tests</span>
-    <span class="badge">local-first</span>
+    <span class="badge">MIT · local-first</span>
   </div>
 
   <a class="arc" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel" target="_blank" rel="noopener">
@@ -204,76 +228,196 @@ footer .links a{color:var(--fg2)}
     <span title="prize contender">🟢</span>
     <span class="dim">KAOS competing <strong style="color:var(--fg)">autonomously</strong> · score 1.02 (↑ from 0.93) · view leaderboard →</span>
   </a>
-  <p class="arc-as">Public standing as of Jul 11, 2026 — entered solo by <code>canivel</code>, run by KAOS itself.</p>
+  <p class="arc-as">Public standing as of Jul 11, 2026 — entered solo by <code>canivel</code>, run by KAOS itself. The harness, doing the competing.</p>
 
   <div class="shot">
     <img src="docs/demos/kaos_mh_full_demo.gif" alt="KAOS Meta-Harness: a text classifier improves from 45% to 87% accuracy across 10 automated search iterations, in the terminal">
-    <div class="cap">Meta-Harness: 45% → 87% classifier accuracy in 10 automated iterations · <code>uv run kaos mh search</code></div>
+    <div class="cap">Harness engineering, automated: 45% → 87% classifier accuracy in 10 search iterations · <code>uv run kaos mh search</code></div>
   </div>
 </div>
 </header>
 
-<!-- ── Research ── -->
-<section id="research">
+<!-- ── The harness era ── -->
+<section id="era">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow">Research Synthesis</div>
-    <h2>Not invented here. Curated from the best.</h2>
-    <p>The best ideas for safe, reliable, capable agents already exist — they just live in scattered papers and repos. KAOS picks the strongest solution to each hard problem, implements it faithfully, and makes it compose.</p>
+    <div class="eyebrow">The harness era</div>
+    <h2>2026 is the year "harness engineering" got a name.</h2>
+    <p>KAOS has been building on this premise since v0.1 — and it answers the critique the discourse hasn't solved.</p>
   </div>
-  <div class="pills">
-    <a class="pill" href="https://arxiv.org/abs/2604.08224"><b>Skill Externalization</b><span>arXiv:2604.08224 · v0.7</span></a>
-    <a class="pill" href="https://github.com/thedotmack/claude-mem"><b>Cross-agent Memory (FTS5)</b><span>claude-mem · v0.6</span></a>
-    <a class="pill" href="https://arxiv.org/abs/2604.07988"><b>SharedLog consensus</b><span>LogAct arXiv:2604.07988 · v0.6</span></a>
-    <a class="pill" href="https://arxiv.org/abs/2604.01658"><b>CORAL co-evolution</b><span>arXiv:2604.01658 · v0.6</span></a>
-    <a class="pill" href="https://arxiv.org/abs/2604.01687"><b>Surrogate Verifier</b><span>EvoSkills arXiv:2604.01687 · v0.5</span></a>
-    <a class="pill" href="https://github.com/milla-jovovich/mempalace"><b>AAAK compaction</b><span>MemPalace · v0.5</span></a>
-    <a class="pill" href="https://arxiv.org/abs/2603.28052"><b>Meta-Harness search</b><span>arXiv:2603.28052 · v0.2</span></a>
-    <a class="pill" href="https://en.wikipedia.org/wiki/Donald_O._Hebb"><b>Neuroplasticity (Hebbian)</b><span>Hebb 1949 · v0.8</span></a>
-    <a class="pill" href="https://github.com/canivel/kaos"><b>Falsifiable-eval discipline</b><span>KAOS core · v0.9</span></a>
+  <div class="era-grid">
+    <div class="era">
+      <q>A decent model with a great harness beats a great model with a bad harness.</q>
+      <div class="who"><a href="https://addyosmani.com/blog/agent-harness-engineering/" target="_blank" rel="noopener">Addy Osmani, "Agent Harness Engineering"</a> · Apr 2026</div>
+    </div>
+    <div class="era">
+      <q>Anytime you find an agent makes a mistake, you engineer a solution such that the agent never makes that mistake again.</q>
+      <div class="who"><a href="https://mitchellh.com/writing/my-ai-adoption-journey" target="_blank" rel="noopener">Mitchell Hashimoto, naming "harness engineering"</a> · Feb 2026</div>
+    </div>
+    <div class="era gap">
+      <q>What's missing from the story: verification that the change actually helped.</q>
+      <div class="who">The open critique of harness engineering (<a href="https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html" target="_blank" rel="noopener">Böckeler, martinfowler.com</a>, paraphrased) — <strong style="color:var(--fg)">exactly the gap KAOS closes</strong></div>
+    </div>
   </div>
 </div>
 </section>
 
-<!-- ── Capabilities ── -->
-<section id="capabilities">
+<!-- ── Moat ── -->
+<section id="moat" class="moat">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow">What it does</div>
-    <h2>One framework. Every solved problem.</h2>
-    <p>Each capability traces to a proven source. Nothing is invented that doesn't need to be.</p>
+    <div class="eyebrow">The moat</div>
+    <h2>Four things no other harness combines.</h2>
+    <p>Each pillar is verifiable in the repo today — and each claim below was checked against the primary docs of nine competing frameworks (July 2026).</p>
   </div>
-  <div class="cap-grid">
-    <div class="cap-card"><h3>Isolated agent runtimes</h3><p>Every agent gets its own virtual filesystem, KV state, and full event journal — all in one auditable SQLite file. Checkpoint, restore, diff, time-travel.</p><div class="src">KAOS core · v0.1</div></div>
-    <div class="cap-card"><h3>Cross-agent memory &amp; skills</h3><p>FTS5/BM25 memory any agent can search; parameterized skill templates that accumulate reliability. Lessons learned on one project surface on the next.</p><div class="src">v0.6 · v0.7</div></div>
-    <div class="cap-card"><h3>Consensus coordination</h3><p>SharedLog intent → vote → decide. Agents coordinate through an append-only log instead of acting unilaterally.</p><div class="src">LogAct · v0.6</div></div>
-    <div class="cap-card"><h3>Neuroplasticity</h3><p>Hebbian associations, weighted retrieval, failure fingerprints, and offline consolidation — the library rewires itself as a side effect of normal use.</p><div class="src">v0.8.1</div></div>
-    <div class="cap-card"><h3>Strategy optimization</h3><p>Meta-Harness treats prompt/harness engineering as search: an evolutionary proposer reads execution traces and proposes structurally better harnesses.</p><div class="src">arXiv:2603.28052 · v0.2+</div></div>
-    <div class="cap-card"><h3>Failure intelligence</h3><p>Reasoning-class taxonomy, a critical-step localizer that points at the earliest decisive error, and systemic alerts when many agents hit the same fingerprint.</p><div class="src">v0.8.3</div></div>
+  <div class="moat-grid">
+    <div class="pillar">
+      <div class="k">01 · Proof, not vibes</div>
+      <h3>The only falsifiable-eval gate in any framework</h3>
+      <p>Every KAOS mechanism candidate faces a probe whose kill gates are written and <strong style="color:var(--fg)">sha256-locked before any feature code exists</strong>. The harness refuses to run on an edited lock. A falsification self-test proves the feature <em>can lose</em> — then the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. Others ship eval scores; KAOS ships a kill-switch.</p>
+      <div class="proof">10 candidates evaluated since v0.7 · <b>0 shipped on hope</b> · every verdict on disk with its audit trail</div>
+    </div>
+    <div class="pillar">
+      <div class="k">02 · Flight recorder</div>
+      <h3>Auditable by construction, not by add-on</h3>
+      <p>One SQLite file holds every agent's virtual filesystem, an <strong style="color:var(--fg)">append-only journal of every event and tool call</strong>, content-addressed blobs, and checkpoints with byte-exact restore. Audit isn't a telemetry exporter you bolt on — it's the storage engine. Any SQLite client, or plain SQL, answers "what did the agent do, and why?"</p>
+      <div class="proof">Read-only enforced at the SQLite parse layer · checkpoint time-travel · <b>copy one file = full forensic snapshot</b></div>
+    </div>
+    <div class="pillar">
+      <div class="k">03 · Compounds with use</div>
+      <h3>Memory that earns its ranking</h3>
+      <p>Neuroplasticity: every skill outcome, memory retrieval, and failure updates usage statistics — Wilson-bound success rates, Hebbian co-occurrence, recency decay. Retrieval reranks on <em>evidence of what actually worked</em>, and consolidation prunes what didn't. Not an LLM rewriting its own notes — arithmetic on recorded outcomes.</p>
+      <div class="proof">Measured <b>+10pp retrieval accuracy</b>, +15µs hot-path overhead — benchmark committed next to the claim</div>
+    </div>
+    <div class="pillar">
+      <div class="k">04 · Sovereign by default</div>
+      <h3>Local-first. Nothing phones home.</h3>
+      <p>No mandatory cloud, no default telemetry upload, no SaaS eval dependency, no vendor login. Five model providers — Anthropic, OpenAI-compatible, Claude Code, Agent SDK, and fully-local vLLM — behind one router. Your agents, your data, your single file, your infrastructure.</p>
+      <div class="proof">Cross-agent search: <b>9ms p95 at 10,000 agents</b> in one file — measured, bench in repo</div>
+    </div>
   </div>
 </div>
 </section>
 
-<!-- ── The Discipline ── -->
-<section id="discipline" class="disc">
+<!-- ── Compare ── -->
+<section id="compare">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow" style="color:var(--pink)">The differentiator</div>
-    <h2>Nothing ships without a probe it could fail.</h2>
-    <p>Most frameworks add mechanisms and report the demo that worked. KAOS evaluates every mechanism candidate against a pre-registered, hash-locked, falsifiable probe <em>before</em> shipping it — and reports the verdict either way.</p>
+    <div class="eyebrow">Honest comparison</div>
+    <h2>Where each harness stands.</h2>
+    <p>Verified from primary docs, July 2026. Competitors' real strengths are conceded below the table — a comparison that hides them wouldn't survive readers who use these tools.</p>
   </div>
-  <div class="disc-stats">
-    <div class="stat"><div class="n">9</div><div class="l">candidates evaluated</div></div>
-    <div class="stat"><div class="n">0</div><div class="l">shipped on hope</div></div>
-    <div class="stat"><div class="n">701</div><div class="l">tests passing</div></div>
-    <div class="stat"><div class="n">125×</div><div class="l">measured write speedup</div></div>
+  <div class="cmp-scroll">
+  <table class="cmp">
+    <thead><tr>
+      <th>Framework</th>
+      <th>Pre-registered falsifiable gates</th>
+      <th>Single-file audit journal + time-travel</th>
+      <th>Usage-tuned retrieval</th>
+      <th>Local-first, no default phone-home</th>
+      <th>License</th>
+    </tr></thead>
+    <tbody>
+      <tr class="kaos"><td>KAOS</td><td class="y">✓ hash-locked, self-falsifying</td><td class="y">✓ VFS + journal + checkpoints, one SQLite file</td><td class="y">✓ measured (+10pp)</td><td class="y">✓ incl. local models</td><td>MIT</td></tr>
+      <tr><td><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a></td><td class="n">—</td><td class="n">— <sup>1</sup></td><td class="part">◐ agent-curated learning loop</td><td class="y">✓ (hosted tiers optional)</td><td>MIT</td></tr>
+      <tr><td><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph</a></td><td class="n">— eval via LangSmith SaaS</td><td class="part">◐ checkpoint time-travel; no event journal</td><td class="n">—</td><td class="y">✓ (platform is SaaS)</td><td>MIT</td></tr>
+      <tr><td><a href="https://adk.dev/evaluate/">Google ADK</a></td><td class="part">◐ eval thresholds, no pre-registration</td><td class="n">—</td><td class="n">—</td><td class="y">✓ (Vertex is the upsell)</td><td>Apache-2.0</td></tr>
+      <tr><td><a href="https://docs.letta.com/concepts/letta">Letta</a></td><td class="n">—</td><td class="part">◐ .af state snapshot; not an action journal</td><td class="part">◐ LLM self-editing memory</td><td class="part">◐ Postgres self-host; cloud is the push</td><td>Apache-2.0</td></tr>
+      <tr><td><a href="https://docs.crewai.com/concepts/testing">CrewAI</a></td><td class="n">— scores, no gate</td><td class="n">— logging is Enterprise-tier</td><td class="part">◐ memory dedup/consolidation</td><td class="y">✓ (AMP is SaaS)</td><td>MIT</td></tr>
+      <tr><td><a href="https://openai.github.io/openai-agents-python/tracing/">OpenAI Agents SDK</a></td><td class="n">— evals on OpenAI platform</td><td class="n">—</td><td class="n">—</td><td class="n">— tracing to OpenAI by default</td><td>MIT</td></tr>
+      <tr><td><a href="https://code.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK</a></td><td class="n">—</td><td class="part">◐ JSONL transcripts; DIY audit via hooks</td><td class="n">—</td><td class="n">— requires cloud LLM API</td><td>Commercial ToS</td></tr>
+      <tr><td><a href="https://huggingface.co/docs/smolagents/tutorials/secure_code_execution">smolagents</a></td><td class="n">—</td><td class="n">— no built-in persistence</td><td class="n">—</td><td class="y">✓</td><td>Apache-2.0</td></tr>
+    </tbody>
+  </table>
   </div>
-  <div class="disc-steps">
-    <div class="step"><div class="k">01 · Pre-register</div><h4>Gates before code</h4><p>Kill gates are written into an <code>ISA.lock.json</code> and sha256-locked <em>before</em> any feature code exists. The harness refuses to run on an edited lock — goalpost moves are mechanically impossible.</p></div>
-    <div class="step"><div class="k">02 · Falsify</div><h4>Prove it can lose</h4><p>A self-test substitutes the feature with its baseline and confirms the gate fires. A harness in which the feature <em>can't</em> lose is inadmissible; its later "pass" is meaningless.</p></div>
-    <div class="step"><div class="k">03 · Report honestly</div><h4>ACCEPT / REJECT / VOID</h4><p>The binding verdict is committed as-is. No retune-and-rerun. REJECT and VOID are successful outcomes — they keep unproven mechanisms out of the framework.</p></div>
+  <p class="cmp-notes">✓ shipped in-framework · ◐ partial or different approach · — not found in primary docs as of July 2026 (corrections welcome — open an issue). <sup>1</sup> Hermes documents command-approval and container isolation; no append-only audit journal or checkpoint/restore appears in its docs. <strong style="color:var(--fg2)">Credit where due:</strong> LangGraph's <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpoint time-travel</a>, ADK's <a href="https://adk.dev/evaluate/">eval thresholds</a>, smolagents' <a href="https://huggingface.co/docs/smolagents/tutorials/secure_code_execution">sandboxed executors</a>, Letta's <a href="https://docs.letta.com/guides/agents/architectures/sleeptime/">sleep-time memory agents</a>, and Hermes' ecosystem reach are genuinely good. KAOS's bet is different: <em>verification and auditability are the product, not features.</em></p>
+</div>
+</section>
+
+<!-- ── Examples ── -->
+<section id="examples">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Real code</div>
+    <h2>Three examples, straight from the repo.</h2>
+    <p>Runnable today — these are condensed from <a href="https://github.com/canivel/kaos/tree/main/examples">examples/</a>, not pseudo-code.</p>
   </div>
-  <p class="disc-note">The apparatus that has rejected eight of nine mechanism ideas is itself a shipped, tested primitive: <code>kaos eval probe {run,verify,falsify}</code>. KAOS is the first agent framework that ships its own kill-switch. <a href="blog/kaos-v0.9.0.html">Read the v0.9 story →</a></p>
+  <div class="ex-grid">
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">01</span><h3>Isolated agents, audit, and time-travel — in 12 lines</h3><span class="d"><a href="https://github.com/canivel/kaos/blob/main/examples/library_basics.py">library_basics.py</a></span></div>
+      <pre><code><span class="k">from</span> kaos <span class="k">import</span> Kaos
+
+db = Kaos(<span class="s">"team.db"</span>)                    <span class="c"># one SQLite file — the whole runtime</span>
+
+alice = db.spawn(<span class="s">"alice"</span>, config={<span class="s">"role"</span>: <span class="s">"researcher"</span>})
+bob   = db.spawn(<span class="s">"bob"</span>,   config={<span class="s">"role"</span>: <span class="s">"implementer"</span>})
+
+db.write(alice, <span class="s">"/notes.md"</span>, <span class="k">b</span><span class="s">"# Findings\n- auth.py: 3 bugs"</span>)
+db.read(bob, <span class="s">"/notes.md"</span>)                <span class="c"># FileNotFoundError — isolation is enforced</span>
+
+cp = db.checkpoint(alice, label=<span class="s">"before-refactor"</span>)
+db.write(alice, <span class="s">"/notes.md"</span>, <span class="k">b</span><span class="s">"# Findings\n- 5 bugs total"</span>)
+db.restore(alice, cp)                    <span class="c"># byte-exact time travel</span>
+
+db.query(<span class="s">"SELECT event_type, COUNT(*) FROM events GROUP BY 1"</span>)  <span class="c"># audit = SQL</span></code></pre>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">02</span><h3>Prove your harness change actually helps</h3><span class="d"><a href="https://github.com/canivel/kaos/blob/main/examples/falsifiable_probe.py">falsifiable_probe.py</a></span></div>
+      <pre><code><span class="k">from</span> kaos.eval.harness <span class="k">import</span> Probe, GateOutcome, bootstrap_diff_ci
+
+<span class="k">class</span> <span class="hl">FewshotProbe</span>(Probe):
+    lock_path    = <span class="s">"ISA.lock.json"</span>        <span class="c"># kill gates, written BEFORE any code</span>
+    known_sha256 = {<span class="s">"5aa9c10d…"</span>: <span class="s">"v1"</span>}    <span class="c"># edited lock → harness refuses to run</span>
+
+    <span class="k">def</span> gates(self, arms):
+        md, lo, hi = bootstrap_diff_ci(arms[<span class="s">"FULL"</span>].labels({<span class="s">"hard"</span>}),
+                                       arms[<span class="s">"B0"</span>].labels({<span class="s">"hard"</span>}))
+        <span class="k">return</span> [GateOutcome(<span class="s">"G1"</span>, <span class="s">"beats baseline"</span>,
+                            passed=md &gt;= 0.10 <span class="k">and</span> lo &gt; 0.0, kill=<span class="k">True</span>,
+                            detail=<span class="k">f</span><span class="s">"diff={md:+.3f} lo={lo:+.3f}"</span>)]
+
+probe = FewshotProbe()
+_, verdict = probe.falsify()   <span class="c"># FULL := B0 must emit [KILL] — or the probe is inadmissible</span>
+result = probe.run(out_dir=<span class="s">"."</span>)  <span class="hl"># binding ACCEPT / REJECT / VOID. No retune.</span></code></pre>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">03</span><h3>Drive it from your editor, terminal, or CI</h3><span class="d">58 MCP tools · CLI <code>--json</code> everywhere</span></div>
+      <pre><code><span class="c"># From Claude Code / Cursor / any MCP client — natural language:</span>
+<span class="s">with kaos, review my payments module — run a security agent
+and a test-writing agent in parallel</span>
+
+<span class="c"># Or the CLI:</span>
+kaos parallel -t security <span class="s">"find vulnerabilities in auth.py"</span> \
+              -t tests    <span class="s">"write unit tests for auth.py"</span>
+kaos ui                                  <span class="c"># Gantt of every agent, live events</span>
+kaos eval probe run --probe my.bench:MyProbe --out-dir out/   <span class="c"># exits ≠0 on REJECT — CI-gate your harness</span>
+kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 1"</span></code></pre>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ── Enterprise ── -->
+<section id="enterprise">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Enterprise</div>
+    <h2>Built for the questions procurement actually asks.</h2>
+    <p>Gartner predicts <a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">40%+ of agentic AI projects will be canceled by 2027</a> — costs, unclear value, inadequate risk controls. KAOS's architecture answers each failure mode directly.</p>
+  </div>
+  <div class="ent-grid">
+    <div class="ent"><div class="req">EU AI Act · Art. 12</div><h4>Automatic, tamper-evident logging</h4><p>High-risk AI systems must automatically record events over their lifetime, queryable by an inspector — binding Aug 2026. KAOS's append-only event journal in SQLite <em>is</em> that record: every tool call, file write, and decision, answerable in SQL.</p><div class="src"><a href="https://artificialintelligenceact.eu/article/12/">Art. 12 text</a></div></div>
+    <div class="ent"><div class="req">Deployment gates</div><h4>Eval-gated releases, not spot checks</h4><p>The 2026 norm: promotion decided by regression evals in CI. <code>kaos eval probe run</code> exits non-zero on REJECT/VOID — your agent-harness changes gate exactly like code. Pre-registration makes the gate tamper-evident.</p><div class="src"><a href="https://www.ibm.com/think/topics/ai-agent-testing">IBM on agent testing</a></div></div>
+    <div class="ent"><div class="req">Data sovereignty</div><h4>On-prem is the default, not a tier</h4><p>Sovereign deployment is now a first-class procurement gate in finance, health, and public sector. KAOS runs entirely on your metal — local models included — and the whole estate is one file you can place, move, or destroy under your own regime.</p><div class="src"><a href="https://atlan.com/know/ai-agent/data-sovereignty-for-ai-agents/">sovereignty criteria</a></div></div>
+    <div class="ent"><div class="req">Observability</div><h4>Execution <em>and</em> intent</h4><p>Regulators want what the agent did and why. KAOS records both: the tool-call journal (execution) and the SharedLog's intent → vote → decide records (intent) — consensus before consequential actions, on the record.</p><div class="src"><a href="https://zenity.io/blog/security/auditors-regulators-ai-agents">auditor expectations</a></div></div>
+    <div class="ent"><div class="req">Kill switch</div><h4>Terminate and prove you terminated</h4><p>Most orgs reportedly can't quickly stop a misbehaving agent. <code>kaos kill &lt;id&gt;</code> is immediate; the kill lands in the journal; systemic alerts halt auto-spawns when many agents hit the same failure fingerprint.</p><div class="src"><a href="https://www.cisoplatform.com/profiles/blogs/ai-agent-governance-the-checklist-a-room-full-of-cisos-actually-a">CISO checklist</a></div></div>
+    <div class="ent"><div class="req">Cost control</div><h4>Token discipline, measured</h4><p>Agent budgets broke every model in 2026. KAOS tracks tokens and cost per tool call in the journal (SQL your spend), and AAAK context compaction delivers a measured 57% token saving at zero quality loss on its benchmark.</p><div class="src"><a href="https://siliconangle.com/2026/06/10/finops-ai-goes-beyond-token-economics-agentic-costs-emerge-finopsx/">FinOps 2026</a></div></div>
+  </div>
+  <p class="ent-line">KAOS isn't a demo framework that hopes to grow up — it runs daily inside a real enterprise data &amp; AI organization, built by <a href="https://github.com/canivel">an engineering leader</a> who has to answer these questions for a living. It was built for audits, not just demos.</p>
 </div>
 </section>
 
@@ -368,8 +512,8 @@ footer .links a{color:var(--fg2)}
 <!-- ── CTA ── -->
 <section class="cta">
 <div class="wrap">
-  <h2>Join the synthesis.</h2>
-  <p>Open source, local-first, self-improving. Clone it, run the demo, read the code — everything is on GitHub.</p>
+  <h2>The harness is the product.<br>Make yours provable.</h2>
+  <p>Open source, MIT, local-first. Clone it, run the demo, read the verdicts — everything, including the rejections, is on GitHub.</p>
   <div class="btns">
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">Star on GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md" class="btn btn-ghost">Read the tutorial</a>
@@ -383,10 +527,10 @@ footer .links a{color:var(--fg2)}
     <a href="https://github.com/canivel/kaos">GitHub</a>
     <a href="https://github.com/canivel/kaos/blob/main/CHANGELOG.md">Changelog</a>
     <a href="https://github.com/canivel/kaos/blob/main/docs/tutorial-local-agents.md">Tutorial</a>
-    <a href="#research">Research</a>
+    <a href="#compare">Compare</a>
     <a href="#blog">Blog</a>
   </div>
-  <p>KAOS — Kernel for Agent Orchestration &amp; Sandboxing — by <a href="https://github.com/canivel">Danilo Canivel</a>. Local-first, MIT-licensed.</p>
+  <p>KAOS — Kernel for Agent Orchestration &amp; Sandboxing — by <a href="https://github.com/canivel">Danilo Canivel</a>. Local-first, MIT-licensed. Comparison data verified from primary sources, July 2026 — corrections welcome via GitHub issues.</p>
 </div>
 </footer>
 
