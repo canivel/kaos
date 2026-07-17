@@ -1,15 +1,15 @@
-# KAOS
+# KAOS — the harness that proves itself
 
-**The living synthesis of agentic AI research.** Eight research breakthroughs — neuroplasticity that rewires the library automatically, skills that compound across projects, memory that learns, coordination that requires consensus, context that compresses without loss, agents that co-evolve, failures diagnosed automatically, strategies optimized continuously — unified in one framework. Safe, reliable, and production-grade by default. Self-improving by design.
+**A local-first multi-agent harness.** Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use (neuroplasticity). And it is the only framework whose own mechanisms must pass **pre-registered, falsifiable kill gates** before they ship. Measured, not claimed.
 
 [![Version](https://img.shields.io/badge/version-0.9.2-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
-[![Research](https://img.shields.io/badge/research%20integrations-8-brightgreen)]()
-[![Neuroplasticity](https://img.shields.io/badge/neuroplasticity-v0.8.1-fd79a8)]()
+[![Discipline](https://img.shields.io/badge/mechanisms%20evaluated-10%20·%200%20shipped%20on%20hope-fd79a8)]()
+[![Research](https://img.shields.io/badge/research%20integrations-9-brightgreen)]()
 [![MCP tools](https://img.shields.io/badge/MCP%20tools-58-00DC82)]()
 
-> KAOS doesn't build from scratch — it identifies the best solution to each hard problem in agentic AI and integrates it faithfully. Every capability traces back to a proven paper or open-source project. We add new integrations as we find synergy and reason to include them.
+> The industry spent 2026 agreeing that [the harness matters more than the model](https://addyosmani.com/blog/agent-harness-engineering/). KAOS was built on that premise — it synthesizes the strongest published solution to each hard problem in agentic AI (every capability traces to a paper or OSS project), and it answers the critique the harness-engineering discourse hasn't solved: **verification that a harness change actually helped.** See [how it compares](https://canivel.github.io/kaos/#compare) to Hermes, LangGraph, ADK, Letta, CrewAI, and the rest.
 
 ![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
 
@@ -71,7 +71,10 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 | Problem | Best-in-class solution | Source | Since |
 |---|---|---|---|
-| Library stays static as it's used | Neuroplasticity: Hebbian associations, weighted search, failure fingerprints, automatic consolidation — fires inline on every skill use, memory hit, and agent completion | KAOS core | **v0.8.0 🆕** |
+| Harness changes ship on vibes | **Falsifiable-eval primitive** — pre-registered, sha256-locked kill gates + falsification self-test + binding ACCEPT/REJECT/VOID verdicts (`kaos eval probe`) | KAOS core | **v0.9.0 🆕** |
+| "What did we already try?" is a grep | **Experiments journal** — every probe/benchmark run recorded with git sha, lock hash, arms, gates, verdict (`kaos experiment`) | KAOS core | **v0.9.0 🆕** |
+| Failures are counted, not understood | Reasoning-class failure taxonomy + **critical-step localizer** (earliest decisive error, 5/5 planted bugs within ±1 step) | [arXiv:2509.25370](https://arxiv.org/abs/2509.25370) + KAOS core | v0.8.3 |
+| Library stays static as it's used | Neuroplasticity: Hebbian associations, weighted search, failure fingerprints, automatic consolidation — fires inline on every skill use, memory hit, and agent completion | KAOS core | v0.8.0 |
 | Agents start on under-specified tasks | Dynamic intake — LLM-analyzed clarifying questions (0 or more, no fixed count) | KAOS core | v0.7.1 |
 | Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | v0.7.0 |
 | Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) | v0.6.0 |
@@ -82,6 +85,46 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 | Strategies don't improve | Evolutionary proposer reads execution traces | [Meta-Harness arXiv:2603.28052](https://arxiv.org/abs/2603.28052) | v0.2.0 |
 | Agent isolation is convention | Enforced per-agent VFS + audit trail | KAOS core | v0.1.0 |
 | Agent crashes lose progress | Checkpoint / restore / diff | KAOS core | v0.1.0 |
+
+---
+
+## The discipline — nothing ships without a probe it could fail
+
+Most frameworks add mechanisms and report the demo that worked. Every KAOS mechanism candidate faces a probe whose kill gates are written and **sha256-locked before any feature code exists** — the harness refuses to run on an edited lock, a falsification self-test proves the feature *can lose*, and the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. **Ten candidates evaluated since v0.7; zero shipped on hope** — every verdict is on disk with its audit trail (see `demo_synthesis_consolidation_bench/`, `demo_action_realization_bench/`).
+
+The apparatus is itself a shipped, tested primitive:
+
+```python
+from kaos.eval.harness import Probe, GateOutcome, bootstrap_diff_ci
+
+class MyProbe(Probe):
+    lock_path    = "ISA.lock.json"        # kill gates, written BEFORE any code
+    known_sha256 = {"5aa9c10d...": "v1"}  # edited lock → harness refuses to run
+
+    def gates(self, arms):
+        md, lo, hi = bootstrap_diff_ci(arms["FULL"].labels({"hard"}),
+                                       arms["B0"].labels({"hard"}))
+        return [GateOutcome("G1", "beats baseline",
+                            passed=md >= 0.10 and lo > 0.0, kill=True,
+                            detail=f"diff={md:+.3f} lo={lo:+.3f}")]
+
+probe = MyProbe()
+_, verdict = probe.falsify()     # FULL := B0 must emit [KILL] — else inadmissible
+result = probe.run(out_dir=".")  # binding ACCEPT / REJECT / VOID. No retune.
+```
+
+```bash
+kaos eval probe falsify --probe my.bench:MyProbe          # prove the harness can kill
+kaos eval probe run     --probe my.bench:MyProbe --out-dir out/   # exits ≠0 on REJECT/VOID → CI-gate it
+kaos eval probe verify  --probe my.bench:MyProbe --results out/results.json
+
+kaos experiment list --verdict-prefix REJECT              # what have we tried? (journaled w/ git sha + lock hash)
+kaos experiment compare 41 42                             # what changed since the last run?
+
+kaos doctor proposer                                      # smoke every provider: ok/stalled/wall-timeout
+```
+
+Runnable end-to-end example: [`examples/falsifiable_probe.py`](examples/falsifiable_probe.py). The story: [the kill-switch primitive →](https://canivel.github.io/kaos/blog/kaos-v0.9.0.html)
 
 ---
 
@@ -404,7 +447,7 @@ results = asyncio.run(ccr.run_parallel([
 | [Dashboard](docs/dashboard.md) | Gantt timeline, agent inspector, live events |
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
-| [CLI Reference](docs/cli-reference.md) | Every command and flag |
+| [CLI Reference](docs/cli-reference.md) | Every command and flag — including `kaos eval`, `kaos experiment`, `kaos doctor` (v0.9) |
 | [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 58 tools |
 | [Neuroplasticity](docs/neuroplasticity.md) | Inline plasticity, failure intelligence, measured gains + overhead |
 | [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |
@@ -412,7 +455,7 @@ results = asyncio.run(ccr.run_parallel([
 | [Skill Library](docs/skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](docs/shared-log.md) | LogAct intent/vote/decide coordination protocol |
 | [Architecture](docs/architecture.md) | Internals, subsystem design |
-| [Schema](docs/schema.md) | All 17 SQLite tables + 2 FTS5 indexes (schema v6) |
+| [Schema](docs/schema.md) | All 26 SQLite tables + 2 FTS5 indexes (schema v9) |
 | [Deployment](docs/deployment.md) | vLLM, production config |
 
 Full docs index → [`docs/`](docs/)
@@ -422,6 +465,7 @@ Full docs index → [`docs/`](docs/)
 ## Examples
 
 See [`examples/`](examples/) for:
+- `falsifiable_probe.py` — the v0.9 discipline end-to-end: lock → falsify → run → verdict → journal
 - `code_review_swarm.py` — 4 agents review code in parallel
 - `parallel_refactor.py` — implement + test + document simultaneously
 - `self_healing_agent.py` — auto-restore on failure
