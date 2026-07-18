@@ -11,9 +11,12 @@ description and harness OUTPUT but not the harness SOURCE CODE. This
 prevents confirmation bias (rationalizing the code's approach instead
 of judging output quality).
 
-The verifier can work in two modes:
-- LLM mode: uses the configured provider for deep analysis
-- Heuristic mode: pattern matching when no LLM is available (default)
+Mode: heuristic pattern-matching over outputs (deterministic, drift-free).
+An LLM-assisted deep-analysis mode is planned but NOT implemented — the
+``router`` constructor arg is accepted for forward compatibility and is
+currently unused (see docs/roadmap/v0.10-candidates.md,
+metaharness-loop-repair: "implement or remove"). Do not pass a router
+expecting different behavior today.
 """
 
 from __future__ import annotations
@@ -94,7 +97,8 @@ class SurrogateVerifier:
     def __init__(self, router=None):
         """
         Args:
-            router: GEPARouter for LLM-based analysis. If None, uses heuristic mode.
+            router: Reserved for a future LLM-assisted mode; currently UNUSED.
+                Diagnosis is heuristic-only regardless of this argument.
         """
         self.router = router
 

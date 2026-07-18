@@ -200,7 +200,7 @@ The web dashboard shows each execution wave as a **Gantt timeline**: one horizon
 
 ## Model providers
 
-KAOS routes every inference call through the GEPA router, which supports **5 providers** (raw `httpx` under the hood — no OpenAI SDK, no LiteLLM, no vendor lock-in):
+KAOS routes every inference call through the GEPA router — **G**eneralized **E**xecution **P**lanning &amp; **A**llocation: a task-complexity classifier plus a routing table, with retry/fallback and wall-clock ceilings. (Naming note: it is *not* the GEPA genetic-Pareto prompt-evolution algorithm — no prompt optimization happens in the router.) It supports **5 providers** (raw `httpx` under the hood — no OpenAI SDK, no LiteLLM, no vendor lock-in):
 
 | Provider | How it's called | API key | Typical use |
 |---|---|---|---|
@@ -242,12 +242,22 @@ All three are exposed as MCP tools too (see below).
 
 ## Neuroplasticity — the library self-organizes as it's used
 
-Every skill application, memory retrieval, and agent completion fires a
-small plasticity hook that updates the library **inline** — like synaptic
-plasticity. Every N completions (default 25), a lightweight consolidation
-pass runs in-process — like sleep consolidation.
+Two timescales, deliberately separated (like synapses vs. sleep):
 
-No daemon to start. No command to remember. It just happens.
+- **Inline (µs-cheap):** every skill application, memory retrieval, and
+  outcome writes its raw telemetry row (`skill_uses`, `memory_hits`) in the
+  caller's own transaction. The inline hooks themselves are intentionally
+  no-ops on the hot path — no graph updates in the request path, ever.
+- **Batch (at completion):** when an agent completes (and every N
+  completions, default 25), the Hebbian association graph is rebuilt
+  set-based and a consolidation pass generates promote/prune/merge
+  **proposals**. Automatic consolidation is proposal-only by design —
+  applying structural changes is always an explicit
+  `kaos dream consolidate --apply`.
+
+No daemon to start. No command to remember. Telemetry just accumulates;
+structure changes only at the batch boundary, and destructive changes only
+when you say so.
 
 ```bash
 kaos dream run [--dry-run|--apply]                  # manual full cycle (7 phases)
@@ -316,6 +326,15 @@ engagements with consistent outcome feedback will see compounding gains.
 
 Run it yourself: `uv run python demo_neuroplasticity_bench/run.py`.
 Raw numbers: [`results.json`](demo_neuroplasticity_bench/results.json).
+
+**Small-n honesty:** at 10 queries, +10 pp is literally one flipped query.
+The non-adversarial companion bench
+([`demo_realistic_retrieval_bench/`](demo_realistic_retrieval_bench/):
+15 natural-language queries, 40 skills, 120 episodes) measures
+**73.3% → 86.7% (+13.3 pp)** — two flipped queries. Both are committed,
+reproducible, and small; a larger-n rerun under the v0.10
+cluster-bootstrap protocol is on the backlog. We'd rather disclose n
+than headline a point estimate.
 
 ### Measured overhead
 
