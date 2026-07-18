@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" font-family="Segoe UI,system-ui,sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7" fill="none" stroke="#6b6b80" stroke-width="1.4"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="920" height="360" rx="14" fill="#12121a" stroke="#ffffff14"/>
+  <text x="40" y="42" fill="#e4e4ef" font-size="19" font-weight="700">The probe lifecycle — nothing ships without a gate it could fail</text>
+
+  <!-- five stage boxes -->
+  <g font-size="12.5">
+    <!-- 1 PRE-REGISTER -->
+    <rect x="40" y="80" width="152" height="96" rx="10" fill="#1a1a26" stroke="#6c5ce7" stroke-width="1.6"/>
+    <text x="52" y="104" fill="#a29bfe" font-size="11" font-weight="700" letter-spacing="1">1 · PRE-REGISTER</text>
+    <text x="52" y="126" fill="#e4e4ef">Kill gates in</text>
+    <text x="52" y="142" fill="#e4e4ef">ISA.lock.json</text>
+    <text x="52" y="162" fill="#9494a8" font-size="11">sha256-locked, committed</text>
+
+    <!-- 2 FALSIFY -->
+    <rect x="222" y="80" width="152" height="96" rx="10" fill="#1a1a26" stroke="#fd79a8" stroke-width="1.6"/>
+    <text x="234" y="104" fill="#fd79a8" font-size="11" font-weight="700" letter-spacing="1">2 · FALSIFY</text>
+    <text x="234" y="126" fill="#e4e4ef">FULL := B0 must</text>
+    <text x="234" y="142" fill="#e4e4ef">emit [KILL]</text>
+    <text x="234" y="162" fill="#9494a8" font-size="11">proves the feature can lose</text>
+
+    <!-- 3 RUN -->
+    <rect x="404" y="80" width="152" height="96" rx="10" fill="#1a1a26" stroke="#18ffff" stroke-width="1.4"/>
+    <text x="416" y="104" fill="#18ffff" font-size="11" font-weight="700" letter-spacing="1">3 · RUN</text>
+    <text x="416" y="126" fill="#e4e4ef">All arms, blind</text>
+    <text x="416" y="142" fill="#e4e4ef">judge, gates</text>
+    <text x="416" y="162" fill="#9494a8" font-size="11">binding verdict, no retune</text>
+
+    <!-- 4 VERIFY -->
+    <rect x="586" y="80" width="152" height="96" rx="10" fill="#1a1a26" stroke="#ffd166" stroke-width="1.4"/>
+    <text x="598" y="104" fill="#ffd166" font-size="11" font-weight="700" letter-spacing="1">4 · VERIFY</text>
+    <text x="598" y="126" fill="#e4e4ef">Recompute from</text>
+    <text x="598" y="142" fill="#e4e4ef">results.json</text>
+    <text x="598" y="162" fill="#9494a8" font-size="11">against gate code at HEAD</text>
+
+    <!-- 5 JOURNAL -->
+    <rect x="768" y="80" width="112" height="96" rx="10" fill="#1a1a26" stroke="#00e676" stroke-width="1.4"/>
+    <text x="780" y="104" fill="#00e676" font-size="11" font-weight="700" letter-spacing="1">5 · JOURNAL</text>
+    <text x="780" y="126" fill="#e4e4ef">kaos</text>
+    <text x="780" y="142" fill="#e4e4ef">experiment log</text>
+    <text x="780" y="162" fill="#9494a8" font-size="11">git sha + lock hash</text>
+  </g>
+
+  <!-- arrows between boxes -->
+  <g stroke="#6b6b80" stroke-width="1.4" marker-end="url(#arr)">
+    <line x1="192" y1="128" x2="220" y2="128"/>
+    <line x1="374" y1="128" x2="402" y2="128"/>
+    <line x1="556" y1="128" x2="584" y2="128"/>
+    <line x1="738" y1="128" x2="766" y2="128"/>
+  </g>
+
+  <!-- verdict badges under RUN -->
+  <g font-size="11.5" font-weight="700">
+    <rect x="368" y="212" width="70" height="26" rx="13" fill="#0f2418" stroke="#00e676"/>
+    <text x="403" y="229" fill="#00e676" text-anchor="middle">ACCEPT</text>
+    <rect x="446" y="212" width="70" height="26" rx="13" fill="#2a1216" stroke="#ff6b6b"/>
+    <text x="481" y="229" fill="#ff6b6b" text-anchor="middle">REJECT</text>
+    <rect x="524" y="212" width="60" height="26" rx="13" fill="#26200f" stroke="#ffd166"/>
+    <text x="554" y="229" fill="#ffd166" text-anchor="middle">VOID</text>
+  </g>
+  <line x1="480" y1="176" x2="480" y2="210" stroke="#6b6b80" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="596" y="229" fill="#9494a8" font-size="11.5">REJECT and VOID are successful outcomes — they keep unproven mechanisms out.</text>
+
+  <!-- tamper rails -->
+  <g fill="#6b6b80" font-size="11">
+    <text x="40" y="292">⛔ edited lock → sha256 mismatch → harness refuses to run (goalpost moves are mechanically impossible)</text>
+    <text x="40" y="312">⛔ harness where the feature cannot lose → INADMISSIBLE — its later “pass” means nothing</text>
+    <text x="40" y="332">⛔ fewer runs than the lock’s declared power budget → verdict is VOID, not a weaker interval</text>
+  </g>
+</svg>

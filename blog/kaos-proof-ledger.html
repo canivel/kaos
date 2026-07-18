@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Proof Ledger: Two Months of KAOS, Measured — KAOS Blog</title>
+<meta name="description" content="From #47-with-a-0.43 to #39-in-the-silver-zone on ARC-AGI-3, autonomously. A 48-agent self-audit that found bugs in our own verdict instrument. A 125× storage win from a measurement, not a rewrite. An outside model that tried to kill our claims. Two months of KAOS, all on the record.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;--pink:#fd79a8;--amber:#ffd166;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2)}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2)}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li b,.post-body li strong{color:var(--fg)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+.fig{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.fig img{width:100%}
+.fig-cap{text-align:center;font-size:.8rem;color:var(--fg2);margin-top:.55rem;font-style:italic}
+
+/* AI image-generation placeholder */
+.imgen{margin:2rem 0;border:2px dashed rgba(253,121,168,.4);border-radius:12px;background:rgba(253,121,168,.04);padding:1.6rem 1.8rem}
+.imgen .t{font-family:var(--mono);font-size:.72rem;color:var(--pink);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:.6rem}
+.imgen .p{font-size:.88rem;color:var(--fg2);line-height:1.65;font-style:italic}
+.imgen .s{font-family:var(--mono);font-size:.72rem;color:#6b6b80;margin-top:.7rem}
+
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.83rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.76rem;text-transform:uppercase}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">&larr; Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<header class="post-header">
+  <span class="post-tag">Blog &mdash; July 18, 2026</span>
+  <h1>The proof ledger:<br>two months of KAOS, <em>measured</em></h1>
+  <p class="post-subtitle">a silver-zone climb on ARC-AGI-3 with the harness driving itself. a 48-agent panel that audited our own code and found bugs in our own verdict instrument. a 125&times; storage win that came from a measurement instead of a rewrite. and an outside model that tried to kill our claims &mdash; twice right, mostly wrong. everything on the record.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item">&middot; KAOS v0.9.2 &rarr; v0.10</span>
+    <span class="post-meta-item">&middot; 12 min read</span>
+    <span class="post-meta-item">&middot; <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a></span>
+  </div>
+</header>
+
+<article class="post-body">
+
+<!-- ═══════ AI IMAGE PLACEHOLDER: HERO ═══════ -->
+<div class="imgen">
+  <div class="t">&#9998; image-gen placeholder &middot; hero</div>
+  <div class="p">"A sleek aircraft flight recorder (black box, but in deep violet #6c5ce7) sitting on a dark desk, cracked open to reveal glowing SQLite database tables instead of tape reels — rows of tiny luminous ledger entries streaming out. Dark moody tech aesthetic, cinematic lighting, subtle cyan accents, no text."</div>
+  <div class="s">save as: blog/images/proof-ledger-hero.png &middot; replace this block with a .fig</div>
+</div>
+
+<p>the last time i wrote here, KAOS had just shipped v0.9 — the falsifiable-eval primitive, six candidates evaluated, zero mechanisms shipped. the honest question a reader could ask back then: <em>fine, you built a kill-switch. does any of this discipline actually cash out as capability?</em></p>
+
+<p>two months later i have an answer i didn't expect to have this fast, and it's sitting on a public leaderboard.</p>
+
+<h2>the harness, doing the competing</h2>
+
+<p>KAOS is entered in <a href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel">ARC-AGI-3 (ARC Prize 2026)</a> under my solo account — but i'm not the one competing. the meta-harness search loop proposes strategies, evaluates them, records what worked in the skill library, and submits. the same neuroplasticity and eval machinery described below is what's driving.</p>
+
+<div class="fig">
+  <img src="diagrams/kaos-arc-climb.svg" alt="Chart: KAOS's ARC-AGI-3 leaderboard percentile across four dates — top 4.3% on Jun 8 (rank 47, score 0.43), top 13% on Jul 10 after the field grew ~55% (rank 219, score 0.93), top 10.5% on Jul 11 (rank 177, score 1.02), and top 2.3% on Jul 18 (rank 39).">
+  <div class="fig-cap">score 0.43 &rarr; 1.02+, rank #47 &rarr; #39 while the field grew from ~1,100 to ~1,700 teams. silver zone on the public LB as of jul 18.</div>
+</div>
+
+<p>read the middle of that chart honestly: on jul 10 we were at <strong>#219</strong> — the field had grown ~55% and everyone got better. no excuses, the percentile got worse. then the harness kept doing what it does — measure, keep what survives, discard what doesn't — and eight days later it's <strong>#39 of ~1,700, top 2.3%</strong>. the score more than doubled from the june baseline. i tweak the setup occasionally; the iteration loop is KAOS's own.</p>
+
+<div class="callout"><strong>why this matters beyond a leaderboard:</strong> 2026 is the year the industry agreed <a href="https://addyosmani.com/blog/agent-harness-engineering/">the harness matters more than the model</a>. ARC-AGI-3 is the cleanest natural experiment i have: same models everyone else has access to, different harness. the climb is the harness delta, made visible.</div>
+
+<h2>the panel that audited us</h2>
+
+<p>in june i pointed KAOS's evaluation machinery at KAOS itself: a 48-agent scoping workflow — six code reviewers over every subsystem, five research scouts over the 2026 literature, and a 36-judge panel scoring every candidate on three lenses. every finding had to cite <code>file:line</code> it actually read.</p>
+
+<p>the uncomfortable headline: the reviewers found <strong>reproduced P0 bugs in our own verdict instrument</strong>. the blind judge's agreement statistic was computed as <code>x == x</code> — always 1.0, a dead gate. <code>verify()</code> crashed on the very results file our reference probe produces. a probe that registered zero kill-gates would auto-ACCEPT. and in the storage core: a version collision that broke delete-then-rewrite, and a reader path that held the writer lock for the whole database.</p>
+
+<p>we fixed all of it <em>red-first</em> — every fix started as a failing test on the broken code — and shipped it as v0.9.2 within days. the framework whose pitch is "verified reliability" had holes in its verifier. finding them ourselves, publishing them, and gating the fixes is the pitch working, not failing. it's also why i trust the instrument now.</p>
+
+<h2>the 125&times; that came from a measurement</h2>
+
+<p>i almost made a classic architecture mistake this summer. i was convinced the single-SQLite-file design would bottleneck — that every agent needed its own database, a data-vault-style federation of shards. it's the kind of rewrite that eats two quarters and feels visionary while you're doing it.</p>
+
+<p>the discipline said: measure first. so we built <code>demo_storage_scale_bench/</code> and ran the actual numbers at 1,000 and 10,000 agents under 8-thread contention:</p>
+
+<ul>
+  <li>cross-agent full-text search at 10,000 agents: <strong>9ms p95</strong> — ~55&times; under the panic line. shared structures don't degrade; the sharding premise was just false.</li>
+  <li>the real bottleneck was write-commit contention — <em>flat with scale</em>, which is the tell that it's fsync policy, not data volume.</li>
+  <li>one pragma (<code>synchronous=NORMAL</code>, SQLite's own recommendation for WAL): write p95 <strong>1,895ms &rarr; 15ms</strong>, throughput <strong>29 &rarr; 1,118 ops/s</strong>. zero lock errors.</li>
+</ul>
+
+<p><strong>the rewrite is dead — killed by a bench, not by a debate.</strong> a 125&times; win from one config line, and cross-agent memory, the hebbian graph, and the shared log all keep working because nothing got sharded. that's what "measured, not claimed" buys you: it protects you from your own architectural romances.</p>
+
+<div class="fig">
+  <img src="diagrams/kaos-flight-recorder.svg" alt="Diagram: one SQLite file (project.db, schema v9, 26 tables) with four compartments — isolated per-agent VFS, append-only event journal, checkpoints, content-addressed blobs — agents feeding events in on the left; on the right, three outputs: 'what did the agent do' answered by plain SQL, forensic snapshot by copying one file, rollback via kaos restore.">
+  <div class="fig-cap">the file that survived its own execution: the flight recorder, unsharded and 125&times; faster.</div>
+</div>
+
+<h2>an outside model tried to kill our claims</h2>
+
+<p>last week a reviewer running Kimi audited KAOS and sent a list titled, roughly, "where KAOS would actively mislead you." this is exactly the traffic we invite — so we ran every claim against source, same as any bug report. the ledger:</p>
+
+<table class="result-table">
+  <tr><th>claim</th><th>verdict</th></tr>
+  <tr><td>inline plasticity hooks are no-ops; the graph builds in batch</td><td class="good">CONFIRMED — the code was honest (deliberate two-timescale design), the README oversold it. rewritten.</td></tr>
+  <tr><td>"+10pp retrieval" headlines a 10-query bench — one flipped query</td><td class="good">CONFIRMED — n now disclosed everywhere, larger-n rerun queued under the new stats protocol.</td></tr>
+  <tr><td>verifier's "LLM mode" is documented but unimplemented</td><td class="good">CONFIRMED — docstring now says heuristic-only; implement-or-remove is on the v0.10 list.</td></tr>
+  <tr><td>the policies table is scaffold nothing consults</td><td class="bad">REFUTED — stale read; the consumer loop closed in v0.8.2 (<code>intent_auto()</code>).</td></tr>
+  <tr><td>the ARC simulation bench pretends to be performance signal</td><td class="bad">REFUTED — its README says "simulated" in the title line; the real signal is the kaggle leaderboard above.</td></tr>
+</table>
+
+<p>net: three real documentation-integrity bugs, fixed same-day; the strongest accusations didn't survive contact with the source. the detail i keep thinking about: <strong>in every confirmed case, the code was more honest than the docs.</strong> the two-timescale no-op design is something we <em>defended with a probe</em> back in the synthesis arc — and then the README drifted into marketing it as magic. docs rot toward flattery. instruments don't.</p>
+
+<h2>what shipping looks like under the discipline</h2>
+
+<p>everything above ran through the same machine, which since v0.9.1 is fully exposed as CLI + 58 MCP tools:</p>
+
+<div class="fig">
+  <img src="diagrams/kaos-probe-lifecycle.svg" alt="Flow diagram of the probe lifecycle: 1 pre-register kill gates in a sha256-locked ISA.lock.json; 2 falsify — FULL:=B0 must emit KILL or the harness is inadmissible; 3 run — blind judge, binding verdict; 4 verify — recompute from results.json at HEAD; 5 journal via kaos experiment log. Verdict badges ACCEPT/REJECT/VOID, with tamper rails: edited lock refuses to run; a harness that cannot lose is inadmissible; missing the power budget voids the verdict.">
+  <div class="fig-cap">the lifecycle every KAOS mechanism faces. ten candidates since v0.7; zero shipped on hope.</div>
+</div>
+
+<p>and because the CLI exits non-zero on REJECT/VOID, your own harness changes can gate in CI exactly like code:</p>
+
+<pre><code># prove the probe can kill the feature, then run for the binding verdict
+kaos eval probe falsify --probe bench.my_probe:MyProbe
+kaos eval probe run     --probe bench.my_probe:MyProbe --out-dir out/   # CI fails unless ACCEPT
+
+# institutional memory — what have we tried, what changed?
+kaos experiment list --verdict-prefix REJECT
+kaos experiment compare 41 42</code></pre>
+
+<h2>what you can do with it, today</h2>
+
+<p><strong>run a swarm from your editor.</strong> after <code>kaos setup</code>, it's an MCP server — <em>"with kaos, review my payments module — a security agent and a test-writing agent in parallel"</em> — and every agent lands isolated, checkpointed, on the gantt dashboard.</p>
+
+<p><strong>audit anything with SQL.</strong> the whole estate is one file. <code>kaos query "SELECT tool_name, SUM(cost_usd) FROM tool_calls GROUP BY 1"</code> is your spend report; copying the file is your forensic snapshot; <code>kaos restore</code> is your undo. (if the EU AI Act's logging article applies to you, this is that requirement, already met by the storage engine.)</p>
+
+<p><strong>let the library earn its ranking.</strong> outcomes recorded as telemetry rerank retrieval by what actually worked — wilson bounds and recency, arithmetic on evidence, not an LLM rewriting its own notes. numbers and their (small, disclosed) n's live next to the benches in the repo.</p>
+
+<p><strong>gate your own agent changes.</strong> the probe machinery isn't just for us — <code>examples/falsifiable_probe.py</code> is a complete template. write the gates before the feature, wire the probe into CI, and "did that prompt change actually help?" stops being a vibe.</p>
+
+<!-- ═══════ AI IMAGE PLACEHOLDER: CLOSER ═══════ -->
+<div class="imgen">
+  <div class="t">&#9998; image-gen placeholder &middot; closer</div>
+  <div class="p">"A small climbing figure ascending a giant leaderboard rendered as a dark cliff face, ranks etched like strata glowing faintly violet; the figure carries a lantern shaped like a tiny black-box flight recorder casting cyan light upward. Moody, minimal, cinematic; no text."</div>
+  <div class="s">save as: blog/images/proof-ledger-closer.png &middot; replace this block with a .fig</div>
+</div>
+
+<h2>the ledger, and what's next</h2>
+
+<p>since v0.7: <strong>ten mechanism candidates evaluated, zero shipped on hope.</strong> SAGE, two flavors of synthesis-as-consolidation, AutoResearchClaw, HASP, Life-Harness's action layer, UserHarness, per-agent-DB sharding, MATM, Atomic Task Graph — rejected, voided, or parked, each with its lock and audit trail in the repo. the moat isn't any single mechanism; it's that nothing gets in without surviving this.</p>
+
+<p>next: the last v0.10 items (verifiable numeric reporting — every number in a generated artifact traces to a recorded measurement), the v0.10.0 cut, and then the cycle i'm most excited about: the <strong>federation package layer</strong> — signed, capability-declared agent packages you can share across teams, on the single-file architecture the bench just vindicated. and ARC-AGI-3 has four months left on the clock. the harness is still climbing.</p>
+
+<p>&mdash; danilo</p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="kaos-v0.9.0.html">Previous: the kill-switch primitive</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/falsifiable-eval.md">Falsifiable-eval guide</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>
