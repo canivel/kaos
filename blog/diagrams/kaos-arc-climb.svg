@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 500" font-family="Segoe UI,system-ui,sans-serif">
+  <!-- surface -->
+  <rect x="0" y="0" width="880" height="500" rx="14" fill="#12121a" stroke="#ffffff14"/>
+
+  <!-- title block -->
+  <text x="40" y="44" fill="#e4e4ef" font-size="19" font-weight="700">ARC-AGI-3 · ARC Prize 2026 — KAOS climbing, autonomously</text>
+  <text x="40" y="66" fill="#9494a8" font-size="12.5">Public-leaderboard standing as percentile of the field (closer to the top = better). Entered solo by canivel; KAOS runs the competition itself.</text>
+
+  <!-- plot area: x 110..790, y 90..400 ; y-scale: top0%..top16% -->
+  <!-- gridlines (recessive) -->
+  <g stroke="#ffffff12" stroke-width="1">
+    <line x1="110" y1="90"  x2="790" y2="90"/>
+    <line x1="110" y1="167.5" x2="790" y2="167.5"/>
+    <line x1="110" y1="245" x2="790" y2="245"/>
+    <line x1="110" y1="322.5" x2="790" y2="322.5"/>
+    <line x1="110" y1="400" x2="790" y2="400"/>
+  </g>
+  <!-- y labels (text tokens, never series color) -->
+  <g fill="#6b6b80" font-size="11" text-anchor="end">
+    <text x="100" y="94">top of field</text>
+    <text x="100" y="171.5">top 4%</text>
+    <text x="100" y="249">top 8%</text>
+    <text x="100" y="326.5">top 12%</text>
+    <text x="100" y="404">top 16%</text>
+  </g>
+  <!-- x labels -->
+  <g fill="#6b6b80" font-size="11" text-anchor="middle">
+    <text x="110" y="424">Jun 8</text>
+    <text x="654" y="424">Jul 10</text>
+    <text x="790" y="424">Jul 18</text>
+  </g>
+
+  <!-- series line (2px, single hue #8b7cf0, validated on dark surface) -->
+  <!-- points: (110,151.4) (654,336.3) (671,283.2) (790,108.9) -->
+  <path d="M110,151.4 L654,336.3 L671,283.2 L790,108.9" fill="none" stroke="#8b7cf0" stroke-width="2"/>
+
+  <!-- markers: >=8px, 2px surface ring -->
+  <g>
+    <circle cx="110" cy="151.4" r="5" fill="#8b7cf0" stroke="#12121a" stroke-width="2"/>
+    <circle cx="654" cy="336.3" r="5" fill="#8b7cf0" stroke="#12121a" stroke-width="2"/>
+    <circle cx="671" cy="283.2" r="5" fill="#8b7cf0" stroke="#12121a" stroke-width="2"/>
+    <circle cx="790" cy="108.9" r="7" fill="#8b7cf0" stroke="#12121a" stroke-width="2"/>
+  </g>
+
+  <!-- milestone labels (selective, text tokens) -->
+  <g font-size="12">
+    <text x="122" y="140" fill="#e4e4ef" font-weight="600">#47 of ~1,100</text>
+    <text x="122" y="156" fill="#9494a8">score 0.43 · top 4.3%</text>
+
+    <text x="560" y="366" fill="#e4e4ef" font-weight="600">#219 of 1,680</text>
+    <text x="560" y="382" fill="#9494a8">score 0.93 · field grew ~55%</text>
+
+    <text x="683" y="278" fill="#e4e4ef" font-weight="600">#177 of 1,693</text>
+    <text x="683" y="294" fill="#9494a8">score 1.02</text>
+
+    <text x="778" y="88" fill="#e4e4ef" font-weight="700" text-anchor="end">#39 · top 2.3%</text>
+  </g>
+
+  <!-- footnote -->
+  <text x="40" y="466" fill="#6b6b80" font-size="11">Percentile = rank ÷ teams at each date. Public leaderboard (~50% of test data); scores shown where recorded. Jul 18 team count ~1,700 (last exact: 1,693 on Jul 11).</text>
+  <text x="40" y="484" fill="#6b6b80" font-size="11">Source: kaggle.com/competitions/arc-prize-2026-arc-agi-3 · standing as of Jul 18, 2026.</text>
+</svg>
