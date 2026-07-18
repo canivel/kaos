@@ -26,43 +26,78 @@ Full internals: [docs/architecture.md](docs/architecture.md).
 
 ---
 
-## Install
+## Get started in one line
+
+Open **Claude Code** (or Cursor, or any MCP-capable assistant) in whatever project you're already working on and say:
+
+```
+use github.com/canivel/kaos on this project
+```
+
+That's it — it clones KAOS, runs `kaos setup`, and registers the MCP server (58 tools). Your next prompt can just be *"with kaos, review this module with three agents in parallel."*
+
+<details>
+<summary>Prefer to install manually?</summary>
 
 ```bash
 git clone https://github.com/canivel/kaos.git && cd kaos
 uv sync
-kaos setup
+kaos setup     # wizard: model preset, kaos.yaml, DB init, MCP registration
+kaos demo      # instant dashboard with example waves — no API keys needed
 ```
 
 > Need `uv`? → `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-**Try the demo instantly (no API keys needed):**
-
-```bash
-kaos demo
-```
-
-Opens a live dashboard with 3 example execution waves so you can see what KAOS looks like before writing any code.
+</details>
 
 ---
 
-## Use with Claude Code / Cursor / any AI coding tool
+## What to ask it — prompts that map to real tools
 
-After `kaos setup`, KAOS registers itself as an MCP server. Then just ask your AI assistant:
+Once registered, every prompt below drives actual KAOS MCP tools. Steal these:
 
-```
-with kaos, review my payments module — run a security agent and a test-writing agent in parallel
-```
+**Build with a swarm** — isolated agents, parallel, on the dashboard:
 
 ```
 with kaos, refactor auth.py — three agents in parallel: implement, test, and document
+with kaos, review my payments module — a security agent and a test-writing agent in parallel
 ```
 
+**Debug like a forensics team** — the whole run is on the record:
+
 ```
-with kaos, why did the last run fail? show me the agent that errored and its tool calls
+with kaos, why did the last run fail? show me the agent that errored and its exact tool calls
+with kaos, what recurring failures do my agents hit? diagnose the top fingerprint
 ```
 
-KAOS handles isolation, checkpointing, and the dashboard automatically.
+**Time-travel** — checkpoint before risk, restore on regret:
+
+```
+with kaos, checkpoint the migration agent before it touches the schema — restore it if tests fail
+with kaos, diff the refactor agent between its last two checkpoints — what changed?
+```
+
+**Compound knowledge** — memory and skills that outlive the session:
+
+```
+with kaos, search memory — what did we learn last month about the payments retry bug?
+with kaos, save this fix as a reusable skill so future agents apply it automatically
+```
+
+**Watch the spend** — tokens and cost live in the journal:
+
+```
+with kaos, how much did today's agents cost? break it down by tool and agent
+```
+
+**Keep yourself honest** — the discipline is a tool surface too:
+
+```
+with kaos, list every mechanism we've evaluated and its verdict
+with kaos, smoke-test all my model providers before I kick off the big run
+```
+
+KAOS handles isolation, checkpointing, audit, and the dashboard automatically — you just talk.
 
 ---
 
