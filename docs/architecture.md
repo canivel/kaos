@@ -21,7 +21,7 @@ This document describes the internal architecture of KAOS: its design philosophy
 
 ## System Overview
 
-KAOS is a runtime framework for managing autonomous AI agents. Each agent receives an isolated, auditable virtual filesystem backed by a single SQLite database file. The system is composed of five major subsystems:
+KAOS is a runtime framework for managing autonomous AI agents. Each agent receives an isolated, auditable virtual filesystem backed by a single SQLite database file. The system is composed of seven major subsystems — the five below, plus the **knowledge layer** (`kaos.memory`, `kaos.skills`, `kaos.shared_log`, `kaos.dream` — cross-agent memory, skill library, LogAct coordination, and the two-timescale neuroplasticity cycle) and the **verification layer** (`kaos.eval.harness` + `kaos.experiments` — the falsifiable-eval primitive and its append-only run journal, described in [falsifiable-eval.md](falsifiable-eval.md)):
 
 ```
                      External Clients
@@ -95,23 +95,35 @@ The VFS Engine is the core of KAOS, implemented in `kaos/core.py` as the `Kaos` 
 ### SQLite Configuration
 
 ```python
-conn.execute("PRAGMA journal_mode=WAL")    # Write-Ahead Logging
-conn.execute("PRAGMA foreign_keys=ON")      # Referential integrity
-conn.execute("PRAGMA busy_timeout=5000")    # 5s retry on lock contention
+conn.execute("PRAGMA journal_mode=WAL")       # Write-Ahead Logging
+conn.execute("PRAGMA foreign_keys=ON")         # Referential integrity
+conn.execute("PRAGMA busy_timeout=30000")      # retry on lock contention
+conn.execute("PRAGMA synchronous=NORMAL")      # default since v0.10 work
+conn.execute("PRAGMA wal_autocheckpoint=1000")
 ```
 
-**WAL mode** enables concurrent readers with a single writer, which is critical for multi-agent workloads. Multiple agents can read from the database simultaneously while one agent writes, without blocking.
+**WAL mode** enables concurrent readers with a single writer, which is critical for multi-agent workloads. **`synchronous=NORMAL`** is the default after `demo_storage_scale_bench/` measured it ~125× faster on write p95 (1895 ms → 15 ms) and ~38× higher throughput under 8-thread contention than `FULL`, with zero lock errors — the only trade is that an OS crash (not an app crash) may lose the last few committed transactions; the DB never corrupts. Both knobs are constructor args on `Kaos(synchronous=..., wal_autocheckpoint=...)`; pass `synchronous="FULL"` for strictest durability.
 
 ### Thread Safety
 
-`Kaos` uses `threading.local()` to maintain one SQLite connection per thread. This avoids the SQLite threading pitfalls while allowing true parallel agent execution in threaded environments.
+`Kaos` uses `threading.local()` to maintain one SQLite connection per thread. Since v0.9.2, the helper objects (`BlobStore`, `EventJournal`, `CheckpointManager`) resolve the **calling thread's** connection through a getter rather than pinning the connection present at construction — a cross-thread `write()` previously split its rows across two connections.
 
 ```python
 class Kaos:
-    def __init__(self, db_path: str = "agents.db", compression: str = "zstd"):
+    def __init__(self, db_path: str = "agents.db", compression: str = "zstd",
+                 *, synchronous: str = "NORMAL", wal_autocheckpoint: int = 1000):
         self._local = threading.local()
-        # Each thread gets its own connection via _get_conn()
+        # Each thread gets its own connection via _get_conn();
+        # helpers receive the getter, not a pinned connection.
+        self.blobs = BlobStore(self._get_conn, compression=compression)
 ```
+
+### Storage correctness guarantees (v0.9.2 hardening)
+
+- **Version monotonicity across tombstones** — `write()` computes the next file version over *all* historical rows including soft-deleted ones, so delete-then-rewrite and restore-then-write never collide with `UNIQUE(agent_id, path, version)`; writes are transactional with rollback.
+- **Readers never hold the writer lock** — the FILE_READ audit event commits immediately instead of leaving an open write transaction.
+- **`query()` is read-only at the SQLite parse layer** — an authorizer callback allows only SELECT/READ/FUNCTION/RECURSIVE and denies everything else (`REPLACE`, `PRAGMA`, `ATTACH`, `VACUUM`, `WITH…DELETE`, multi-statement). This matters because `query()` is agent-reachable via the MCP `agent_query` tool; a keyword blacklist was bypassable.
+- **SharedLog position assignment is a single atomic `INSERT…SELECT`** — no read-then-insert race on `UNIQUE(position)` under concurrent appenders.
 
 ### Content-Addressable Blob Store
 
@@ -476,9 +488,49 @@ The `VLLMClient` (`kaos/router/vllm_client.py`) is a lightweight async HTTP clie
 - **Response parsing**: Raw JSON is parsed into typed dataclasses (`ChatCompletion`, `ChatChoice`, `ChatMessage`, `Usage`) -- no SDK dependency.
 - **Connection management**: Lazy client initialization, explicit `close()` for cleanup.
 
-### Retry and Fallback
+### Retry, Fallback, and Failure Taxonomy (reworked in the v0.10 cycle)
 
-The router retries failed model calls up to `max_retries` (default 3). On failure, if the failing model is not the fallback model, the router automatically switches to the fallback model for subsequent attempts. This provides graceful degradation when a specific vLLM instance is temporarily unavailable.
+`_call_model` implements an explicit failure policy:
+
+- **Taxonomy passthrough** — `ProposerStalled` and `TimeoutError` re-raise *untouched*. The meta-harness search loop's survival contract depends on catching these types; a blanket `RuntimeError` rewrap previously erased them.
+- **Reachable fallback** — the fallback model is tried *after* the primary's retries are exhausted, independent of `max_retries` (previously dead config at the default `max_retries=1`).
+- **Auth fail-fast** — 401/403/invalid-key errors are never retried on the same client (a credential problem doesn't heal on attempt 2); the fallback may still be tried with different credentials.
+- **Absolute wall** — every call runs under `asyncio.wait_for(cfg.timeout + wall_margin)`. httpx read timeouts are between-bytes, so a slow-drip server never trips them; the wall is the safety net. Providers with their own wall (`claude_code`, `agent_sdk`) fire first with richer taxonomy.
+- **Exponential backoff** between same-client retries (capped at 8s); `ModelConfig.timeout` is forwarded to **all** providers.
+- **Tool-args guard** — malformed model-emitted JSON tool arguments become `{"raw": <text>}` instead of crashing routing.
+
+*Naming note:* GEPA here is **G**eneralized **E**xecution **P**lanning &amp; **A**llocation — a classifier + routing table. It is not the genetic-Pareto prompt-evolution algorithm of the same acronym; no prompt optimization happens in the router.
+
+---
+
+## Falsifiable-Eval Harness & Experiments Journal
+
+The verification layer (v0.9) is what makes KAOS's own development gated: no mechanism ships without passing a probe it could fail. Two modules:
+
+**`kaos/eval/harness/`** — the probe primitive:
+
+```
+types.py     ArmResults / QueryResult / GateOutcome
+stats.py     bootstrap_diff_ci (within-run), cluster_bootstrap_diff_ci
+             (run-level, for multi-run probes), check_power_budget
+             (a lock-declared runs-per-condition is BINDING — fewer runs = VOID)
+manifest.py  load_lock + LockTamperError — the ISA.lock.json must hash to a
+             pre-registered sha256 or the harness refuses to run
+judge.py     judge_arm — blind judging on an anonymised, shuffled stream via
+             SurrogateVerifier (heuristic mode); kappa is a real agreement
+             statistic against an optional independent label, or None
+             (kappa-exempt) for mechanical-ground-truth probes
+verdict.py   compute_verdict — the uniform rule no probe can override:
+             VOID (no kill-gates / kappa below threshold / sanity failure),
+             ACCEPT iff every kill-gate passes, REJECT otherwise
+probe.py     Probe ABC: gates() / run() / verify() / falsify() lifecycle
+```
+
+The **falsification self-test** is the admissibility requirement: substitute the feature arm with its baseline (`FULL := B0`) and the kill gate *must* fire. A harness in which the feature cannot lose is inadmissible, and any later "pass" from it is meaningless.
+
+**`kaos/experiments.py`** — the append-only run journal (schema v9's `experiments` table): every probe/benchmark run recorded with `git_sha` (auto-filled), `lock_sha256`, per-arm aggregates, gates, and verdict. `kaos experiment {log,list,show,compare}` answers "what have we tried, and what changed?" without grepping commits.
+
+CLI (`kaos eval probe {run,verify,falsify}`) exits non-zero on REJECT/VOID, so probes compose into CI as deployment gates. All eight v0.9 surfaces are also MCP tools (v0.9.1). Full guide: [falsifiable-eval.md](falsifiable-eval.md).
 
 ---
 

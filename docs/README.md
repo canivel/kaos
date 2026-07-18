@@ -35,6 +35,7 @@ kaos demo        # see it in action — no API keys needed
 | [MCP Integration](mcp-integration.md) | Claude Code / Cursor setup, all 58 MCP tools |
 | [Meta-Harness](meta-harness.md) | Automated prompt/strategy optimization search |
 | [CLI Reference](cli-reference.md) | Every command, every flag |
+| [Falsifiable Eval](falsifiable-eval.md) | The kill-switch primitive: probe lifecycle, lock discipline, stats, CI gating |
 | [Cross-Agent Memory](memory.md) | FTS5 searchable memory across agents and sessions |
 | [Skill Library](skills.md) | FTS5 cross-agent procedural skill templates with usage tracking |
 | [Shared Log](shared-log.md) | LogAct intent/vote/decide coordination protocol |

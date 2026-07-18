@@ -15,13 +15,14 @@
 
 ## Architecture
 
-Seven layers, single SQLite file at the bottom. v0.8.1 added the
-**Neuroplasticity** layer (layer 4): inline synaptic plasticity on every
-event, batched structural consolidation at agent completion — modeled
-after the biological separation between Hebbian synaptic updates (fast,
-local) and sleep-consolidation (slow, structural).
+Layered, with a single SQLite file at the bottom. Two layers define the
+character of the system: **Neuroplasticity** (v0.8 — telemetry recorded
+inline on every event, Hebbian graph + consolidation built in batch at
+agent completion) and **Falsifiable Eval** (v0.9 — `kaos.eval.harness`
++ the experiments journal, the gate every new mechanism must pass).
+Full internals: [docs/architecture.md](docs/architecture.md).
 
-![KAOS architecture — 7 layers with the new neuroplasticity consolidation layer](docs/architecture.svg)
+![KAOS architecture — layered design over a single SQLite file](docs/architecture.svg)
 
 ---
 
@@ -74,7 +75,7 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 | Harness changes ship on vibes | **Falsifiable-eval primitive** — pre-registered, sha256-locked kill gates + falsification self-test + binding ACCEPT/REJECT/VOID verdicts (`kaos eval probe`) | KAOS core | **v0.9.0 🆕** |
 | "What did we already try?" is a grep | **Experiments journal** — every probe/benchmark run recorded with git sha, lock hash, arms, gates, verdict (`kaos experiment`) | KAOS core | **v0.9.0 🆕** |
 | Failures are counted, not understood | Reasoning-class failure taxonomy + **critical-step localizer** (earliest decisive error, 5/5 planted bugs within ±1 step) | [arXiv:2509.25370](https://arxiv.org/abs/2509.25370) + KAOS core | v0.8.3 |
-| Library stays static as it's used | Neuroplasticity: Hebbian associations, weighted search, failure fingerprints, automatic consolidation — fires inline on every skill use, memory hit, and agent completion | KAOS core | v0.8.0 |
+| Library stays static as it's used | Neuroplasticity: outcome telemetry recorded inline; Hebbian associations + weighted search + consolidation proposals built in batch at agent completion (two-timescale) | KAOS core | v0.8.0 |
 | Agents start on under-specified tasks | Dynamic intake — LLM-analyzed clarifying questions (0 or more, no fixed count) | KAOS core | v0.7.1 |
 | Agents reinvent solutions | Cross-agent skill library — parameterized templates, usage tracking | [arXiv:2604.08224](https://arxiv.org/abs/2604.08224) | v0.7.0 |
 | Agents repeat past mistakes | FTS5 cross-agent memory with BM25 search | [claude-mem](https://github.com/thedotmack/claude-mem) | v0.6.0 |
@@ -467,6 +468,7 @@ results = asyncio.run(ccr.run_parallel([
 | [Use Cases](docs/use-cases.md) | Code review swarm, parallel refactor, incident response, ML research, and more |
 | [Checkpoints](docs/checkpoints.md) | Snapshot, restore, diff — with examples |
 | [CLI Reference](docs/cli-reference.md) | Every command and flag — including `kaos eval`, `kaos experiment`, `kaos doctor` (v0.9) |
+| [Falsifiable Eval](docs/falsifiable-eval.md) | The kill-switch primitive: probe lifecycle, lock discipline, stats, CI gating, the ledger |
 | [MCP Integration](docs/mcp-integration.md) | Claude Code / Cursor setup, all 58 tools |
 | [Neuroplasticity](docs/neuroplasticity.md) | Inline plasticity, failure intelligence, measured gains + overhead |
 | [Meta-Harness](docs/meta-harness.md) | Automated harness optimization, CORAL co-evolution |

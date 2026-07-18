@@ -1,8 +1,23 @@
 # KAOS SQLite Schema Reference
 
-> Complete reference for the 8 tables that make up the KAOS database.
+> Reference for the KAOS database: the 8 core tables in depth, plus a summary of every table added by migrations v2–v9.
 
-Schema version: **1** (defined in `kaos/schema.py`)
+Schema version: **9** (defined in `kaos/schema.py`) — **26 tables + 2 FTS5 indexes** total. Migrations are strictly additive and applied automatically by `init_schema()`; a v1 database opened today upgrades in place with no data loss.
+
+## Tables added by migrations (v2 → v9)
+
+| Migration | Tables / columns | Owned by | Purpose |
+|---|---|---|---|
+| **v2** (v0.6) | `memory`, `memory_fts` + sync triggers; `shared_log` | `kaos/memory.py`, `kaos/shared_log.py` | Cross-agent FTS5 memory; LogAct intent/vote/decide append-only coordination log (atomic `INSERT…SELECT` position since v0.9.2) |
+| **v3** (v0.7) | `agent_skills`, `agent_skills_fts` + triggers | `kaos/skills.py` | Cross-agent skill library (parameterized templates, usage/success counts) |
+| **v4** (v0.8.1) | `skill_uses`, `memory_hits`, `dream_runs`, `episode_signals` | `kaos/dream/` | Plasticity telemetry (written inline in the caller's transaction) + dream-cycle run records + per-agent episode signals |
+| **v5** (v0.8.1) | `associations`, `failure_fingerprints`, `policies`, `consolidation_proposals`; `agent_skills.deprecated*` | `kaos/dream/` | Hebbian co-occurrence graph (built in batch at completion), failure fingerprints, promoted policies (consulted by `SharedLog.intent_auto()` since v0.8.2), consolidation proposal journal, skill soft-deprecation |
+| **v6** (v0.8.2) | `failure_occurrences`, `systemic_alerts`; fingerprint diagnostic columns | `kaos/dream/` | Sliding-window failure counting; systemic alerts (≥N agents, same fingerprint, short window → halt auto-spawns) |
+| **v7** (v0.8.2) | `llm_diagnosis_cache`; `consolidation_proposals.status` | `kaos/dream/` | Memoised LLM diagnoses (one model call per unique fingerprint); explicit proposal lifecycle |
+| **v8** (v0.8.3) | `critical_steps`, `ideal_states`, `ideal_state_criteria`; `skill_uses.quality`, taxonomy columns, `shared_log` quorum columns | `kaos/dream/`, `kaos/ideal_state.py` | Critical-step localization, Ideal State Artifacts/Criteria, continuous quality score, reasoning-class failure taxonomy, Aegean forward-compat |
+| **v9** (v0.9) | `experiments` | `kaos/experiments.py` | Append-only journal of probe/benchmark runs: `git_sha`, `lock_sha256`, arms, gates, verdict — the queryable record behind `kaos experiment` |
+
+The deep-dive sections below cover the 8 **core** tables (v1), which remain the foundation every other table references.
 
 ---
 
