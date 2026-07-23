@@ -129,7 +129,7 @@ def main() -> int:
     acc_delta = (q_mean - b_mean) * 100
     var_drop = (b_std - q_std)
     print(f"  accuracy delta:  {acc_delta:+.1f} pp")
-    print(f"  variance change: {var_drop:+.4f} (positive = quality less noisy)")
+    print(f"  variance change: {var_drop:+.4f} (positive = seed variance increased)")
 
     out = {
         "episodes": episodes, "seeds": seeds,

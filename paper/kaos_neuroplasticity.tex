@@ -1,0 +1,188 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\kaos}{\textsc{Kaos}}
+
+\title{Plasticity Without Parameters: Two-Timescale Usage-Statistics\\Consolidation in a Local-First Agent Harness}
+
+\author{
+  Danilo Canivel \\
+  Independent / \kaos{} project \\
+  \texttt{d.canivel@gmail.com}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Agent harnesses accumulate skills, memories, and failure records, yet in most frameworks this state is static: it does not reorganize in response to how it is used. We describe the plasticity architecture of \kaos{}, an open-source, local-first multi-agent harness in which every runtime artifact lives in a single SQLite file. The design borrows one property from biological neuroplasticity---the separation of timescales between fast synaptic updates and slow structural consolidation---while remaining strictly parameter-free: no fine-tuning, no embeddings, no gradient updates. On the fast path, agent activity writes only raw telemetry (micro-benchmarked at $\approx 0$ median overhead, a point estimate within noise); at episode boundaries, a batch pass rebuilds a Hebbian co-occurrence graph; retrieval is re-ranked at query time by Wilson-bound success and recency computed over that telemetry. On two small, fully committed retrieval benchmarks this yields $+10.0$ and $+13.3$ percentage points of top-1 accuracy over BM25 ($n{=}10$ and $n{=}15$ queries; we discuss why we report such small benchmarks rather than headline them). Equally central is the discipline that has governed development since v0.9: no mechanism candidate could ship without surviving a pre-registered, hash-locked, falsifiable probe, and we report the negative results this produced---including a structural argument that retrieval-side semantic consolidation is infeasible under lexical-only retrieval constraints, and the discovery (by a multi-agent self-audit) of bugs in our own verdict instrument. Ten candidates were evaluated; none shipped without surviving a probe. We argue that for agent harnesses, the evaluation discipline is as much a contribution as any mechanism it gated.
+\end{abstract}
+
+\section{Introduction}
+
+In June 2026, a submission to the ARC-AGI-3 competition entered the public leaderboard's top 4\% with a score of 0.43; six weeks later the same entry, operated autonomously by its harness with occasional operator configuration, had more than doubled its score and stood at rank \#39 of roughly 1{,}700 teams.\footnote{Public leaderboard, ARC Prize 2026 (ARC-AGI-3), entry \texttt{canivel}; snapshots recorded June 8--July 18, 2026 (Appendix~\ref{app:provenance}, P14). We report this as an \emph{observation about a deployment}, not a controlled result: the public leaderboard uses roughly half the test data, the field changed over the period, and no ablation isolates the harness's contribution. We include it because it motivated the question this paper answers.} The interesting question is not the rank; it is \emph{what, mechanically, was allowed to change between those two dates}. The underlying language models were unchanged and frozen. What changed was harness state: which strategies were retained, how stored procedures were ranked, and which failure patterns were recognized and avoided.
+
+This paper describes that machinery. \kaos{} is an open-source, local-first multi-agent harness whose entire runtime state---per-agent virtual filesystems, an append-only event journal, checkpoints, cross-agent memory, and a skill library---resides in one SQLite file. Since v0.8 it has included a \emph{plasticity layer}: usage statistics that reorganize retrieval continuously as a side effect of normal operation. The design constraint that shapes everything is that \kaos{} forbids parameter updates of any kind: no fine-tuning, no LoRA, no embeddings, no learned rerankers. Whatever ``learning'' occurs must be arithmetic over recorded outcomes.
+
+Two questions structure the paper. First, \emph{how much adaptivity can a harness obtain from usage statistics alone}, and at what runtime cost? Second---because the space of plausible-sounding mechanisms is large and the evidence for each is typically a demo---\emph{how does one keep such a system honest}? Our answer to the second question is a falsifiable-evaluation discipline: every mechanism candidate is evaluated against kill gates that are written and cryptographically locked \emph{before} any feature code exists, with a mandatory falsification self-test and a binding verdict. The discipline produced more rejections than acceptances, and we consider several of those rejections to be the most informative results in this paper.
+
+Our contributions:
+\begin{itemize}
+  \item \textbf{A two-timescale plasticity architecture} for agent harnesses (\S\ref{sec:arch}): inline hooks that write only raw telemetry (median overhead indistinguishable from zero in our micro-benchmark), with Hebbian association building and structural consolidation deferred to episode boundaries. We motivate the split with a measured consolidation cost curve that is prohibitive on the hot path (35.5\,s at 10{,}000 skills).
+  \item \textbf{A parameter-free retrieval re-ranking rule} (\S\ref{sec:retrieval}) combining BM25 with Wilson lower-bound success rates and recency decay, evaluated on two small, fully committed benchmarks ($+10.0$\,pp adversarial, $+13.3$\,pp realistic), with a sensitivity sweep showing a broad plateau in its single weighting hyperparameter.
+  \item \textbf{A falsifiable-evaluation discipline for harness mechanisms} (\S\ref{sec:discipline}): pre-registered, sha256-locked kill gates; a falsification self-test that renders a harness inadmissible if its feature cannot lose; binding ACCEPT/REJECT/VOID verdicts; and an append-only experiment journal. Ten candidates were evaluated under it; none shipped without surviving a probe.
+  \item \textbf{Negative results} (\S\ref{sec:negative}): (a) a pre-registered probe that \emph{rejected} LLM-synthesized memory consolidation despite the synthesized artifacts being retrieved (the ``lexical vise'': under lexical-only retrieval, a stored abstraction must be simultaneously token-faithful and query-bridging, and the two requirements conflict); (b) a VOID verdict on a pre-execution action-validation layer whose lock forbade synthetic workloads; and (c) instrument-integrity bugs in our own verdict machinery, found by a 48-agent self-audit and fixed test-first.
+\end{itemize}
+
+Everything quantitative in this paper traces to a committed artifact in the public repository; Appendix~\ref{app:provenance} maps every claim to its file and, where applicable, its pre-registration hash. The paper itself was drafted and revised through \kaos{}-orchestrated agent panels (grounding verification, methodological review, and adversarial review), with the panel findings recorded alongside the source (\S\ref{sec:meta}).
+
+\section{Related Work}
+
+\textbf{Memory and skill accumulation in LLM agents.} Voyager \citep{wang2023voyager} accumulates verified skills in an ever-growing library; MemGPT \citep{packer2023memgpt} manages hierarchical memory with LLM-controlled paging; Reflexion \citep{shinn2023reflexion} converts failure into verbal feedback; generative agents \citep{park2023generative} maintain retrieval by recency, importance, and relevance. Externalization work \citep{zhou2026externalization} treats skills as procedural templates shared across agents, which \kaos{} adopts. Unlike systems where an LLM curates its own memory, \kaos{}'s plasticity layer is deliberately non-linguistic: ranking changes are arithmetic over outcome records, which makes them cheap, auditable, and immune to self-flattering rewrites. Letta's sleep-time agents \citep{packer2023memgpt} pursue the complementary LLM-driven approach.
+
+\textbf{Harness engineering.} The term crystallized in early 2026 \citep{hashimoto2026journey, osmani2026harness}, with the recurring claim that scaffold quality dominates model quality for agentic outcomes. A noted critique of the practice is the absence of verification that a harness change helped \citep{bockeler2026harness}. Our evaluation discipline (\S\ref{sec:discipline}) is a direct response. Meta-harness search \citep{metaharness2026} treats the harness itself as an optimization target; \kaos{} embeds a variant as a subsystem, and CORAL-style stagnation pivots \citep{coral2026} govern its search loop.
+
+\textbf{Skill-transfer skepticism.} SWE-Skills-Bench \citep{sweskills2026} reports that 39 of 49 deployed agent skills produced no measurable gain and 3 degraded performance; cross-task episodic memories similarly failed to beat their baselines in any configuration \citep{ctimrover2025}. These negative priors shaped our thresholds: mechanisms in this class must beat the \emph{native} baseline (not an ablated one) with a pre-registered margin, which several proposals in our ledger failed to do (\S\ref{sec:negative}).
+
+\textbf{Evaluation methodology.} Our discipline transplants pre-registration and falsification norms \citep{popper1959logic} into harness engineering: hash-locked analysis plans, mandatory ability-to-fail checks, and no post-hoc retuning. Recent work documents run-to-run variance of 2.2--6.0\,pp in pass@1 even at temperature zero \citep{multirun2026}, motivating the cluster (run-level) bootstrap and binding power budgets \kaos{} added for multi-run probes; e-process sequential testing \citep{eprocess2025} is planned for early stopping. Blind judging draws on the surrogate-verifier idea of information-isolated diagnosis \citep{evoskills2026}.
+
+\textbf{Biological framing.} The analogy to neuroplasticity is architectural, not neurobiological: we borrow the separation between fast, local synaptic updates \citep{hebb1949organization} and slow, offline structural consolidation \citep{tononi2014sleep}. The algorithms themselves are classical---Wilson intervals \citep{wilson1927probable}, exponential decay, co-occurrence counting.
+
+\section{The \kaos{} Substrate}
+\label{sec:substrate}
+
+\kaos{} stores all state for a project in one SQLite database (schema v9; 26 tables, 2 FTS5 indexes; P15): per-agent virtual filesystems with enforced isolation, content-addressed blobs, an append-only event journal recording every tool call with token and cost accounting, checkpoints with byte-exact restore, a cross-agent memory store and skill library (both FTS5/BM25 indexed), and a shared coordination log. Read-only SQL access for agents is enforced at the SQLite authorizer layer. The single-file design is not a scaling liability in the regimes we measured: cross-agent full-text search is 1.5\,ms p95 with 1{,}000 resident agents and 9.2\,ms p95 with 10{,}000 (8 threads, mixed read/write/search/checkpoint workload; P7),\footnote{Claim labels (P1--P16) refer to rows of the provenance ledger in Appendix~\ref{app:provenance}.} and the dominant write-latency cost proved to be the durability pragma, not data volume: switching from \texttt{synchronous=FULL}/\texttt{wal\_autocheckpoint=100} to SQLite's recommended \texttt{NORMAL}/\texttt{1000} (the two pragmas changed together; no arm isolates them) moved write p95 from 1{,}895\,ms to 15\,ms and throughput from 29 to 1{,}118 ops/s under contention (P8). We report this partly as a caution: we nearly undertook a per-agent-database redesign before the measurement showed the premise false (P13).
+
+\section{Two-Timescale Plasticity}
+\label{sec:arch}
+
+Every skill application, memory retrieval, and agent completion is a ``firing.'' The design question is what work may happen at firing time. Our answer, after measurement, is: \emph{almost none}.
+
+\textbf{Fast path (synaptic timescale).} Inline hooks write raw telemetry rows---\texttt{skill\_uses} (with a binary or graded outcome), \texttt{memory\_hits} (with query and rank), episode counters---inside the caller's existing transaction. The hooks that could do more are deliberate no-ops; association building never runs at firing time. A paired micro-benchmark (200 ops, plasticity on vs.\ off) measures the median hot-path overhead at $-24.6\,\mu$s for outcome recording and $-87.0\,\mu$s for memory search---negative point estimates from a single 200-op paired run, i.e.\ within measurement noise rather than a tested null result---while the episode-completion hook, which triggers batch work, carries $\approx{+}1$\,ms median, consistent with the design (P3).
+
+\textbf{Batch path (consolidation timescale).} At agent completion, and every $N$ completions (default 100, tunable via \texttt{KAOS\_DREAM\_THRESHOLD}), a consolidation pass (i) rebuilds the Hebbian co-occurrence graph with set-based SQL---skills and memories that fired within the same episode receive weighted edges with exponential decay on staleness; (ii) refreshes the signals that \S\ref{sec:retrieval} reads at query time; (iii) generates \emph{proposals}: promote, prune, or merge entries based on usage evidence. Automatic consolidation is proposal-only; structural mutation requires an explicit operator apply. The batch placement is forced by measurement: a dry-run consolidation costs 175\,ms at 100 skills but 35.5\,s at 10{,}000 (P6)---three orders of magnitude too slow for any hot path, and comfortably amortized at episode boundaries.
+
+This is the entire sense in which we use the word \emph{neuroplasticity}: telemetry accumulates as a side effect of operation (there is no separate training job to run), and structure changes on a slower, offline clock. We make no stronger biological claim.
+
+\section{Usage-Weighted Retrieval}
+\label{sec:retrieval}
+
+Skill retrieval ranks candidates by
+\begin{equation}
+\mathrm{score}(s \mid q) \;=\; \max\!\bigl(\mathrm{bm25}(s, q), \epsilon\bigr)\;\cdot\;\bigl(c + \alpha \cdot W(s)\bigr)\;\cdot\; \lambda^{\Delta t(s)},
+\label{eq:rank}
+\end{equation}
+where $\mathrm{bm25}$ is lexical relevance over the FTS5 index, $W(s)$ is the Wilson lower bound \citep{wilson1927probable} of the skill's success rate over recorded outcomes (graded outcomes contribute their quality value in $[0,1]$), $\lambda^{\Delta t}$ is exponential recency decay, and $\alpha$ (default 3) weights the usage term; the implementation uses a base weight $c{=}0.5$ and a relevance floor $\epsilon{=}0.01$ (\texttt{kaos/dream/signals.py}). Weighted scores are computed at \emph{query time} from the accumulated telemetry; the batch pass of \S\ref{sec:arch} maintains the association graph and consolidation proposals, not the ranking itself. The Wilson bound is the load-bearing choice: it discounts small samples, so a skill that succeeded once does not outrank one that succeeded forty times out of fifty.
+
+\textbf{Benchmarks.} Both retrieval benchmarks are small and fully committed, with generation scripts, seeds, and raw outputs in the repository. We consider disclosure of $n$ non-negotiable at this scale and discuss the limitation explicitly in \S\ref{sec:limits}. One asymmetry must be stated plainly: the weighted ranker predates the probe discipline of \S\ref{sec:discipline} and was evaluated on these committed-but-not-pre-registered benchmarks; mechanisms proposed after v0.9 faced locked gates. A pre-registered, native-baseline probe of Eq.~\ref{eq:rank} under the multi-run protocol is the first item of queued future work.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Benchmark & Queries / skills / episodes & BM25 & Weighted & $\Delta$ \\
+\midrule
+Adversarial (twin-pair distractors) & 10 / 20 / 80 & 80.0\% & 90.0\% & $+10.0$\,pp \\
+Realistic (natural phrasing, no twins) & 15 / 40 / 120 & 73.3\% & 86.7\% & $+13.3$\,pp \\
+\bottomrule
+\end{tabular}
+\caption{Top-1 retrieval accuracy, BM25 vs.\ usage-weighted ranking (Eq.~\ref{eq:rank}). Both benchmarks are deliberately small and committed in full (P1, P2); at these sizes the deltas correspond to a net of one flipped query (two gains, one regression) and two flipped queries respectively, and we treat them as evidence of mechanism, not of effect size. Gains require outcome feedback: on single-session workloads with no recorded outcomes the weighted ranker reduces to BM25 (zero gain by construction).}
+\label{tab:retrieval}
+\end{table}
+
+\textbf{Sensitivity.} Sweeping $\alpha$ on the realistic benchmark yields 73.3\% at $\alpha{=}0$ (pure BM25), a non-monotone low-$\alpha$ region (86.7\% at $\alpha{=}0.5$, dipping to 80.0\% at $\alpha{=}1$), and a flat 93.3\% plateau across $\alpha \in \{2,3,5,8,12\}$ (P5),\footnote{The sweep's plateau accuracy (93.3\%) exceeds Table~\ref{tab:retrieval}'s weighted accuracy (86.7\%) at the same nominal configuration because the sweep script re-implements the weighted scorer locally rather than calling the production \texttt{SkillStore.search} path; the two code paths produce different episode trajectories. Both artifacts are committed; the sweep therefore characterizes the ranking \emph{rule}'s $\alpha$-sensitivity, not the shipped implementation, and a rerun through the production path is queued.} indicating robustness within the $\alpha \ge 2$ operating region (the low-$\alpha$ region is not smooth). A companion experiment replacing binary outcomes with graded quality scores improved mean accuracy $+4.0$\,pp across five seeds while \emph{failing} to confirm our variance-reduction hypothesis (seed-level variance slightly increased); both halves are reported in the committed results (P4).
+
+\section{The Falsifiable-Evaluation Discipline}
+\label{sec:discipline}
+
+Mechanisms like \S\ref{sec:retrieval} are easy to justify with a demonstration and hard to justify honestly. The \kaos{} rule is that no mechanism ships without surviving a probe that could have killed it:
+
+\begin{enumerate}
+  \item \textbf{Pre-register.} Kill gates (exact thresholds against the \emph{native} baseline), arm definitions including lesion arms, and workload invariants are written into a lock file whose sha256 is committed before any feature code exists. The harness refuses to run against a lock whose hash is not in its allow-list, making post-hoc goalpost movement mechanically detectable.
+  \item \textbf{Falsify.} A mandatory self-test substitutes the feature arm with its baseline; the kill gate must fire. A harness in which the feature cannot lose is inadmissible, and any later ``pass'' from it is void.
+  \item \textbf{Run.} Arms execute; outcomes are judged blind (the judge receives an anonymized, shuffled stream and never sees arm identity); gates are computed; the verdict---ACCEPT, REJECT, or VOID---is binding, with no retune-and-rerun.
+  \item \textbf{Journal.} Every run is appended to an experiments table with the git revision, lock hash, per-arm aggregates, and verdict.
+\end{enumerate}
+
+For multi-run probes, gates use a cluster (run-level) bootstrap rather than a within-run bootstrap, and a lock-declared runs-per-condition is binding: executing fewer runs voids the verdict rather than silently widening an interval. This responds directly to measured run-to-run variance in LLM evaluation \citep{multirun2026}.
+
+Under this discipline, ten mechanism candidates were evaluated between v0.7 and v0.10. None shipped without an ACCEPT; the ledger (P16) records two probe REJECTs, one structural DO-NOT-BUILD, one VOID, three literature-prior rejections, and three parks. We describe the informative ones next.
+
+\section{Negative Results}
+\label{sec:negative}
+
+\subsection{The lexical vise: semantic consolidation is infeasible here}
+\label{sec:vise}
+
+The most attractive mechanism we evaluated was memory consolidation in the strong sense: periodically synthesize clusters of related memories into abstracted insights, store the insights, and retrieve them for compositional queries---the standard ``sleep consolidates memories into knowledge'' story \citep{yu2026memo}.
+
+The pre-registered probe rejected it, and the failure mode is more interesting than the failure. In the LLM arm, synthesized insights \emph{were retrieved}---present in the top-$k$ for roughly half the queries they should have helped---yet accuracy on the hard query classes was 0.000 (P9): the synthesizer produced correct bridging prose while paraphrasing away the exact technical tokens (identifiers, error strings, config keys) that downstream exact-match evidence required. A follow-up extractive variant, pre-registered before its code existed, inverted the failure: by construction it preserved decisive tokens verbatim (44/44 in its token-fidelity check) but, containing only vocabulary from its source memories, was never retrieved for the semantically distant queries it was meant to serve---scoring 0.000, identical to raw BM25 (P10).
+
+The general form is a two-horned constraint we call the \emph{lexical vise}: under lexical-only retrieval, a stored abstraction must be simultaneously (a) token-faithful to its sources, or downstream verification fails, and (b) lexically bridged to future queries, or it is never retrieved. Generative synthesis achieves (b) at the cost of (a); extraction achieves (a) at the cost of (b). The two oppositely-designed variants we tested each impaled on one horn; untested hybrids (e.g.\ extractive spines with appended paraphrase expansions) would require a fresh pre-registered lock under the repository's rejected-class rule, and we conjecture---but have not proven---that any lexical-only variant faces the same trade-off. On that basis we closed the mechanism class for this architecture, which we regard as the most valuable single output of the discipline: it converts an open-ended research direction into a bounded infeasibility argument, supported by two pre-registered failures, for a specific and common constraint regime.
+
+\subsection{A VOID that stayed void}
+
+A pre-execution action-validation layer (motivated by \citealp{lifeharness2026}) was probed with gates locked before code, including a workload invariant: at least 200 \emph{organic} action-class failure incidents, with synthetic substitution explicitly forbidden. The development database contained two. The verdict was VOID---not rescued by generating synthetic incidents, not downgraded to a demo (P11). We highlight this because the temptation the lock removed (``just simulate the workload'') is precisely how plausible-but-unverified mechanisms normally enter frameworks. The falsification self-test for this probe passed (the harness could kill the feature); the evidence to judge the feature simply did not exist yet.
+
+\subsection{The instrument was buggy, and the process caught it}
+\label{sec:selfaudit}
+
+In June 2026 we pointed the evaluation machinery at \kaos{} itself: a 48-agent scoping workflow (six subsystem code reviewers, five literature scouts, and a 36-judge panel over three lenses) with a requirement that findings cite the file and line they read. The panel found, among storage-layer defects, three bugs in the verdict instrument: the blind judge's agreement statistic was computed as an identity comparison (always 1.0---a dead audit gate); a probe registering zero kill gates would vacuously ACCEPT; and the verdict re-verification path crashed on the very results files the reference probe produced. All were fixed test-first, and the retroactive check matters: no prior verdict flips under the corrected instrument, because the REJECT margins were far outside any plausible correction and the VOID was an $n$-floor decision (P12). An independent external model review later confirmed two documentation overstatements (both fixed same-day) while its strongest claims did not survive comparison with source. We include this subsection because a discipline that cannot describe its own failures is exactly the kind of unfalsifiable system it exists to prevent.
+
+\section{Field Observation: ARC-AGI-3}
+\label{sec:arc}
+
+Between June 8 and July 18, 2026, a \kaos{}-operated entry in the ARC-AGI-3 public leaderboard moved from score 0.43 (rank \#47 of $\sim$1{,}100) through 0.93 (\#219 of 1{,}680, after the field grew $\sim$55\%) and 1.02 (\#177 of 1{,}693) to rank \#39 of $\sim$1{,}700---the top 2.3\% (P14). The iteration loop---strategy proposal, evaluation, skill retention, submission---was the harness's meta-harness subsystem; the operator adjusted configuration between runs. We deliberately present this as an \emph{observation}, not a result: there is no counterfactual arm, the public leaderboard is computed on partial test data, and operator interventions are not controlled. Its role in this paper is motivational: it is what a parameter-free, usage-statistics harness looks like when pointed at a live competition, and it is externally auditable in a way private demos are not.
+
+\section{Discussion}
+
+\textbf{What usage statistics buy.} Within their scope, the measured gains are real but modest, and they are conditional: every mechanism in \S\ref{sec:retrieval} requires outcome feedback to exist. The honest summary is that usage-statistics plasticity converts \emph{repeated, feedback-rich} workloads into ranking improvements at near-zero marginal runtime cost, and does nothing for single-shot workloads. We consider the near-zero fast path the more important property: it makes the mechanism safe to leave on.
+
+\textbf{What the discipline buys.} Four of the five most consequential findings in this paper are rejections or corrections. A field survey of our own ledger suggests the base rate of plausible harness mechanisms that survive a native-baseline, pre-registered probe is low---consistent with external evidence on deployed skills \citep{sweskills2026}. If that base rate is real, then evaluation infrastructure with teeth is not overhead on harness engineering; it is most of the substance, and the observed tendency of documentation to overstate what code honestly implements (\S\ref{sec:selfaudit}) is an argument for making the instrument, not the prose, the source of truth.
+
+\textbf{Auditability as a design axis.} Because all plasticity state is rows in one inspectable database---with an append-only journal and authorizer-enforced read-only access---every ranking decision in \S\ref{sec:retrieval} can be reconstructed after the fact with SQL. We found this property repeatedly load-bearing: for the self-audit, for responding to external review, and for writing this paper, whose every number was re-derived from the committed artifacts (Appendix~\ref{app:provenance}).
+
+\section{Limitations}
+\label{sec:limits}
+
+The retrieval benchmarks are small ($n{=}10$ and $n{=}15$ queries; the deltas are a net one and two flipped queries, including one regression on the adversarial bench) and synthetic; they establish mechanism, not effect size, and a larger-$n$ replication under the cluster-bootstrap protocol is queued but not done. The overhead and scale measurements are single-machine (Windows/NTFS) and workload-specific. The lexical-vise argument (\S\ref{sec:vise}) is an engineering impossibility argument for a specific constraint regime---lexical retrieval, exact-match downstream evidence, no parameter updates---supported by two pre-registered failures, not a formal theorem; systems that relax any of the three constraints escape it. The ARC-AGI-3 trajectory is observational with operator involvement and partial-data scoring, and supports no causal claim. The quality-score experiment's variance hypothesis failed. Parts of the plasticity loop reached the primary MCP surface only in v0.10; earlier deployments under-collected telemetry. Finally, the multi-agent panels used to review this paper share a model family with its drafting agent; human review was the final gate, but panel independence is bounded by that fact.
+
+\section{Meta: How This Paper Was Produced}
+\label{sec:meta}
+
+Consistent with the system it describes, this paper was drafted by an agent, against the provenance ledger of Appendix~\ref{app:provenance}, and then passed through three \kaos{}-orchestrated panel levels before human sign-off: (i) a grounding panel that re-verified every quantitative claim against the committed artifacts; (ii) a rigor panel reviewing statistical claims, reproducibility of the method descriptions, and biological-analogy overreach; (iii) an adversarial panel simulating hostile peer review. Panel verdicts and the resulting revisions are recorded in the repository alongside the source (\texttt{paper/PANEL\_LEDGER.md}). The final responsibility for all claims rests with the human author.
+
+\section{Conclusion}
+
+A parameter-free agent harness can obtain measurable, auditable adaptivity from usage statistics alone, provided structural work is exiled from the hot path---and keeping such a system honest requires evaluation machinery with the power to reject its authors' ideas, which it will exercise regularly. Future work: a larger-$n$ retrieval replication under the multi-run protocol; e-process early stopping for probes; a signed, capability-declared package layer for federating skills across organizations on the same single-file substrate; and re-running the action-validation probe when sufficient organic evidence accumulates.
+
+\subsubsection*{Acknowledgments and AI-use disclosure}
+This paper was drafted and revised with agentic assistance from Claude (Anthropic), orchestrated through \kaos{} itself, including the multi-level panel review described in \S\ref{sec:meta}; all quantitative content derives from the committed artifacts of Appendix~\ref{app:provenance}, and responsibility for all claims rests with the human author.
+
+\subsubsection*{Reproducibility}
+All code, benchmarks, locks, verdicts, and the provenance ledger are at \url{https://github.com/canivel/kaos} (MIT). Each benchmark ships a \texttt{run.py} regenerating its committed results file.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+
+\section{Provenance Ledger}
+\label{app:provenance}
+
+Every quantitative claim in this paper carries a label P1--P16 mapping to a row of \texttt{paper/PROVENANCE.md} in the repository, which lists the committed artifact (results file, lock file with sha256, or commit hash) from which the number derives. Pre-registration hashes cited: synthesis-consolidation lock v2 \texttt{09310794\ldots}; action-realization lock \texttt{3ca89983\ldots}. Repository state for suite-level counts: commit \texttt{8783871} (701 tests passing; 58 MCP tools; schema v9).
+
+\end{document}

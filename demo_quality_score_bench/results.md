@@ -9,6 +9,6 @@ Run: 120 episodes/run, 5 seeds.
 | binary  | 85.3% | 0.0267 |
 | quality | 89.3% | 0.0327 |
 
-Accuracy delta: **+4.0 pp**. Variance change: **-0.0060** (positive ⇒ the graded signal is less noisy across seeds).
+Accuracy delta: **+4.0 pp**. Variance change: **+0.0060** (seed-level variance increased — the variance-reduction hypothesis was NOT confirmed).
 
 Raw JSON: [results.json](results.json)
