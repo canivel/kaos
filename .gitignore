@@ -21,3 +21,10 @@ video_scripts/kaos/recordings/*.gif
 demo_synthesis_consolidation_bench/_*.db
 demo_synthesis_consolidation_bench/*.db
 demo_synthesis_consolidation_bench/.synth_cache/
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
