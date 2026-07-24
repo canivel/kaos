@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/badge/version-0.9.2-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)
 [![Discipline](https://img.shields.io/badge/mechanisms%20evaluated-10%20·%200%20shipped%20on%20hope-fd79a8)]()
 [![Research](https://img.shields.io/badge/research%20integrations-9-brightgreen)]()
 [![MCP tools](https://img.shields.io/badge/MCP%20tools-58-00DC82)]()
@@ -562,6 +563,25 @@ The paper's skills axis — parameterized procedural templates that agents save,
 
 **EvoSkills / MemPalace**
 Earlier KAOS versions integrated ideas from EvoSkills (v0.5.1) and MemPalace (v0.5.2).
+
+---
+
+## Cite
+
+The preprint on KAOS's plasticity architecture and falsifiable-eval discipline:
+
+> Canivel, D. (2026). *Plasticity Without Parameters: Two-Timescale Usage-Statistics Consolidation in a Local-First Agent Harness.* Zenodo. [doi:10.5281/zenodo.21533588](https://doi.org/10.5281/zenodo.21533588)
+
+```bibtex
+@misc{canivel2026plasticity,
+  author       = {Canivel, Danilo},
+  title        = {Plasticity Without Parameters: Two-Timescale Usage-Statistics Consolidation in a Local-First Agent Harness},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.21533588},
+  url          = {https://doi.org/10.5281/zenodo.21533588}
+}
+```
 
 ---
 
