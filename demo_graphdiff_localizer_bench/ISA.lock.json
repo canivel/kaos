@@ -1,0 +1,114 @@
+{
+  "name": "graphdiff-localizer-probe",
+  "version": "v1",
+  "pre_registered_at": "2026-07-28",
+  "source_paper": "EMG arXiv:2607.13884 (Experience Memory Graph) — GDL distillation per panel review 2026-07-28",
+  "mechanism_described_but_NOT_implemented": "GDL — Graph-Diff Localizer. Contrastive critical-step localization: pair a failed episode with a past successful episode on a similar task (BM25 over VERBATIM task texts — zero embeddings), convert both trajectories to deterministic integer-labeled action sequences, and localize the decisive step as the earliest divergence of the failed sequence from the paired success. This lock ships ONLY the probe; the mechanism is implemented as bench-local code and does NOT enter kaos/ unless the verdict is ACCEPT.",
+
+  "binding_thesis": "A deterministic failed-vs-paired-success trajectory diff localizes the decisive step of a failure more accurately than the v0.8.3 single-trajectory heuristic localizer, especially on silent wrong-branch failures where no tool call errors, with causal isolation (the lift must come from CORRECT pairing, not from diffing against any arbitrary success), and the mechanism must be structurally reachable on KAOS's real organic workload (non-degenerate graphs).",
+
+  "workload_invariants": {
+    "localization_slice": {
+      "source": "HARNESS-GENERATED, pre-registered as such. Constructed episode pairs written into a REAL kaos database via the real schema (agents, tool_calls, state key='task', episode_signals) so every arm consumes production tables. Ground-truth divergence steps are known BY CONSTRUCTION. EXTERNAL-VALIDITY CAVEAT: any ACCEPT under this lock is an accept ON HARNESS-GENERATED WORKLOAD and must say so verbatim in VERDICT.md; organic replication remains future work. This is the honest inverse of VOID#1: there, synthetic was forbidden and organic was absent; here, harness-generation is declared up front because ground-truth localization labels cannot exist organically.",
+      "n_min_failed_episodes": 40,
+      "target": "48 failed episodes = 8 task families x 6 seeded surface-variants",
+      "qclass_silent_wrong_branch": "24 episodes — planted divergence where NO tool call in the episode has status='error' or error_message; the agent takes a coherent wrong branch and the episode simply fails. This is the v0.8.3 localizer's documented blind spot and the slice GDL exists for.",
+      "qclass_error_visible": "24 episodes — planted divergence followed >=2 steps later by a surfaced tool error; the visible error is NOT the decisive step. The classic localizer case.",
+      "generator_seed": 20260728,
+      "generator_determinism": "the entire workload is a pure function of generator_seed; regeneration is byte-stable for tool names, args, orderings, and ground-truth indices"
+    },
+    "pairing_corpus": {
+      "definition": "for each family, exactly 2 successful episodes with same-family task text (surface-varied wording, seeded) PLUS the corpus contains all other families' successes as distractors. Pairing arm sees ONLY task texts and success flags — never family labels.",
+      "ground_truth": "family label of each episode, recorded by the generator, hidden from all arms"
+    },
+    "organic_slice_for_G3": {
+      "source": "operator's live kaos.db (organic development usage; NOT harness-generated)",
+      "definition": "all agents with >= 8 tool_calls rows",
+      "n_min_agents": 30,
+      "metric": "per-agent node-reuse rate = n_tool_calls / n_distinct_normalized_node_labels; report median across agents",
+      "void_rule": "if n agents with >=8 calls < 30, G3 is uncomputable and the run is VOID (insufficient organic sample) — no synthetic substitution for G3, its entire purpose is to measure REAL arg entropy"
+    }
+  },
+
+  "normalization_frozen": {
+    "node_label": "(tool_name, arg_signature) interned to an integer via exact-match dictionary. arg_signature = sorted tuple over input-JSON top-level keys of (key, value_class).",
+    "value_class_rules": [
+      "key name matching regex (?i)(^|_)(id|ts|time|date|uuid|token|nonce|seed|hash)($|_) -> DROPPED (volatile scrub)",
+      "bool -> 'b'; int/float -> 'n'",
+      "string that looks like a path (contains / or \\\\) -> 'p:' + first path segment + ':' + extension",
+      "other string len <= 24 -> 's:' + lowercased value",
+      "other string len > 24 -> 'S' (long-string bucket)",
+      "list -> 'L' + str(len); dict -> 'D' + str(len(keys))"
+    ],
+    "edge_label": "outcome class of the PRECEDING call: (status, error_message first token lowercased or '', output length bucket log10)",
+    "no_llm_no_embedding": "normalization is pure string rules; violation of this clause makes the run inadmissible"
+  },
+
+  "gdl_algorithm_frozen": {
+    "pairing": "BM25 (FTS5 default ranking) of the failed episode's verbatim task text against verbatim task texts of all episodes with episode_signals.success=1, excluding the failed agent itself; take top-1",
+    "diff": "difflib.SequenceMatcher over the two integer node-label sequences (autojunk=False); predicted decisive step = the failed-side index of the FIRST opcode that is not 'equal' (earliest divergence). If sequences are identical, predict the last step.",
+    "fgw_deferred": "FGW/optimal-transport matching is explicitly OUT of this lock; if the cheap sequence diff cannot pass these gates, adding a heavier matcher is a NEW candidate with a NEW lock"
+  },
+
+  "arms": {
+    "B0": "uniform-random step choice over the failed episode's tool calls, seeded rng(20260728). Floor arm.",
+    "B1": "v0.8.3 native heuristic localizer — kaos.dream.phases.localize.localize() with llm_call_fn=None, persist=False, on the failed trajectory alone. THE real bar.",
+    "FULL": "GDL — BM25 top-1 pairing + frozen normalization + earliest-divergence sequence diff (bench-local implementation only).",
+    "L1": "lesion — GDL with pairing REPLACED by a seeded-random choice among successes of OTHER families (wrong-pair control). Isolates 'correct pairing' from 'diffing against anything'."
+  },
+
+  "kill_gates": {
+    "G1": {
+      "name": "beats v0.8.3 native localizer",
+      "kill": true,
+      "predicate": "FULL accuracy >= 0.70 on the full localization slice AND (FULL - B1) >= 0.10 overall, n >= 40; accuracy = fraction of failed episodes where the predicted tool_call (by call_id) IS the ground-truth planted divergence call, strict equality, no tolerance window",
+      "threshold_abs": 0.70,
+      "threshold_delta_pp": 10.0,
+      "rationale": "the mechanism must both be good in absolute terms and clearly beat the shipped single-trajectory localizer, else it is dead weight"
+    },
+    "G2": {
+      "name": "causal isolation via wrong-pair lesion",
+      "kill": true,
+      "predicate": "(FULL - L1) >= 0.10 overall",
+      "threshold_pp": 10.0,
+      "rationale": "the lift must come from pairing with the RIGHT success; if diffing against an arbitrary unrelated success localizes just as well, the graph-diff story is false and something trivial is doing the work"
+    },
+    "G3": {
+      "name": "organic non-degeneracy (structural reachability)",
+      "kill": true,
+      "predicate": "median per-agent node-reuse rate on the organic slice >= 1.30",
+      "threshold": 1.30,
+      "rationale": "EMG's node-reuse trick works in closed text-game vocabularies; KAOS tool args are high-entropy. If real trajectories normalize to all-unique nodes (reuse ~1.0), the digraph degenerates to a chain of unique labels and the mechanism cannot generalize beyond constructed workloads — KILL even if G1/G2 pass. This is where the panel expects the mechanism most plausibly dies, and this lock lets it."
+    },
+    "G4": {
+      "name": "pairing precision",
+      "kill": true,
+      "predicate": "fraction of failed episodes whose BM25 top-1 pair is a SAME-FAMILY success >= 0.80 (mechanical family labels from the generator)",
+      "threshold": 0.80,
+      "rationale": "CTIM-Rover prior: wrong retrieved experiences poison downstream use. If verbatim-task-text BM25 cannot find the right pair even on a corpus WITH lexical twins present, the no-embeddings pairing premise fails"
+    }
+  },
+
+  "non_kill_gates": {
+    "G0": {
+      "name": "workload sanity",
+      "kill": false,
+      "predicate": "every arm emits a prediction for every failed episode (coverage = 1.0) AND B0 accuracy <= 0.35",
+      "rationale": "VOID-on-fail. If arms cannot cover the workload the run is broken; if a seeded RANDOM baseline localizes >35% of episodes, the workload is degenerate (trajectories too short / divergence trivially placed) and nothing can be concluded"
+    }
+  },
+
+  "verdict_rule": "VOID if G0 fails OR organic slice n < 30 agents OR localization slice n < 40. ACCEPT iff G1 AND G2 AND G3 AND G4 all pass. ANY single kill-gate failure REJECTS. No retune-and-rerun.",
+
+  "no_retune_clause": "Thresholds, normalization rules, the GDL algorithm, generator seed, and workload counts are BYTE-FROZEN at this commit. Any change requires a NEW commit + NEW entry in KNOWN_LOCK_SHA256. The harness refuses to run on any lock whose sha256 is not pre-registered.",
+
+  "judge": {
+    "kind": "mechanical",
+    "implementation": "predicted call_id == ground-truth call_id, computed by the generator's frozen labels; arms never see ground truth; no LLM judgment is involved anywhere in labeling",
+    "judge_kappa": "1.0 by construction (deterministic ground-truth labels; there is no judgment to audit). Recorded as 1.0 in results.json with this justification."
+  },
+
+  "falsification_self_test": "FULL := B1 (feature arm substituted by the native localizer) MUST emit [KILL: G1] (the delta clause). Additionally FULL := L1 must emit [KILL] on G1-or-G2. A harness that cannot kill the feature is INADMISSIBLE and must not produce a binding verdict.",
+
+  "honest_expected_outcome": "Genuinely uncertain — the most open prior of the 13 candidates. G1/G2 on constructed workload: FULL is favored (~0.7) because the workload is built from the mechanism's own operating assumptions. The real risk is G3 (~0.5): organic KAOS tool args are high-entropy and median node-reuse may sit below 1.30, which would be a KILL with real information content — it would close EMG-style trajectory-graph mechanisms for KAOS's workload shape generally, the same way the FTS-vise result closed retrieval-side synthesis. REJECT via G3 is a SUCCESSFUL outcome. Net ACCEPT prior ~0.35-0.45."
+}
