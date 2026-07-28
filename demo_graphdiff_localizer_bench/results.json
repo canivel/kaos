@@ -1,0 +1,2120 @@
+{
+  "lock": {
+    "name": "graphdiff-localizer-probe",
+    "version": "v1"
+  },
+  "arms": {
+    "B0": {
+      "per_query": [
+        {
+          "qid": "parser-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s1-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s2-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s3-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s4-c01",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s5-c04",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s6-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "invoice-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s1-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s2-c03",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s3-c01",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s4-c01",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s5-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s6-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "deploy-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s1-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s2-c07",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s3-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s4-c02",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s5-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s6-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "schema-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s1-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s2-c01",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s3-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s4-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s5-c05",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s6-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "cache-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s1-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s2-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s3-c06",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s4-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s5-c04",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s6-c06",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "auth-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s1-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s2-c02",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s3-c06",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s4-c03",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s5-c03",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s6-c07",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "scraper-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s1-c01",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s2-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s3-c04",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s4-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s5-c01",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s6-c04",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "notebook-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s1-c05",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s2-c01",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s3-c02",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s4-c02",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s5-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s6-c00",
+            "family": "notebook"
+          }
+        }
+      ],
+      "acc_overall": 0.20833333333333334,
+      "acc_silent": 0.3333333333333333,
+      "acc_error_visible": 0.08333333333333333
+    },
+    "B1": {
+      "per_query": [
+        {
+          "qid": "parser-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s1-c06",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s2-c06",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s3-c06",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s4-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s5-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s6-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "invoice-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s1-c05",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s2-c05",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s3-c05",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s4-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s5-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s6-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "deploy-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s1-c07",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s2-c07",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s3-c07",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s4-c01",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s5-c01",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s6-c01",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "schema-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s1-c05",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s2-c05",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s3-c05",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s4-c01",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s5-c01",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s6-c01",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "cache-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s1-c06",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s2-c06",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s3-c06",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s4-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s5-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s6-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "auth-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s1-c07",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s2-c07",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s3-c07",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s4-c03",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s5-c03",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s6-c03",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "scraper-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s1-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s2-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s3-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s4-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s5-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s6-c05",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "notebook-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s1-c06",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s2-c06",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s3-c06",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s4-c02",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s5-c02",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s6-c02",
+            "family": "notebook"
+          }
+        }
+      ],
+      "acc_overall": 0.1875,
+      "acc_silent": 0.0,
+      "acc_error_visible": 0.375
+    },
+    "FULL": {
+      "per_query": [
+        {
+          "qid": "parser-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s1-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s2-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s3-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s4-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s5-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s6-c03",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "invoice-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s1-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s2-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s3-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s4-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s5-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s6-c02",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "deploy-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s1-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s2-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s3-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s4-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s5-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s6-c04",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "schema-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s1-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s2-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s3-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s4-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s5-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s6-c02",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "cache-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s1-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s2-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s3-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s4-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s5-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s6-c03",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "auth-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s1-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s2-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s3-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s4-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s5-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s6-c04",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "scraper-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s1-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s2-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s3-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s4-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s5-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s6-c02",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "notebook-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s1-c03",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s2-c03",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s3-c03",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s4",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s4-c03",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s5",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s5-c03",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s6",
+          "qclass": "error_visible",
+          "correct": true,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s6-c03",
+            "family": "notebook"
+          }
+        }
+      ],
+      "acc_overall": 1.0,
+      "acc_silent": 1.0,
+      "acc_error_visible": 1.0
+    },
+    "L1": {
+      "per_query": [
+        {
+          "qid": "parser-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s1-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s2-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s3-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s4-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s5-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "parser-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "parser-fail-s6-c00",
+            "family": "parser"
+          }
+        },
+        {
+          "qid": "invoice-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s1-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s2-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s3-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s4-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s5-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "invoice-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "invoice-fail-s6-c00",
+            "family": "invoice"
+          }
+        },
+        {
+          "qid": "deploy-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s1-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s2-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s3-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s4-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s5-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "deploy-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "deploy-fail-s6-c00",
+            "family": "deploy"
+          }
+        },
+        {
+          "qid": "schema-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s1-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s2-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s3-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s4-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s5-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "schema-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "schema-fail-s6-c00",
+            "family": "schema"
+          }
+        },
+        {
+          "qid": "cache-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s1-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s2-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s3-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s4-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s5-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "cache-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "cache-fail-s6-c00",
+            "family": "cache"
+          }
+        },
+        {
+          "qid": "auth-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s1-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s2-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s3-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s4-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s5-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "auth-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "auth-fail-s6-c00",
+            "family": "auth"
+          }
+        },
+        {
+          "qid": "scraper-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s1-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s2-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s3-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s4-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s5-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "scraper-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "scraper-fail-s6-c00",
+            "family": "scraper"
+          }
+        },
+        {
+          "qid": "notebook-fail-s1",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s1-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s2",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s2-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s3",
+          "qclass": "silent_wrong_branch",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s3-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s4",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s4-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s5",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s5-c00",
+            "family": "notebook"
+          }
+        },
+        {
+          "qid": "notebook-fail-s6",
+          "qclass": "error_visible",
+          "correct": false,
+          "split": "in_dist",
+          "extras": {
+            "predicted": "notebook-fail-s6-c00",
+            "family": "notebook"
+          }
+        }
+      ],
+      "acc_overall": 0.0,
+      "acc_silent": 0.0,
+      "acc_error_visible": 0.0
+    }
+  },
+  "pairing_same_family_rate": 1.0,
+  "organic": {
+    "median_reuse": 10.0,
+    "n_agents": 109,
+    "per_agent_rates": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.1,
+      1.1111111111111112,
+      1.12,
+      1.125,
+      1.2727272727272727,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      8.0,
+      9.0,
+      9.0,
+      9.0,
+      9.0,
+      9.0,
+      9.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0,
+      32.0
+    ]
+  },
+  "gates": [
+    {
+      "gate": "G0",
+      "name": "workload sanity",
+      "passed": true,
+      "kill": false,
+      "detail": "coverage_equal=True, B0 acc=0.208 (must be <= 0.35), n=48"
+    },
+    {
+      "gate": "G0f",
+      "name": "workload floors",
+      "passed": true,
+      "kill": false,
+      "detail": "localization n=48 (floor 40), organic agents=109 (floor 30)"
+    },
+    {
+      "gate": "G1",
+      "name": "beats v0.8.3 native localizer",
+      "passed": true,
+      "kill": true,
+      "detail": "FULL=1.000 (floor 0.70), B1=0.188, delta=+0.812 (floor +0.10), n=48"
+    },
+    {
+      "gate": "G2",
+      "name": "causal isolation via wrong-pair lesion",
+      "passed": true,
+      "kill": true,
+      "detail": "FULL=1.000, L1(wrong-pair)=0.000, delta=+1.000 (floor +0.10)"
+    },
+    {
+      "gate": "G3",
+      "name": "organic non-degeneracy",
+      "passed": true,
+      "kill": true,
+      "detail": "median node-reuse on organic slice = 10.000 (floor 1.30, n_agents=109)"
+    },
+    {
+      "gate": "G4",
+      "name": "pairing precision",
+      "passed": true,
+      "kill": true,
+      "detail": "BM25 top-1 same-family rate = 1.000 (floor 0.80)"
+    }
+  ],
+  "judge_kappa": 1.0,
+  "judge_kappa_note": "mechanical ground-truth labels; no judgment to audit (per lock)",
+  "verdict": "ACCEPT",
+  "external_validity_caveat": "Localization slice is HARNESS-GENERATED (pre-registered as such in ISA.lock.json). Any ACCEPT is an accept ON CONSTRUCTED WORKLOAD; G3 alone is organic. Organic replication is a separate future probe."
+}
