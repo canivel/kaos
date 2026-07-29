@@ -126,3 +126,28 @@ All surfaces are MCP tools since v0.9.1: `eval_probe_{falsify,run,verify}`, `exp
 ## The ledger
 
 The discipline's track record is the proof it works. Candidates evaluated since v0.7: SAGE (REJECT — hard-constraint conflict), synthesis-as-consolidation LLM + extractive (REJECT + DO-NOT-BUILD — the FTS-without-embeddings structural impossibility), AutoResearchClaw (orthogonal), HASP (REJECT — absorbed by native baseline), Life-Harness action-realization (VOID — insufficient organic data, lock forbade synthetic), UserHarness (PARK), per-agent-DB sharding (REJECT-by-measurement — `demo_storage_scale_bench/`), MATM (REJECT — embedding-dependent), Atomic Task Graph (PARK — probe-candidate). **Zero shipped on hope.**
+
+## Instrument audit and dispositions (codified 2026-07-28)
+
+Pre-registration constrains goalpost-moving; it cannot guarantee a predicate
+measures what its author intended (the GDL probe's G3 passed vacuously on
+mono-label trajectories — `demo_graphdiff_localizer_bench/VERDICT.md`). Rules,
+binding for every probe from this commit forward:
+
+1. **Mandatory audit, all gates.** After every binding run, the operator audits
+   EVERY kill-gate statistic against its distributional assumptions — passes and
+   fails alike, so auditing cannot be selectively aimed at unwelcome passes.
+   The audit is committed with the verdict regardless of outcome.
+2. **Verdict/disposition split.** The verdict is what the frozen gates computed;
+   it is never edited after the run (no retune-and-rerun). The *disposition*
+   (ship / do-not-ship / park) is a separate decision that may incorporate the
+   audit.
+3. **Monotonicity.** An audit may only hold or DOWNGRADE a disposition relative
+   to the verdict (ACCEPT→do-not-ship is legal; REJECT/VOID→ship is not).
+   Discretion can therefore only cost the author's own mechanism, never rescue it.
+4. **Defect → new lock.** A gate found mis-specified is fixed only in a successor
+   lock with a new sha256 and pre-registration commit; the defective gate's
+   original predicate stays on file.
+
+The GDL probe (2026-07-28) predates this codification and motivated it; its
+audit and disposition followed exactly these rules before they were written down.
