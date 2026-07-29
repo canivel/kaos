@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Perfect Score That Couldn’t Ship — KAOS Blog</title>
+<meta name="description" content="A mechanism scored a perfect 1.000, beat our incumbent by 81 points, passed every pre-registered kill gate — and we didn’t ship it. Why 13 published agent mechanisms keep dying on workload shape, not logic: the story behind the new KAOS paper, Benchmark Gifts.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;
+  --fg:#e4e4ef;--fg2:#9494a8;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--orange:#ff9100;--red:#ff5252;--cyan:#18ffff;--pink:#fd79a8;--amber:#ffd166;
+  --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --max:740px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.7;overflow-x:hidden}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan);text-decoration:underline}
+code,pre{font-family:var(--mono)}
+::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(108,92,231,.15)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;max-width:1100px;margin:0 auto;padding:0 2rem}
+nav .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;color:var(--fg);letter-spacing:2px;text-decoration:none}
+nav .logo span{color:var(--accent2)}
+nav .back{font-size:.85rem;color:var(--fg2)}
+nav .back:hover{color:var(--fg);text-decoration:none}
+
+.article-wrap{max-width:var(--max);margin:0 auto;padding:0 2rem}
+.post-header{padding:8rem 0 3rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-tag{font-family:var(--mono);font-size:.72rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1rem;display:block}
+.post-header h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:1rem}
+.post-header h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.post-meta{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:1.5rem}
+.post-meta-item{font-size:.82rem;color:var(--fg2)}
+.post-subtitle{font-size:1.1rem;color:var(--fg2);line-height:1.7;margin-top:1rem}
+
+.post-body{padding:3rem 0 5rem}
+.post-body h2{font-size:1.55rem;font-weight:700;margin:3rem 0 .9rem;letter-spacing:-.3px}
+.post-body h3{font-size:1.15rem;font-weight:700;margin:2.2rem 0 .6rem;color:var(--accent2)}
+.post-body p{margin-bottom:1.3rem;color:var(--fg2);font-size:1.02rem;line-height:1.78}
+.post-body p strong{color:var(--fg)}
+.post-body ul,.post-body ol{margin:0 0 1.3rem 1.5rem;color:var(--fg2);font-size:1.02rem}
+.post-body li{margin-bottom:.4rem;line-height:1.7}
+.post-body li b,.post-body li strong{color:var(--fg)}
+.post-body hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:2.5rem 0}
+.post-body pre{background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:1.2rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.65;color:var(--fg2);margin-bottom:1.5rem}
+.post-body :not(pre) > code{background:var(--bg3);color:var(--accent2);padding:.15rem .45rem;border-radius:4px;font-size:.85em}
+.callout{background:var(--bg2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.95rem;color:var(--fg2)}
+.callout strong{color:var(--fg)}
+
+.fig{margin:2rem 0;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.fig img{width:100%}
+.fig-cap{text-align:center;font-size:.8rem;color:var(--fg2);margin-top:.55rem;font-style:italic}
+
+/* AI image-generation placeholder */
+.imgen{margin:2rem 0;border:2px dashed rgba(253,121,168,.4);border-radius:12px;background:rgba(253,121,168,.04);padding:1.6rem 1.8rem}
+.imgen .t{font-family:var(--mono);font-size:.72rem;color:var(--pink);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:.6rem}
+.imgen .p{font-size:.88rem;color:var(--fg2);line-height:1.65;font-style:italic}
+.imgen .s{font-family:var(--mono);font-size:.72rem;color:#6b6b80;margin-top:.7rem}
+
+.result-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.83rem;margin:1.5rem 0}
+.result-table th{text-align:left;padding:.6rem .8rem;border-bottom:2px solid var(--accent);color:var(--fg);font-size:.76rem;text-transform:uppercase}
+.result-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.05);color:var(--fg2)}
+.result-table .good{color:var(--green)}
+.result-table .bad{color:var(--red)}
+.result-table .warn{color:var(--orange)}
+
+footer{padding:3rem 0;text-align:center;color:var(--fg2);font-size:.85rem;border-top:1px solid rgba(255,255,255,.06)}
+footer .links{display:flex;gap:1.5rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap}
+footer a{color:var(--fg2)}
+footer a:hover{color:var(--accent2)}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="wrap">
+  <a href="../index.html" class="logo"><span>K</span>AOS</a>
+  <a href="../index.html" class="back">&larr; Back to kaos</a>
+</div>
+</nav>
+
+<div class="article-wrap">
+
+<header class="post-header">
+  <span class="post-tag">Blog &mdash; July 29, 2026</span>
+  <h1>The perfect score<br>that <em>couldn&rsquo;t ship</em></h1>
+  <p class="post-subtitle">a mechanism hit 1.000 on its evaluation, beat our incumbent by 81 points, passed every pre-registered kill gate &mdash; and i didn&rsquo;t ship it. that decision is the whole story of our new paper.</p>
+  <div class="post-meta">
+    <span class="post-meta-item">Danilo Canivel</span>
+    <span class="post-meta-item">&middot; paper #2: &ldquo;Benchmark Gifts&rdquo;</span>
+    <span class="post-meta-item">&middot; 9 min read</span>
+    <span class="post-meta-item">&middot; <a href="https://github.com/canivel/kaos">github.com/canivel/kaos</a></span>
+  </div>
+</header>
+
+<article class="post-body">
+
+<p>every week there&rsquo;s a new paper promising self-improving agents. skill libraries. episodic memories. error-correction graphs. i read a lot of them, because KAOS is exactly the kind of harness they&rsquo;re supposed to plug into. and for months i kept hitting the same wall: the paper shows +20 points on a benchmark, i spend a cycle building it in, and it does&hellip; nothing. or worse.</p>
+
+<p>so we stopped guessing. since v0.7, KAOS has one rule: <strong>no new mechanism ships until it survives a kill test that was written and sha256-locked before the mechanism&rsquo;s code existed.</strong> we wrote up that machinery in our first paper, <a href="https://doi.org/10.5281/zenodo.21533588">Plasticity Without Parameters</a>. this post is about what the machinery caught &mdash; and the new paper it turned into.</p>
+
+<h2>the mechanism that aced everything</h2>
+
+<p>last week we evaluated a published error-correction idea: convert agent trajectories into little graphs, diff a failed run against a similar successful one, and the diff points at the exact step where things went wrong. clever. training-free. no embeddings. it fit our constraints, so it earned a probe.</p>
+
+<p>per the discipline, i froze four kill gates before writing a line of feature code: beat our existing failure-localizer by 10 points, survive a wrong-pair lesion, pass a pairing-precision bar &mdash; and one <em>reality gate</em>: real trajectories in our live database had to actually have the repeated-action structure the whole idea depends on.</p>
+
+<p>the results came back looking like a victory lap:</p>
+
+<ul>
+<li><b>1.000</b> localization accuracy &mdash; against our incumbent&rsquo;s 0.188 (which, fun fact, scored <em>below random</em> on this slice; the blind spot it was accused of is real)</li>
+<li>every lesion and precision gate: passed</li>
+<li>the reality gate: passed at <b>10&times;</b> the required floor</li>
+</ul>
+
+<p>verdict, computed by the frozen gates: <strong>ACCEPT</strong>. and then i looked closer at that last number, because a 10&times; margin on the one gate i expected to fail is not a win &mdash; it&rsquo;s a smell.</p>
+
+<h2>the vacuous pass</h2>
+
+<p>the reality gate asked: do real agents revisit the same normalized action often enough for a graph diff to grip? median &ldquo;node reuse&rdquo; had to clear 1.30. it came back 10.0. here&rsquo;s why: 86% of the tool calls in our live database come from search workers that call <em>one tool in a loop</em>. their trajectories normalize to a single repeated label. one label, repeated ten times, is technically &ldquo;reuse of 10.0&rdquo; &mdash; and it is exactly as useless for diffing as a trajectory where every step is unique. the gate was written to catch one kind of degenerate trajectory and got satisfied by the opposite kind.</p>
+
+<p>among the twelve agents whose trajectories were actually diverse enough to diff? median reuse 1.000. <strong>zero of twelve</strong> reached the floor. the property this mechanism depends on does not exist in our real workload.</p>
+
+<p>so: the verdict stays ACCEPT &mdash; the gates are frozen, and we don&rsquo;t retune after seeing results, ever. but the <em>disposition</em> is do-not-ship, and there&rsquo;s now a regression test that fails the build if this mechanism ever enters the shipped package. (this verdict/disposition split, plus a rule that audits can only ever <em>downgrade</em> a disposition &mdash; never rescue one &mdash; is now codified in the <a href="https://github.com/canivel/kaos/blob/main/docs/falsifiable-eval.md">discipline doc</a>.)</p>
+
+<h2>thirteen candidates, one pattern</h2>
+
+<p>here&rsquo;s the thing: this wasn&rsquo;t a one-off. it was the third time a mechanism died this exact way. an action-validation layer once returned VOID because our organic workload had produced <em>two</em> qualifying incidents against a pre-registered floor of 200. a memory-consolidation family got rejected because lexical-only retrieval can&rsquo;t simultaneously keep exact tokens and bridge to new queries. and now a trajectory-graph mechanism died on argument entropy.</p>
+
+<p>none of them died because their ideas were wrong. they died because <strong>our workload was missing something their benchmark had quietly provided for free.</strong></p>
+
+<p>the new paper names these freebies <em>benchmark gifts</em>, and identifies four &mdash; each measurable on your existing telemetry with read-only queries:</p>
+
+<div class="result-table"><table>
+<tr><th>gift</th><th>what the benchmark provides</th><th>our workload, measured</th></tr>
+<tr><td><b>closed action vocabulary</b></td><td>actions normalize to a small fixed set, so patterns repeat</td><td>ABSENT &mdash; 89% of substantive trajectories collapse to one repeated label; the diffable middle: 0/12</td></tr>
+<tr><td><b>dense outcome signals</b></td><td>a reward every episode, often every step</td><td>ABSENT &mdash; 2 of 1,639 tool calls errored; outcome truth exists only at episode grain</td></tr>
+<tr><td><b>lexically anchored task text</b></td><td>templated task strings, trivial retrieval</td><td><b>PRESENT</b> &mdash; 85% of real task texts carry paths, identifiers, error codes</td></tr>
+<tr><td><b>per-task expert references</b></td><td>a known-good trajectory for every task</td><td>ABSENT &mdash; exact failed&rarr;success pairs: 6.8%</td></tr>
+</table></div>
+
+<p>and the ledger lines up with the axes. the mechanisms that died each consumed an absent gift. the one family that <em>survived</em> measurement and ships in KAOS today &mdash; plain BM25 retrieval re-ranked by usage statistics &mdash; consumes the one gift our workload actually supplies: hard lexical anchors. real tasks name their files.</p>
+
+<div class="callout"><p><strong>the honest part:</strong> the axes were formulated <em>after</em> watching these mechanisms die. on our own ledger this is retrodiction, not prediction &mdash; the paper says so in bold, because a theory that can&rsquo;t be embarrassed is worthless. the falsifiable bet is about <em>your</em> workload: measure the four axes, adopt a mechanism, see if its fate tracks them. we published the axes to be shot at.</p></div>
+
+<h2>the two papers, and which to read first</h2>
+
+<p>this became our second paper, and the pair now has a deliberate division of labor:</p>
+
+<ul>
+<li><a href="https://doi.org/10.5281/zenodo.21533588"><b>Plasticity Without Parameters</b></a> is <em>the machine</em> &mdash; the harness&rsquo;s self-tuning memory and the kill-test discipline that gates every change to it. read it first if you want to trust the instrument.</li>
+<li><a href="https://github.com/canivel/kaos/tree/main/paper2"><b>Benchmark Gifts</b></a> is <em>the field report</em> &mdash; thirteen candidates through the machine, what each died of, and the afternoon-cheap workload audit that falls out. read it first if you want to know what the instrument caught.</li>
+</ul>
+
+<p>every number in both traces to a committed artifact in the repo &mdash; locks, verdicts, results files, the works. that includes the embarrassing ones.</p>
+
+<h2>the takeaway, if you build on agents</h2>
+
+<p>before you spend an engineering cycle on the next self-improvement paper, spend an afternoon on four queries against your own logs: how entropic are your tool arguments? where does outcome truth actually live? do your task descriptions name their objects? do failed tasks have successful twins? then read the paper&rsquo;s evaluation section and list what its benchmark handed it for free. if the mechanism&rsquo;s favorite gift is one your workload doesn&rsquo;t give &mdash; an 81-point benchmark win will not save it.</p>
+
+<p>the simplest onboarding i can offer, as always: open Claude Code in whatever project you&rsquo;re already working on and say</p>
+
+<pre><code>use github.com/canivel/kaos on this project</code></pre>
+
+<p>&mdash; danilo</p>
+
+</article>
+</div>
+
+<footer>
+<div class="wrap" style="max-width:740px;margin:0 auto;padding:0 2rem">
+  <div class="links">
+    <a href="../index.html">Home</a>
+    <a href="https://github.com/canivel/kaos">GitHub</a>
+    <a href="kaos-proof-ledger.html">Previous: climbing ARC-AGI-3, autonomously</a>
+    <a href="https://github.com/canivel/kaos/blob/main/docs/falsifiable-eval.md">Falsifiable-eval guide</a>
+  </div>
+  <p>KAOS &mdash; Kernel for Agent Orchestration &amp; Sandboxing &mdash; <a href="https://github.com/canivel">Danilo Canivel</a></p>
+</div>
+</footer>
+
+</body>
+</html>
