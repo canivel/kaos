@@ -17,7 +17,7 @@
       (docs/falsifiable-eval.md @ `3d1b4d5`) — paper cites the commit
 - [x] Compiles clean: pdflatex+bibtex, 0 bib warnings
 - [x] Author block: sole author, real name, AI-use disclosure section
-- [ ] Zenodo deposit (reserve DOI → stamp into tex → publish → arXiv)
+- [x] Zenodo published 2026-07-29: version DOI 10.5281/zenodo.21688617, concept DOI 10.5281/zenodo.21688616; DOI stamped in author block post-publish (same flow as paper 1). TODO on record: add Related works (Continues: 10.5281/zenodo.21533587; Is supplemented by: github repo) via Edit — did not save on first publish.
 - [ ] After arXiv ID: add to Zenodo record as "Is identical to"; cross-link
       companion paper records (Continues: 10.5281/zenodo.21533587 concept DOI)
 

@@ -568,6 +568,21 @@ Earlier KAOS versions integrated ideas from EvoSkills (v0.5.1) and MemPalace (v0
 
 ## Cite
 
+Two companion preprints — **the machine** (architecture + discipline) and **the field report** (what the discipline caught):
+
+> Canivel, D. (2026). *Benchmark Gifts: Four Measurable Workload Properties That Decided Agent-Mechanism Transfer in a Local-First Harness.* Zenodo. [doi:10.5281/zenodo.21688617](https://doi.org/10.5281/zenodo.21688617)
+
+```bibtex
+@misc{canivel2026gifts,
+  author       = {Canivel, Danilo},
+  title        = {Benchmark Gifts: Four Measurable Workload Properties That Decided Agent-Mechanism Transfer in a Local-First Harness},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.21688617},
+  url          = {https://doi.org/10.5281/zenodo.21688617}
+}
+```
+
 The preprint on KAOS's plasticity architecture and falsifiable-eval discipline:
 
 > Canivel, D. (2026). *Plasticity Without Parameters: Two-Timescale Usage-Statistics Consolidation in a Local-First Agent Harness.* Zenodo. [doi:10.5281/zenodo.21533588](https://doi.org/10.5281/zenodo.21533588)
