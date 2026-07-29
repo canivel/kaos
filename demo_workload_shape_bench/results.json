@@ -1,0 +1,739 @@
+{
+  "db": "kaos.db",
+  "M1_arg_entropy": {
+    "n_agents_ge8_calls": 109,
+    "pct_mono_label": 0.8899082568807339,
+    "median_reuse_all": 10.0,
+    "median_reuse_diverse_ge3": 1.0,
+    "median_reuse_diverse_ge5": 1.0,
+    "n_diverse_ge3": 12,
+    "pct_diverse_ge3_reuse_ge_1_3": 0.0,
+    "top_tools": [
+      [
+        "harness_run",
+        1405
+      ],
+      [
+        "fs_write",
+        78
+      ],
+      [
+        "shell_exec",
+        48
+      ],
+      [
+        "state_set",
+        39
+      ],
+      [
+        "mh_submit_harness",
+        22
+      ],
+      [
+        "fs_mkdir",
+        17
+      ],
+      [
+        "mh_read_archive",
+        10
+      ],
+      [
+        "fs_ls",
+        7
+      ]
+    ],
+    "per_agent": [
+      {
+        "agent": "01KNAE4QV5XXT2088R1WYYF54Z",
+        "n_calls": 10,
+        "n_labels": 10,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNAFER710MWX0SMCH98CVHR8",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAFER9WZW8C5CJ2JEKDQ959",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAFERCXVZET7VBT06DEH1Y1",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAFPPXPG4NFEZF1ZC4M6G6N",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNAFY1EXYGZXFW8MKBPKRV8R",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAFY1J4CV24DVBQS6V1M32D",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAFY1N4SPQ70WHAM2ZA46QF",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAG6JXHHVJH90ZQMP51QDB8",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNAG9S2BJQ5ACGWQD0NC2YXP",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAG9S5J2BTGBVS68Q3KQCAE",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAG9S8MB9YPNX5SJBWJEC8S",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAGJEBAXX0YVK98SM4P4BD2",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNAKRPPG06XVT9G9925HEGWD",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAKRPSRJYBRMCPW7TN8NVNX",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAKRPWRTCZCDEASJN5P1XAX",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNAMGZKZRXRNTKXJ27R2NHQE",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNAMGZPPY0505989FFN2ZHDW",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNC8KC14VGR2FAKVGH4B2ZYK",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNC8KC40ZDYDMPK0B3855MEY",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNC8KC6Z8EW75DPH6PJDRF13",
+        "n_calls": 32,
+        "n_labels": 1,
+        "reuse": 32.0
+      },
+      {
+        "agent": "01KNCW23KW2EJFE9GQTPG6FF0Q",
+        "n_calls": 12,
+        "n_labels": 12,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNEYS1XKCBF6S44BXFZT767H",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNEYS20KW83XV32EDTSEZHMY",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHAEFPXKAFGBT7HYTR3F365",
+        "n_calls": 11,
+        "n_labels": 10,
+        "reuse": 1.1
+      },
+      {
+        "agent": "01KNHAVJCGZDFFCK07KQZ4VHP8",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHAVJH682V6RP2PTP6PJTWC",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNHKXKENV39TW2J791Q53VJX",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHKXKRA3YP5GVDGX6GYAHM2",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHN3RZGX2XST2W5EJW7M3G1",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHN3S6DDR73KM7Q3DANG5J0",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHP1GKCZ4RFE5RWK33AA6FQ",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHPAHAKAZKGY4ZHD4E70F9H",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHPAHJ0FE0580M6M7433M7X",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHQ17H6Z3FBP1Y6JA9XVQWR",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHQ17N2FNM497FPBYF3GH4J",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHQE20DKE2SZJ77F1Y287AX",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNHQE250G4ZA6P4J8ANH2YS0",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHSRKCVEPD6F8QFC2YJQ9YM",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHSRKGH4510ZG6TS29A3424",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHSRKT91MV8866YH9W4H171",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHT6VRQZQ14MBZ3F1FPNEE2",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHT74B002XPS2HC1HWP9N65",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHTAZHN7V7S3QNQGWRF1508",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHWN0JYEZ3QM0AH9E96EHNW",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHWN0TFMJNQ3SD5XSP069F0",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHWN0XMFYJ01ZZHX475D8K2",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNHX1ZXVHDHMPKZE8W1JVMVE",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHX2S1AC2XH30HQC0CFPW9D",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHX7CXE1D0Z5NSCE5RZZR70",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNHX84CJFJ52ZJ07QKSD7YSV",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHX84FR9PQ5FC0MFDXKCAWY",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNHX84P72WXNJYSYMFPW10N1",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ0TGQSDDPTWX042S61ADD2",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ0TTRRDX7G4TXEE4K22G5M",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ16WNJDFVTAGNB82ANX6X2",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ16XSQCN01098A66JCHK7Q",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ16YGJHNQVR33P1X3ENP38",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1C06RVQ6SBKZHVQ0MFYYX",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1CF10Z41DYC72RG9P3JP3",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1DP6YWQ3Q2MGWAN45F0ZX",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1F7APRZPZ6WG7VAH224TJ",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1GD2NQ3Y1JKT2QEZFNZ4F",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1H24Z6QEFTXM2ZQZCTFMP",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1KCQ881BBJW8E69WZGXZN",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1KRR2TWZXQT4YM8AZCYAG",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1NE0FTE02AWTTESSAVV68",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1PEV9TARM571PDZ9A80PD",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1PZW09P9XP842YABQJEBF",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1Q5AFDDSHBZFMYBS7WF36",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1RE3XS5VFFR43SMQQTPGB",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1T8J24KC15BFMHXXJY0TT",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1XCY9NT604DKCNFCVEHDG",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1XZPARTZZ25C2JWXSQBT4",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ1YVJ7C3MKDX2K3X1RB6Y7",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ1Z1BCKX7XD3QKPJV2DF22",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2254K8ADY18JFFPDX1SP4",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2NYHHR6FQP2GDQ2GW6V5Z",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ2NYMN54H712GM780DZENY",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNJ2NYQQVJV4ZWQPXESYNF9A",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ2NYY9D7KQP8YM2RZJXEX5",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2T3Q296KTHJ286D86509M",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2TMDTHPS02G0A81QXKPPA",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2WYTXE2SA6FDZ5BFSSQ99",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ2X9M04T3E4ZSWR7KPY8EQ",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNJ2YJFGXVY2F2M9462ANGQT",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3007FJ4V3B1KAVJTKXPJN",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ31JJJBD40F5QV85ZDPERN",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ32A7DKFNVDQ0V61DZTB5Q",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ33YNJ9KY7A11B1RQSANF2",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ345PES3DXP2K088ZP9Y33",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ35FKD3Q5EKEF5H7EK45G9",
+        "n_calls": 8,
+        "n_labels": 1,
+        "reuse": 8.0
+      },
+      {
+        "agent": "01KNJ35G85FQ8M4K4VX3B31938",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ36QRSTJEH2MMWM0MAXCTF",
+        "n_calls": 9,
+        "n_labels": 1,
+        "reuse": 9.0
+      },
+      {
+        "agent": "01KNJ385MJZKASCGV85SA8C796",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3BKMH5DF6HAS5R5GWGBGV",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3CR44SGKX7DEG99CCK833",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3D1DWYAKDN748SX09APY0",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3E4PDEB6XRYQ4E5AP3DZY",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNJ3FRQDXJGZTNSBNEDWTKKX",
+        "n_calls": 10,
+        "n_labels": 1,
+        "reuse": 10.0
+      },
+      {
+        "agent": "01KNY50T5PYSM583ANDACHVW9E",
+        "n_calls": 20,
+        "n_labels": 18,
+        "reuse": 1.1111111111111112
+      },
+      {
+        "agent": "01KNY50VCTDSKJV2P4HA8772K8",
+        "n_calls": 8,
+        "n_labels": 8,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNY58CJCNHM2CFTN6QKDVGFQ",
+        "n_calls": 11,
+        "n_labels": 11,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNY58HR6WKSHRR7RQ4YMVW1W",
+        "n_calls": 9,
+        "n_labels": 9,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNY5A0T99C7XEVDWJ83GDKXG",
+        "n_calls": 28,
+        "n_labels": 25,
+        "reuse": 1.12
+      },
+      {
+        "agent": "01KNY5CN449FYETTN21S0JKVJC",
+        "n_calls": 9,
+        "n_labels": 9,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNY5DNYKC6X1B310VK567383",
+        "n_calls": 10,
+        "n_labels": 10,
+        "reuse": 1.0
+      },
+      {
+        "agent": "01KNY5EVAVAZR2G7K3HFR0S2HM",
+        "n_calls": 9,
+        "n_labels": 8,
+        "reuse": 1.125
+      },
+      {
+        "agent": "01KNY5F47TFQR2V5XRVF1JHEG2",
+        "n_calls": 14,
+        "n_labels": 11,
+        "reuse": 1.2727272727272727
+      }
+    ]
+  },
+  "M2_signal_density": {
+    "agents_by_status": {
+      "completed": 295,
+      "failed": 97,
+      "initialized": 37,
+      "killed": 24
+    },
+    "episode_signals_rows": 0,
+    "skill_uses_rows": 0,
+    "skill_uses_success_null": 0,
+    "failure_fingerprints_rows": 0,
+    "critical_steps_rows": 0,
+    "memory_rows": 0,
+    "tool_calls_error": 2,
+    "tool_calls_total": 1639
+  },
+  "M3_task_anchoring": {
+    "n_tasks": 171,
+    "anchored_any": 146,
+    "anchored_rate": 0.8538011695906432,
+    "per_anchor_kind": {
+      "path": 144,
+      "identifier": 127,
+      "error_code": 43,
+      "hex_or_hash": 43,
+      "version_or_num": 124
+    },
+    "median_tokens": 656
+  },
+  "M4_expert_availability": {
+    "n_failed_with_task": 73,
+    "n_success_with_task": 98,
+    "exact_task_pair_coverage": 0.0684931506849315,
+    "jaccard_ge_0_5_pair_coverage": 0.684931506849315,
+    "n_exact": 5,
+    "n_jaccard": 50
+  }
+}
