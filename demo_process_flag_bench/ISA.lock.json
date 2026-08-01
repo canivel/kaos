@@ -1,0 +1,101 @@
+{
+  "name": "process-flag-auditor-probe",
+  "version": "v1",
+  "pre_registered_at": "2026-08-01",
+  "source_paper": "MANTA arXiv:2607.28527 — PFA distillation per panel review 2026-08-01 (14th candidate)",
+  "mechanism_described_but_NOT_implemented": "PFA — Process-Flag Auditor. Episode-end LLM auditor over the ORGANIC event journal (events + tool_calls; NOT shared_log, which has zero organic rows) emitting typed process-anomaly flags WITHOUT ever seeing episode outcome. DIAGNOSTIC-ONLY: no auto-repair (MANTA's own numbers — 21.2% of repairs increase flags, auditor precision 0.21-0.375 — make repair inadmissible), no end-task-lift claim (the HASP frozen bar is not invoked and no such claim may be smuggled into the verdict). Bench-local only; nothing enters kaos/ without ACCEPT.",
+
+  "binding_thesis": "An outcome-blind LLM auditor reading only process evidence (event journal + tool calls, terminal events excluded) can flag KAOS episodes whose failure the existing error-string-triggered diagnosers are structurally blind to (verified: 121 organic failure-class episodes, 2 tool-call errors, 0 organic diagnoses), with flagged-vs-unflagged outcome separation that beats both a frozen deterministic detector and a matched-rate random control, at a non-degenerate flag rate, with verifiable evidence pointers.",
+
+  "workload_invariants": {
+    "source": "ORGANIC ONLY — the operator's live kaos.db, read-only. No synthetic episodes. Episodes accumulated by ordinary development/ARC operation before this lock's date.",
+    "episode_definition": "one agent_id with agents.status IN ('completed','failed','killed') and >= 3 non-terminal events (event_type NOT IN ('agent_complete','agent_fail','agent_kill'))",
+    "failure_class": "status IN ('failed','killed'); completed_class: status = 'completed'",
+    "sampling_frozen": "seed 20260801. ALL eligible failure-class episodes, capped at 80 by seeded sample; eligible completed episodes capped at 100 by seeded sample. Measured at design time: 116 failure-class and >= 234 completed eligible.",
+    "floors": "n_failure_class >= 40 AND n_completed >= 80 else VOID (insufficient organic sample). No synthetic substitution permitted.",
+    "blind_rendering_clause": "The auditor prompt is built ONLY from: task text (state key='task', first 300 chars), non-terminal events (type + compacted payload, 120-char cap, head-40/tail-20 window if > 60 events), tool_calls rows (tool_name, status, error_message 120-char cap), and inter-event duration. It MUST NOT contain: agents.status, terminal event types, or the tokens 'agent_complete', 'agent_fail', 'agent_kill', 'completed', 'failed', 'killed'. A mechanical leak-guard test asserts this on every rendered prompt; any violation VOIDS the run."
+  },
+
+  "flag_enum_frozen": [
+    "give_up_shaped_candidate",
+    "insufficient_search_coverage",
+    "evidence_lost_before_synthesis",
+    "duplicate_state_mutation",
+    "missing_validator",
+    "unsupported_impossibility_claim"
+  ],
+  "flag_enum_rationale": "the 6 supply-backed flags from the MANTA taxonomy. Dropped: tool_error_cascade (organic n=2), all consensus flags (shared_log organic n=0), message_compaction_loss (no compaction surface). Dropping is pre-registered here, not silent.",
+
+  "auditor_frozen": {
+    "implementation": "claude CLI, print mode, one call per episode, JSON contract {flags:[{flag, evidence_event_ids:[int], confidence:0..1, rationale}]}; empty flags array = clean. Timeout 120s; ONE retry on JSON parse failure; parse failure after retry = audit_error (counts against G0 coverage).",
+    "nondeterminism_disclosure": "LLM output is not seeded. SINGLE binding run; no re-roll, no best-of-k, no cherry-pick. The run's raw responses are persisted verbatim in results.json.",
+    "outcome_blindness": "the auditor never receives outcome; enforced by the blind_rendering_clause leak guard"
+  },
+
+  "arms": {
+    "FULL": "PFA — LLM auditor as frozen above. Episode is 'flagged' iff >= 1 flag emitted.",
+    "DET":  "frozen deterministic detector — flag iff (zero file_write events) OR (any tool_calls.status='error') OR (zero tool_call_start events). No tuning after this commit.",
+    "RAND": "matched-rate random control — flags a seeded (20260801) random subset of episodes at FULL's realized flag rate (computed after FULL runs; rate-matching is mechanical, not a tuning step).",
+    "B0":   "never-flags arm — used only in the falsification self-test."
+  },
+
+  "kill_gates": {
+    "G1": {
+      "name": "outcome separation",
+      "kill": true,
+      "predicate": "P(failure_class | flagged) - P(failure_class | unflagged) >= +0.15, computed over the full frozen sample, n >= 120. Zero flagged episodes => separation defined as 0 => KILL.",
+      "threshold_pp": 15.0,
+      "rationale": "MANTA reports 20.7pp on templated benchmarks; 15pp is the pre-registered heterogeneity-decayed floor. Below it the flags are noise on our traces and every downstream use is dead."
+    },
+    "G2": {
+      "name": "beats deterministic detector",
+      "kill": true,
+      "predicate": "FULL separation >= DET separation + 0.05",
+      "threshold_pp": 5.0,
+      "rationale": "if three trivial rules match the LLM, the LLM adds nothing worth its cost"
+    },
+    "G3": {
+      "name": "bidirectional non-degeneracy",
+      "kill": true,
+      "predicate": "FULL flag rate in [0.05, 0.60] of episodes",
+      "rationale": "GDL lesson applied: gate BOTH degeneracy directions — flag-everything and flag-nothing are equally dead"
+    },
+    "G4": {
+      "name": "evidence integrity",
+      "kill": true,
+      "predicate": ">= 70% of emitted flag instances carry >= 1 evidence_event_id resolving to a non-terminal event of the SAME episode",
+      "threshold": 0.70,
+      "rationale": "kills hallucinated evidence; the flags must be auditable back to journal rows or they are vibes"
+    },
+    "G5": {
+      "name": "causal isolation vs random control",
+      "kill": true,
+      "predicate": "FULL separation >= RAND separation + 0.10",
+      "threshold_pp": 10.0,
+      "rationale": "the lift must come from reading the trace, not from flagging at some rate"
+    }
+  },
+
+  "non_kill_gates": {
+    "G0": {
+      "name": "coverage + floors + leak guard",
+      "kill": false,
+      "predicate": "valid parsed audit for >= 95% of sampled episodes AND workload floors met (n_failure >= 40, n_completed >= 80) AND leak-guard passes on 100% of rendered prompts",
+      "rationale": "VOID-on-fail: broken plumbing or leaked labels make every other gate uninterpretable"
+    }
+  },
+
+  "verdict_rule": "VOID if G0 fails. ACCEPT iff G1 AND G2 AND G3 AND G4 AND G5. ANY kill-gate failure REJECTS. No retune-and-rerun. Per docs/falsifiable-eval.md (commit 3d1b4d5): a mandatory post-run instrument audit covers EVERY gate, passes and fails alike; the audit may hold or DOWNGRADE the disposition relative to the verdict, never upgrade it; a defective gate is fixed only in a successor lock.",
+
+  "no_retune_clause": "Thresholds, the flag enum, the rendering rules, the DET predicate, seeds, caps, and floors are BYTE-FROZEN at this commit. Any change requires a NEW commit + NEW entry in KNOWN_LOCK_SHA256. The harness refuses to run on any lock whose sha256 is not pre-registered.",
+
+  "judge": {
+    "kind": "mechanical",
+    "implementation": "ground truth = agents.status (failure_class vs completed), recorded by the harness before this lock existed; arms never see it (blind_rendering_clause). judge_kappa recorded as 1.0 by construction (no judgment to audit).",
+    "note": "outcome labels are episode-grain — exactly the grain the workload-shape audit (W2) showed the workload supplies"
+  },
+
+  "falsification_self_test": "FULL := B0 (never-flags) MUST emit [KILL] on G1 (zero flagged => separation 0) and G3 (rate < 0.05). FULL := RAND MUST emit [KILL] on at least one of G1/G5. Additionally an injected synthetic trace containing a duplicate file_write to the same path MUST elicit duplicate_state_mutation from the real auditor as a capability smoke check (admissibility, not a gate; failure here means the auditor cannot see even the easy case and the run should not proceed). A harness that cannot kill the feature is INADMISSIBLE.",
+
+  "honest_expected_outcome": "Open. For: the blind spot is verified (121 organic failure-class episodes invisible to error-string diagnosers) and the signal class exists organically. Against: 84% of eligible failure-class traces have only 3-4 events — the auditor may find too little to read (G1/G5 risk), and DET's zero-file-write rule may capture most of the separation cheaply (G2 risk, arguably the most likely kill). Net ACCEPT prior ~0.4. REJECT via G2 would itself be informative: it would say episode-shape heuristics suffice and no LLM is needed — a cheaper mechanism than the candidate. VOID only via plumbing. Prior probabilities are stated for honesty and confer no immunity."
+}
