@@ -1,0 +1,1934 @@
+{
+  "lock": {
+    "name": "process-flag-auditor-probe",
+    "version": "v1"
+  },
+  "sample": {
+    "n_failure": 80,
+    "n_completed": 100
+  },
+  "per_episode": [
+    {
+      "agent_id": "01KN0031QSC9BHZ3VQDZ8R8HMN",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN86DVRWR19W7ZRAZMBP76B0",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN86DWC6BAK97GR5ANAYX3KT",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN86DWHCG2QYB9F48BFKQFK5",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN86DWP76N0PW46SVH5QK1MD",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN86DWV1NBGRSYFBB4FZ33XD",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KN9K5P093JH2WECZ8RJCFZ16",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KN9N4BQ8B7KBKXRCWAF9PFBM",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KN9N7A1PE6M340VJM9EZSK38",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KN9ZCQKWRFZ0A7NCNM0CH56W",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": false,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNA3KBCWPJAVV098HWSKM2ZJ",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNAEE0TGCKWGBMZ81WBAQ7EX",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNAEE8ZE2NVVCGDJK6VD2FR5",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAFER9WZW8C5CJ2JEKDQ959",
+      "failure_class": true,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "evidence_lost_before_synthesis"
+      ]
+    },
+    {
+      "agent_id": "01KNAKTGKH8Q15NVX6JK6F8YH8",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMP94XHW61K258M9B4VNFR",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "duplicate_state_mutation",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMQMCKJ59ZJSKJPQ01JDX9",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "duplicate_state_mutation"
+      ]
+    },
+    {
+      "agent_id": "01KNAMYY3YXKGV5ZE7JGSN64R0",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNANGVDM2BQAGDD5F2E975DD",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNANTDX04BTDT6ASNSQ5YK03",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAPCATKW4ZGEA9TJBJYJZEM",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAPNX7TPJGZZ8KE1BK98SPR",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAQHCZT7RWY7M82894ZYRY6",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAR1DSSMW3CHCHR40R66YY4",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNARWX51YNBT4Y10X56VCWFY",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNASN4154W3DSMQ9SJBGWVGH",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNATGJ16GG25BATKFBKBRS3A",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAVBE7ADG4BJEJPK1THBDMN",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAVC1E66H3A2FEN6K2MY3G2",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAWC6T5TZR4502RR9CBZS4S",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNC8KBHACEDJB3CKN26KR1HN",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "evidence_lost_before_synthesis"
+      ]
+    },
+    {
+      "agent_id": "01KNC8RQH14C60Q3MXWJ6DCCSF",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "evidence_lost_before_synthesis",
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNCWAG6KYPYZ72DQZY84VQKB",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNCWHG8THHJZ37SV6WVKFVY3",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNCWSHX36TBN5YAAFFYWC5DV",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEVDKJBCJCZZBJG52YKK5F9",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEVFMQ2EA8Q8PFFG6D9Z7M1",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEWW6MTFP1CVSFJHR2QBHGP",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEXN4W3767J66F6VCAXZHGT",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEYVJ51PKDTZ5M3QMVT4GZT",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEZP3P60NGDC8D4V8MMP412",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNH8QFPNSPWS6DS8YXYFW6C4",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNH99T2QXTS68NHQ2XB4TADM",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNH9W5934GP1RBJ12KKZ3TJM",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHCCFA7H7PA31B875W3EHA3",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHDD5B1N0VPNH542AVH1D01",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHDZFN1H9JTHP5TAR27919X",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHEHT1GSMBKEF8A25WRTVWF",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHFW8WBQV64GD9M3WYJ63FN",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHGEKMWFNK7YCWVNHT7FX4G",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHKXJZ9BDNVXHSWHC0Z2BHJ",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "evidence_lost_before_synthesis"
+      ]
+    },
+    {
+      "agent_id": "01KNHMCFWMZC33TY13Z4837BXE",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHNGJZ0WKNAMS0KJ3J6A0N0",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHP2XMFRWKM7H4CVA5RFNSJ",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHQGRQ4P5K4YX4D61MEBYH0",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHR33CEWDK7VY4EZ0EEMRWF",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHRNDQWV06FY4MD60YVXA24",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHS7R62PESYAD8SN32GV1NF",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "give_up_shaped_candidate",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHSRJWDECXFK3YFK7SNA75A",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHT375X1P12S5N04QFV7201",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHTNHQNE245P59RWFS25ZW4",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHV7W0672QXMVMEXPAJZ8F5",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHWN03ZT3582QZA8DJ7KJTR",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHX83YEZ0WZ2V53XWJFTY3P",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNJFNVSR1FWE89EW5KJ8PCQV",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJFPVY8HWM8EWTKS4DS515X",
+      "failure_class": true,
+      "full": false,
+      "det": true,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNJFQM6MY8QNMPJJ8CY1XNQ8",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "evidence_lost_before_synthesis"
+      ]
+    },
+    {
+      "agent_id": "01KNJFYJ5HFWN6HT07RVV2M5KC",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY50TGYYAA8GX3NJSS1MZBE",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY50TPAJ3XN2V6P4E52STGK",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY50TV5DRHGKGWFVPWPA1YX",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNY55YXZPNJ3ZNQXNJPCT321",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY9JFDGW0KFWFG3YC4FWXZ6",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY9K4ZE38NQHCD1S2SH90RH",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNY9NA3Z623Q53Q4HWCVCEHV",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNYCC8E1RRG4PRTMBQAG78C7",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNYCNTTXKF0YFQNN8DEE68YQ",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNYCZ06JYKWE9342SPJN43BT",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNYDG5GK6SQ6QX0RAY8MJVHN",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNYDSAY0NJ8BC7VT20Z6EFB8",
+      "failure_class": true,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNA3S7N7JQ2PP4TAYBQWV51G",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNA4V00QRS357X4FN3FQDQCD",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNA93PDR39MK25VESPVKT4HW",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNAC8GZX072NT56AQ6RFMYGP",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNAFER710MWX0SMCH98CVHR8",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAG9S8MB9YPNX5SJBWJEC8S",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAKRNPMF7A971HJ02W63DNR",
+      "failure_class": false,
+      "full": false,
+      "det": true,
+      "rand": false,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNAKRPSRJYBRMCPW7TN8NVNX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAKRPWRTCZCDEASJN5P1XAX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMGZKZRXRNTKXJ27R2NHQE",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMP9JEKJBDX2GZKBPXQ32F",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMP9RCZV09FEKARX0KG89A",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNAMQN52XJJK0WKA9GFGGDGE",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNASRCG8NEDBAB05VQPD5EQD",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNATGKANB9YR7Q21410EK0PX",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNAWC7F4CXEJ0MGCR9Z9WH23",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNC5HYGCANP102YX4CE4JPKN",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNC8KC14VGR2FAKVGH4B2ZYK",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNC8KPT71DZA0ARDDQ1G1R6H",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNCV6K751Y7BCNXC98S12TKX",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNCX3W0QCRMYATGNRQRRJRZY",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNEV62FFECQCBWHG5R9VA0Y0",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": false,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNEV62JK10X909C3Y7X209PZ",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNEV88S5YZ3Y2DC54ZFHN5WV",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "duplicate_state_mutation"
+      ]
+    },
+    {
+      "agent_id": "01KNEV8AAN01HWAR9J1HB6YZKX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNEV8AE4PC50TNAE2KER2YJ0",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNEYS1XKCBF6S44BXFZT767H",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNFNBADYW0PDT4XM5CGSZBM8",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNH8GYBN3RE7EWDF76ENFYQG",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNH8GYJKRX12KHB1A0KN9M79",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNH8GYNBG6FNEFJJX6RXCC20",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNH8GYRE7T7XTM0KHVC8V8HE",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHAEFPXKAFGBT7HYTR3F365",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "duplicate_state_mutation",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHAVJH682V6RP2PTP6PJTWC",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHBTPZQZ4P67FH40JT6V4S6",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHD6BPNQQF0HYK26YXFMTH6",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHF44H2JMXN37Q9HDWA7379",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "duplicate_state_mutation",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHFK2Q7PJ82717MBZ7JKMAA",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHN3S6DDR73KM7Q3DANG5J0",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": false,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHN8RGBT6HEG1C2Z31GJ9QV",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHN91GR5CJ44ZBYSSSW4BEW",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHPAHAKAZKGY4ZHD4E70F9H",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHPAHJ0FE0580M6M7433M7X",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": false,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNHPES4MRBFFQS5N3KF9GM8J",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHPWFY4AJWCD5Z76NFHNVJ9",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator",
+        "duplicate_state_mutation"
+      ]
+    },
+    {
+      "agent_id": "01KNHQ17N2FNM497FPBYF3GH4J",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHQ91AN3ZSY9MB7MRAGK6TZ",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": false,
+      "flags": [
+        "insufficient_search_coverage",
+        "duplicate_state_mutation",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHQE20DKE2SZJ77F1Y287AX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHQJ4JW8NWK2DHCDVFKNZJ7",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHQS25AVD3VEKJ6VTAG95C9",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHSRKT91MV8866YH9W4H171",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHSXFSDRG8G7SVHZFPC69ND",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHSXPAM0M1BC2EXFVQQ8B78",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHT1SKMC0YJHEG0KAYYY5RB",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHTZ0PBB407HXFNCRXSM2D6",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHV32CN40EA9E9ZF5ZPX14P",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHVWS7HQJEG1NKY6ZKAQC5F",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHWN0TFMJNQ3SD5XSP069F0",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNHX2S1AC2XH30HQC0CFPW9D",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHX84FR9PQ5FC0MFDXKCAWY",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHX84SAZ5Z45035446XMQCS",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNHXP24A0PVVDB7Q5X5AWTNK",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0M29RJX94EA0JWPABG9ZN",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0M34ZAT4C65Q89TNRGT37",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "give_up_shaped_candidate",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0M46G3Y2VZ05KDSXMQRAC",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0M59QGTVEG0NHD2N57AM2",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0TGQSDDPTWX042S61ADD2",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0TT8F84T4VQNXZTKHQNXR",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNJ0TTRRDX7G4TXEE4K22G5M",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNJ16XSQCN01098A66JCHK7Q",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": false,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ16YGJHNQVR33P1X3ENP38",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1C06RVQ6SBKZHVQ0MFYYX",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": false,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNJ1CF10Z41DYC72RG9P3JP3",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1DP6YWQ3Q2MGWAN45F0ZX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1GD2NQ3Y1JKT2QEZFNZ4F",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1NE0FTE02AWTTESSAVV68",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1PEV9TARM571PDZ9A80PD",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": false,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1XZPARTZZ25C2JWXSQBT4",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ1Z1BCKX7XD3QKPJV2DF22",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ2NYMN54H712GM780DZENY",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ2T3Q296KTHJ286D86509M",
+      "failure_class": false,
+      "full": false,
+      "det": false,
+      "rand": true,
+      "flags": []
+    },
+    {
+      "agent_id": "01KNJ2TMDTHPS02G0A81QXKPPA",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ2YJFGXVY2F2M9462ANGQT",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": false,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ3007FJ4V3B1KAVJTKXPJN",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ30C441TMZXQQSBCE1VVGK",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator",
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNJ32A7DKFNVDQ0V61DZTB5Q",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ345PES3DXP2K088ZP9Y33",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ35G85FQ8M4K4VX3B31938",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ36QRSTJEH2MMWM0MAXCTF",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ3866GGE38BB75S72CRDET",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ3F8RW3N34Y0VRTEMTCGRS",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJ3FRQDXJGZTNSBNEDWTKKX",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJFQMY887XQZR8TX2Z4TKF6",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNJFR4037CE10KWERHD4KQBP",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNY50VJAZQ65EGBMR2PGB66R",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNY58HR6WKSHRR7RQ4YMVW1W",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNY5A13KG4D4QBNK73KZ07GD",
+      "failure_class": false,
+      "full": true,
+      "det": true,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "give_up_shaped_candidate"
+      ]
+    },
+    {
+      "agent_id": "01KNY5A19ZQM5V5EVFZYA5C8XF",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    },
+    {
+      "agent_id": "01KNY5CN449FYETTN21S0JKVJC",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage"
+      ]
+    },
+    {
+      "agent_id": "01KNYE2VSM25YZT6E4WEMNESRQ",
+      "failure_class": false,
+      "full": true,
+      "det": false,
+      "rand": true,
+      "flags": [
+        "insufficient_search_coverage",
+        "missing_validator"
+      ]
+    }
+  ],
+  "flag_histogram": {
+    "give_up_shaped_candidate": 78,
+    "insufficient_search_coverage": 89,
+    "missing_validator": 83,
+    "evidence_lost_before_synthesis": 5,
+    "duplicate_state_mutation": 7
+  },
+  "parse_ok_rate": 1.0,
+  "evidence": {
+    "instances": 262,
+    "resolved": 262
+  },
+  "gates": [
+    {
+      "gate": "G0",
+      "name": "coverage + floors + leak guard",
+      "passed": true,
+      "kill": false,
+      "detail": "parse_ok=1.000 (floor 0.95), leak_guard=True, n_failure=80 (floor 40), n_completed=100 (floor 80)"
+    },
+    {
+      "gate": "G1",
+      "name": "outcome separation",
+      "passed": false,
+      "kill": true,
+      "detail": "FULL separation=-0.062 (floor +0.150), n=180"
+    },
+    {
+      "gate": "G2",
+      "name": "beats deterministic detector",
+      "passed": false,
+      "kill": true,
+      "detail": "FULL=-0.062 vs DET=+0.653, delta=-0.715 (floor +0.050)"
+    },
+    {
+      "gate": "G3",
+      "name": "bidirectional non-degeneracy",
+      "passed": false,
+      "kill": true,
+      "detail": "FULL flag rate=0.900 (band [0.05, 0.60])"
+    },
+    {
+      "gate": "G4",
+      "name": "evidence integrity",
+      "passed": true,
+      "kill": true,
+      "detail": "resolved evidence rate=1.000 (floor 0.70) over 262 flag instances"
+    },
+    {
+      "gate": "G5",
+      "name": "causal isolation vs random control",
+      "passed": false,
+      "kill": true,
+      "detail": "FULL=-0.062 vs RAND=+0.000, delta=-0.062 (floor +0.100)"
+    }
+  ],
+  "judge_kappa": 1.0,
+  "verdict": "REJECT: kill gate(s) failed: G1, G2, G3, G5"
+}
