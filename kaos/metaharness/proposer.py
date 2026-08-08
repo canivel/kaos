@@ -1,18 +1,18 @@
 """Proposer agent — inspects the search archive and proposes new harness candidates.
 
-The proposer is a KAOS agent with special tools that let it read from the search
-archive (cross-agent read). This is the key insight from Meta-Harness: giving the
-proposer full filesystem access to all prior candidates' code, scores, and traces.
+The key insight from Meta-Harness is giving the proposer full visibility into all
+prior candidates' code, scores, and traces. Rather than a multi-turn tool loop
+(which replays the whole conversation per turn and times out on Opus/Sonnet), the
+proposer pre-reads the archive into a compacted digest (``_build_archive_digest``)
+and runs a single-shot LLM call that writes harness code blocks directly.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from kaos.ccr.runner import ClaudeCodeRunner
-from kaos.ccr.tools import ToolDefinition
 from kaos.metaharness.harness import HarnessCandidate
 from kaos.metaharness.prompts import build_proposer_prompt, build_pivot_prompt, build_consolidation_prompt, build_reflect_prompt
 
@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 class ProposerAgent:
     """Proposes new harness candidates by inspecting the search archive.
 
-    The proposer reads from the search agent's VFS (not its own) via
-    controlled cross-agent tools. Every read is audited in the event journal.
+    The proposer reads from the search agent's VFS (not its own) when it
+    pre-builds the archive digest. Every read is audited in the event journal.
     """
 
     def __init__(
@@ -37,119 +37,13 @@ class ProposerAgent:
         router: GEPARouter,
         search_agent_id: str,
         proposer_model: str | None = None,
-        max_iterations: int = 200,
+        max_iterations: int = 200,  # accepted for API stability; single-shot path ignores it
     ):
         self.afs = afs
         self.router = router
         self.search_agent_id = search_agent_id
         self.proposer_model = proposer_model
         self._submitted: list[HarnessCandidate] = []
-
-        # Create a CCR instance with custom tools for archive access
-        self.ccr = ClaudeCodeRunner(
-            afs, router,
-            max_iterations=max_iterations,
-            timeout_seconds=600,
-        )
-        self._register_archive_tools()
-
-    def _register_archive_tools(self) -> None:
-        """Register tools that let the proposer read from the search archive."""
-        self.ccr.register_tool(ToolDefinition(
-            name="mh_ls_archive",
-            description=(
-                "List files and directories in the meta-harness search archive. "
-                "Use this to explore the archive structure and find harnesses, "
-                "scores, and execution traces."
-            ),
-            parameters={
-                "type": "object",
-                "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "Directory path in the archive (e.g. '/harnesses', '/pareto')",
-                        "default": "/",
-                    },
-                },
-            },
-            handler=self._ls_archive,
-        ))
-
-        self.ccr.register_tool(ToolDefinition(
-            name="mh_read_archive",
-            description=(
-                "Read a file from the meta-harness search archive. Use this to "
-                "inspect harness source code, evaluation scores, and execution "
-                "traces. Execution traces (trace.jsonl) are the most valuable "
-                "source of information."
-            ),
-            parameters={
-                "type": "object",
-                "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "File path in the archive (e.g. '/harnesses/<id>/source.py')",
-                    },
-                },
-                "required": ["path"],
-            },
-            handler=self._read_archive,
-        ))
-
-        self.ccr.register_tool(ToolDefinition(
-            name="mh_grep_archive",
-            description=(
-                "Search file contents across the archive. Returns matching lines "
-                "with file paths. Use this to find patterns across harnesses, "
-                "search for specific failure modes in traces, or find which "
-                "harnesses use a particular technique."
-            ),
-            parameters={
-                "type": "object",
-                "properties": {
-                    "pattern": {
-                        "type": "string",
-                        "description": "Text pattern to search for (case-insensitive substring match)",
-                    },
-                    "path": {
-                        "type": "string",
-                        "description": "Directory to search in (e.g. '/harnesses' or '/harnesses/<id>')",
-                        "default": "/harnesses",
-                    },
-                    "file_glob": {
-                        "type": "string",
-                        "description": "File name filter (e.g. 'scores.json', 'trace.jsonl', 'source.py')",
-                        "default": "",
-                    },
-                },
-                "required": ["pattern"],
-            },
-            handler=self._grep_archive,
-        ))
-
-        self.ccr.register_tool(ToolDefinition(
-            name="mh_submit_harness",
-            description=(
-                "Submit a new harness candidate. The source code must define a "
-                "run(problem) function. Include a rationale explaining your "
-                "hypothesis for why this harness will improve on prior candidates."
-            ),
-            parameters={
-                "type": "object",
-                "properties": {
-                    "source_code": {
-                        "type": "string",
-                        "description": "Complete Python source code for the harness",
-                    },
-                    "rationale": {
-                        "type": "string",
-                        "description": "Explanation of the improvement hypothesis",
-                    },
-                },
-                "required": ["source_code", "rationale"],
-            },
-            handler=self._submit_harness,
-        ))
 
     def _assemble_prompt(
         self,
@@ -201,8 +95,7 @@ class ProposerAgent:
             prompt += (
                 "\n\n## Pre-loaded Archive Digest\n\n"
                 "The following is a compacted summary of ALL prior harnesses, "
-                "their scores, error patterns, and source code. You can still "
-                "use the archive tools for details, but this digest should have "
+                "their scores, error patterns, and source code. This digest has "
                 "everything you need to propose improvements.\n\n"
                 + (skills_text + "\n" if skills_text else "")
                 + (memory_context + "\n" if memory_context else "")
@@ -253,7 +146,7 @@ class ProposerAgent:
     ) -> list[HarnessCandidate]:
         """Run the proposer agent and collect submitted harness candidates.
 
-        Returns a list of HarnessCandidate objects submitted via mh_submit_harness.
+        Returns a list of HarnessCandidate objects extracted from the response.
         """
         self._submitted = []
 
@@ -338,13 +231,16 @@ class ProposerAgent:
         """Extract harness candidates from plain text when tool-use isn't available.
 
         Scans assistant messages for ```python blocks containing a run() function.
-        This is the fallback for providers like claude --print that don't support
-        structured tool calling.
+        This is how the single-shot proposer path collects candidates. The block
+        is expected to open with a `# HYPOTHESIS: ...` comment (per the proposer
+        prompt); that line, or failing that the prose immediately preceding the
+        block, is recorded as the candidate's rationale so the attempt archive and
+        memory store carry a real hypothesis instead of a placeholder.
         """
         import re
 
         python_block_re = re.compile(r"```python\s*\n(.*?)```", re.DOTALL)
-
+        # Iterate matches (not findall) so we can read the prose before each block.
         for msg in reversed(conversation):
             if msg.get("role") != "assistant":
                 continue
@@ -352,17 +248,20 @@ class ProposerAgent:
             if not content:
                 continue
 
-            blocks = python_block_re.findall(content)
-            for block in blocks:
-                block = block.strip()
+            last_end = 0
+            for m in python_block_re.finditer(content):
+                block = m.group(1).strip()
+                preceding = content[last_end:m.start()]
+                last_end = m.end()
                 if "def run(" not in block:
                     continue
                 if len(self._submitted) >= max_candidates:
                     break
 
+                rationale = self._extract_rationale(block, preceding)
                 candidate = HarnessCandidate.create(
                     source_code=block,
-                    metadata={"source": "text_extraction", "rationale": "extracted from plain text response"},
+                    metadata={"source": "text_extraction", "rationale": rationale},
                 )
                 valid, err = candidate.validate_interface()
                 if valid:
@@ -373,6 +272,26 @@ class ProposerAgent:
                     )
                 else:
                     logger.debug("Extracted block failed validation: %s", err)
+
+    @staticmethod
+    def _extract_rationale(block: str, preceding: str) -> str:
+        """Recover the candidate's improvement hypothesis for the record.
+
+        Preference order: an explicit ``# HYPOTHESIS:`` comment in the code block,
+        then the last non-empty prose line before the block, then a plain marker
+        so downstream readers can tell the model gave no rationale (rather than a
+        misleading placeholder that looks intentional)."""
+        import re
+
+        m = re.search(r"#\s*HYPOTHESIS:\s*(.+)", block, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()[:500]
+        for line in reversed(preceding.strip().splitlines()):
+            line = line.strip().lstrip("#").strip()
+            # skip markdown headers/fences and empty lines
+            if line and not line.startswith("```"):
+                return line[:500]
+        return "(no rationale stated by proposer)"
 
     # ── Skills ──────────────────────────────────────────────────
 
@@ -511,86 +430,3 @@ class ProposerAgent:
             return ""
 
     # ── Archive tool handlers ────────────────────────────────────
-
-    def _ls_archive(self, path: str = "/", **kwargs) -> str:
-        """List files in the search agent's VFS."""
-        try:
-            entries = self.afs.ls(self.search_agent_id, path)
-            return json.dumps(entries, indent=2)
-        except Exception as e:
-            return f"Error listing {path}: {e}"
-
-    def _grep_archive(self, pattern: str, path: str = "/harnesses", file_glob: str = "", **kwargs) -> str:
-        """Search file contents across the search agent's VFS."""
-        try:
-            entries = self.afs.ls(self.search_agent_id, path)
-            matches = []
-            pattern_lower = pattern.lower()
-
-            for entry in entries:
-                entry_path = entry.get("path", "")
-                if entry.get("is_dir"):
-                    # Recurse into subdirectories (one level)
-                    try:
-                        sub_entries = self.afs.ls(self.search_agent_id, entry_path)
-                        for sub in sub_entries:
-                            if sub.get("is_dir"):
-                                continue
-                            sub_path = sub.get("path", "")
-                            if file_glob and not sub_path.endswith(file_glob):
-                                continue
-                            self._grep_file(sub_path, pattern_lower, matches)
-                    except Exception:
-                        continue
-                else:
-                    if file_glob and not entry_path.endswith(file_glob):
-                        continue
-                    self._grep_file(entry_path, pattern_lower, matches)
-
-            if not matches:
-                return f"No matches for '{pattern}' in {path}"
-            # Cap output to avoid flooding context
-            if len(matches) > 50:
-                return "\n".join(matches[:50]) + f"\n... ({len(matches) - 50} more matches)"
-            return "\n".join(matches)
-        except Exception as e:
-            return f"Error searching {path}: {e}"
-
-    def _grep_file(self, path: str, pattern: str, matches: list) -> None:
-        """Search a single file for a pattern."""
-        try:
-            content = self.afs.read(self.search_agent_id, path).decode("utf-8", errors="replace")
-            for i, line in enumerate(content.split("\n"), 1):
-                if pattern in line.lower():
-                    matches.append(f"{path}:{i}: {line.strip()[:120]}")
-        except Exception:
-            pass
-
-    def _read_archive(self, path: str, **kwargs) -> str:
-        """Read a file from the search agent's VFS."""
-        try:
-            content = self.afs.read(self.search_agent_id, path)
-            return content.decode("utf-8", errors="replace")
-        except FileNotFoundError:
-            return f"File not found: {path}"
-        except Exception as e:
-            return f"Error reading {path}: {e}"
-
-    def _submit_harness(self, source_code: str, rationale: str = "", **kwargs) -> str:
-        """Accept a harness submission from the proposer."""
-        candidate = HarnessCandidate.create(
-            source_code=source_code,
-            metadata={"rationale": rationale},
-        )
-
-        # Validate interface before accepting
-        valid, err = candidate.validate_interface()
-        if not valid:
-            return f"Rejected: {err}. Fix the harness and resubmit."
-
-        self._submitted.append(candidate)
-        return (
-            f"Harness {candidate.harness_id[:12]}... accepted "
-            f"({len(self._submitted)} submitted so far). "
-            f"Validation passed: run() function found."
-        )

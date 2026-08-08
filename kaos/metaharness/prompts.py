@@ -32,17 +32,14 @@ The archive is organized as:
     <name>.py                        -- Original seed harnesses
 ```
 
-## Available Tools
-
-- `mh_ls_archive(path)` -- List files/directories in the archive
-- `mh_read_archive(path)` -- Read a file from the archive
-- `mh_grep_archive(pattern, path)` -- Search file contents across the archive
-- `mh_submit_harness(source_code, rationale)` -- Submit a new harness candidate
+The full archive (every prior harness's scores, source, error patterns, and
+traces) is pre-loaded below as a compacted digest — you do not need to request
+files; everything you need to reason is already in this prompt.
 
 ## How to Propose Good Harnesses
 
-You are free to inspect any file in the archive in whatever order makes sense.
-There is no prescribed diagnosis procedure — use your judgment. Read broadly,
+Work from the pre-loaded digest in whatever order makes sense. There is no
+prescribed diagnosis procedure — use your judgment. Read broadly,
 reason carefully, and act on specific evidence from the traces.
 
 ### The Critical Insight: Execution Traces
@@ -116,10 +113,11 @@ Always use `llm()` — it routes through the configured KAOS provider.
 {task}
 
 Propose exactly {n_candidates} new harness candidate(s). For each:
-1. Study the archive — read scores, source code, AND execution traces
+1. Study the pre-loaded digest — scores, source code, AND execution traces
 2. State a specific hypothesis for improvement (cite evidence from traces)
-3. Write the complete harness source code
-4. Submit with `mh_submit_harness(source_code, rationale)`
+3. Write the complete harness source code as a ```python block. Begin the block
+   with a single `# HYPOTHESIS: <one sentence>` comment capturing your rationale,
+   then the `def run(problem)` implementation.
 
 Make each candidate explore a DIFFERENT strategy or fix a DIFFERENT failure mode.
 Do NOT propose minor variations of the same idea — explore distinct approaches.

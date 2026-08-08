@@ -161,7 +161,7 @@ class MetaHarnessSearch:
                 logger.warning("Iteration %d: no candidates proposed, skipping", iteration)
                 continue
 
-            # 3b. Interface validation (already done in proposer._submit_harness)
+            # 3b. Interface validation (already done in proposer._extract_from_text)
             valid_candidates = []
             for c in candidates:
                 ok, err = c.validate_interface()
@@ -241,7 +241,7 @@ class MetaHarnessSearch:
         total_duration = time.time() - start_time
         self.afs.complete(self.search_agent_id)
 
-        return SearchResult(
+        result = SearchResult(
             search_agent_id=self.search_agent_id,
             frontier=frontier,
             all_results=self._all_results,
@@ -249,6 +249,8 @@ class MetaHarnessSearch:
             total_duration_seconds=total_duration,
             iterations_completed=self.config.max_iterations,
         )
+        self._log_to_journal(result)
+        return result
 
     async def run_seeds_only(self) -> SearchResult:
         """Evaluate seed harnesses only — no proposer iterations (dry-run mode)."""
@@ -275,7 +277,7 @@ class MetaHarnessSearch:
         total_duration = time.time() - start_time
         self.afs.complete(self.search_agent_id)
 
-        return SearchResult(
+        result = SearchResult(
             search_agent_id=self.search_agent_id,
             frontier=frontier,
             all_results=self._all_results,
@@ -283,6 +285,8 @@ class MetaHarnessSearch:
             total_duration_seconds=total_duration,
             iterations_completed=0,
         )
+        self._log_to_journal(result)
+        return result
 
     async def resume(self, search_agent_id: str) -> SearchResult:
         """Resume an interrupted Meta-Harness search.
@@ -421,7 +425,7 @@ class MetaHarnessSearch:
         total_duration = time.time() - start_time
         self.afs.complete(search_agent_id)
 
-        return SearchResult(
+        result = SearchResult(
             search_agent_id=search_agent_id,
             frontier=frontier,
             all_results=self._all_results,
@@ -429,6 +433,45 @@ class MetaHarnessSearch:
             total_duration_seconds=total_duration,
             iterations_completed=self.config.max_iterations,
         )
+        self._log_to_journal(result)
+        return result
+
+    def _log_to_journal(self, result: SearchResult) -> None:
+        """Record a completed search in the experiments journal (family=mh_search).
+
+        Best-effort: a journal failure must never break a search. Skips in-memory
+        databases (a separate ExperimentStore connection to ':memory:' would open a
+        distinct empty DB). This closes the schema's long-standing promise that the
+        journal covers 'probe / mh_search / benchmark runs' — until now mh_search
+        never wrote a row despite the docstring.
+        """
+        db_path = getattr(self.afs, "db_path", None)
+        if not db_path or db_path == ":memory:":
+            return
+        try:
+            from kaos.experiments import ExperimentStore
+
+            best = result.frontier.best_by_objective  # direction-aware best per objective
+            arms = {
+                obj: {"best": point.scores.get(obj), "harness_id": point.harness_id}
+                for obj, point in best.items()
+            }
+            with ExperimentStore(db_path) as store:
+                store.log_run(
+                    name=self.config.benchmark,
+                    family="mh_search",
+                    arms=arms,
+                    metadata={
+                        "search_agent_id": result.search_agent_id,
+                        "harnesses_evaluated": result.total_harnesses_evaluated,
+                        "frontier_size": len(result.frontier.points),
+                        "iterations_completed": result.iterations_completed,
+                        "objectives": self.config.objectives,
+                    },
+                    duration_ms=int(result.total_duration_seconds * 1000),
+                )
+        except Exception as e:  # noqa: BLE001 — journal is advisory, never fatal
+            logger.warning("Failed to log mh_search run to experiments journal: %s", e)
 
     def _update_stagnation(self, frontier: ParetoFrontier, iteration: int) -> int:
         """CORAL Tier 1: track consecutive non-improving iterations.
@@ -443,15 +486,36 @@ class MetaHarnessSearch:
         stagnant: int = self.afs.get_state_or(self.search_agent_id, "stagnant_iterations") or 0
         pivot_fired_at: int | None = self.afs.get_state_or(self.search_agent_id, "pivot_fired_at")
 
+        directions = self.config.objective_directions()
         curr_best: dict[str, float] = {}
-        for obj in self.config.objective_directions():
+        for obj, direction in directions.items():
             vals = [p.scores.get(obj, 0.0) for p in frontier.points]
-            curr_best[obj] = max(vals) if vals else 0.0
+            if not vals:
+                curr_best[obj] = 0.0
+            elif direction == "minimize":
+                curr_best[obj] = min(vals)
+            else:
+                curr_best[obj] = max(vals)
 
+        # Improvement is DIRECTIONAL: a maximize objective must rise, a minimize
+        # objective must fall (by more than epsilon). A prior `abs()` test counted
+        # any movement — including a regression on a minimize objective like
+        # -context_cost — as improvement, silently starving the CORAL pivot. A
+        # first-seen objective (not yet in prev_best) counts as improvement, as it
+        # did before, so the opening iteration never reads as stagnant.
         epsilon = 0.001
+
+        def _objective_improved(obj: str, direction: str) -> bool:
+            if obj not in prev_best:
+                return True
+            curr, prev = curr_best.get(obj, 0.0), prev_best.get(obj, 0.0)
+            if direction == "minimize":
+                return curr < prev - epsilon
+            return curr > prev + epsilon
+
         improved = any(
-            abs(curr_best.get(obj, 0.0) - prev_best.get(obj, 0.0)) > epsilon
-            for obj in curr_best
+            _objective_improved(obj, direction)
+            for obj, direction in directions.items()
         ) or (len(frontier.points) > (self.afs.get_state_or(self.search_agent_id, "prev_frontier_size") or 0))
 
         if improved:

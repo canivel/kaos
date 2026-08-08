@@ -1271,6 +1271,44 @@ def mh():
     pass
 
 
+@mh.command("stats")
+@click.argument("search_agent_id")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def mh_stats(ctx, search_agent_id: str, db: str):
+    """Read-only bootstrap stats over a completed search archive.
+
+    For each evaluated candidate, computes the vs-incumbent correctness
+    difference and its 95%% bootstrap CI, flagging which apparent improvements
+    are within noise. Reads the archive only — never mutates the search.
+    """
+    from kaos import Kaos
+    from kaos.metaharness.stats import compute_search_stats
+
+    afs = Kaos(db_path=db)
+    try:
+        stats = compute_search_stats(afs, search_agent_id)
+    finally:
+        afs.close()
+
+    if _json_out(ctx, stats.to_dict()):
+        return
+
+    console.print(f"[bold]Search[/bold] {search_agent_id}")
+    console.print(f"objectives: {stats.objectives or '(none recorded)'}")
+    console.print(f"incumbent: {stats.incumbent_id or '(none)'}\n")
+    for c in sorted(stats.candidates, key=lambda x: (not x.is_incumbent, -x.accuracy)):
+        tag = " [cyan](incumbent)[/cyan]" if c.is_incumbent else ""
+        line = f"  {c.harness_id[:12]}…  acc={c.accuracy:.3f} (n={c.n_problems}){tag}"
+        if c.mean_diff is not None:
+            verdict = "[green]distinguishable[/green]" if c.distinguishable else "[dim]within noise[/dim]"
+            line += (f"  Δvs-incumbent={c.mean_diff:+.3f} "
+                     f"CI[{c.ci_lo:+.3f}, {c.ci_hi:+.3f}] {verdict}")
+        console.print(line)
+    for note in stats.notes:
+        console.print(f"\n[yellow]•[/yellow] {note}")
+
+
 @mh.command("search")
 @click.option("--benchmark", "-b", required=True,
               type=click.Choice(["text_classify", "math_rag", "agentic_coding"]),
