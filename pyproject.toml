@@ -1,6 +1,6 @@
 [project]
 name = "kaos"
-version = "0.9.2"
+version = "0.10.0"
 description = "KAOS — Kernel for Agent Orchestration & Sandboxing. Isolated, auditable, portable agent runtimes backed by SQLite."
 readme = "README.md"
 license = "MIT"

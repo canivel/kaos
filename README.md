@@ -2,11 +2,11 @@
 
 **A local-first multi-agent harness.** Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use (neuroplasticity). And it is the only framework whose own mechanisms must pass **pre-registered, falsifiable kill gates** before they ship. Measured, not claimed.
 
-[![Version](https://img.shields.io/badge/version-0.9.2-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-0.10.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)
-[![Discipline](https://img.shields.io/badge/mechanisms%20evaluated-10%20·%200%20shipped%20on%20hope-fd79a8)]()
+[![Discipline](https://img.shields.io/badge/mechanisms%20evaluated-15%20·%200%20shipped%20on%20hope-fd79a8)]()
 [![Research](https://img.shields.io/badge/research%20integrations-9-brightgreen)]()
 [![MCP tools](https://img.shields.io/badge/MCP%20tools-58-00DC82)]()
 
@@ -127,7 +127,7 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 ## The discipline — nothing ships without a probe it could fail
 
-Most frameworks add mechanisms and report the demo that worked. Every KAOS mechanism candidate faces a probe whose kill gates are written and **sha256-locked before any feature code exists** — the harness refuses to run on an edited lock, a falsification self-test proves the feature *can lose*, and the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. **Ten candidates evaluated since v0.7; zero shipped on hope** — every verdict is on disk with its audit trail (see `demo_synthesis_consolidation_bench/`, `demo_action_realization_bench/`).
+Most frameworks add mechanisms and report the demo that worked. Every KAOS mechanism candidate faces a probe whose kill gates are written and **sha256-locked before any feature code exists** — the harness refuses to run on an edited lock, a falsification self-test proves the feature *can lose*, and the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. **Fifteen candidates evaluated since v0.7; zero shipped on hope** — every verdict is on disk with its audit trail (see `demo_synthesis_consolidation_bench/`, `demo_action_realization_bench/`).
 
 The apparatus is itself a shipped, tested primitive:
 

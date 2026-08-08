@@ -1,7 +1,7 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.9.2). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
+KAOS is a local-first multi-agent orchestration framework (v0.10.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
 
 ## Package & CLI
 - Package: `kaos` (import with `from kaos import Kaos`)
