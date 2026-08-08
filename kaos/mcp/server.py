@@ -630,6 +630,11 @@ def build_tool_list() -> list[Tool]:
                         "default": "pending",
                         "description": "Record outcome immediately (or use skill_outcome later)",
                     },
+                    "agent_id": {
+                        "type": "string",
+                        "description": "Attributing agent id (threads into skill_uses "
+                                       "telemetry + per-agent Hebbian association)",
+                    },
                 },
                 "required": ["skill_id"],
             },
@@ -669,6 +674,11 @@ def build_tool_list() -> list[Tool]:
                     "success": {"type": "boolean", "description": "True = succeeded, False = failed"},
                     "quality": {"type": "number", "minimum": 0, "maximum": 1,
                                 "description": "Optional continuous outcome [0,1]"},
+                    "agent_id": {
+                        "type": "string",
+                        "description": "Attributing agent id (threads into skill_uses "
+                                       "telemetry + per-agent Hebbian association)",
+                    },
                 },
                 "required": ["skill_id", "success"],
             },
@@ -2091,10 +2101,11 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         params = args.get("params") or {}
         rendered = skill.apply(**params)
         outcome = args.get("outcome", "pending")
+        agent_id = args.get("agent_id")
         if outcome == "success":
-            sk.record_outcome(skill.skill_id, success=True)
+            sk.record_outcome(skill.skill_id, success=True, agent_id=agent_id)
         elif outcome == "failure":
-            sk.record_outcome(skill.skill_id, success=False)
+            sk.record_outcome(skill.skill_id, success=False, agent_id=agent_id)
         # "pending" — caller will use skill_outcome later
         return json.dumps({
             "skill_id": skill.skill_id,
@@ -2119,7 +2130,7 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         quality = args.get("quality")
         try:
             sk.record_outcome(args["skill_id"], success=args["success"],
-                              quality=quality)
+                              quality=quality, agent_id=args.get("agent_id"))
         except ValueError as e:
             return json.dumps({"error": str(e)}, indent=2)
         skill = sk.get(args["skill_id"])

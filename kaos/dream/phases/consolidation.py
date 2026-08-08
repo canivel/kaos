@@ -45,6 +45,7 @@ class ConsolidationReport:
     pruned: int = 0
     merge_candidates: int = 0
     applied: int = 0
+    skipped_duplicates: int = 0
     trigger_reason: str | None = None
 
 
@@ -83,8 +84,22 @@ def run(
     finally:
         conn.row_factory = prev
 
-    # Persist every proposal
+    # Persist proposals — but never re-propose an identity already on the
+    # journal in ANY state. A merge pair a human rejected reappears every run
+    # (both skills stay active), and an applied promote can re-surface; without
+    # this dedup the journal fills with noise and, worse, silently re-asks a
+    # question already answered 'no'. Dedup is by canonical identity (kind +
+    # order-independent target ids), not by the full targets blob (which carries
+    # volatile fields like hit counts and jaccard scores).
+    seen = _existing_identities(conn)
+    fresh: list[Proposal] = []
     for p in report.proposals:
+        ident = _proposal_identity(p.kind, p.targets)
+        if ident in seen:
+            report.skipped_duplicates += 1
+            continue
+        seen.add(ident)
+        fresh.append(p)
         try:
             conn.execute(
                 "INSERT INTO consolidation_proposals "
@@ -93,6 +108,8 @@ def run(
             )
         except sqlite3.OperationalError:
             pass
+    # Only newly-proposed (non-duplicate) candidates are eligible to apply.
+    report.proposals = fresh
 
     if not dry_run:
         report.applied = _apply_safe(conn, report.proposals)
@@ -112,6 +129,44 @@ def run(
         pass
 
     return report
+
+
+# ── Re-proposal dedup ───────────────────────────────────────────────
+
+
+def _proposal_identity(kind: str, targets: dict) -> str:
+    """Canonical, order-independent identity for a proposal, ignoring volatile
+    fields (hit counts, jaccard, names). Two proposals with the same identity
+    are the same decision and must not both be journaled."""
+    if kind == "promote":
+        return f"promote:{targets.get('memory_id')}"
+    if kind == "prune":
+        return f"prune:{targets.get('skill_id')}"
+    if kind == "merge":
+        ids = sorted(str(i) for i in (targets.get("skill_ids") or []))
+        return "merge:" + "-".join(ids)
+    if kind == "split":
+        return f"split:{targets.get('skill_id')}"
+    return f"{kind}:" + json.dumps(targets, sort_keys=True, default=str)
+
+
+def _existing_identities(conn: sqlite3.Connection) -> set[str]:
+    """Identities of every proposal already on the journal, any status. A
+    previously applied/rejected/pending decision blocks re-proposal."""
+    try:
+        rows = conn.execute(
+            "SELECT kind, targets FROM consolidation_proposals"
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return set()
+    out: set[str] = set()
+    for r in rows:
+        try:
+            targets = json.loads(r[1]) if r[1] else {}
+        except (json.JSONDecodeError, TypeError):
+            targets = {}
+        out.add(_proposal_identity(r[0], targets))
+    return out
 
 
 # ── Finders ─────────────────────────────────────────────────────────
