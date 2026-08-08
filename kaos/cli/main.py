@@ -191,6 +191,40 @@ def eval_group():
     """Falsifiable-eval primitive (kaos.eval.harness)."""
 
 
+@eval_group.command("verify-numerics")
+@click.argument("artifact", type=click.Path(exists=True))
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path (measurement corpus)")
+@click.option("--results", multiple=True,
+              help="results.json path(s) to add to the corpus (repeatable)")
+@click.pass_context
+def eval_verify_numerics(ctx, artifact: str, db: str, results: tuple[str, ...]):
+    """Trace every measurement-shaped number in ARTIFACT to a recorded measurement.
+
+    Numbers that resolve to the experiments journal or a given results.json are
+    'verified'; measurement-shaped numbers with no trace are 'unverifiable' and
+    listed. Semver, dates, years, file:line refs, URLs, hashes and #-ordinals are
+    allowlisted. Exits non-zero if any number is unverifiable (CI-gate friendly).
+    """
+    from kaos.eval.verify_numerics import verify_text
+
+    text = Path(artifact).read_text(encoding="utf-8")
+    report = verify_text(text, db_path=db, results_paths=list(results))
+
+    if _json_out(ctx, report.to_dict()):
+        ctx.exit(0 if report.ok else 1)
+        return
+
+    console.print(
+        f"[bold]{artifact}[/bold] — {len(report.verified)} verified, "
+        f"[{'green' if report.ok else 'red'}]{len(report.unverifiable)} unverifiable[/] "
+        f"(corpus: {report.corpus_size} recorded numbers)"
+    )
+    for c in report.unverifiable:
+        console.print(f"  [red]✗[/red] {c.raw}  [dim]…{c.context}…[/dim]")
+    if not report.ok:
+        ctx.exit(1)
+
+
 @eval_group.group("probe")
 def eval_probe_group():
     """Run / verify / falsify a Probe subclass."""
