@@ -1300,6 +1300,118 @@ def search_files(ctx, query_text: str, agent: str, db: str, limit: int):
 
 
 @cli.group()
+def bench():
+    """Attraktor — the validated collective-learning loop (workspace brain)."""
+    pass
+
+
+@bench.command("status")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.pass_context
+def bench_status(ctx, config_file: str, db: str):
+    """Show the Attraktor integration config + local brain contents."""
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    out: dict = {
+        "enabled": cfg.enabled,
+        "mode": "remote" if cfg.is_remote else "local-only",
+        "endpoint": cfg.endpoint,
+        "workspace": cfg.workspace,
+        "tier": cfg.tier,
+        "publish_scope": cfg.resolved_publish_scope(),
+        "token_present": cfg.token() is not None,
+        "problems": cfg.problems,
+    }
+    bench_path = Path(db).parent / cfg.local_bench_path
+    if bench_path.exists():
+        conn = open_bench(bench_path)
+        try:
+            out["candidates"] = dict(conn.execute(
+                "SELECT status, COUNT(*) FROM bench_candidates GROUP BY status").fetchall())
+            out["records"] = dict(conn.execute(
+                "SELECT verdict, COUNT(*) FROM eval_records GROUP BY verdict").fetchall())
+            out["pulls"] = conn.execute("SELECT COUNT(*) FROM bench_pulls").fetchone()[0]
+        finally:
+            conn.close()
+    else:
+        out["local_bench"] = "not created yet — run `kaos bench harvest`"
+
+    if _json_out(ctx, out):
+        return
+    console.print(f"[bold]Attraktor[/bold] — {'enabled' if cfg.enabled else '[dim]disabled[/dim]'} "
+                  f"({out['mode']}, publish → {out['publish_scope']})")
+    for k in ("candidates", "records", "pulls"):
+        if k in out:
+            console.print(f"  {k}: {out[k]}")
+    for p in cfg.problems:
+        console.print(f"  [yellow]•[/yellow] {p}")
+
+
+@bench.command("harvest")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.pass_context
+def bench_harvest(ctx, db: str, config_file: str):
+    """Harvest validated-candidate learnings from this workspace (idempotent)."""
+    import sqlite3 as _sq
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.harvest import harvest_all
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    kaos_conn = _sq.connect(f"file:{db}?mode=ro", uri=True)
+    bench_conn = open_bench(Path(db).parent / cfg.local_bench_path)
+    try:
+        rep = harvest_all(kaos_conn, bench_conn)
+    finally:
+        kaos_conn.close()
+        bench_conn.close()
+    if _json_out(ctx, rep.to_dict()):
+        return
+    console.print(f"harvested: {rep.skills_harvested} skills, "
+                  f"{rep.promotions_harvested} promotions, "
+                  f"{rep.experiments_harvested} mechanism evals "
+                  f"(E1 passed {rep.e1_passed}, rejected {rep.e1_rejected}, "
+                  f"E0 accumulating {rep.e0_accumulating})")
+
+
+@bench.command("rejections")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("--limit", default=20)
+@click.pass_context
+def bench_rejections(ctx, db: str, config_file: str, limit: int):
+    """What has this workspace tried and rejected, and WHY (D0.1: rejections
+    are first-class data — check here before re-trying a known-dead pattern)."""
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    bench_path = Path(db).parent / cfg.local_bench_path
+    if not bench_path.exists():
+        if not _json_err(ctx, "no local bench yet — run `kaos bench harvest`"):
+            console.print("[yellow]no local bench yet — run `kaos bench harvest`[/yellow]")
+        return
+    conn = open_bench(bench_path)
+    try:
+        rows = [dict(r) for r in conn.execute(
+            "SELECT source_ref, kind, status, rejection_reason, decided_at "
+            "FROM bench_candidates WHERE status IN ('e1_rejected','e2_rejected','error') "
+            "ORDER BY decided_at DESC LIMIT ?", (limit,))]
+    finally:
+        conn.close()
+    if _json_out(ctx, {"rejections": rows}):
+        return
+    if not rows:
+        console.print("no rejections recorded yet")
+    for r in rows:
+        console.print(f"  [red]✗[/red] {r['source_ref']} [{r['kind']}] — {r['rejection_reason']}")
+
+
+@cli.group()
 def mh():
     """Meta-Harness — automated harness optimization."""
     pass
