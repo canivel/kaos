@@ -8,6 +8,23 @@ fidelity, consumed axes — nothing is served without its disclosure).
 structural fix for the M2 famine: outcomes come from the runner's own episode
 status, never from an agent's claim.
 
+Brick 10 — arm assignment (``arms_mode: probe``, the pre-ACCEPT default):
+while the loop itself is unproven, every MATCHED pull is deterministically
+assigned an episode arm so the workspace accumulates exactly the evidence the
+binding kill-gate probe consumes:
+
+    on         (45%)  normal injection
+    off        (45%)  match ledgered, NOTHING injected — the causal control
+    scrambled  (10%)  same tokens, word-shuffled payloads — the placebo arm
+                      (if 'scrambled' beats 'off', measured gains are
+                      prompt-padding artifacts and G4 kills the loop)
+
+Assignment is a pure function of (agent_id, task_hash): retrying the same task
+lands in the same arm, so selection can't leak into arm membership. Rates are
+LOCK-BOUND constants (demo_attraktor_loop_bench/ISA.lock.json) — changing them
+mid-accumulation would be retuning. ``arms_mode: serve`` (post-ACCEPT) always
+injects.
+
 Liveness rule: hooks are best-effort and NEVER raise into the agent loop — a
 broken bench degrades to exactly today's behavior. ``bench.enabled: false``
 (the default) short-circuits everything.
@@ -15,6 +32,7 @@ broken bench degrades to exactly today's behavior. ``bench.enabled: false``
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from pathlib import Path
 
@@ -25,6 +43,26 @@ from kaos.bench.schema import open_bench
 
 logger = logging.getLogger(__name__)
 
+# Lock-bound arm rates (ISA.lock.json 'arms'); cumulative thresholds.
+ARM_ON_RATE = 0.45
+ARM_OFF_RATE = 0.45
+ARM_SCRAMBLED_RATE = 0.10
+
+
+def assign_arm(agent_id: str, task_hash: str) -> str:
+    """Deterministic episode-arm assignment: u = sha256(agent|task) → [0,1)."""
+    h = hashlib.sha256(f"{agent_id}|{task_hash}".encode()).hexdigest()[:8]
+    u = int(h, 16) / 0x100000000
+    if u < ARM_ON_RATE:
+        return "on"
+    if u < ARM_ON_RATE + ARM_OFF_RATE:
+        return "off"
+    return "scrambled"
+
+
+def _task_hash(task_text: str) -> str:
+    return hashlib.sha256(task_text.encode("utf-8", "replace")).hexdigest()[:16]
+
 
 class BenchHooks:
     """Attach to a ClaudeCodeRunner. One instance per runner; tracks in-flight
@@ -34,21 +72,27 @@ class BenchHooks:
                  config_path: str = "kaos.yaml", db_dir: str | Path = ".") -> None:
         self.config = config or load_bench_config(config_path)
         self._bench_path = Path(db_dir) / self.config.local_bench_path
-        self._exposures: dict[str, list[PulledItem]] = {}
+        # agent_id -> (pull_id, arm, task_hash, items)
+        self._exposures: dict[str, tuple[str, str, str, list[PulledItem]]] = {}
 
     # ── feed-back: pull + inject ─────────────────────────────────────
 
     def on_task_start(self, agent_id: str, task_text: str) -> str | None:
         """Returns a system-prompt injection block, or None (disabled / no match /
-        any failure). Every pull decision is ledgered by pull() itself."""
+        off-arm / any failure). Every pull decision is ledgered by pull() itself;
+        the arm assignment is ledgered on the bench_pulls row."""
         if not self.config.enabled:
             return None
+        th = _task_hash(task_text)
+        arm = ("on" if self.config.arms_mode == "serve"
+               else assign_arm(agent_id, th))
         try:
             bench = open_bench(self._bench_path)
             try:
                 shape = self._fingerprint(task_text)
                 res = pull(bench, agent_id=agent_id, task_text=task_text,
-                           task_shape=shape)
+                           task_shape=shape, task_hash=th, arm=arm,
+                           kinds=("skill", "learning", "mechanism_eval"))
             finally:
                 bench.close()
         except Exception as e:  # noqa: BLE001 — liveness: never break the agent loop
@@ -56,25 +100,31 @@ class BenchHooks:
             return None
         if not res.items:
             return None
-        self._exposures[agent_id] = res.items
-        return self._injection_block(res.items)
+        self._exposures[agent_id] = (res.pull_id, arm, th, res.items)
+        if arm == "off":
+            return None          # matched, ledgered, NOT injected — the control
+        return self._injection_block(res.items, scrambled=(arm == "scrambled"))
 
     # ── feed-forward close: runner-sourced outcomes ──────────────────
 
     def on_task_end(self, agent_id: str, succeeded: bool) -> None:
-        """Write one RUNNER-sourced outcome row per served item (admissible
-        evidence, unlike agent self-report). Clears the agent's exposure set."""
-        items = self._exposures.pop(agent_id, None)
-        if not items or not self.config.enabled:
+        """Write one RUNNER-sourced outcome row per matched item (admissible
+        evidence, unlike agent self-report). Off-arm episodes record
+        ``invoked=0`` — the counterfactual the probe's G1 compares against.
+        Clears the agent's exposure set."""
+        exp = self._exposures.pop(agent_id, None)
+        if not exp or not self.config.enabled:
             return
+        pull_id, arm, th, items = exp
         try:
             bench = open_bench(self._bench_path)
             try:
                 for it in items:
                     report_outcome(
                         bench, record_cid=it.record_cid, agent_id=agent_id,
-                        invoked=True, outcome=succeeded, outcome_source="runner",
-                        shadow=it.shadow,
+                        invoked=(arm != "off"), outcome=succeeded,
+                        outcome_source="runner", task_hash=th,
+                        shadow=it.shadow, pull_id=pull_id, arm=arm,
                     )
             finally:
                 bench.close()
@@ -97,10 +147,12 @@ class BenchHooks:
         )
 
     @staticmethod
-    def _injection_block(items: list[PulledItem]) -> str:
+    def _injection_block(items: list[PulledItem], *, scrambled: bool = False) -> str:
         """The honesty surface is mandatory: every item shows its trust level,
         fidelity, and validated scope. Advisory framing — these are proven
-        elsewhere, not commands."""
+        elsewhere, not commands. ``scrambled=True`` word-shuffles each payload
+        body (same tokens, destroyed instruction): the placebo arm the binding
+        probe's G4 uses to falsify prompt-padding 'gains'."""
         lines = [
             "\n\n## Validated workspace learnings (Attraktor)",
             "The following were VALIDATED on this workspace's own outcomes and "
@@ -119,5 +171,9 @@ class BenchHooks:
             body = (it.payload.get("template") or it.payload.get("description")
                     or it.payload.get("content") or "")
             if body:
-                lines.append(f"  {str(body)[:400]}")
+                text = str(body)[:400]
+                if scrambled:
+                    from kaos.bench.replay import scramble_payload
+                    text = scramble_payload(text)
+                lines.append(f"  {text}")
         return "\n".join(lines)

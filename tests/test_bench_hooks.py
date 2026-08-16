@@ -39,7 +39,9 @@ def ws(tmp_path):
     bench = open_bench(tmp_path / "bench.db")
     _admit(bench, name="retry backoff skill", keys="retry_backoff pipelines/scrape.py")
     bench.close()
-    cfg = BenchConfig(enabled=True, local_bench_path="bench.db")
+    # arms_mode='serve' pins the always-inject behavior these tests assert;
+    # probe-mode arm assignment is covered in test_attraktor_probe.py.
+    cfg = BenchConfig(enabled=True, local_bench_path="bench.db", arms_mode="serve")
     return tmp_path, BenchHooks(cfg, db_dir=tmp_path)
 
 

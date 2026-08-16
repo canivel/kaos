@@ -31,6 +31,7 @@ from pathlib import Path
 
 VALID_TIERS = ("individual", "team", "enterprise")
 VALID_SCOPES = ("auto", "workspace", "public_queue", "local")
+VALID_ARMS_MODES = ("probe", "serve")
 
 _TIER_DEFAULT_SCOPE = {
     "individual": "public_queue",
@@ -48,6 +49,10 @@ class BenchConfig:
     publish_scope: str = "auto"
     token_env: str = "KAOS_BENCH_TOKEN"
     local_bench_path: str = "bench.db"
+    # 'probe' (default while the loop is unproven): matched pulls are randomly
+    # assigned on/off/scrambled arms so the workspace accumulates the evidence
+    # the binding kill-gate probe needs. 'serve' = always inject (post-ACCEPT).
+    arms_mode: str = "probe"
     problems: list[str] = field(default_factory=list)  # config-load warnings
 
     @property
@@ -95,6 +100,13 @@ def load_bench_config(config_path: str | Path = "kaos.yaml") -> BenchConfig:
         cfg.tier = tier
     else:
         cfg.problems.append(f"bench.tier {tier!r} invalid (one of {VALID_TIERS}); using 'individual'")
+
+    arms = str(section.get("arms_mode", cfg.arms_mode)).lower()
+    if arms in VALID_ARMS_MODES:
+        cfg.arms_mode = arms
+    else:
+        cfg.problems.append(
+            f"bench.arms_mode {arms!r} invalid (one of {VALID_ARMS_MODES}); using 'probe'")
 
     scope = str(section.get("publish_scope", cfg.publish_scope)).lower()
     if scope in VALID_SCOPES:

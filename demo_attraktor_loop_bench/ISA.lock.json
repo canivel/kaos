@@ -1,0 +1,84 @@
+{
+  "name": "attraktor-loop-binding-probe",
+  "version": "v1",
+  "pre_registered_at": "2026-08-16",
+  "source": "Attraktor PLAN v2 §7.3 (MVP binding probe) + DECISIONS.md D1 (match-rate floor) + D7 (E2 budget); pre-registered BEFORE any organic arm data exists — the flagship workspace's bench.db contained 3 seed records and ZERO arm-assigned episodes at lock time.",
+
+  "binding_thesis": "The Attraktor collective-learning loop (harvest -> validate -> mint -> pull -> inject -> runner-sourced outcomes) causally improves episode success in a live KAOS workspace: brain-on episodes succeed more than matched brain-off episodes, the improvement is NOT reproducible by injecting scrambled same-token padding, the pull path is cheap enough to sit on the hot path, and the brain matches often enough to matter. If any of these fails, the loop does not ship as a default and the Cloudflare SaaS sprint does NOT start.",
+
+  "workload_invariants": {
+    "source": "ORGANIC ONLY — live flagship-workspace episodes produced by normal development usage after this lock's commit. No harness-generated episodes, no synthetic substitution, no replay. Episodes accumulate under arms_mode='probe'.",
+    "episode_definition": "one bench_pulls row with arm IS NOT NULL (hook-originated) joined to >=1 outcome_telemetry row with a non-NULL outcome and outcome_source IN ('runner','harness','mechanical'); episode outcome = MAX(outcome) over its rows (all rows of a pull share the runner's episode status). Self-report is unrepresentable by schema.",
+    "arm_assignment": "deterministic per (agent_id, task_hash): u = sha256(agent_id|task_hash)[:8]/2^32; u<0.45 -> on, u<0.90 -> off, else scrambled. Pure function — retries of the same task land in the same arm; no post-hoc reassignment.",
+    "arms_locked_rates": {"on": 0.45, "off": 0.45, "scrambled": 0.10},
+    "floors": {
+      "n_on_min": 30,
+      "n_off_min": 30,
+      "n_scrambled_min": 10,
+      "n_pulls_min": 75,
+      "void_rule": "if any floor is unmet the run is VOID (insufficient organic sample) — keep accumulating; a VOID here is 'not yet', not 'no'"
+    }
+  },
+
+  "arms": {
+    "ON": "matched pull -> normal injection block with mandatory honesty surface (trust level, fidelity, consumed axes), advisory framing.",
+    "OFF": "matched pull -> match fully ledgered, NOTHING injected; outcomes recorded with invoked=0. The causal control: same match population, no treatment.",
+    "SCRAMBLED": "matched pull -> injection block whose payload bodies are word-shuffled with placeholders kept (kaos.bench.replay.scramble_payload, seed 20260816): same tokens, destroyed instruction. The placebo arm."
+  },
+
+  "kill_gates": {
+    "G1": {
+      "name": "brain-on beats brain-off",
+      "kill": true,
+      "predicate": "Newcombe one-sided 90% lower bound of (p_on - p_off) > 0, where p_arm = episode success rate; z = 1.2815515655446004",
+      "rationale": "the loop's entire reason to exist. A point-estimate win with an LB <= 0 is noise, not a mechanism — same standard E1's A5 applies to individual records."
+    },
+    "G2": {
+      "name": "pull latency hot-path budget",
+      "kill": true,
+      "predicate": "p95 of bench_pulls.latency_ms over all arm-assigned pulls < 150.0 ms (p95 = sorted[ceil(0.95*n)-1], n >= 75)",
+      "threshold_ms": 150.0,
+      "rationale": "the pull sits on every task start; a slow brain is a tax on the whole workspace and would never survive as a default."
+    },
+    "G3": {
+      "name": "match-rate floor (D1)",
+      "kill": true,
+      "predicate": "fraction of arm-assigned bench_pulls with >=1 decision IN ('served','shadow') >= 0.20",
+      "threshold": 0.20,
+      "rationale": "a brain that matches almost nothing is dead weight regardless of per-match lift; D1 locked 20% before any pull data existed. Withheld-only and empty pulls count in the denominator — no numerator laundering."
+    },
+    "G4": {
+      "name": "scrambled placebo falsification",
+      "kill": true,
+      "predicate": "Newcombe one-sided 90% lower bound of (p_scrambled - p_off) <= 0; KILL if the scrambled arm SIGNIFICANTLY beats off",
+      "rationale": "if same-token word salad reproduces the 'gain', G1's lift is prompt-padding artifact (attention/length effects), not validated content — and the loop's premise is false. This is the arm that can kill the loop even when G1 passes."
+    }
+  },
+
+  "non_kill_gates": {
+    "G0": {
+      "name": "floors + arm-balance sanity",
+      "kill": false,
+      "predicate": "all four floors met AND each arm's observed share is within 0.15 absolute of its locked rate among matched-episode assignments",
+      "rationale": "VOID-on-fail. Undersampled arms make every comparison uninterpretable; a drifted arm balance means the deterministic assignment is broken or data was filtered."
+    }
+  },
+
+  "verdict_rule": "VOID if G0 fails. ACCEPT iff G1 AND G2 AND G3 AND G4 all pass. ANY single kill-gate failure REJECTS. No retune-and-rerun: rates, floors, thresholds, the arm-assignment hash, and the episode definition are BYTE-FROZEN at this commit; any change requires a NEW lock + NEW KNOWN_LOCK_SHA256 entry.",
+
+  "judge": {
+    "kind": "mechanical",
+    "implementation": "episode success is the RUNNER's own completion status (complete(True) vs failure paths), recorded by BenchHooks.on_task_end; agents never label their own outcomes (schema CHECK). No LLM judgment anywhere in labeling.",
+    "judge_kappa": "not applicable (mechanical single ground-truth labeler); passed as null and the kappa audit is skipped per kaos.eval.harness.verdict semantics"
+  },
+
+  "falsification_self_test": "ON := OFF (the on-arm's outcome list replaced by the off-arm's) MUST fail G1 and emit REJECT. A harness that cannot kill the loop when the treatment provably does nothing is INADMISSIBLE and must not produce a binding verdict.",
+
+  "consequences": {
+    "ACCEPT": "arms_mode default flips to 'serve'; the Cloudflare SaaS sprint (D6) starts.",
+    "REJECT": "the loop does NOT ship as a default; the verdict is minted into the brain as a mechanism_eval record like any other rejection (D0.1); the SaaS sprint does not start on hope.",
+    "VOID": "keep accumulating; no consequence may be drawn from a VOID."
+  },
+
+  "honest_expected_outcome": "ACCEPT prior ~0.30. Ranked risks: (1) G3 match famine — the brain launches with 3 mechanism_eval seeds and zero organic skills (legacy telemetry is self-report and counts as nothing), so early match-rate may sit under 20% until the runner hooks mint organic evidence; (2) G1 power — with a small brain the per-episode lift may be real but under-powered at n=30/arm, yielding an LB <= 0; (3) G4 placebo — injection blocks add tokens, and long-context padding effects are documented. G2 is expected to pass easily (local SQLite). REJECT or VOID via any of these is a SUCCESSFUL probe outcome and gets published with its reasoning."
+}

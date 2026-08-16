@@ -25,7 +25,7 @@ import sqlite3
 import uuid
 from pathlib import Path
 
-BENCH_SCHEMA_VERSION = 1
+BENCH_SCHEMA_VERSION = 2
 
 _DDL = """
 PRAGMA journal_mode = WAL;
@@ -151,6 +151,8 @@ CREATE TABLE IF NOT EXISTS outcome_telemetry (
     outcome_source TEXT NOT NULL CHECK (outcome_source IN ('runner','harness','mechanical')),
     fidelity      REAL CHECK (fidelity IS NULL OR (fidelity >= 0 AND fidelity <= 1)),
     shadow        INTEGER NOT NULL DEFAULT 0 CHECK (shadow IN (0,1)),
+    pull_id       TEXT,                                       -- v2: episode link
+    arm           TEXT,                                       -- v2: on|off|scrambled
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 CREATE INDEX IF NOT EXISTS idx_telemetry_record ON outcome_telemetry(record_cid, created_at);
@@ -178,6 +180,8 @@ CREATE TABLE IF NOT EXISTS bench_pulls (
     task_hash        TEXT,
     fingerprint_json TEXT NOT NULL DEFAULT '{}',
     k                INTEGER NOT NULL,
+    latency_ms       REAL,                                    -- v2: G2 evidence
+    arm              TEXT,                                    -- v2: on|off|scrambled (hook pulls)
     created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 CREATE TABLE IF NOT EXISTS bench_pull_decisions (
@@ -258,11 +262,33 @@ CREATE TABLE IF NOT EXISTS bench_outbox (
 """
 
 
+def _migrate(conn: sqlite3.Connection, from_version: int) -> None:
+    """Additive-only migrations (the bench never rewrites history)."""
+    if from_version < 2:
+        # v2: probe evidence columns — pull latency (G2), episode arm
+        # assignment (G1/G4), and the outcome→pull episode link.
+        have = {r[1] for r in conn.execute("PRAGMA table_info(bench_pulls)")}
+        if "latency_ms" not in have:
+            conn.execute("ALTER TABLE bench_pulls ADD COLUMN latency_ms REAL")
+        if "arm" not in have:
+            conn.execute("ALTER TABLE bench_pulls ADD COLUMN arm TEXT")
+        have = {r[1] for r in conn.execute("PRAGMA table_info(outcome_telemetry)")}
+        if "pull_id" not in have:
+            conn.execute("ALTER TABLE outcome_telemetry ADD COLUMN pull_id TEXT")
+        if "arm" not in have:
+            conn.execute("ALTER TABLE outcome_telemetry ADD COLUMN arm TEXT")
+    conn.execute("UPDATE bench_schema_version SET version = ?", (BENCH_SCHEMA_VERSION,))
+
+
 def init_bench_db(conn: sqlite3.Connection, *, bench_tier: str = "personal") -> None:
     """Create (or no-op on) the bench schema; stamps bench_id/tier on first init."""
     conn.executescript(_DDL)
     if conn.execute("SELECT COUNT(*) FROM bench_schema_version").fetchone()[0] == 0:
         conn.execute("INSERT INTO bench_schema_version VALUES (?)", (BENCH_SCHEMA_VERSION,))
+    else:
+        v = conn.execute("SELECT version FROM bench_schema_version").fetchone()[0]
+        if v < BENCH_SCHEMA_VERSION:
+            _migrate(conn, v)
     if conn.execute("SELECT COUNT(*) FROM bench_meta WHERE key='bench_id'").fetchone()[0] == 0:
         conn.execute("INSERT INTO bench_meta VALUES ('bench_id', ?)", (str(uuid.uuid4()),))
         conn.execute("INSERT INTO bench_meta VALUES ('bench_tier', ?)", (bench_tier,))

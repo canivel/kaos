@@ -21,6 +21,7 @@ import hashlib
 import json
 import re
 import sqlite3
+import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -91,21 +92,31 @@ def pull(
     k: int = K_DEFAULT,
     task_hash: str | None = None,
     shadow_rate: float = SHADOW_RATE,
+    arm: str | None = None,
 ) -> PullResult:
     """One pull. Writes the complete ledger (bench_pulls + a decision row for every
-    considered record) and returns at most ``k`` served items."""
+    considered record) and returns at most ``k`` served items. ``arm`` records the
+    caller's episode-arm assignment (hook pulls); latency is always measured —
+    both are binding-probe evidence (G2/G4)."""
+    t_start = time.perf_counter()
     pull_id = str(uuid.uuid4())
     bench.execute(
-        "INSERT INTO bench_pulls (pull_id, agent_id, task_hash, fingerprint_json, k) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO bench_pulls (pull_id, agent_id, task_hash, fingerprint_json,"
+        " k, arm) VALUES (?, ?, ?, ?, ?, ?)",
         (pull_id, agent_id, task_hash,
          json.dumps({"m1": int(task_shape.m1), "m2": int(task_shape.m2),
                      "m4": int(task_shape.m4), "m2_grain": int(task_shape.m2_grain),
                      "anchors": sorted(task_shape.m3_anchor_tokens)[:64]}),
-         k))
+         k, arm))
+
+    def _stamp_latency() -> None:
+        bench.execute(
+            "UPDATE bench_pulls SET latency_ms = ? WHERE pull_id = ?",
+            (round((time.perf_counter() - t_start) * 1000.0, 3), pull_id))
 
     q = _fts_query(task_text, task_shape.m3_anchor_tokens)
     if not q:
+        _stamp_latency()
         bench.commit()
         return PullResult(pull_id=pull_id)   # empty pull: logged success state
 
@@ -184,6 +195,7 @@ def pull(
             "INSERT OR IGNORE INTO bench_pull_decisions (pull_id, record_cid,"
             " decision, rank_score) VALUES (?, ?, 'outranked', ?)",
             (pull_id, item.record_cid, score))
+    _stamp_latency()
     bench.commit()
 
     return PullResult(pull_id=pull_id, items=[i for _, i in top],
@@ -194,16 +206,19 @@ def report_outcome(
     bench: sqlite3.Connection, *, record_cid: str, agent_id: str,
     invoked: bool, outcome: bool | None, outcome_source: str,
     task_hash: str | None = None, fidelity: float | None = None,
-    shadow: bool = False,
+    shadow: bool = False, pull_id: str | None = None, arm: str | None = None,
 ) -> None:
     """Close the loop: one outcome row per pulled item. outcome_source must be
-    runner/harness/mechanical — the schema makes self-report unrepresentable."""
+    runner/harness/mechanical — the schema makes self-report unrepresentable.
+    ``pull_id``+``arm`` link the outcome to its episode and arm assignment (the
+    binding probe's G1/G4 evidence)."""
     bench.execute(
         "INSERT INTO outcome_telemetry (telemetry_id, record_cid, agent_id,"
-        " task_hash, invoked, outcome, outcome_source, fidelity, shadow)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " task_hash, invoked, outcome, outcome_source, fidelity, shadow,"
+        " pull_id, arm)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (str(uuid.uuid4()), record_cid, agent_id, task_hash,
          1 if invoked else 0,
          None if outcome is None else (1 if outcome else 0),
-         outcome_source, fidelity, 1 if shadow else 0))
+         outcome_source, fidelity, 1 if shadow else 0, pull_id, arm))
     bench.commit()

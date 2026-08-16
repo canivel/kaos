@@ -1461,6 +1461,53 @@ def bench_rejections(ctx, db: str, config_file: str, limit: int):
         console.print(f"  [red]✗[/red] {r['source_ref']} [{r['kind']}] — {r['rejection_reason']}")
 
 
+@bench.command("probe")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("--bind", is_flag=True, default=False,
+              help="THE binding run: falsification self-test + write results.json")
+@click.option("--out", default="demo_attraktor_loop_bench",
+              help="output dir for results.json (with --bind)")
+@click.pass_context
+def bench_probe(ctx, db: str, config_file: str, bind: bool, out: str):
+    """The loop's binding kill-gate probe (pre-registered, hash-locked).
+
+    Without --bind: read-only progress surface — current per-gate status and
+    the verdict-if-bound-now (VOID until the pre-registered floors are met).
+    With --bind: runs the falsification self-test (ON := OFF must fail G1),
+    computes the BINDING verdict, and writes results.json. No retune-and-rerun.
+    """
+    from demo_attraktor_loop_bench.probe_adapter import run_probe, status
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    bench_path = Path(db).parent / cfg.local_bench_path
+    if not bench_path.exists():
+        if not _json_err(ctx, "no local bench yet — run `kaos bench harvest`"):
+            console.print("[yellow]no local bench yet — run `kaos bench harvest`[/yellow]")
+        return
+    conn = open_bench(bench_path)
+    try:
+        rep = run_probe(conn, out_dir=out) if bind else status(conn)
+    finally:
+        conn.close()
+    if _json_out(ctx, rep):
+        return
+    verdict = rep.get("verdict") or rep.get("verdict_if_bound_now")
+    console.print(f"[bold]{rep.get('lock_name', rep.get('lock'))}[/bold] "
+                  f"({'BINDING' if bind else 'progress'})")
+    console.print(f"  episodes: {rep['episodes']}  wins: {rep['wins']}")
+    console.print(f"  pulls: {rep['pulls']}  matched: {rep['matched_pulls']}")
+    for g in rep["gates"]:
+        mark = "[green]✓[/green]" if g["passed"] else "[red]✗[/red]"
+        console.print(f"  {mark} {g['gate']} {g['name']}: {g['detail']}")
+    if bind:
+        st = "passed" if rep["self_test_passed"] else "[red]FAILED[/red]"
+        console.print(f"  falsification self-test: {st}")
+    console.print(f"  verdict{'' if bind else ' if bound now'}: [bold]{verdict}[/bold]")
+
+
 @cli.group()
 def mh():
     """Meta-Harness — automated harness optimization."""
