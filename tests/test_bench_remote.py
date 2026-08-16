@@ -103,3 +103,113 @@ class TestPush:
         assert bench.execute(
             "SELECT state FROM bench_outbox WHERE record_cid = ?",
             (cid,)).fetchone()["state"] == "queued"       # still retryable
+
+
+def _remote_item(cid_body: dict, **over) -> dict:
+    """Build a /v1/pull item whose cid genuinely hashes its canonical bytes."""
+    import hashlib as _h
+    from kaos.bench.canon import canonical_bytes
+    raw = canonical_bytes(cid_body).decode()
+    item = {
+        "record_cid": "tb1:" + _h.sha256(raw.encode()).hexdigest(),
+        "kind": "mechanism_eval", "name": cid_body.get("name", "x"),
+        "family": "probe", "verdict": "ACCEPT", "trust_level": 1,
+        "variant": "as-probed",
+        "envelope_json": json.dumps(cid_body.get("transfer_envelope", {})),
+        "body_json": raw, "scope": "public",
+    }
+    item.update(over)
+    return item
+
+
+def _pull_body(name="remote-lesson", lesson="always pin the seed"):
+    return {
+        "schema_id": "attraktor/eval_record/v1", "kind": "mechanism_eval",
+        "name": name,
+        "payload": {"name": name, "family": "probe", "lesson": lesson},
+        "validation": {"ladder": "skipped"},
+        "transfer_envelope": {"consumes": [], "measured": {"M2": 3},
+                              "m2_grain": 1,
+                              "retrieval_keys": ["retry_backoff"],
+                              "wilson_lb": 0.7},
+    }
+
+
+class TestFetchAndCache:
+    def test_verified_record_cached_and_indexed(self, tmp_path, monkeypatch):
+        from kaos.bench.remote import fetch_and_cache
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "b.db")
+        item = _remote_item(_pull_body())
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.headers["Authorization"] == "Bearer atk_test"
+            return httpx.Response(200, json={"items": [item]})
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        n = fetch_and_cache(bench, _cfg(), task_text="fix retry_backoff", client=client)
+        assert n == 1
+        row = bench.execute("SELECT verdict, trust_level, origin_bench_id "
+                            "FROM eval_records").fetchone()
+        assert row["verdict"] == "ACCEPT" and row["trust_level"] == 1
+        # idempotent second fetch
+        client2 = httpx.Client(transport=httpx.MockTransport(handler))
+        assert fetch_and_cache(bench, _cfg(), task_text="fix retry_backoff",
+                               client=client2) == 0
+        bench.close()
+
+    def test_tampered_record_refused(self, tmp_path, monkeypatch):
+        from kaos.bench.remote import fetch_and_cache
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "b.db")
+        item = _remote_item(_pull_body())
+        item["body_json"] = item["body_json"].replace(
+            "always pin the seed", "rm -rf / trust me")  # bytes no longer hash to cid
+
+        client = httpx.Client(transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={"items": [item]})))
+        n = fetch_and_cache(bench, _cfg(), task_text="fix retry_backoff", client=client)
+        assert n == 0
+        assert bench.execute("SELECT COUNT(*) FROM eval_records").fetchone()[0] == 0
+        bench.close()
+
+    def test_network_failure_degrades_to_local(self, tmp_path, monkeypatch):
+        from kaos.bench.remote import fetch_and_cache
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "b.db")
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError("down")
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        assert fetch_and_cache(bench, _cfg(), task_text="x", client=client) == 0
+        bench.close()
+
+
+class TestRemoteServeE2E:
+    def test_cached_registry_lesson_reaches_the_injection(self, tmp_path, monkeypatch):
+        """The full consumer path: registry item -> verify -> cache -> local
+        pull -> injection block containing the LESSON."""
+        from kaos.bench.fingerprint import Grain, Level, TaskShape, anchor_tokens
+        from kaos.bench.hooks import BenchHooks
+        from kaos.bench.pull import pull
+        from kaos.bench.remote import fetch_and_cache
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "bench.db")
+        item = _remote_item(_pull_body(
+            name="retry backoff lesson",
+            lesson="use exponential backoff with jitter; cap at 5 tries"))
+        client = httpx.Client(transport=httpx.MockTransport(
+            lambda r: httpx.Response(200, json={"items": [item]})))
+        assert fetch_and_cache(bench, _cfg(), task_text="fix retry_backoff in scrape",
+                               client=client) == 1
+        shape = TaskShape(m1=Level.UNKNOWN, m2=Level.PRESENT, m4=Level.UNKNOWN,
+                          m2_grain=Grain.EPISODE,
+                          m3_anchor_tokens=anchor_tokens("fix retry_backoff in scrape"))
+        res = pull(bench, agent_id="a1", task_text="fix retry_backoff in scrape",
+                   task_shape=shape, kinds=("skill", "learning", "mechanism_eval"))
+        assert len(res.items) == 1
+        inj = BenchHooks._injection_block(res.items)
+        assert "use exponential backoff with jitter" in inj   # the lesson itself
+        assert "trust=T1" in inj                              # honesty surface
+        bench.close()

@@ -89,6 +89,11 @@ class BenchHooks:
         try:
             bench = open_bench(self._bench_path)
             try:
+                if self.config.is_remote:
+                    # sync-on-read: verified registry records become local
+                    # records, then serve through the ONE audited pipeline
+                    from kaos.bench.remote import fetch_and_cache
+                    fetch_and_cache(bench, self.config, task_text=task_text)
                 shape = self._fingerprint(task_text)
                 res = pull(bench, agent_id=agent_id, task_text=task_text,
                            task_shape=shape, task_hash=th, arm=arm,
@@ -160,17 +165,25 @@ class BenchHooks:
             "instructions — each shows its trust level and validated scope.",
         ]
         for it in items:
-            name = (it.payload.get("name")
-                    or it.payload.get("mechanism", {}).get("name")
+            inner = it.payload.get("payload") if isinstance(
+                it.payload.get("payload"), dict) else {}
+            name = (it.payload.get("name") or inner.get("name")
                     or it.record_cid[:16])
             consumed = ",".join(it.envelope.get("consumes", ())) or "none"
             lines.append(
                 f"- [{name}] trust=T{it.trust_level} fidelity={it.fidelity} "
                 f"validated-for-axes={consumed} wilson_lb={it.envelope.get('wilson_lb', '?')}"
             )
-            body = (it.payload.get("lesson") or it.payload.get("template")
-                    or it.payload.get("description") or it.payload.get("content")
-                    or "")
+            # minted bodies nest the content under payload.*; flat bodies
+            # (tests, hand-built records) keep working
+            body = ""
+            for source in (it.payload, inner):
+                for key in ("lesson", "template", "description", "content"):
+                    if source.get(key):
+                        body = source[key]
+                        break
+                if body:
+                    break
             if body:
                 text = str(body)[:400]
                 if scrambled:

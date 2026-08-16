@@ -14,6 +14,7 @@ per the KAOS rules — no SDK.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import sqlite3
@@ -22,10 +23,12 @@ from dataclasses import dataclass, field
 import httpx
 
 from kaos.bench.config import BenchConfig
+from kaos.bench.schema import bench_id, fts_index_record
 
 logger = logging.getLogger(__name__)
 
 PUSH_BATCH = 25
+PULL_TIMEOUT_S = 2.5   # hook-path fetch must never stall an agent start
 
 
 @dataclass
@@ -132,3 +135,94 @@ def push_records(
     finally:
         if owns_client:
             client.close()
+
+
+# ── feed-back: remote pull with sync-on-read caching ─────────────────
+#
+# The registry's /v1/pull is RECALL only; the transfer-match hard gate
+# (Filter 2) stays client-side. Design: fetched records are VERIFIED
+# (sha256 of the canonical bytes must equal the claimed cid — the same
+# check the server ran on push, now run by the consumer) and cached into
+# the local bench as first-class eval_records. The normal local pull()
+# then serves them through the ONE audited pipeline: match gate, ranking,
+# arm assignment, decision ledger, outcome telemetry. No second code path.
+
+
+def fetch_and_cache(
+    bench: sqlite3.Connection, cfg: BenchConfig, *,
+    task_text: str, k: int = 6, client: httpx.Client | None = None,
+) -> int:
+    """One recall round-trip. Returns the number of NEWLY cached records.
+    Best-effort by contract: any failure returns 0 and the workspace runs
+    on its local brain exactly as before."""
+    if not cfg.is_remote:
+        return 0
+    token = cfg.token()
+    if not token:
+        return 0
+    from kaos.bench.fingerprint import anchor_tokens
+
+    q = " ".join(sorted(anchor_tokens(task_text))[:16]) or task_text[:120]
+    owns = client is None
+    client = client or httpx.Client(timeout=PULL_TIMEOUT_S)
+    try:
+        resp = client.get(
+            f"{cfg.endpoint.rstrip('/')}/v1/pull",
+            params={"q": q, "k": k},
+            headers={"Authorization": f"Bearer {token}"})
+        if resp.status_code != 200:
+            logger.warning("remote pull HTTP %s — using local brain only",
+                           resp.status_code)
+            return 0
+        items = resp.json().get("items", [])
+    except (httpx.HTTPError, ValueError) as e:
+        logger.warning("remote pull failed (%s) — using local brain only", e)
+        return 0
+    finally:
+        if owns:
+            client.close()
+
+    cached = 0
+    origin = f"remote:{cfg.endpoint}"
+    for it in items:
+        cid = str(it.get("record_cid", ""))
+        body_canonical = str(it.get("body_json", ""))
+        # Consumer-side content verification: never cache bytes that do not
+        # hash to their claimed identity, no matter who served them.
+        if (not cid.startswith("tb1:") or not body_canonical
+                or "tb1:" + hashlib.sha256(body_canonical.encode()).hexdigest() != cid):
+            logger.warning("remote record %s failed cid verification — refused",
+                           cid[:24])
+            continue
+        try:
+            body = json.loads(body_canonical)
+        except ValueError:
+            continue
+        cur = bench.execute(
+            "INSERT OR IGNORE INTO eval_records (record_cid, schema_id, kind,"
+            " self_test_passed, verdict, variant, faithful, trust_level,"
+            " repro_class, envelope_json, body_json, origin_bench_id)"
+            " VALUES (?, ?, ?, 1, ?, ?, 1, ?, 'llm_nondeterministic', ?, ?, ?)",
+            (cid, str(it.get("schema_id") or body.get("schema_id")
+                      or "attraktor/eval_record/v1"),
+             str(it.get("kind", "learning")),
+             str(it.get("verdict", "ACCEPT")),
+             str(it.get("variant", "as-is")),
+             int(it.get("trust_level", 1)),
+             it.get("envelope_json") or "{}",
+             body_canonical, bench_id(bench)))
+        if cur.rowcount:
+            cached += 1
+            inner = body.get("payload") or {}
+            fts_index_record(
+                bench, cid,
+                name=str(it.get("name") or body.get("name") or cid[:16]),
+                family=str(it.get("family") or inner.get("family") or ""),
+                variant=str(it.get("variant", "")),
+                keys_text=" ".join(
+                    json.loads(it.get("envelope_json") or "{}").get("retrieval_keys", [])
+                ) + f" {inner.get('mechanism', '')} {inner.get('lesson', '')}")
+    if cached:
+        bench.commit()
+        logger.info("cached %d record(s) from %s", cached, origin)
+    return cached

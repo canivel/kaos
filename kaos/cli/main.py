@@ -1497,6 +1497,61 @@ def bench_push(ctx, db: str, config_file: str, limit: int):
         console.print(f"  {d.get('record_cid', '')[:24]} {d.get('status', d.get('error', ''))}")
 
 
+@bench.command("pull")
+@click.argument("task_text")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("-k", type=int, default=3, help="max items")
+@click.pass_context
+def bench_pull(ctx, task_text: str, db: str, config_file: str, k: int):
+    """Show what an agent starting TASK_TEXT would receive from the brain.
+
+    Runs the real pipeline: remote fetch (verified + cached) when an endpoint
+    is configured, then the local match/rank/serve path. This CLI pull is
+    ledgered without an arm, so it never pollutes the binding probe's data.
+    """
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.fingerprint import Grain, Level, TaskShape, anchor_tokens
+    from kaos.bench.pull import pull
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    bench_conn = open_bench(Path(db).parent / cfg.local_bench_path)
+    try:
+        cached = 0
+        if cfg.is_remote:
+            from kaos.bench.remote import fetch_and_cache
+            cached = fetch_and_cache(bench_conn, cfg, task_text=task_text)
+        shape = TaskShape(m1=Level.UNKNOWN, m2=Level.PRESENT, m4=Level.UNKNOWN,
+                          m2_grain=Grain.EPISODE,
+                          m3_anchor_tokens=anchor_tokens(task_text))
+        res = pull(bench_conn, agent_id="cli-pull", task_text=task_text,
+                   task_shape=shape, k=k,
+                   kinds=("skill", "learning", "mechanism_eval"))
+    finally:
+        bench_conn.close()
+
+    out = {"remote_cached": cached, "withheld": res.withheld_count,
+           "items": [{"record_cid": i.record_cid, "kind": i.kind,
+                      "trust": i.trust_level, "fidelity": i.fidelity,
+                      "name": (i.payload.get("name")
+                               or (i.payload.get("payload") or {}).get("name")),
+                      "lesson": ((i.payload.get("payload") or {}).get("lesson")
+                                 or i.payload.get("lesson"))}
+                     for i in res.items]}
+    if _json_out(ctx, out):
+        return
+    if cached:
+        console.print(f"[dim]cached {cached} new record(s) from the registry[/dim]")
+    if not res.items:
+        console.print("no matched learnings for this task "
+                      f"({res.withheld_count} withheld by the transfer gate)")
+    for i in out["items"]:
+        console.print(f"[bold]{i['name']}[/bold] · T{i['trust']} · {i['fidelity']}")
+        if i["lesson"]:
+            console.print(f"  {i['lesson']}")
+
+
 @bench.command("probe")
 @click.option("--db", default=DEFAULT_DB, help="kaos.db path")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
