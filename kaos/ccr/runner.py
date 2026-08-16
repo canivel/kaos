@@ -97,9 +97,11 @@ class ClaudeCodeRunner:
         max_parallel_agents: int = 8,
         max_tool_iterations: int = MAX_TOOL_ITERATIONS_PER_TURN,
         permission_policy: ToolPermissionPolicy | None = None,
+        bench_hooks=None,  # kaos.bench.hooks.BenchHooks | None — Attraktor loop, opt-in
     ):
         self.afs = afs
         self.router = router
+        self.bench_hooks = bench_hooks
         self.tools = ToolRegistry(afs, permission_policy=permission_policy)
         self.max_iterations = max_iterations
         self.checkpoint_interval = checkpoint_interval
@@ -142,6 +144,14 @@ class ClaudeCodeRunner:
             tools=self.tools.list_tool_metadata(),
             task=task,
         )
+
+        # Attraktor feed-back (opt-in; hooks never raise): pull matched validated
+        # learnings and append them — with their trust/fidelity disclosure — to
+        # the system prompt.
+        if self.bench_hooks is not None:
+            _bench_inj = self.bench_hooks.on_task_start(agent_id, task)
+            if _bench_inj:
+                system_prompt += _bench_inj
 
         # Initialize conversation in state
         conversation = [
@@ -267,6 +277,8 @@ class ClaudeCodeRunner:
                     self.afs.set_state(agent_id, "result", final_result)
                     self.afs.set_state(agent_id, "usage", usage_tracker.to_dict())
                     self.afs.complete(agent_id)
+                    if self.bench_hooks is not None:
+                        self.bench_hooks.on_task_end(agent_id, succeeded=True)
                     return final_result
 
                 # Auto-checkpoint
@@ -287,10 +299,14 @@ class ClaudeCodeRunner:
 
             # Hit max iterations
             self.afs.fail(agent_id, error="Max iterations reached")
+            if self.bench_hooks is not None:
+                self.bench_hooks.on_task_end(agent_id, succeeded=False)
             return conversation[-1].get("content", "Max iterations reached")
 
         except Exception as e:
             self.afs.fail(agent_id, error=str(e))
+            if self.bench_hooks is not None:
+                self.bench_hooks.on_task_end(agent_id, succeeded=False)
             raise
 
     async def run_parallel(self, tasks: list[dict]) -> list[str]:
