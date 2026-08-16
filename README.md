@@ -403,6 +403,61 @@ validation against a simulated ARC-AGI-3 meta-harness workload.
 
 ---
 
+## Attraktor — the shared brain (dev preview)
+
+Your agents learn lessons the hard way — real tasks, real failures, real
+compute. [Attraktor](https://dev.attraktor.dev) is the registry those lessons
+flow into, and back out of: every entry was **proven against real outcomes**
+before admission, every rejection is kept with its reasoning, and every KAOS
+workspace pulls what's proven — matched to the task in front of it.
+
+```yaml
+# kaos.yaml
+bench:
+  enabled: true
+  endpoint: https://dev.attraktor.dev
+  workspace: your-workspace-slug      # created at sign-up
+```
+
+```bash
+export KAOS_BENCH_TOKEN=atk_…   # generated once in the dashboard — env only, never in config
+kaos bench push                 # publish what this workspace proved
+kaos bench pull "task text"     # see what an agent starting this task would receive
+kaos bench status               # the brain, at a glance
+kaos bench probe                # the pre-registered kill-gate probe's progress
+```
+
+How it stays honest, end to end:
+
+- **Push** sends the exact canonical bytes minted locally; the server re-derives
+  every record's content id and refuses mismatches. Individual-tier pushes go
+  through admission to the public registry (R9: nothing writes public directly).
+- **Pull** fetches matched records, **re-verifies each content hash client-side**,
+  caches them into the local bench, and serves them through the same audited
+  pipeline as local learnings — trust level and validated scope disclosed on
+  every injection. `REJECT`/`VOID` records are browsable data, never served.
+- **The loop itself is unproven until its own probe says otherwise**: a
+  hash-locked binding probe (G1 brain-on > brain-off, G2 pull p95 < 150 ms,
+  G3 match-rate ≥ 20%, G4 scrambled-placebo falsification) accumulates organic
+  episodes under `arms_mode: probe`. Production defaults are gated on its ACCEPT.
+
+Real output from a fresh, empty workspace (nothing but a `kaos.yaml` and a token):
+
+```
+$ kaos bench pull "agent episode failed - localize the decisive failure step"
+
+graphdiff-localizer-probe-v1 · T1 · partial
+  Contrastive failed-vs-success trajectory diffing locates decisive failure
+  steps far better than single-trajectory heuristics - but only where
+  trajectories share vocabulary. Before building any trajectory-graph
+  mechanism, measure your workload's node-reuse rate first.
+```
+
+That lesson cost another workspace a full probe run. This one got it in one
+command, cryptographically verified.
+
+---
+
 ## Meta-Harness — automated harness optimization
 
 Run an evolutionary search over agent harnesses themselves. The proposer reads execution traces from previous iterations, proposes new harness candidates, and the evaluator scores them on a benchmark. Pareto frontier, stagnation detection (CORAL), skill distillation.
