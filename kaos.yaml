@@ -26,3 +26,11 @@ ccr:
 logging:
   level: INFO
   file: ./kaos.log
+
+# Attraktor collective-learning loop (kaos.bench). Local-first: no endpoint
+# configured -> everything stays in ./bench.db. Token (when SaaS exists) is
+# env-only: KAOS_BENCH_TOKEN. Never put a token in this file.
+bench:
+  enabled: true
+  workspace: kaos-flagship
+  tier: individual
