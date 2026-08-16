@@ -131,7 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_candidates_status ON bench_candidates(status);
 -- D0.1 enforcement: a rejection without reasoning is unrepresentable.
 CREATE TRIGGER IF NOT EXISTS candidates_reject_needs_reason
 BEFORE UPDATE OF status ON bench_candidates
-WHEN NEW.status IN ('e1_rejected','e2_rejected')
+WHEN NEW.status IN ('e1_rejected','e2_rejected','error')
      AND (NEW.rejection_reason IS NULL OR NEW.rejection_reason = '')
 BEGIN SELECT RAISE(ABORT, 'rejection requires rejection_reason (D0.1: rejections are data)'); END;
 CREATE TRIGGER IF NOT EXISTS candidates_no_delete
@@ -167,6 +167,77 @@ BEFORE UPDATE OF state ON bench_item_state
 WHEN (CASE NEW.state WHEN 'serving' THEN 0 WHEN 'quarantined' THEN 1 ELSE 2 END)
    < (CASE OLD.state WHEN 'serving' THEN 0 WHEN 'quarantined' THEN 1 ELSE 2 END)
 BEGIN SELECT RAISE(ABORT, 'item state is monotone: serving -> quarantined -> evicted'); END;
+
+-- ── Pull ledger: EVERY pull decision is data, including what was NOT served ──
+-- A WITHHOLD ("consumed axis M1 absent") is validated reasoning the workspace
+-- computed; an empty pull is a success state and gets its row. D0.1 extended to
+-- the pull side.
+CREATE TABLE IF NOT EXISTS bench_pulls (
+    pull_id          TEXT PRIMARY KEY,
+    agent_id         TEXT NOT NULL,
+    task_hash        TEXT,
+    fingerprint_json TEXT NOT NULL DEFAULT '{}',
+    k                INTEGER NOT NULL,
+    created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE TABLE IF NOT EXISTS bench_pull_decisions (
+    pull_id     TEXT NOT NULL REFERENCES bench_pulls(pull_id),
+    record_cid  TEXT NOT NULL REFERENCES eval_records(record_cid),
+    decision    TEXT NOT NULL CHECK (decision IN ('served','shadow','withheld','outranked')),
+    reason      TEXT,                                -- REQUIRED for 'withheld' (trigger)
+    axis        TEXT,                                -- withholding axis, if any
+    weight      REAL,
+    fidelity    TEXT CHECK (fidelity IN (NULL,'full','partial')),
+    rank_score  REAL,
+    PRIMARY KEY (pull_id, record_cid)
+);
+CREATE TRIGGER IF NOT EXISTS pull_withhold_needs_reason
+BEFORE INSERT ON bench_pull_decisions
+WHEN NEW.decision = 'withheld' AND (NEW.reason IS NULL OR NEW.reason = '')
+BEGIN SELECT RAISE(ABORT, 'withhold requires a reason (D0.1: decisions are data)'); END;
+CREATE TRIGGER IF NOT EXISTS pull_decisions_no_delete
+BEFORE DELETE ON bench_pull_decisions
+BEGIN SELECT RAISE(ABORT, 'pull decisions are append-forever'); END;
+
+-- ── Automatic history: state transitions + candidate decisions journal ──
+-- Append-only event log, WRITTEN BY TRIGGERS — no code path can forget to
+-- record history, and old reasoning survives every later transition.
+CREATE TABLE IF NOT EXISTS bench_events (
+    event_seq   INTEGER PRIMARY KEY AUTOINCREMENT,
+    entity      TEXT NOT NULL CHECK (entity IN ('candidate','item_state')),
+    entity_id   TEXT NOT NULL,
+    event_type  TEXT NOT NULL,
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    at          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+CREATE TRIGGER IF NOT EXISTS bench_events_no_delete
+BEFORE DELETE ON bench_events
+BEGIN SELECT RAISE(ABORT, 'bench_events are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS bench_events_no_update
+BEFORE UPDATE ON bench_events
+BEGIN SELECT RAISE(ABORT, 'bench_events are immutable'); END;
+
+CREATE TRIGGER IF NOT EXISTS journal_item_state_change
+AFTER UPDATE OF state ON bench_item_state
+BEGIN
+    INSERT INTO bench_events (entity, entity_id, event_type, payload_json)
+    VALUES ('item_state', NEW.record_cid,
+            'transition:' || OLD.state || '->' || NEW.state,
+            json_object('old_reason', OLD.reason_json, 'new_reason', NEW.reason_json));
+END;
+CREATE TRIGGER IF NOT EXISTS journal_item_state_insert
+AFTER INSERT ON bench_item_state
+BEGIN
+    INSERT INTO bench_events (entity, entity_id, event_type, payload_json)
+    VALUES ('item_state', NEW.record_cid, 'enter:' || NEW.state, NEW.reason_json);
+END;
+CREATE TRIGGER IF NOT EXISTS journal_candidate_decision
+AFTER UPDATE OF status ON bench_candidates
+BEGIN
+    INSERT INTO bench_events (entity, entity_id, event_type, payload_json)
+    VALUES ('candidate', NEW.candidate_id, 'status:' || OLD.status || '->' || NEW.status,
+            json_object('rejection_reason', NEW.rejection_reason));
+END;
 
 -- push queue for later shared-bench phases; zero rows = pure local bench
 CREATE TABLE IF NOT EXISTS bench_outbox (

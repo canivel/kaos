@@ -122,6 +122,85 @@ class TestTelemetryHonesty:
         assert db.execute("SELECT COUNT(*) FROM outcome_telemetry").fetchone()[0] == 1
 
 
+class TestPullLedger:
+    def test_withhold_without_reason_unrepresentable(self, db):
+        cid = _admit(db)
+        db.execute("INSERT INTO bench_pulls (pull_id, agent_id, k) VALUES ('p1','a1',3)")
+        with pytest.raises(sqlite3.DatabaseError, match="decisions are data"):
+            db.execute(
+                "INSERT INTO bench_pull_decisions (pull_id, record_cid, decision)"
+                " VALUES ('p1', ?, 'withheld')", (cid,))
+
+    def test_withhold_with_reason_and_empty_pull_logged(self, db):
+        cid = _admit(db)
+        db.execute("INSERT INTO bench_pulls (pull_id, agent_id, k) VALUES ('p2','a1',3)")
+        db.execute(
+            "INSERT INTO bench_pull_decisions (pull_id, record_cid, decision, reason, axis)"
+            " VALUES ('p2', ?, 'withheld', 'consumed axis absent', 'M1')", (cid,))
+        # empty pull = a bench_pulls row with zero served decisions — a success state
+        db.execute("INSERT INTO bench_pulls (pull_id, agent_id, k) VALUES ('p3','a2',3)")
+        db.commit()
+        served = db.execute(
+            "SELECT COUNT(*) FROM bench_pull_decisions WHERE pull_id='p3'").fetchone()[0]
+        assert served == 0
+        wh = db.execute(
+            "SELECT reason, axis FROM bench_pull_decisions WHERE decision='withheld'").fetchone()
+        assert wh["axis"] == "M1"
+
+    def test_pull_decisions_never_deleted(self, db):
+        cid = _admit(db)
+        db.execute("INSERT INTO bench_pulls (pull_id, agent_id, k) VALUES ('p4','a1',3)")
+        db.execute(
+            "INSERT INTO bench_pull_decisions (pull_id, record_cid, decision, weight, fidelity)"
+            " VALUES ('p4', ?, 'served', 1.0, 'full')", (cid,))
+        with pytest.raises(sqlite3.DatabaseError, match="append-forever"):
+            db.execute("DELETE FROM bench_pull_decisions WHERE pull_id='p4'")
+
+
+class TestAutomaticHistory:
+    def test_state_transitions_journaled_with_old_reasoning(self, db):
+        cid = _admit(db)
+        db.execute("INSERT INTO bench_item_state (record_cid, state, reason_json)"
+                   " VALUES (?, 'serving', '{}')", (cid,))
+        db.execute("UPDATE bench_item_state SET state='quarantined',"
+                   " reason_json='{\"why\": \"lift went negative\"}' WHERE record_cid=?", (cid,))
+        db.execute("UPDATE bench_item_state SET state='evicted',"
+                   " reason_json='{\"why\": \"confirmed harmful\"}' WHERE record_cid=?", (cid,))
+        db.commit()
+        events = [r["event_type"] for r in db.execute(
+            "SELECT event_type FROM bench_events WHERE entity='item_state' ORDER BY event_seq")]
+        assert events == ["enter:serving", "transition:serving->quarantined",
+                          "transition:quarantined->evicted"]
+        # the quarantine's reasoning survives the later eviction
+        mid = db.execute(
+            "SELECT payload_json FROM bench_events WHERE event_type LIKE '%quarantined->evicted'"
+        ).fetchone()[0]
+        assert "lift went negative" in mid
+
+    def test_candidate_decisions_journaled(self, db):
+        db.execute("INSERT INTO bench_candidates (candidate_id, source_kind, source_ref, kind)"
+                   " VALUES ('cj', 'skill_telemetry', 'skill:99', 'skill')")
+        db.execute("UPDATE bench_candidates SET status='e1_rejected',"
+                   " rejection_reason='wilson below floor' WHERE candidate_id='cj'")
+        db.commit()
+        ev = db.execute("SELECT event_type, payload_json FROM bench_events"
+                        " WHERE entity='candidate'").fetchone()
+        assert ev["event_type"] == "status:harvested->e1_rejected"
+        assert "wilson below floor" in ev["payload_json"]
+
+    def test_history_is_immutable(self, db):
+        cid = _admit(db)
+        db.execute("INSERT INTO bench_item_state (record_cid, state) VALUES (?, 'serving')", (cid,))
+        with pytest.raises(sqlite3.DatabaseError, match="append-only|immutable"):
+            db.execute("DELETE FROM bench_events")
+
+    def test_error_status_also_needs_reason(self, db):
+        db.execute("INSERT INTO bench_candidates (candidate_id, source_kind, source_ref, kind)"
+                   " VALUES ('ce', 'experiment', 'exp:5', 'mechanism_eval')")
+        with pytest.raises(sqlite3.DatabaseError, match="rejections are data"):
+            db.execute("UPDATE bench_candidates SET status='error' WHERE candidate_id='ce'")
+
+
 class TestStateLattice:
     def test_forward_transitions_allowed(self, db):
         cid = _admit(db)
