@@ -239,6 +239,12 @@ BEGIN
             json_object('rejection_reason', NEW.rejection_reason));
 END;
 
+-- FTS5 recall index over admitted records (the SkillStore.search pattern) —
+-- BM25 lexical recall only, no embeddings, ever.
+CREATE VIRTUAL TABLE IF NOT EXISTS bench_fts USING fts5(
+    record_cid UNINDEXED, name, family, variant, keys_text
+);
+
 -- push queue for later shared-bench phases; zero rows = pure local bench
 CREATE TABLE IF NOT EXISTS bench_outbox (
     record_cid TEXT NOT NULL REFERENCES eval_records(record_cid),
@@ -275,3 +281,16 @@ def open_bench(path: str | Path, *, bench_tier: str = "personal") -> sqlite3.Con
 def bench_id(conn: sqlite3.Connection) -> str:
     return conn.execute(
         "SELECT value FROM bench_meta WHERE key='bench_id'").fetchone()[0]
+
+
+def fts_index_record(
+    conn: sqlite3.Connection, record_cid: str, *, name: str,
+    family: str = "", variant: str = "", keys_text: str = "",
+) -> None:
+    """Add an admitted record to the BM25 recall index (idempotent)."""
+    conn.execute("DELETE FROM bench_fts WHERE record_cid = ?", (record_cid,))
+    conn.execute(
+        "INSERT INTO bench_fts (record_cid, name, family, variant, keys_text) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (record_cid, name, family, variant, keys_text))
+    conn.commit()
