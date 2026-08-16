@@ -108,7 +108,8 @@ def push_records(
         by_cid = {p["record_cid"]: p["status"] for p in outcome.get("pushed", [])}
         for r in rows:
             status = by_cid.get(r["record_cid"], "missing from response")
-            if status.startswith("queued") or status.startswith("stored"):
+            if (status.startswith("admitted") or status.startswith("queued")
+                    or status.startswith("stored")):
                 state, bucket = "accepted", "pushed"
             elif status.startswith("duplicate"):
                 state, bucket = "accepted", "duplicates"
