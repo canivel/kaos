@@ -33,5 +33,5 @@ logging:
 bench:
   enabled: true
   endpoint: https://dev.attraktor.dev
-  workspace: kaos-flagship
+  workspace: ws-neaez4yu
   tier: individual
