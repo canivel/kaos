@@ -1461,6 +1461,42 @@ def bench_rejections(ctx, db: str, config_file: str, limit: int):
         console.print(f"  [red]✗[/red] {r['source_ref']} [{r['kind']}] — {r['rejection_reason']}")
 
 
+@bench.command("push")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("--limit", type=int, default=25, help="max records this pass")
+@click.pass_context
+def bench_push(ctx, db: str, config_file: str, limit: int):
+    """Push local validated records to the shared Attraktor bench.
+
+    Needs bench.endpoint in kaos.yaml and the workspace token in the
+    environment (default $KAOS_BENCH_TOKEN — generate it in the dashboard).
+    Publish routing is decided server-side from the token's workspace tier;
+    the server re-hashes every record's canonical bytes before storing.
+    """
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.remote import push_records
+    from kaos.bench.schema import open_bench
+
+    cfg = load_bench_config(config_file)
+    bench_path = Path(db).parent / cfg.local_bench_path
+    if not bench_path.exists():
+        if not _json_err(ctx, "no local bench yet — run `kaos bench harvest`"):
+            console.print("[yellow]no local bench yet — run `kaos bench harvest`[/yellow]")
+        return
+    bench_conn = open_bench(bench_path)
+    try:
+        rep = push_records(bench_conn, cfg, limit=limit)
+    finally:
+        bench_conn.close()
+    if _json_out(ctx, rep.to_dict()):
+        return
+    console.print(f"pushed {rep.pushed} · duplicates {rep.duplicates} · "
+                  f"refused {rep.refused} · errors {rep.errors}")
+    for d in rep.details[:10]:
+        console.print(f"  {d.get('record_cid', '')[:24]} {d.get('status', d.get('error', ''))}")
+
+
 @bench.command("probe")
 @click.option("--db", default=DEFAULT_DB, help="kaos.db path")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
