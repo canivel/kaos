@@ -168,8 +168,9 @@ class BenchHooks:
                 f"- [{name}] trust=T{it.trust_level} fidelity={it.fidelity} "
                 f"validated-for-axes={consumed} wilson_lb={it.envelope.get('wilson_lb', '?')}"
             )
-            body = (it.payload.get("template") or it.payload.get("description")
-                    or it.payload.get("content") or "")
+            body = (it.payload.get("lesson") or it.payload.get("template")
+                    or it.payload.get("description") or it.payload.get("content")
+                    or "")
             if body:
                 text = str(body)[:400]
                 if scrambled:

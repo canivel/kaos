@@ -108,7 +108,9 @@ def validate_pending(
                 cid = mint_record(
                     bench, candidate_id=row["candidate_id"], name=name,
                     payload=payload, kind="mechanism_eval",
-                    retrieval_keys_text=f"{name} {payload.get('family', '')}",
+                    retrieval_keys_text=(
+                        f"{name} {payload.get('family', '')} "
+                        f"{payload.get('mechanism', '')} {payload.get('lesson', '')}"),
                     validation={"ladder": "skipped — pre-registered probe is the validation",
                                 "verdict": verdict_raw,
                                 "lock_sha256": payload.get("lock_sha256"),

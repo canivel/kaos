@@ -162,19 +162,42 @@ def harvest_experiments(
     kaos_conn: sqlite3.Connection, bench: sqlite3.Connection, report: HarvestReport,
 ) -> None:
     """Every mechanism verdict — ACCEPT AND REJECT/VOID — is a candidate. The
-    rejections are the credibility of the dataset (D0.1)."""
+    rejections are the credibility of the dataset (D0.1).
+
+    The payload carries the KNOWLEDGE, not just the metadata: the mechanism
+    description, the gate outcomes with their numbers, the arm results, and —
+    the field a consumer actually acts on — the LESSON. summary/mechanism/
+    lesson are lifted from the journal row's metadata when the experimenter
+    recorded them (log them via ``kaos experiment log`` metadata)."""
+    import json as _json
     try:
         rows = kaos_conn.execute(
-            "SELECT exp_id, name, family, verdict, lock_sha256, git_sha "
+            "SELECT exp_id, name, family, verdict, lock_sha256, git_sha,"
+            " gates_json, arms_json, judge_kappa, metadata "
             "FROM experiments WHERE verdict IS NOT NULL").fetchall()
     except sqlite3.OperationalError:
         rows = []
-    for exp_id, name, family, verdict, lock_sha, git_sha in rows:
+    for (exp_id, name, family, verdict, lock_sha, git_sha,
+         gates_json, arms_json, judge_kappa, metadata) in rows:
+        def _load(raw, default):
+            try:
+                return _json.loads(raw) if raw else default
+            except (ValueError, TypeError):
+                return default
+        meta = _load(metadata, {})
+        payload = {"name": name, "family": family, "verdict": verdict,
+                   "lock_sha256": lock_sha, "git_sha": git_sha,
+                   "gates": _load(gates_json, []),
+                   "arms": _load(arms_json, {}),
+                   "judge_kappa": judge_kappa,
+                   "metadata": meta}
+        # the three fields a reader/agent actually learns from
+        for k in ("mechanism", "summary", "lesson", "disposition"):
+            if meta.get(k):
+                payload[k] = meta[k]
         cid = _insert_candidate(
             bench, source_kind="experiment", source_ref=f"exp:{exp_id}",
-            kind="mechanism_eval",
-            payload={"name": name, "family": family, "verdict": verdict,
-                     "lock_sha256": lock_sha, "git_sha": git_sha})
+            kind="mechanism_eval", payload=payload)
         if cid is None:
             continue
         report.experiments_harvested += 1
