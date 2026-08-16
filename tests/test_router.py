@@ -38,10 +38,47 @@ class TestHeuristicClassifier:
         )
         assert result.complexity in (COMPLEX, CRITICAL)
 
-    def test_context_length_factor(self, classifier: HeuristicClassifier):
+    def test_context_length_escalates_complexity(self, classifier: HeuristicClassifier):
+        """A large context must push the SAME task description to a higher complexity.
+
+        This replaces an assertion that read `assert long.confidence >= short.confidence or True`
+        — the trailing `or True` made it unfalsifiable, so it proved nothing. Worse, it was
+        hiding that the property it appeared to test is FALSE (see
+        test_context_length_confidence_is_not_monotonic below).
+
+        The real, load-bearing behaviour is the complexity escalation: classify() adds +1.0 to
+        the score above 20k characters and +2.0 above 50k. "simple task" scores -1.0 on its own
+        (the TRIVIAL pattern "simple"), so 100k context moves it -1.0 -> +1.0, which crosses the
+        >= 1.0 MODERATE boundary. That is the routing decision that actually matters: a long
+        context must not be dispatched to a trivial-tier model.
+        """
         short = classifier.classify("simple task", context_length=100)
         long = classifier.classify("simple task", context_length=100000)
-        assert long.confidence >= short.confidence or True
+
+        assert short.complexity == TRIVIAL, short.reasoning
+        assert long.complexity == MODERATE, long.reasoning
+
+        order = [TRIVIAL, MODERATE, COMPLEX, CRITICAL]
+        assert order.index(long.complexity) > order.index(short.complexity)
+
+    def test_context_length_confidence_is_not_monotonic(self, classifier: HeuristicClassifier):
+        """Documents a real quirk: confidence does NOT rise with context length.
+
+        confidence is min(0.9, 0.5 + abs(score) * 0.1). Because of the abs(), a score moving
+        from -1.0 through 0.0 to +1.0 produces 0.60 -> 0.50 -> 0.60. So a MID-sized context is
+        reported as LESS confident than either a small or a large one, purely because its score
+        passes through zero.
+
+        This is asserted rather than fixed because confidence is currently only a report field,
+        not a routing input — the router selects on `complexity`. If confidence ever gates a
+        decision, this test should start failing and the abs() needs revisiting.
+        """
+        short = classifier.classify("simple task", context_length=100)
+        mid = classifier.classify("simple task", context_length=30000)
+        long = classifier.classify("simple task", context_length=100000)
+
+        assert mid.confidence < short.confidence, (short.confidence, mid.confidence)
+        assert mid.confidence < long.confidence, (long.confidence, mid.confidence)
 
     def test_confidence_range(self, classifier: HeuristicClassifier):
         result = classifier.classify("any task")
