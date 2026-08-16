@@ -1,13 +1,13 @@
-"""KAOS-side TransferBench integration config (D5).
+"""KAOS-side Attraktor integration config (D5).
 
 The user-facing setup surface: a ``bench:`` section in ``kaos.yaml`` plus a
-workspace-scoped token issued in the TransferBench SaaS UI. The token NEVER
+workspace-scoped token issued in the Attraktor SaaS UI. The token NEVER
 lives in a file KAOS writes — it is read from the environment (or injected by
 the caller), so a committed kaos.yaml can never leak credentials.
 
     bench:
       enabled: true
-      endpoint: https://api.transferbench.dev        # omit for local-only
+      endpoint: https://api.attraktor.dev        # omit for local-only
       workspace: acme-ml                             # SaaS workspace slug/id
       tier: team                                     # individual | team | enterprise
       publish_scope: auto                            # auto | workspace | public_queue | local
@@ -109,7 +109,7 @@ def load_bench_config(config_path: str | Path = "kaos.yaml") -> BenchConfig:
     if cfg.is_remote and cfg.token() is None:
         cfg.problems.append(
             f"bench.endpoint set but ${cfg.token_env} is not set — generate a token "
-            f"in the TransferBench UI for your workspace and export it")
+            f"in the Attraktor UI for your workspace and export it")
     if any(k in section for k in ("token", "api_key", "secret")):
         cfg.problems.append(
             "a token/secret is written in kaos.yaml — remove it; tokens live in the "

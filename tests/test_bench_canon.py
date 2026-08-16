@@ -67,7 +67,7 @@ class TestNumbers:
 
 class TestRecordCid:
     def test_prefix_and_length(self):
-        cid = record_cid({"schema_id": "transferbench/eval_record/v1"})
+        cid = record_cid({"schema_id": "attraktor/eval_record/v1"})
         assert cid.startswith("tb1:")
         assert len(cid) == len("tb1:") + 64
         assert all(c in "0123456789abcdef" for c in cid[4:])

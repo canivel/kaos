@@ -1,7 +1,7 @@
 """Local bench.db schema — the workspace brain's storage (MVP loop, schema v1).
 
 One bench = one SQLite file beside kaos.db. This is the LOCAL subset of the
-TransferBench DDL (the transferbench repo's ``schema/bench.sql`` is the interop-
+Attraktor DDL (the attraktor repo's ``schema/bench.sql`` is the interop-
 normative shared-bench superset; table/column names here must stay aligned with
 it). Shared-bench-only tables (signers, attestations, sync cursors) are not
 created locally until a remote is added.

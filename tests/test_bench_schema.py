@@ -24,7 +24,7 @@ def _admit(conn, cid="tb1:" + "a" * 64, kind="skill", verdict="ACCEPT"):
     conn.execute(
         "INSERT INTO eval_records (record_cid, schema_id, kind, self_test_passed,"
         " verdict, variant, faithful, repro_class, body_json, origin_bench_id)"
-        " VALUES (?, 'transferbench/eval_record/v1', ?, 1, ?, 'as-is', 1,"
+        " VALUES (?, 'attraktor/eval_record/v1', ?, 1, ?, 'as-is', 1,"
         " 'llm_nondeterministic', '{}', ?)",
         (cid, kind, verdict, bench_id(conn)),
     )

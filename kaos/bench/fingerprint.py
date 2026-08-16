@@ -1,6 +1,6 @@
 """Task-shape fingerprinting + transfer-match-on-pull (Filter 2).
 
-Implements PLAN v2 §2.3 (fingerprint) and §3.2 (match) from the transferbench
+Implements PLAN v2 §2.3 (fingerprint) and §3.2 (match) from the attraktor
 repo. Milliseconds, deterministic, no embeddings, no LLM.
 
 The four axes are ordinal levels, never floats (R2: numeric ranges are false

@@ -29,7 +29,7 @@ def _admit(bench, cid_suffix, *, name, trust=2, verdict="ACCEPT",
     bench.execute(
         "INSERT INTO eval_records (record_cid, schema_id, kind, self_test_passed,"
         " verdict, variant, faithful, trust_level, repro_class, envelope_json,"
-        " body_json, origin_bench_id) VALUES (?, 'transferbench/eval_record/v1',"
+        " body_json, origin_bench_id) VALUES (?, 'attraktor/eval_record/v1',"
         " ?, 1, ?, 'as-is', 1, ?, 'llm_nondeterministic', ?, ?, ?)",
         (cid, kind, verdict, trust, json.dumps(env),
          json.dumps({"name": name}), bench_id(bench)))
