@@ -1378,6 +1378,56 @@ def bench_harvest(ctx, db: str, config_file: str):
                   f"E0 accumulating {rep.e0_accumulating})")
 
 
+@bench.command("validate")
+@click.option("--db", default=DEFAULT_DB, help="kaos.db path")
+@click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
+@click.option("--limit", type=int, default=None, help="max candidates this pass")
+@click.option("--no-model", is_flag=True, default=False,
+              help="mint probe-validated mechanism evals only; skills stay E1")
+@click.pass_context
+def bench_validate(ctx, db: str, config_file: str, limit: int | None, no_model: bool):
+    """Run pending candidates through the entry ladder (E2 replay probe).
+
+    Mechanism evals mint directly (their pre-registered probe IS the validation
+    — REJECT/VOID mint too; rejections are data). Skills/learnings run the
+    three-arm held-out replay probe via the router; without a configured model
+    they stay E1, counted, never silently dropped.
+    """
+    import sqlite3 as _sq
+    from kaos.bench.config import load_bench_config
+    from kaos.bench.schema import open_bench
+    from kaos.bench.validate import completion_from_router, validate_pending
+
+    cfg = load_bench_config(config_file)
+    complete = None
+    if not no_model:
+        try:
+            from kaos.router.gepa import GEPARouter
+            router = GEPARouter.from_config(config_file)
+            if getattr(router, "clients", None):
+                complete = completion_from_router(router)
+        except Exception:
+            complete = None   # honest degradation: skills stay E1, counted below
+
+    kaos_conn = _sq.connect(f"file:{db}?mode=ro", uri=True)
+    bench_conn = open_bench(Path(db).parent / cfg.local_bench_path)
+    try:
+        rep = validate_pending(kaos_conn, bench_conn, complete=complete, limit=limit)
+    finally:
+        kaos_conn.close()
+        bench_conn.close()
+
+    if _json_out(ctx, rep.to_dict()):
+        return
+    console.print(
+        f"minted {rep.minted_mechanism_evals} mechanism evals · "
+        f"E2: {rep.e2_passed} passed, {rep.e2_rejected} rejected, "
+        f"{rep.harness_inadmissible} harness-inadmissible, "
+        f"{rep.not_runnable} not runnable · {rep.skipped_no_model} awaiting a model")
+    for d in rep.details[:10]:
+        console.print(f"  {d['candidate']}: {d['outcome']}")
+
+
 @bench.command("rejections")
 @click.option("--db", default=DEFAULT_DB, help="kaos.db path")
 @click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")

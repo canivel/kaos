@@ -127,6 +127,23 @@ class DreamCycle:
         policies_report = policies_phase.run(conn, dry_run=dry_run)
         phase_timings["policies_ms"] = int((time.perf_counter() - t0) * 1000)
 
+        # Phase 6b — Attraktor bench (harvest + validate pending). Opt-in and
+        # best-effort: runs only when bench.enabled in kaos.yaml, degrades to a
+        # no-op on any failure, and without a model it still auto-harvests and
+        # mints probe-validated mechanism evals (dream time is the workspace's
+        # offline validation budget — PLAN v2 §2.2).
+        t0 = time.perf_counter()
+        bench_report: dict | None = None
+        try:
+            from kaos.bench.config import load_bench_config
+            if load_bench_config().enabled:
+                from kaos.bench.validate import dream_phase as _bench_dream
+                bench_report = _bench_dream(conn, self.kaos.db_path)
+        except Exception:  # noqa: BLE001 — the loop must never break the dream
+            bench_report = None
+        phase_timings["bench_ms"] = int((time.perf_counter() - t0) * 1000)
+        self.last_bench_report = bench_report
+
         finished_at = now_utc()
 
         # Phase 7 — narrative

@@ -239,30 +239,37 @@ def run_e2(
 
 def mint_record(
     bench: sqlite3.Connection, *, candidate_id: str, name: str, payload: dict,
-    e2: E2Result, retrieval_keys_text: str, kind: str = "skill",
+    retrieval_keys_text: str, kind: str = "skill",
+    e2: E2Result | None = None, validation: dict | None = None,
+    verdict: str = "ACCEPT", trust_level: int = 2, wilson_lb: float | None = None,
+    variant: str = "as-validated-local",
 ) -> str:
     """Build the canonical body, derive the content id, insert the immutable
-    record at trust T2 (replay-probed), index for recall, and mark the
-    candidate admitted. The envelope is MEASURED on the validating traffic —
-    M2 episode-grain (the runner writes it), M3 keys verbatim — never asserted."""
+    record, index for recall, and mark the candidate admitted.
+
+    Two mint paths share this: (a) E2-passed skills/learnings (``e2`` given —
+    trust T2, envelope measured on the validating traffic); (b) mechanism evals
+    from the experiments journal (``validation`` given — their pre-registered
+    probe IS the validation; REJECT/VOID verdicts mint too, because rejections
+    are data (D0.1), and pull() serves only ACCEPT)."""
+    if e2 is not None:
+        validation = {"ladder": "E2", "manifest_sha256": e2.manifest_sha256,
+                      "gates": e2.gates, "arms": e2.arms}
+        if wilson_lb is None:
+            wilson_lb = round(e2.arms.get("WITH", {}).get("mean", 0.6), 4)
     envelope = {
         "consumes": [],
         "measured": {"M2": int(Level.PRESENT)},
         "m2_grain": int(Grain.EPISODE),
         "retrieval_keys": sorted(anchor_tokens(retrieval_keys_text)),
-        "wilson_lb": round(e2.arms.get("WITH", {}).get("mean", 0.6), 4),
+        "wilson_lb": wilson_lb if wilson_lb is not None else 0.6,
     }
     body = {
         "schema_id": "attraktor/eval_record/v1",
         "kind": kind,
         "name": name,
         "payload": payload,
-        "validation": {
-            "ladder": "E2",
-            "manifest_sha256": e2.manifest_sha256,
-            "gates": e2.gates,
-            "arms": e2.arms,
-        },
+        "validation": validation or {},
         "transfer_envelope": envelope,
     }
     cid = record_cid(body)
@@ -270,16 +277,15 @@ def mint_record(
         "INSERT OR IGNORE INTO eval_records (record_cid, schema_id, kind,"
         " self_test_passed, verdict, variant, faithful, trust_level, repro_class,"
         " envelope_json, body_json, origin_bench_id) VALUES (?, ?, ?, 1,"
-        " 'ACCEPT', 'as-validated-local', 1, 2, 'llm_nondeterministic', ?, ?, ?)",
-        (cid, body["schema_id"], kind, json.dumps(envelope),
-         canonical_bytes(body).decode(), bench_id(bench)))
+        " ?, ?, 1, ?, 'llm_nondeterministic', ?, ?, ?)",
+        (cid, body["schema_id"], kind, verdict, variant, trust_level,
+         json.dumps(envelope), canonical_bytes(body).decode(), bench_id(bench)))
     fts_index_record(bench, cid, name=name,
-                     keys_text=retrieval_keys_text,
-                     variant="as-validated-local")
+                     keys_text=retrieval_keys_text, variant=variant)
     bench.execute(
         "UPDATE bench_candidates SET status='admitted', record_cid=?, e2_json=?, "
         "decided_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE candidate_id=?",
-        (cid, json.dumps(e2.to_dict()), candidate_id))
+        (cid, json.dumps(e2.to_dict() if e2 else validation), candidate_id))
     bench.commit()
     return cid
 
