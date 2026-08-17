@@ -77,9 +77,35 @@ def push_records(
     if not rows:
         return rep
 
+    # Knowledge requirement (D9): a record must carry something a consumer
+    # can act on. Publishing name+hashes teaches nobody — refuse locally
+    # with a fix-it reason instead of wasting the round trip.
+    KNOWLEDGE_KEYS = ("lesson", "mechanism", "summary", "template",
+                      "description", "content")
+
+    def _has_knowledge(body: dict) -> bool:
+        inner = body.get("payload") or {}
+        return any(str(src.get(k) or "").strip()
+                   for src in (body, inner) for k in KNOWLEDGE_KEYS)
+
     records = []
+    sendable_rows = []
     for r in rows:
         body = json.loads(r["body_json"])
+        if not _has_knowledge(body):
+            reason = ("refused locally: no consumable knowledge — add "
+                      "mechanism/summary/lesson to the experiment metadata "
+                      "(kaos experiment log) or template/description for skills, "
+                      "then re-mint")
+            bench.execute(
+                "UPDATE bench_outbox SET state='rejected', last_error=?,"
+                " updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')"
+                " WHERE record_cid=? AND remote=?",
+                (reason, r["record_cid"], cfg.endpoint))
+            rep.refused += 1
+            rep.details.append({"record_cid": r["record_cid"], "status": reason})
+            continue
+        sendable_rows.append(r)
         env = json.loads(r["envelope_json"] or "{}")
         records.append({
             "record_cid": r["record_cid"],
@@ -94,6 +120,10 @@ def push_records(
             "envelope": env,
             "keys_text": " ".join(env.get("retrieval_keys", [])),
         })
+    if rep.refused:
+        bench.commit()
+    if not records:
+        return rep
 
     owns_client = client is None
     client = client or httpx.Client(timeout=30.0)
@@ -109,7 +139,7 @@ def push_records(
             return rep
         outcome = resp.json()
         by_cid = {p["record_cid"]: p["status"] for p in outcome.get("pushed", [])}
-        for r in rows:
+        for r in sendable_rows:
             status = by_cid.get(r["record_cid"], "missing from response")
             if (status.startswith("admitted") or status.startswith("queued")
                     or status.startswith("stored")):

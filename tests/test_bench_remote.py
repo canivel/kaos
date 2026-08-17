@@ -23,7 +23,9 @@ def bench_with_record(tmp_path):
     bench.commit()
     cid = mint_record(
         bench, candidate_id="c1", name="gdl-probe",
-        payload={"family": "probe"}, retrieval_keys_text="gdl probe",
+        payload={"family": "probe",
+                 "lesson": "measure node reuse before building trajectory graphs"},
+        retrieval_keys_text="gdl probe",
         validation={"ladder": "skipped"}, verdict="ACCEPT",
         trust_level=1, variant="as-probed")
     yield bench, cid
@@ -212,4 +214,65 @@ class TestRemoteServeE2E:
         inj = BenchHooks._injection_block(res.items)
         assert "use exponential backoff with jitter" in inj   # the lesson itself
         assert "trust=T1" in inj                              # honesty surface
+        bench.close()
+
+
+class TestKnowledgeRequirement:
+    def test_metadata_only_record_refused_locally(self, tmp_path, monkeypatch):
+        """A record with no lesson/mechanism/template never leaves the machine —
+        refused with a fix-it reason (D9 knowledge requirement)."""
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "bench.db")
+        bench.execute(
+            "INSERT INTO bench_candidates (candidate_id, source_kind, source_ref,"
+            " kind, status, payload_json) VALUES ('c1', 'experiment', 'exp:1',"
+            " 'mechanism_eval', 'e1_passed', '{}')")
+        bench.commit()
+        cid = mint_record(
+            bench, candidate_id="c1", name="bare-probe",
+            payload={"family": "probe", "verdict": "ACCEPT",
+                     "lock_sha256": "ab" * 32},                 # hashes only
+            retrieval_keys_text="bare probe",
+            validation={"ladder": "skipped"}, verdict="ACCEPT",
+            trust_level=1, variant="as-probed")
+
+        calls = {"n": 0}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls["n"] += 1
+            return httpx.Response(200, json={"pushed": []})
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        rep = push_records(bench, _cfg(), client=client)
+        assert rep.refused == 1 and rep.pushed == 0
+        assert calls["n"] == 0                       # never hit the network
+        row = bench.execute(
+            "SELECT state, last_error FROM bench_outbox WHERE record_cid=?",
+            (cid,)).fetchone()
+        assert row["state"] == "rejected" and "no consumable knowledge" in row["last_error"]
+        bench.close()
+
+    def test_record_with_lesson_still_pushes(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("KAOS_BENCH_TOKEN", "atk_test")
+        bench = open_bench(tmp_path / "bench.db")
+        bench.execute(
+            "INSERT INTO bench_candidates (candidate_id, source_kind, source_ref,"
+            " kind, status, payload_json) VALUES ('c2', 'experiment', 'exp:2',"
+            " 'mechanism_eval', 'e1_passed', '{}')")
+        bench.commit()
+        cid = mint_record(
+            bench, candidate_id="c2", name="rich-probe",
+            payload={"family": "probe", "lesson": "measure before you build"},
+            retrieval_keys_text="rich probe",
+            validation={"ladder": "skipped"}, verdict="ACCEPT",
+            trust_level=1, variant="as-probed")
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json={"pushed": [
+                {"record_cid": cid,
+                 "status": "admitted to the public registry (auto-admission passed)"}]})
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        rep = push_records(bench, _cfg(), client=client)
+        assert rep.pushed == 1 and rep.refused == 0
         bench.close()
