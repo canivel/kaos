@@ -338,6 +338,33 @@ class ClaudeCodeRunner:
             for r in results
         ]
 
+    async def run_parallel_detailed(self, tasks: list[dict]) -> list[dict]:
+        """Like run_parallel, but honest about outcomes: one dict per task
+        with agent_id, result, and ok (False when the agent raised or ended
+        in a failed/killed state). run_parallel's string-only return cannot
+        distinguish a failure repr from a successful answer — callers that
+        care about truth (the CLI exit code does) use this."""
+        async def _run_one(task: dict) -> dict:
+            async with self._semaphore:
+                agent_id = self.afs.spawn(
+                    name=task["name"],
+                    config=task.get("config", {}),
+                    parent_id=task.get("parent_id"),
+                )
+                try:
+                    result = await self.run_agent(agent_id, task["prompt"])
+                    agents = {a["agent_id"]: a["status"]
+                              for a in self.afs.list_agents()}
+                    status = agents.get(agent_id, "unknown")
+                    return {"agent_id": agent_id, "name": task["name"],
+                            "result": result, "status": status,
+                            "ok": status not in ("failed", "killed")}
+                except Exception as e:  # noqa: BLE001 — reported, not hidden
+                    return {"agent_id": agent_id, "name": task["name"],
+                            "result": str(e), "status": "failed", "ok": False}
+
+        return list(await asyncio.gather(*[_run_one(t) for t in tasks]))
+
     async def cancel_agent(self, agent_id: str) -> None:
         """Cancel a running agent."""
         task = self._active_agents.get(agent_id)

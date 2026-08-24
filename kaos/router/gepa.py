@@ -40,7 +40,8 @@ class ModelConfig:
     provider: str = "local"  # "local" | "openai" | "anthropic"
     model_id: str = ""  # API model ID (e.g. "gpt-4o", "claude-sonnet-4-20250514")
     api_key_env: str = ""  # env var name for API key (e.g. "OPENAI_API_KEY")
-    timeout: float = 300.0  # per-call timeout seconds
+    timeout: float = 300.0  # per-call WALL timeout seconds (hard kill)
+    idle_timeout: float = 60.0  # streaming providers: no-new-output stall threshold
 
 
 class GEPARouter:
@@ -96,6 +97,7 @@ class GEPARouter:
                     cfg.provider,
                     model_id=cfg.model_id,
                     timeout=cfg.timeout,
+                    idle_timeout=cfg.idle_timeout,
                 )
             else:
                 # Default: local vLLM/ollama endpoint
@@ -148,6 +150,7 @@ class GEPARouter:
                 model_id=mcfg.get("model_id", name),
                 api_key_env=mcfg.get("api_key_env", ""),
                 timeout=float(mcfg.get("timeout", 300.0)),
+                idle_timeout=float(mcfg.get("idle_timeout", 60.0)),
             )
 
         router_cfg = config.get("router", {})

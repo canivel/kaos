@@ -752,7 +752,9 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
     elif provider_type == "claude_code":
         model_id = kwargs.get("model_id", "")
         timeout = kwargs.get("timeout", 120.0)
-        return ClaudeCodeProvider(model_id=model_id, timeout=timeout)
+        idle_timeout = kwargs.get("idle_timeout", 60.0)
+        return ClaudeCodeProvider(model_id=model_id, timeout=timeout,
+                                  idle_timeout=idle_timeout)
 
     elif provider_type == "agent_sdk":
         from kaos.router.agent_sdk import AgentSDKProvider

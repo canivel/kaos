@@ -560,13 +560,25 @@ def run(task: str, name: str, db: str, config_file: str, model: str,
     agent_id = afs.spawn(name=name, config=agent_config)
     console.print(f"[cyan]Spawned agent:[/cyan] {agent_id} ({name})")
 
+    exit_code = 0
     try:
         result = asyncio.run(ccr.run_agent(agent_id, task))
-        console.print(f"\n[green]Result:[/green]\n{result}")
+        status = {a["agent_id"]: a["status"] for a in afs.list_agents()}.get(agent_id)
+        if status in ("failed", "killed"):
+            # The runner returns a string even on max-iterations/timeout
+            # failure paths — the agent's STATUS is the truth, and the exit
+            # code must tell it (fleet launchers trust exit codes).
+            console.print(f"\n[red]Agent {status}:[/red]\n{result}")
+            exit_code = 1
+        else:
+            console.print(f"\n[green]Result:[/green]\n{result}")
     except Exception as e:
         console.print(f"\n[red]Agent failed:[/red] {e}")
+        exit_code = 1
     finally:
         afs.close()
+    if exit_code:
+        raise SystemExit(exit_code)
 
 
 @cli.command()
@@ -592,13 +604,17 @@ def parallel(db: str, config_file: str, task: tuple):
     tasks = [{"name": t[0], "prompt": t[1]} for t in task]
 
     console.print(f"[cyan]Running {len(tasks)} agents in parallel...[/cyan]")
-    results = asyncio.run(ccr.run_parallel(tasks))
+    outcomes = asyncio.run(ccr.run_parallel_detailed(tasks))
 
-    for i, result in enumerate(results):
-        console.print(f"\n[bold]Agent {tasks[i]['name']}:[/bold]")
-        console.print(result[:500])
-
+    failed = [o for o in outcomes if not o["ok"]]
+    for o in outcomes:
+        mark = "[green]ok[/green]" if o["ok"] else f"[red]{o['status']}[/red]"
+        console.print(f"\n[bold]Agent {o['name']}[/bold] ({mark}):")
+        console.print(str(o["result"])[:500])
     afs.close()
+    if failed:
+        console.print(f"\n[red]{len(failed)}/{len(outcomes)} agent(s) failed[/red]")
+        raise SystemExit(1)
 
 
 @cli.command("ls")
