@@ -2,6 +2,14 @@
 
 All notable changes to KAOS are documented here.
 
+## [2.0.1] - 2026-09-01
+
+Packaging patch. 2.0.0 shipped wheel-only: the default hatchling sdist packed demo
+GIFs/papers/benches into 141 MB, over PyPI's 100 MB file cap, and PyPI's immutable
+filenames plus wheel build non-determinism made completing 2.0.0 impossible. The sdist is
+now 437 KB (package + tests + metadata only), `uv publish --check-url` makes reruns
+idempotent, and the CI failure reporter scrubs tokens before posting. No code changes.
+
 ## [2.0.0] - 2026-09-01 — Distribution & modularity (adoption roadmap P0+P1)
 
 KAOS 2.0 is about being installable, adoptable, and extensible — the follow-through on

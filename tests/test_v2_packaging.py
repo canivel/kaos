@@ -52,7 +52,7 @@ class TestG11BaseFootprint:
 
     def test_version_is_consistent(self):
         import kaos
-        assert _project()["version"] == kaos.__version__ == "2.0.0"
+        assert _project()["version"] == kaos.__version__
 
 
 class TestG12Layering:

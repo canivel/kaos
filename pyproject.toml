@@ -1,6 +1,6 @@
 [project]
 name = "kaos-harness"
-version = "2.0.0"
+version = "2.0.1"
 description = "KAOS — Kernel for Agent Orchestration & Sandboxing. Isolated, auditable, portable agent runtimes backed by SQLite."
 readme = "README.md"
 license = "MIT"
