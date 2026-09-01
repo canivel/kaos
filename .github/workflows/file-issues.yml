@@ -9,8 +9,12 @@ name: file-queued-issues
 
 on:
   push:
-    branches: [main, v2]
+    branches: [main]          # main only — a multi-branch push raced two runs
     paths: [".github/issues-queue/*.md"]
+
+concurrency:
+  group: file-queued-issues   # serialize runs so dedup can't race
+  cancel-in-progress: false
 
 permissions:
   issues: write
