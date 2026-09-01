@@ -16,7 +16,7 @@ kaos parallel \
 
 ![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-2.0.1-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)
