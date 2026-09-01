@@ -1,0 +1,60 @@
+name: file-queued-issues
+
+# The CLAUDE.md AI-feedback policy asks agents to open GitHub issues, but a
+# local agent has no API token. Instead: drop a markdown file in
+# .github/issues-queue/ (first line `# <title>`, rest = body) and push — this
+# workflow files it with the built-in token. Idempotent: a queued title that
+# already exists as an open or closed issue is skipped, so queue files can
+# stay in the tree as a record.
+
+on:
+  push:
+    branches: [main, v2]
+    paths: [".github/issues-queue/*.md"]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: File queued issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request, urllib.parse
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          tok = os.environ["GH_TOKEN"]
+
+          def api(path, data=None, method=None):
+              req = urllib.request.Request(
+                  f"https://api.github.com{path}",
+                  data=json.dumps(data).encode() if data else None,
+                  headers={"Authorization": "Bearer " + tok,
+                           "Accept": "application/vnd.github+json"},
+                  method=method,
+              )
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          existing = set()
+          for state in ("open", "closed"):
+              for i in api(f"/repos/{repo}/issues?state={state}&per_page=100"):
+                  existing.add(i["title"].strip())
+
+          for f in sorted(pathlib.Path(".github/issues-queue").glob("*.md")):
+              lines = f.read_text().splitlines()
+              title = lines[0].lstrip("# ").strip()
+              body = "\n".join(lines[1:]).strip()
+              if title in existing:
+                  print(f"skip (exists): {title}")
+                  continue
+              made = api(f"/repos/{repo}/issues",
+                         {"title": title, "body": body})
+              print(f"filed #{made['number']}: {title}")
+          PY

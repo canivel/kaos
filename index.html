@@ -759,6 +759,56 @@ agent_fail | <span class="highlight-line">{"error": "claude produced no output f
 </div>
 </section>
 
+<!-- The brain learns -->
+<section class="solution" id="brain">
+<div class="wrap">
+  <h2>Then the Brain Learns</h2>
+  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:0 auto 2.5rem">The session above left telemetry behind &mdash; skill outcomes, memory retrievals, co-firing patterns. Here is the same workspace a few sprints later: real episodes, then the dream cycle consolidating what worked and pruning what didn&rsquo;t. All from the actual run.</p>
+
+  <div class="code-block" style="margin-bottom:1.5rem">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;1 &mdash; wake phase: outcomes accumulate as agents work</div>
+    <pre>skill idempotent-retry-fix        uses=6  successes=6   <span class="comment"># keeps working</span>
+skill deploy-canary-checklist     uses=5  successes=5
+skill deploy-yolo                 uses=6  successes=1   <span class="comment"># keeps burning us</span>
+memory payment-retry-idempotency  retrieved 6 times
+hebbian association edges: 12                           <span class="comment"># built at agent completion — never on the hot path</span></pre>
+  </div>
+
+  <div class="code-block" style="margin-bottom:1.5rem">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;2 &mdash; sleep phase: dream, then consolidate</div>
+    <pre><span class="comment">$</span> kaos dream run --dry-run        <span class="comment"># 9 episodes replayed, digest written to Dreams/</span>
+<span class="comment">$</span> kaos dream consolidate --apply  <span class="comment"># structural change is always explicit</span>
+{ "promoted": 1, "pruned": 1, <span class="highlight-line">"applied": 2</span> }</pre>
+  </div>
+
+  <div class="code-block" style="margin-bottom:1.5rem">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;3 &mdash; what changed</div>
+    <pre><span class="comment"># the 6-times-retrieved memory became a skill, provenance kept:</span>
+payment-retry-idempotency &mdash; "Promoted from memory 'payment-retry-idempotency'"
+
+<span class="comment"># the 1/6 flaky skill is soft-deprecated (recoverable) and hidden by default:</span>
+<span class="comment">$</span> kaos skills search "deploy service"
+deploy-canary-checklist            <span class="comment"># only the one that actually works</span>
+
+<span class="comment"># hebbian recall — what co-fires with this skill?</span>
+<span class="comment">$</span> kaos dream related skill idempotent-retry-fix
+deploy-yolo (w=6.0)   deploy-canary-checklist (w=5.0)   memory:payment-retry-idempotency (w=3.0)</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;4 &mdash; the payoff, and one honest limit</div>
+    <pre><span class="comment"># a NEW incident: webhook processes the same event twice on sender retry</span>
+<span class="comment">$</span> kaos memory search "idempotency retry"     &rarr; payment-retry-idempotency  <span class="string">hit</span>
+<span class="comment">$</span> kaos memory search "timeout retry"         &rarr; payment-retry-idempotency  <span class="string">hit</span>
+<span class="comment">$</span> kaos memory search "duplicate processing"  &rarr; <span class="highlight-line">no match</span>  <span class="comment"># FTS is literal —</span>
+<span class="comment"># no shared vocabulary, no recall. Measured, disclosed, and filed as an
+# issue with a pre-registered probe sketch — that's how this project works.</span></pre>
+  </div>
+
+  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:2.5rem auto 0">No fine-tuning, no embeddings, no GPU. The library reorganizes itself from usage statistics &mdash; and destructive changes only ever happen when you say <code style="font-family:var(--mono);color:var(--accent2)">--apply</code>.</p>
+</div>
+</section>
+
 <section class="demos" id="demos">
 <div class="wrap">
   <h2>See KAOS in Action</h2>
