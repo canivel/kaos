@@ -73,6 +73,28 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["kaos"]
 
+[tool.hatch.build.targets.sdist]
+# keep the sdist lean — the repo carries demo GIFs, papers, and bench results
+# that pushed the default sdist to 141 MB (PyPI caps files at 100 MB)
+include = [
+    "kaos",
+    "tests",
+    "conftest.py",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "kaos.yaml.example",
+]
+exclude = [
+    "benchmarks",
+    "docs",
+    "blog",
+    "*.gif",
+    "*.png",
+    "*.pdf",
+    "*.db",
+]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100

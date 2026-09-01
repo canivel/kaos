@@ -65,13 +65,17 @@ jobs:
       - name: Publish to PyPI
         run: |
           set -o pipefail
-          uv publish --trusted-publishing always 2>&1 | tee publish.log
+          # --check-url skips files already on PyPI (e.g. a wheel that made it
+          # up before a later file in the same run failed)
+          uv publish --trusted-publishing always \
+            --check-url https://pypi.org/simple/ 2>&1 | tee publish.log
       - name: Report publish failure as issue
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tail -c 50000 publish.log > tail.log 2>/dev/null || echo "(no publish.log)" > tail.log
+          # scrub masking directives / tokens before anything leaves the runner
+          grep -v "::add-mask::" publish.log | sed -E 's/pypi-[A-Za-z0-9_-]+/pypi-<redacted>/g' | tail -c 50000 > tail.log 2>/dev/null || echo "(no publish.log)" > tail.log
           python3 - <<'PY'
           import json, os, urllib.request
           body = "PyPI publish failure on `" + os.environ.get("GITHUB_REF_NAME", "?") + "`\n\n```\n" + open("tail.log").read() + "\n```"
