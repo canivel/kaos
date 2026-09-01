@@ -281,17 +281,18 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 <div class="wrap">
   <div class="hero-copy">
     <h1>Isolated runtimes for<br><span class="highlight">every AI agent</span></h1>
-    <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. Smart compaction cuts agent context by 57% at default with zero quality loss.</p>
+    <p class="subtitle">One SQLite file. Isolated filesystems. Full audit trail. Checkpoint, restore, debug &mdash; all locally, all composable. The only harness whose own mechanisms must pass pre-registered, falsifiable kill gates before they ship.</p>
     <div class="hero-buttons">
       <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
       <a href="#research" class="btn btn-secondary">See the research &darr;</a>
     </div>
     <div class="install-bar">
       <span class="prompt">$</span>
-      <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync</span>
+      <span class="cmd">pip install 'kaos-harness[all]' && kaos demo</span>
     </div>
     <div class="badges">
-      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v0.6.0</span>
+      <span class="badge" style="color:var(--accent2);border-color:rgba(162,155,254,.3)">v2.0.0</span>
+      <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">pip install kaos-harness</span>
       <span class="badge green" style="color:var(--green);border-color:rgba(0,230,118,.25)">57% fewer tokens</span>
       <span class="badge blue" style="color:var(--cyan);border-color:rgba(24,255,255,.25)">100% quality retained</span>
       <span class="badge">CLI-first + MCP</span>
@@ -922,9 +923,37 @@ kaos import snapshot.db
 
     <div class="release">
       <div class="release-header">
+        <span class="release-version">v2.0.0</span>
+        <span class="release-date">September 1, 2026</span>
+        <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">Distribution &amp; Modularity &mdash; pip-installable, extras, plugins</p>
+      <ul>
+        <li><strong>On PyPI as <code>kaos-harness</code></strong> &mdash; <code>pip install 'kaos-harness[all]'</code> then <code>kaos demo</code>: live dashboard, zero API keys, two commands. The import and CLI stay <code>kaos</code>.</li>
+        <li><strong>Slim base + extras</strong> &mdash; the base install is the flight recorder and the brain on 5 dependencies; <code>[router]</code> (model providers), <code>[mcp]</code> (58-tool server), <code>[ui]</code> (web + TUI dashboards), <code>[all]</code>. A missing extra prints the exact install line.</li>
+        <li><strong>Plugin surface</strong> &mdash; the <code>kaos.plugins</code> entry-point group: third-party packages add model providers, meta-harness benchmarks, and MCP tool packs with zero core changes. <code>kaos plugins</code> lists what's installed.</li>
+        <li><strong>Consolidation apply fixed (P0)</strong> &mdash; <code>kaos dream consolidate --apply</code> after a dry-run applied nothing (pending proposals were deduped away); found by the launch functional sweep, fixed red-first. 931 tests passing.</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v0.7&ndash;v0.10</span>
+        <span class="release-date">May &ndash; August 2026</span>
+      </div>
+      <p class="release-category">Skills &rarr; Neuroplasticity &rarr; Falsifiable Eval &rarr; Hardening</p>
+      <ul>
+        <li><strong>v0.7</strong> &mdash; cross-agent skill library (parameterized templates, usage tracking) + dynamic intake (LLM-analyzed clarifying questions).</li>
+        <li><strong>v0.8</strong> &mdash; neuroplasticity: inline outcome telemetry, Hebbian association graph, weighted search, consolidation proposals; failure taxonomy + critical-step localizer; ISA/ISC; war-room UI.</li>
+        <li><strong>v0.9</strong> &mdash; the falsifiable-eval primitive: pre-registered sha256-locked kill gates, falsification self-test, binding ACCEPT/REJECT/VOID verdicts; experiments journal; <code>kaos doctor</code>; 58 MCP tools.</li>
+        <li><strong>v0.10</strong> &mdash; measure &amp; harden: <code>verify-numerics</code> (numbers must trace to recorded measurements), storage-scale bench (10k agents, 9.2 ms p95), cluster-bootstrap verdict statistics, trust sweep.</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
         <span class="release-version">v0.6.0</span>
         <span class="release-date">April 9, 2026</span>
-        <span class="release-tag">latest</span>
       </div>
       <p class="release-category">CORAL: Autonomous Multi-Agent Evolution &mdash; <a href="https://arxiv.org/abs/2604.01658" style="color:var(--accent2);font-size:.75rem;text-transform:none;letter-spacing:0">arXiv:2604.01658</a></p>
       <ul>
@@ -1199,7 +1228,7 @@ kaos import snapshot.db
   </div>
   <div class="install-bar">
     <span class="prompt">$</span>
-    <span class="cmd">git clone https://github.com/canivel/kaos.git && cd kaos && uv sync && kaos init</span>
+    <span class="cmd">pip install 'kaos-harness[all]' && kaos demo</span>
   </div>
 </div>
 </section>
