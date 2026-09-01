@@ -14,11 +14,34 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
       - run: uv sync --extra dev --extra benchmarks
-      - run: uv run python -m pytest tests/ -q
+      - name: Run tests
+        run: |
+          set -o pipefail
+          uv run python -m pytest tests/ -q -ra 2>&1 | tee pytest.log
+      - name: Report failure as issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -c 50000 pytest.log > tail.log
+          python3 - <<'PY'
+          import json, os, urllib.request
+          body = "CI release-test failure on `" + os.environ.get("GITHUB_REF_NAME", "?") + "`\n\n```\n" + open("tail.log").read() + "\n```"
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/issues",
+              data=json.dumps({"title": "CI failure: release tests", "body": body[-60000:]}).encode(),
+              headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                       "Accept": "application/vnd.github+json"},
+          )
+          print(urllib.request.urlopen(req).status)
+          PY
 
   publish:
     needs: test
