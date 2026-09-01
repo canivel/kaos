@@ -1,6 +1,6 @@
 [project]
 name = "kaos-harness"
-version = "2.0.1"
+version = "2.0.2"
 description = "KAOS — Kernel for Agent Orchestration & Sandboxing. Isolated, auditable, portable agent runtimes backed by SQLite."
 readme = "README.md"
 license = "MIT"
@@ -29,6 +29,11 @@ mcp = [
 router = [
     "httpx>=0.27",
 ]
+agent-sdk = [
+    # the in-process provider recommended when running alongside an active
+    # Claude Code session (no CLI subprocess quota contention)
+    "claude-agent-sdk>=0.2",
+]
 ui = [
     "textual>=0.50",
     # web dashboard (kaos ui / kaos demo) — previously undeclared, worked only
@@ -41,7 +46,7 @@ eval = [
     # the surface is named and its future deps have a home
 ]
 all = [
-    "kaos-harness[mcp,router,ui,eval]",
+    "kaos-harness[mcp,router,ui,eval,agent-sdk]",
 ]
 # tooling extras
 dev = [

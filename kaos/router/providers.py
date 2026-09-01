@@ -334,6 +334,55 @@ class LocalProvider(OpenAIProvider):
 
 # ── Claude Code subprocess provider ──────────────────────────────
 
+TOOL_CALL_RE = re.compile(
+    r'<tool_call\s+id="([^"]+)"\s+name="([^"]+)">\s*(.*?)\s*</tool_call>',
+    re.DOTALL,
+)
+
+
+def parse_tool_response(output: str) -> LLMResponse:
+    """Parse model text emitted under the KAOS ``<tool_call>`` protocol into
+    an LLMResponse with OpenAI-style tool_calls. Shared by the claude_code
+    and agent_sdk providers."""
+    tool_calls: list[dict] = []
+    text_segments: list[str] = []
+    last_end = 0
+
+    for m in TOOL_CALL_RE.finditer(output):
+        pre = output[last_end : m.start()].strip()
+        if pre:
+            text_segments.append(pre)
+        tc_id, tc_name, tc_args_raw = m.group(1), m.group(2), m.group(3).strip()
+        try:
+            args_str = json.dumps(json.loads(tc_args_raw))
+        except json.JSONDecodeError:
+            args_str = json.dumps({"raw": tc_args_raw})
+        tool_calls.append({
+            "id": tc_id,
+            "type": "function",
+            "function": {"name": tc_name, "arguments": args_str},
+        })
+        last_end = m.end()
+
+    tail = output[last_end:].strip()
+    if tail:
+        text_segments.append(tail)
+
+    final_text = "\n".join(text_segments) or None
+    stop_reason = "tool_calls" if tool_calls else "end_turn"
+
+    return LLMResponse(
+        choices=[LLMChoice(
+            message=LLMMessage(
+                role="assistant",
+                content=final_text,
+                tool_calls=tool_calls or None,
+            ),
+            finish_reason=stop_reason,
+        )],
+    )
+
+
 class ClaudeCodeProvider(LLMProvider):
     """Uses the Claude Code CLI subprocess (claude --print).
 
@@ -349,10 +398,7 @@ class ClaudeCodeProvider(LLMProvider):
             use_for: [trivial, moderate, complex, critical, code_completion, code_generation, planning]
     """
 
-    _TOOL_CALL_RE = re.compile(
-        r'<tool_call\s+id="([^"]+)"\s+name="([^"]+)">\s*(.*?)\s*</tool_call>',
-        re.DOTALL,
-    )
+    _TOOL_CALL_RE = TOOL_CALL_RE
 
     # Fallback paths to try when 'claude' is not in PATH
     _FALLBACK_PATHS = [
@@ -464,6 +510,10 @@ class ClaudeCodeProvider(LLMProvider):
         return ["cmd", "/c", exe]
 
     def _serialize_conversation(self, messages: list[dict], tools: list[dict] | None) -> str:
+        return serialize_conversation(messages, tools)
+
+    @staticmethod
+    def _serialize_conversation_impl(messages: list[dict], tools: list[dict] | None) -> str:
         """Flatten full conversation + tool defs into a single prompt string."""
         parts: list[str] = []
 
@@ -526,43 +576,7 @@ class ClaudeCodeProvider(LLMProvider):
 
     def _parse(self, output: str) -> LLMResponse:
         """Parse claude stdout: extract tool_call blocks and plain text."""
-        tool_calls: list[dict] = []
-        text_segments: list[str] = []
-        last_end = 0
-
-        for m in self._TOOL_CALL_RE.finditer(output):
-            pre = output[last_end : m.start()].strip()
-            if pre:
-                text_segments.append(pre)
-            tc_id, tc_name, tc_args_raw = m.group(1), m.group(2), m.group(3).strip()
-            try:
-                args_str = json.dumps(json.loads(tc_args_raw))
-            except json.JSONDecodeError:
-                args_str = json.dumps({"raw": tc_args_raw})
-            tool_calls.append({
-                "id": tc_id,
-                "type": "function",
-                "function": {"name": tc_name, "arguments": args_str},
-            })
-            last_end = m.end()
-
-        tail = output[last_end:].strip()
-        if tail:
-            text_segments.append(tail)
-
-        final_text = "\n".join(text_segments) or None
-        stop_reason = "tool_calls" if tool_calls else "end_turn"
-
-        return LLMResponse(
-            choices=[LLMChoice(
-                message=LLMMessage(
-                    role="assistant",
-                    content=final_text,
-                    tool_calls=tool_calls or None,
-                ),
-                finish_reason=stop_reason,
-            )],
-        )
+        return parse_tool_response(output)
 
     async def chat(
         self,
@@ -720,6 +734,13 @@ class ClaudeCodeProvider(LLMProvider):
 
 
 # ── Factory ──────────────────────────────────────────────────────
+
+def serialize_conversation(messages: list[dict], tools: list[dict] | None) -> str:
+    """Flatten a full conversation + tool defs into one prompt string under
+    the KAOS ``<tool_call>`` protocol. Shared by the claude_code and
+    agent_sdk providers."""
+    return ClaudeCodeProvider._serialize_conversation_impl(messages, tools)
+
 
 def create_provider(provider_type: str, **kwargs) -> LLMProvider:
     """Create an LLM provider from config.

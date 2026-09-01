@@ -22,6 +22,7 @@ from typing import Any
 
 from kaos.router.providers import (
     LLMProvider, LLMResponse, LLMChoice, LLMMessage, LLMUsage,
+    serialize_conversation, parse_tool_response,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,57 +60,72 @@ class AgentSDKProvider(LLMProvider):
                 "Or use a different provider: claude_code, anthropic, openai, local"
             )
 
-        # Extract system prompt and build user prompt
-        system_prompt, user_prompt = self._split_messages(messages)
+        # Full conversation + tool defs flattened under the shared
+        # <tool_call> protocol — same mechanism as ClaudeCodeProvider, so
+        # this provider is a real tool-calling provider: the model emits
+        # <tool_call> blocks as TEXT, the CCR runner executes them against
+        # the VFS, and no SDK-side tool round-trip (turn 2) is ever needed.
+        prompt = serialize_conversation(messages, tools)
         effective_model = model or self.model_id
 
-        if tools:
-            # The Agent SDK's ClaudeAgentOptions.tools takes built-in tool
-            # NAMES, not OpenAI-style tool schemas — there is no faithful
-            # conversion, so tool-calling silently degrades to text-only on
-            # this provider. Say so instead of dropping them silently.
-            logger.warning(
-                "agent_sdk provider cannot forward %d OpenAI-style tool "
-                "schema(s); the call proceeds text-only. Use claude_code, "
-                "anthropic, openai, or local for tool-calling.",
-                len(tools),
-            )
-
         result_text = ""
+        result_is_error = False
         content_parts: list[str] = []
 
         max_retries = 2
-        last_error = None
         for attempt in range(max_retries):
             result_text = ""
+            result_is_error = False
             content_parts.clear()
             try:
                 async def _run():
-                    nonlocal result_text
+                    nonlocal result_text, result_is_error
                     async for message in query(
-                        prompt=user_prompt,
+                        prompt=prompt,
                         options=ClaudeAgentOptions(
                             model=effective_model,
-                            system_prompt=system_prompt or None,
                             max_turns=1,
+                            # Session isolation — without these the SDK
+                            # inherits the *user's* Claude Code config:
+                            # their MCP servers (mail, calendars, ...)
+                            # leaked into KAOS agents, and built-in tools
+                            # (Write/Bash) made the model burn its single
+                            # turn on a tool_use and die with "Reached
+                            # maximum number of turns (1)".
                             tools=[],
+                            allowed_tools=[],
+                            mcp_servers={},
+                            strict_mcp_config=True,
                             permission_mode="bypassPermissions",
                         ),
                     ):
                         if isinstance(message, ResultMessage):
                             result_text = message.result or ""
+                            result_is_error = bool(
+                                getattr(message, "is_error", False)
+                            )
                         elif hasattr(message, "message") and hasattr(message.message, "content"):
                             for block in (message.message.content or []):
                                 if hasattr(block, "text") and block.text:
                                     content_parts.append(block.text)
 
                 await asyncio.wait_for(_run(), timeout=self.timeout)
+
+                if result_is_error:
+                    # The SDK flagged the run (e.g. max turns). If assistant
+                    # text still streamed, use it; otherwise treat as a
+                    # retryable failure.
+                    if content_parts:
+                        result_text = ""
+                        break
+                    raise RuntimeError(
+                        f"Agent SDK error result: {result_text or 'unknown'}"
+                    )
                 break  # success
 
             except asyncio.TimeoutError:
                 raise TimeoutError(f"Agent SDK call timed out after {self.timeout}s")
             except Exception as e:
-                last_error = e
                 if attempt < max_retries - 1:
                     logger.warning(
                         "Agent SDK attempt %d/%d failed: %s. Retrying in 3s...",
@@ -119,7 +135,7 @@ class AgentSDKProvider(LLMProvider):
                 else:
                     raise RuntimeError(f"Agent SDK error after {max_retries} attempts: {e}")
 
-        # Use result_text if available, otherwise join content parts
+        # Prefer the final result text; fall back to streamed blocks
         final_text = result_text or "\n".join(content_parts)
 
         if not final_text.strip():
@@ -128,12 +144,8 @@ class AgentSDKProvider(LLMProvider):
                 "Check that ANTHROPIC_API_KEY is set or Claude Code is authenticated."
             )
 
-        return LLMResponse(
-            choices=[LLMChoice(
-                message=LLMMessage(role="assistant", content=final_text),
-                finish_reason="end_turn",
-            )],
-        )
+        # Extract <tool_call> blocks into OpenAI-style tool_calls
+        return parse_tool_response(final_text)
 
     @staticmethod
     def _split_messages(messages: list[dict]) -> tuple[str, str]:

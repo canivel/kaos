@@ -16,7 +16,7 @@ kaos parallel \
 
 ![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
 
-[![Version](https://img.shields.io/badge/version-2.0.1-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-2.0.2-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)
@@ -37,6 +37,7 @@ The base install is deliberately small — the flight recorder (isolated agent f
 | `pip install kaos-harness` | core: isolation, checkpoints, audit, memory, skills, CLI |
 | `kaos-harness[router]` | model providers — Claude Code, Anthropic, OpenAI-compatible, local vLLM |
 | `kaos-harness[mcp]` | the 58-tool MCP server for Claude Code / Cursor |
+| `kaos-harness[agent-sdk]` | in-process Claude Agent SDK provider — no CLI quota contention alongside an active session |
 | `kaos-harness[ui]` | dashboards — web (Gantt timeline, `kaos ui`/`kaos demo`) and terminal TUI |
 | `kaos-harness[all]` | everything above |
 

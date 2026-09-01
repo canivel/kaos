@@ -2,6 +2,27 @@
 
 All notable changes to KAOS are documented here.
 
+## [2.0.2] - 2026-09-01
+
+**`agent_sdk` provider actually works now — tool-calling + session isolation (red-first).**
+Found by the launch user-journey: any tool-using task through `provider: agent_sdk` died
+with "Reached maximum number of turns (1)". Two root causes, both fixed:
+
+- **The SDK session inherited the user's Claude Code config** — their personal MCP servers
+  (mail, travel, ...) leaked into KAOS agents, and built-in tools (Write/Bash) tempted the
+  model into a tool round-trip its single turn couldn't complete. The session is now fully
+  isolated: `mcp_servers={}`, `strict_mcp_config=True`, `tools=[]`, `allowed_tools=[]`.
+- **OpenAI-style tools were dropped** (text-only degradation). The provider now speaks the
+  same `<tool_call>` prompt protocol as `claude_code` — `serialize_conversation` /
+  `parse_tool_response` extracted as shared helpers in `kaos.router.providers` — so the
+  CCR runner executes tools against the VFS exactly as with every other provider. An
+  `is_error` result with streamed text degrades gracefully instead of raising.
+
+Validated end-to-end: real `kaos run` tasks through the SDK complete multi-tool sessions
+(fs_mkdir / fs_write / shell_exec / fs_ls) with every call journaled. New `[agent-sdk]`
+extra declares the `claude-agent-sdk` dependency (included in `[all]`). 948 tests
+passing (+6).
+
 ## [2.0.1] - 2026-09-01
 
 Packaging patch. 2.0.0 shipped wheel-only: the default hatchling sdist packed demo
