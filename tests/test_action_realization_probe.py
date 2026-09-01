@@ -25,7 +25,7 @@ from kaos.schema import init_schema
 
 
 PROBE_DIR = Path(__file__).resolve().parent.parent / \
-    "demo_action_realization_bench"
+    "benchmarks" / "demo_action_realization_bench"
 
 
 def test_lock_sha256_is_pre_registered():

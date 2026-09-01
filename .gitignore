@@ -28,3 +28,6 @@ paper/*.blg
 paper/*.out
 paper/*.fls
 paper/*.fdb_latexmk
+
+# local config — kaos setup generates it; kaos.yaml.example is the template
+kaos.yaml

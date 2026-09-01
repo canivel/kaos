@@ -4,7 +4,7 @@
 
 **The problem.** Harness engineering's open critique is that changes get shipped on the demo that worked — there's no verification that a change *actually helped* ([Böckeler, martinfowler.com](https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html)). Post-hoc evals don't fix this: if the gates are written after the results are seen, the gates move.
 
-**The KAOS answer.** Pre-registration with tamper evidence. The kill gates are written *before* any feature code exists, hash-locked, and the harness mechanically refuses to run against an edited lock. The verdict is binding. Ten mechanism candidates have been evaluated this way since v0.7 — **zero shipped on hope**; the REJECT/VOID verdicts live in the repo with their full audit trails (`demo_synthesis_consolidation_bench/`, `demo_action_realization_bench/`).
+**The KAOS answer.** Pre-registration with tamper evidence. The kill gates are written *before* any feature code exists, hash-locked, and the harness mechanically refuses to run against an edited lock. The verdict is binding. Ten mechanism candidates have been evaluated this way since v0.7 — **zero shipped on hope**; the REJECT/VOID verdicts live in the repo with their full audit trails (`benchmarks/demo_synthesis_consolidation_bench/`, `benchmarks/demo_action_realization_bench/`).
 
 ---
 
@@ -125,13 +125,13 @@ All surfaces are MCP tools since v0.9.1: `eval_probe_{falsify,run,verify}`, `exp
 
 ## The ledger
 
-The discipline's track record is the proof it works. Candidates evaluated since v0.7: SAGE (REJECT — hard-constraint conflict), synthesis-as-consolidation LLM + extractive (REJECT + DO-NOT-BUILD — the FTS-without-embeddings structural impossibility), AutoResearchClaw (orthogonal), HASP (REJECT — absorbed by native baseline), Life-Harness action-realization (VOID — insufficient organic data, lock forbade synthetic), UserHarness (PARK), per-agent-DB sharding (REJECT-by-measurement — `demo_storage_scale_bench/`), MATM (REJECT — embedding-dependent), Atomic Task Graph (PARK — probe-candidate). **Zero shipped on hope.**
+The discipline's track record is the proof it works. Candidates evaluated since v0.7: SAGE (REJECT — hard-constraint conflict), synthesis-as-consolidation LLM + extractive (REJECT + DO-NOT-BUILD — the FTS-without-embeddings structural impossibility), AutoResearchClaw (orthogonal), HASP (REJECT — absorbed by native baseline), Life-Harness action-realization (VOID — insufficient organic data, lock forbade synthetic), UserHarness (PARK), per-agent-DB sharding (REJECT-by-measurement — `benchmarks/demo_storage_scale_bench/`), MATM (REJECT — embedding-dependent), Atomic Task Graph (PARK — probe-candidate). **Zero shipped on hope.**
 
 ## Instrument audit and dispositions (codified 2026-07-28)
 
 Pre-registration constrains goalpost-moving; it cannot guarantee a predicate
 measures what its author intended (the GDL probe's G3 passed vacuously on
-mono-label trajectories — `demo_graphdiff_localizer_bench/VERDICT.md`). Rules,
+mono-label trajectories — `benchmarks/demo_graphdiff_localizer_bench/VERDICT.md`). Rules,
 binding for every probe from this commit forward:
 
 1. **Mandatory audit, all gates.** After every binding run, the operator audits

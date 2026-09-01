@@ -1,14 +1,18 @@
 # KAOS — Kernel for Agent Orchestration & Sandboxing
 
 ## Project Overview
-KAOS is a local-first multi-agent orchestration framework (v0.10.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
+KAOS is a local-first multi-agent orchestration framework (v2.0.0). Every agent gets an isolated, auditable virtual filesystem backed by a single SQLite `.db` file. No fine-tuning, no LoRA, no embeddings, no GPU requirement, no mandatory external services.
 
 ## Package & CLI
-- Package: `kaos` (import with `from kaos import Kaos`)
+- PyPI distribution: `kaos-harness` (the bare `kaos` name on PyPI is an unrelated 2016 package)
+- Import: `kaos` (`from kaos import Kaos`)
+- Base install is slim (5 deps); heavy surfaces are extras: `[router]` (httpx providers), `[mcp]` (MCP server), `[ui]` (textual TUI), `[eval]`, `[all]`. Optional-dep imports go through `kaos._extras.require` so a missing extra prints the install line.
+- Plugins: entry-point group `kaos.plugins` (see `kaos/plugins.py`) — third-party providers, benchmarks, MCP tool packs; `kaos plugins` lists them
 - CLI command: `kaos` (all commands support `--json` for structured output)
 - Main class: `Kaos` (not AgentFS)
 - Config file: `kaos.yaml`
 - Database: `kaos.db`
+- Bench suites (hash-locked probes) live under `benchmarks/demo_*` but keep top-level module names (`demo_x.probe_adapter:Cls`) via root `conftest.py` / `kaos.plugins.ensure_probe_paths`
 
 ## Running
 ```bash

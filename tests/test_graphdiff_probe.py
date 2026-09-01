@@ -23,7 +23,7 @@ from demo_graphdiff_localizer_bench.gates import (
     KNOWN_LOCK_SHA256, LOCK_PATH, compute_gates,
 )
 
-BENCH = Path(__file__).parent.parent / "demo_graphdiff_localizer_bench"
+BENCH = Path(__file__).parent.parent / "benchmarks" / "demo_graphdiff_localizer_bench"
 
 FROZEN_SHA = "979127576a1196db60deb78df19d64b49f78118ab8274d1a37d2841554e2232c"
 

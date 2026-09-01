@@ -2,6 +2,48 @@
 
 All notable changes to KAOS are documented here.
 
+## [2.0.0] - 2026-09-01 — Distribution & modularity (adoption roadmap P0+P1)
+
+KAOS 2.0 is about being installable, adoptable, and extensible — the follow-through on
+`docs/roadmap/v0.11-adoption.md` (the Pi-gap analysis). No new mechanisms; the discipline
+holds. **927 tests passing (+12), 1 skipped.**
+
+- **PyPI distribution `kaos-harness`** (the bare `kaos` name has been squatted since 2016;
+  the import stays `kaos`, the CLI stays `kaos`). `pip install 'kaos-harness[all]'` +
+  `kaos demo` is the new two-command, zero-key first run.
+- **Slim base + extras (G1.1/G1.2).** Base install carries 5 deps (click, ulid-py,
+  zstandard, pyyaml, rich) — flight recorder, brain, web dashboard, CLI. `[router]`
+  (httpx providers), `[mcp]` (58-tool server), `[ui]` (textual TUI), `[eval]` (named,
+  dep-free today), `[all]`. Optional imports route through `kaos._extras.require`; a
+  missing extra prints the exact install line instead of a traceback (console entry point
+  is now `kaos.cli.main:main`, which catches `MissingExtraError`). A layering test pins
+  that importing the base surface never pulls httpx/mcp/textual.
+- **Plugin surface `kaos.plugins` (G1.3).** Entry-point group `kaos.plugins`; a plugin's
+  `register(registry)` can add model providers (reachable through `create_provider`),
+  meta-harness benchmarks (`get_benchmark`), MCP tool packs (listed + dispatched by the
+  server), and reserved fleet-adapter/dream-phase hooks. Broken plugins are reported and
+  skipped, never fatal. New `kaos plugins` command. Tested end-to-end with a toy
+  distribution discovered purely via entry points.
+- **Repo hygiene (G0.2 — partial: 40+ visible root entries → 18 tracked; the ≤ 15 gate
+  is missed by 3 because `blog/` and `index.html` are pinned by published GitHub Pages
+  URLs; recorded, not redefined).** The 20 `demo_*` bench suites moved to `benchmarks/`
+  (history preserved via git renames); loose root images moved to `docs/assets/`;
+  `paper/`, `paper2/`, `video_scripts/` moved under `docs/`; `seed_engagement.py` to
+  `examples/`; the user-local `kaos.yaml` untracked (the `.example` stays). Bench modules
+  keep their historical top-level import names — root `conftest.py` and
+  `kaos.plugins.ensure_probe_paths()` put `benchmarks/` on `sys.path`, so hash-locked
+  probe adapters, `--probe demo_x...:Cls` specs, and the experiments journal stay valid.
+  Probe loading no longer depends on CWD being importable.
+- **README inversion (G0.3).** Install + runnable commands + dashboard GIF in the first
+  screen; the discipline story follows the product. Extras table documents the tiered
+  install; jargon gets a plain-English alias on first use.
+- **Release automation (G0.4).** Tag-triggered GitHub Actions workflow builds and
+  publishes to PyPI (trusted publishing) and creates the GitHub Release.
+
+Versioning note: 2.0.0 (not 0.11) marks the packaging break — the distribution rename and
+the extras split change every install line. Library APIs, the schema (v9), and the CLI
+surface are unchanged aside from the new `kaos plugins` command.
+
 ## [0.10.0] - 2026-08-08 — Tier-1 (measure & harden)
 
 Follow-through on the v0.10 scoping panel (`docs/roadmap/v0.10-candidates.md`): deterministic hardening, no capability claims. The wave also absorbed defect fixes and infrastructure distilled from five paper evaluations run under the falsifiable-eval discipline (SAGE-class through Sara/lenz; three full probes — VOID#1, GDL do-not-ship, PFA REJECT — none shipped on hope). **764 tests passing, 1 skipped.**

@@ -1,8 +1,22 @@
 # KAOS — the harness that proves itself
 
-**A local-first multi-agent harness.** Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use (neuroplasticity). And it is the only framework whose own mechanisms must pass **pre-registered, falsifiable kill gates** before they ship. Measured, not claimed.
+Run fleets of AI agents locally — each one isolated, auditable, checkpointable, and on a live dashboard. The whole runtime is one SQLite file.
 
-[![Version](https://img.shields.io/badge/version-0.10.0-blueviolet)]()
+```bash
+pip install 'kaos-harness[all]'    # Python 3.11+
+kaos demo                          # live dashboard with an example fleet — no API keys needed
+```
+
+```bash
+kaos parallel \
+  -t security "find vulnerabilities in auth.py" \
+  -t tests    "write unit tests" \
+  -t docs     "update API docs"    # three isolated agents, one Gantt timeline
+```
+
+![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
+
+[![Version](https://img.shields.io/badge/version-2.0.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)
@@ -10,9 +24,38 @@
 [![Research](https://img.shields.io/badge/research%20integrations-9-brightgreen)]()
 [![MCP tools](https://img.shields.io/badge/MCP%20tools-58-00DC82)]()
 
+**A local-first multi-agent harness.** Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use (neuroplasticity — usage-weighted memory and skill ranking). And it is the only framework whose own mechanisms must pass **pre-registered, falsifiable kill gates** before they ship. Measured, not claimed.
+
 > The industry spent 2026 agreeing that [the harness matters more than the model](https://addyosmani.com/blog/agent-harness-engineering/). KAOS was built on that premise — it synthesizes the strongest published solution to each hard problem in agentic AI (every capability traces to a paper or OSS project), and it answers the critique the harness-engineering discourse hasn't solved: **verification that a harness change actually helped.** See [how it compares](https://canivel.github.io/kaos/#compare) to Hermes, LangGraph, ADK, Letta, CrewAI, and the rest.
 
-![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
+## Install what you need
+
+The base install is deliberately small — the flight recorder (isolated agent filesystems, checkpoints, event journal) and the brain (cross-agent memory, skills) on 5 dependencies:
+
+| Install | You get |
+|---|---|
+| `pip install kaos-harness` | core: isolation, checkpoints, audit, memory, skills, web dashboard, CLI |
+| `kaos-harness[router]` | model providers — Claude Code, Anthropic, OpenAI-compatible, local vLLM |
+| `kaos-harness[mcp]` | the 58-tool MCP server for Claude Code / Cursor |
+| `kaos-harness[ui]` | terminal (TUI) dashboard |
+| `kaos-harness[all]` | everything above |
+
+Any command that needs a missing extra tells you the exact install line. Third parties extend KAOS through the `kaos.plugins` entry-point group (providers, benchmarks, MCP tool packs — see `kaos plugins`).
+
+**From an MCP assistant instead:** open Claude Code (or Cursor) in your project and say `use github.com/canivel/kaos on this project` — it installs KAOS, runs `kaos setup`, and registers the MCP server (58 tools). Your next prompt can just be *"with kaos, review this module with three agents in parallel."*
+
+<details>
+<summary>Developing KAOS itself?</summary>
+
+```bash
+git clone https://github.com/canivel/kaos.git && cd kaos
+uv sync --extra dev
+uv run python -m pytest tests/ -q
+```
+
+> Need `uv`? → `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+</details>
 
 ## Architecture
 
@@ -24,32 +67,6 @@ agent completion) and **Falsifiable Eval** (v0.9 — `kaos.eval.harness`
 Full internals: [docs/architecture.md](docs/architecture.md).
 
 ![KAOS architecture — layered design over a single SQLite file](docs/architecture.svg)
-
----
-
-## Get started in one line
-
-Open **Claude Code** (or Cursor, or any MCP-capable assistant) in whatever project you're already working on and say:
-
-```
-use github.com/canivel/kaos on this project
-```
-
-That's it — it clones KAOS, runs `kaos setup`, and registers the MCP server (58 tools). Your next prompt can just be *"with kaos, review this module with three agents in parallel."*
-
-<details>
-<summary>Prefer to install manually?</summary>
-
-```bash
-git clone https://github.com/canivel/kaos.git && cd kaos
-uv sync
-kaos setup     # wizard: model preset, kaos.yaml, DB init, MCP registration
-kaos demo      # instant dashboard with example waves — no API keys needed
-```
-
-> Need `uv`? → `curl -LsSf https://astral.sh/uv/install.sh | sh`
-
-</details>
 
 ---
 
@@ -127,7 +144,7 @@ Each capability in KAOS comes from a proven source. Nothing is invented that doe
 
 ## The discipline — nothing ships without a probe it could fail
 
-Most frameworks add mechanisms and report the demo that worked. Every KAOS mechanism candidate faces a probe whose kill gates are written and **sha256-locked before any feature code exists** — the harness refuses to run on an edited lock, a falsification self-test proves the feature *can lose*, and the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. **Fifteen candidates evaluated since v0.7; zero shipped on hope** — every verdict is on disk with its audit trail (see `demo_synthesis_consolidation_bench/`, `demo_action_realization_bench/`).
+Most frameworks add mechanisms and report the demo that worked. Every KAOS mechanism candidate faces a probe whose kill gates are written and **sha256-locked before any feature code exists** — the harness refuses to run on an edited lock, a falsification self-test proves the feature *can lose*, and the verdict (ACCEPT / REJECT / VOID) is binding. No retune-and-rerun. **Fifteen candidates evaluated since v0.7; zero shipped on hope** — every verdict is on disk with its audit trail (see `benchmarks/demo_synthesis_consolidation_bench/`, `benchmarks/demo_action_realization_bench/`).
 
 The apparatus is itself a shipped, tested primitive:
 
@@ -348,7 +365,7 @@ Escape hatches: `KAOS_DREAM_AUTO=0` disables inline hooks entirely,
 Plasticity pays off when your workload has **disambiguation signal** —
 multiple plausible skills per query, and outcome feedback over time
 that distinguishes them. Our
-[`demo_neuroplasticity_bench/`](demo_neuroplasticity_bench/) measures
+[`benchmarks/demo_neuroplasticity_bench/`](benchmarks/demo_neuroplasticity_bench/) measures
 this precisely: 10 ambiguous twin-pair queries, 20 skills, 80 training
 episodes, epsilon-greedy pick (ε=0.25, seed=42), zero planted outcomes:
 
@@ -361,12 +378,12 @@ workload (agent spawns, runs once, no `record_outcome` calls) the gain
 is zero — plasticity needs signal to learn from. Multi-session
 engagements with consistent outcome feedback will see compounding gains.
 
-Run it yourself: `uv run python demo_neuroplasticity_bench/run.py`.
-Raw numbers: [`results.json`](demo_neuroplasticity_bench/results.json).
+Run it yourself: `uv run python benchmarks/demo_neuroplasticity_bench/run.py`.
+Raw numbers: [`results.json`](benchmarks/demo_neuroplasticity_bench/results.json).
 
 **Small-n honesty:** at 10 queries, +10 pp is literally one flipped query.
 The non-adversarial companion bench
-([`demo_realistic_retrieval_bench/`](demo_realistic_retrieval_bench/):
+([`benchmarks/demo_realistic_retrieval_bench/`](benchmarks/demo_realistic_retrieval_bench/):
 15 natural-language queries, 40 skills, 120 episodes) measures
 **73.3% → 86.7% (+13.3 pp)** — two flipped queries. Both are committed,
 reproducible, and small; a larger-n rerun under the v0.10
@@ -375,11 +392,11 @@ than headline a point estimate.
 
 ### Measured overhead
 
-Real benchmark in [`demo_plasticity_overhead_bench/`](demo_plasticity_overhead_bench/)
+Real benchmark in [`benchmarks/demo_plasticity_overhead_bench/`](benchmarks/demo_plasticity_overhead_bench/)
 measures the per-op cost of the inline hooks. The fast-path redesign
 (v0.8.1) moved association building from per-event to batched-at-agent-
 completion, dropping the hot-path cost to near-zero. See the
-[results](demo_plasticity_overhead_bench/results.md) — the measured
+[results](benchmarks/demo_plasticity_overhead_bench/results.md) — the measured
 overhead is dominated by SQLite's intrinsic `COMMIT` fsync latency
 (~30 ms on Windows), not the plasticity writes themselves. On Linux
 with faster fsync or on an in-memory DB the absolute numbers are much
@@ -390,7 +407,7 @@ more than learning.
 
 ### Failure intelligence
 
-[`demo_failure_intelligence_bench/`](demo_failure_intelligence_bench/)
+[`benchmarks/demo_failure_intelligence_bench/`](benchmarks/demo_failure_intelligence_bench/)
 validates that KAOS categorises errors into `transient / config / code /
 infra / unknown` via built-in heuristic diagnosers (no LLM calls), tracks
 fix outcomes and auto-downgrades broken "fixes" after 5+ failed attempts,
@@ -398,7 +415,7 @@ and raises systemic alerts when multiple agents hit the same fingerprint
 in a short window. 60/60 validations passing.
 
 See [`docs/neuroplasticity.md`](docs/neuroplasticity.md) for the full
-mechanism and [`demo_arc_agi3_test/`](demo_arc_agi3_test/) for a 76-check
+mechanism and [`benchmarks/demo_arc_agi3_test/`](benchmarks/demo_arc_agi3_test/) for a 76-check
 validation against a simulated ARC-AGI-3 meta-harness workload.
 
 ---

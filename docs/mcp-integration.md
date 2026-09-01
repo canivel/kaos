@@ -725,7 +725,7 @@ Executes a pre-registered probe end-to-end and writes `results.json` with the bi
 ```json
 {
   "probe": "demo_action_realization_bench.probe_adapter:ActionRealizationProbe",
-  "out_dir": "demo_action_realization_bench"
+  "out_dir": "benchmarks/demo_action_realization_bench"
 }
 ```
 
@@ -736,7 +736,7 @@ Re-computes the verdict from a saved `results.json` against the gate code at HEA
 ```json
 {
   "probe": "demo_action_realization_bench.probe_adapter:ActionRealizationProbe",
-  "results_path": "demo_action_realization_bench/results.json"
+  "results_path": "benchmarks/demo_action_realization_bench/results.json"
 }
 ```
 
@@ -752,7 +752,7 @@ Insert one row in the experiments journal recording a probe / mh_search / benchm
   "lock_sha256": "3ca89983...",
   "arms": {"FULL": {"acc_action": 0.42}},
   "gates": [{"gate": "G1", "passed": false, "kill": true}],
-  "results_path": "demo_action_realization_bench/results.json"
+  "results_path": "benchmarks/demo_action_realization_bench/results.json"
 }
 ```
 

@@ -23,7 +23,7 @@ from demo_process_flag_bench.gates import (
 )
 from demo_process_flag_bench.workload import leak_guard, _scrub
 
-BENCH = Path(__file__).parent.parent / "demo_process_flag_bench"
+BENCH = Path(__file__).parent.parent / "benchmarks" / "demo_process_flag_bench"
 FROZEN_SHA = "4f820f7354a3421a6e763c57fb14430e1696071a75cbd01167b8e12a89c01f2a"
 
 

@@ -41,7 +41,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-import httpx
+from kaos._extras import require
+
+httpx = require("httpx", "router", "Model providers")
 
 logger = logging.getLogger(__name__)
 
@@ -763,7 +765,12 @@ def create_provider(provider_type: str, **kwargs) -> LLMProvider:
         return AgentSDKProvider(model_id=model_id, timeout=timeout)
 
     else:
+        from kaos.plugins import get_registry
+        factory = get_registry().providers.get(provider_type)
+        if factory is not None:
+            return factory(**kwargs)
         raise ValueError(
             f"Unknown provider: {provider_type}. "
-            "Use 'openai', 'anthropic', 'local', 'claude_code', or 'agent_sdk'."
+            "Use 'openai', 'anthropic', 'local', 'claude_code', 'agent_sdk', "
+            "or a provider registered by an installed kaos plugin."
         )

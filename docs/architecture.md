@@ -102,7 +102,7 @@ conn.execute("PRAGMA synchronous=NORMAL")      # default since v0.10 work
 conn.execute("PRAGMA wal_autocheckpoint=1000")
 ```
 
-**WAL mode** enables concurrent readers with a single writer, which is critical for multi-agent workloads. **`synchronous=NORMAL`** is the default after `demo_storage_scale_bench/` measured it ~125× faster on write p95 (1895 ms → 15 ms) and ~38× higher throughput under 8-thread contention than `FULL`, with zero lock errors — the only trade is that an OS crash (not an app crash) may lose the last few committed transactions; the DB never corrupts. Both knobs are constructor args on `Kaos(synchronous=..., wal_autocheckpoint=...)`; pass `synchronous="FULL"` for strictest durability.
+**WAL mode** enables concurrent readers with a single writer, which is critical for multi-agent workloads. **`synchronous=NORMAL`** is the default after `benchmarks/demo_storage_scale_bench/` measured it ~125× faster on write p95 (1895 ms → 15 ms) and ~38× higher throughput under 8-thread contention than `FULL`, with zero lock errors — the only trade is that an OS crash (not an app crash) may lose the last few committed transactions; the DB never corrupts. Both knobs are constructor args on `Kaos(synchronous=..., wal_autocheckpoint=...)`; pass `synchronous="FULL"` for strictest durability.
 
 ### Thread Safety
 

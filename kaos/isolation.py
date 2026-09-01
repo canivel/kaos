@@ -107,7 +107,7 @@ class IsolatedAgentProcess:
         except ImportError:
             raise RuntimeError(
                 "FUSE isolation requires the 'fusepy' package. "
-                "Install with: uv pip install kaos[fuse]"
+                "Install with: uv pip install 'kaos-harness[fuse]'"
             )
 
         return self.mount_point

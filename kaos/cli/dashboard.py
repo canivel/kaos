@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
+from kaos._extras import require
+
+require("textual", "ui", "The terminal dashboard")
 from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.containers import Container

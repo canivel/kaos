@@ -20,6 +20,9 @@ import os
 import sys
 from typing import Any
 
+from kaos._extras import require
+
+require("mcp", "mcp", "The KAOS MCP server")
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
@@ -50,11 +53,31 @@ async def list_tools() -> list[Tool]:
     return build_tool_list()
 
 
+def _plugin_tools() -> list[Tool]:
+    """Tools contributed by installed kaos plugins (entry-point group
+    ``kaos.plugins`` via ``registry.add_mcp_tools``). Declared as plain dicts
+    on the plugin side so plugins don't need the ``mcp`` package."""
+    from kaos.plugins import get_registry
+    tools: list[Tool] = []
+    for pack in get_registry().mcp_tool_packs:
+        for t in pack.tools:
+            tools.append(Tool(
+                name=t["name"],
+                description=t.get("description", f"(plugin {pack.plugin})"),
+                inputSchema=t.get("input_schema", {"type": "object", "properties": {}}),
+            ))
+    return tools
+
+
 def build_tool_list() -> list[Tool]:
     """The single source of truth for the MCP tool surface. Both the async
     list_tools() handler and tool_count() derive from this — no doc or string
     should hardcode the number (they drifted across 17/18/25/45/50/58 before
-    this was centralized)."""
+    this was centralized). Plugin-contributed tools are appended at the end."""
+    return _builtin_tool_list() + _plugin_tools()
+
+
+def _builtin_tool_list() -> list[Tool]:
     return [
         # ── Agent Lifecycle ──────────────────────────────────────
         Tool(
@@ -2353,6 +2376,10 @@ async def _dispatch(name: str, args: dict[str, Any]) -> str:
         return _dispatch_experiment_compare(args)
 
     else:
+        from kaos.plugins import get_registry
+        for pack in get_registry().mcp_tool_packs:
+            if any(t["name"] == name for t in pack.tools):
+                return pack.dispatcher(name, args)
         raise ValueError(f"Unknown tool: {name}")
 
 
@@ -2369,6 +2396,8 @@ def _load_probe_class(spec: str):
             f"probe must be 'pkg.module:ClassName', got {spec!r}"
         )
     mod_name, cls_name = spec.split(":", 1)
+    from kaos.plugins import ensure_probe_paths
+    ensure_probe_paths()
     mod = importlib.import_module(mod_name)
     try:
         return getattr(mod, cls_name)

@@ -20,7 +20,9 @@ import logging
 import sqlite3
 from dataclasses import dataclass, field
 
-import httpx
+from kaos._extras import require
+
+httpx = require("httpx", "router", "Attraktor remote sync")
 
 from kaos.bench.config import BenchConfig
 from kaos.bench.schema import bench_id, fts_index_record

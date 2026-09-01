@@ -31,7 +31,7 @@ it gets applied, so the history is auditable via SQL.
 
 ## Measured gain
 
-Ran [`demo_neuroplasticity_bench/`](../demo_neuroplasticity_bench/) on
+Ran [`benchmarks/demo_neuroplasticity_bench/`](../benchmarks/demo_neuroplasticity_bench/) on
 a synthetic but honest benchmark — 10 twin-pair queries where bm25
 alone cannot reliably disambiguate, 20 skills, 80 training episodes,
 epsilon-greedy pick (ε = 0.25, RNG seed 42). No planted outcomes.
@@ -51,12 +51,12 @@ successors get tried. The **final top-1 measurement** (no exploration)
 then reflects the corrected ranking: weighted reaches 90% top-1 where
 bm25 plateaus at 80%.
 
-Raw JSON: [`demo_neuroplasticity_bench/results.json`](../demo_neuroplasticity_bench/results.json).
-Rerun anytime: `uv run python demo_neuroplasticity_bench/run.py`.
+Raw JSON: [`benchmarks/demo_neuroplasticity_bench/results.json`](../benchmarks/demo_neuroplasticity_bench/results.json).
+Rerun anytime: `uv run python benchmarks/demo_neuroplasticity_bench/run.py`.
 
 ## Measured overhead
 
-[`demo_plasticity_overhead_bench/`](../demo_plasticity_overhead_bench/)
+[`benchmarks/demo_plasticity_overhead_bench/`](../benchmarks/demo_plasticity_overhead_bench/)
 runs each agent-facing op 200 times with plasticity hooks ON and OFF,
 against a library pre-seeded with 100 skills and 50 memory entries.
 Measures **overhead** — what plasticity ADDS on top of the intrinsic
@@ -79,7 +79,7 @@ upserts on every `record_outcome`, making the p50 overhead **~210 ms**
 per-event to batched-at-agent-completion — matches how biological sleep
 consolidation actually works and drops the inline cost to near zero.
 
-Rerun anytime: `uv run python demo_plasticity_overhead_bench/run.py`.
+Rerun anytime: `uv run python benchmarks/demo_plasticity_overhead_bench/run.py`.
 
 ## Failure intelligence (M2.5)
 
@@ -168,7 +168,7 @@ Combined with the v0.8.0 tools (`dream_run`, `dream_related`,
 
 ### Validation
 
-[`demo_failure_intelligence_bench/`](../demo_failure_intelligence_bench/)
+[`benchmarks/demo_failure_intelligence_bench/`](../benchmarks/demo_failure_intelligence_bench/)
 plants a realistic mix of failures (rate-limit, auth, code bugs, infra,
 DNS, disk-full) and verifies:
 

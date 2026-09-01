@@ -7,7 +7,9 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-import httpx
+from kaos._extras import require
+
+httpx = require("httpx", "router", "The vLLM client")
 
 logger = logging.getLogger(__name__)
 

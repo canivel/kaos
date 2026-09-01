@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -394,40 +394,56 @@ wheels = [
 ]
 
 [[package]]
-name = "kaos"
-version = "0.7.0"
+name = "kaos-harness"
+version = "2.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
-    { name = "httpx" },
-    { name = "mcp" },
     { name = "pyyaml" },
     { name = "rich" },
-    { name = "textual" },
     { name = "ulid-py" },
     { name = "zstandard" },
 ]
 
 [package.optional-dependencies]
+all = [
+    { name = "httpx" },
+    { name = "mcp" },
+    { name = "textual" },
+]
 benchmarks = [
     { name = "numpy" },
 ]
 dev = [
+    { name = "httpx" },
+    { name = "mcp" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "textual" },
 ]
 fuse = [
     { name = "fusepy" },
+]
+mcp = [
+    { name = "mcp" },
+]
+router = [
+    { name = "httpx" },
+]
+ui = [
+    { name = "textual" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
     { name = "fusepy", marker = "extra == 'fuse'", specifier = ">=3.0" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "mcp", specifier = ">=1.0" },
+    { name = "httpx", marker = "extra == 'router'", specifier = ">=0.27" },
+    { name = "kaos-harness", extras = ["all"], marker = "extra == 'dev'" },
+    { name = "kaos-harness", extras = ["mcp", "router", "ui", "eval"], marker = "extra == 'all'" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
     { name = "numpy", marker = "extra == 'benchmarks'", specifier = ">=1.24" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
@@ -435,11 +451,11 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "textual", specifier = ">=0.50" },
+    { name = "textual", marker = "extra == 'ui'", specifier = ">=0.50" },
     { name = "ulid-py", specifier = ">=1.1" },
     { name = "zstandard", specifier = ">=0.22" },
 ]
-provides-extras = ["dev", "fuse", "benchmarks"]
+provides-extras = ["mcp", "router", "ui", "eval", "all", "dev", "fuse", "benchmarks"]
 
 [[package]]
 name = "linkify-it-py"

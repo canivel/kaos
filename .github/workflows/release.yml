@@ -1,0 +1,47 @@
+name: release
+
+# G0.4 (adoption roadmap): every tagged version ships to PyPI with a GitHub
+# Release — no manual publish steps, same as the Pi release model.
+#
+# One-time setup: on PyPI, add this repo as a Trusted Publisher for the
+# 'kaos-harness' project (Publishing → GitHub → canivel/kaos, workflow
+# release.yml, environment pypi). No API token needed after that.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --extra dev --extra benchmarks
+      - run: uv run python -m pytest tests/ -q
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # PyPI trusted publishing
+      contents: write   # GitHub Release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - name: Check tag matches package version
+        run: |
+          PKG=$(uv run python -c "import kaos; print(kaos.__version__)")
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$PKG" != "$TAG" ]; then
+            echo "tag v$TAG != kaos.__version__ $PKG" >&2; exit 1
+          fi
+      - run: uv build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: "See CHANGELOG.md for the full entry."

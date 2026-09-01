@@ -290,7 +290,7 @@ Executes the probe end-to-end and writes `results.json`. Exits non-zero on REJEC
 ```bash
 kaos eval probe run \
     --probe demo_action_realization_bench.probe_adapter:ActionRealizationProbe \
-    --out-dir demo_action_realization_bench
+    --out-dir benchmarks/demo_action_realization_bench
 ```
 
 ### `kaos eval probe verify`
@@ -299,7 +299,7 @@ Re-computes the verdict from a saved `results.json`. Confirms the on-disk verdic
 ```bash
 kaos eval probe verify \
     --probe demo_action_realization_bench.probe_adapter:ActionRealizationProbe \
-    --results demo_action_realization_bench/results.json
+    --results benchmarks/demo_action_realization_bench/results.json
 ```
 
 ---
@@ -317,7 +317,7 @@ kaos experiment log \
     --verdict "VOID#1: ..." --judge-kappa 1.0 \
     --lock-sha256 3ca89983... \
     --arms-json arms.json --gates-json gates.json \
-    --results-path demo_action_realization_bench/results.json
+    --results-path benchmarks/demo_action_realization_bench/results.json
 ```
 
 ### `kaos experiment list`

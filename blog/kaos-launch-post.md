@@ -114,7 +114,7 @@ Third layer "KAOS CORE / VFS ENGINE" with 6 boxes in 2 rows: "Blob Store", "Even
 Bottom layer "STORAGE — SINGLE FILE" with one wide box: "SQLite (.db)" containing "agents | files | blobs | tool_calls | state | events | checkpoints"
 Use dark background (#0a0a0f), colored borders (purple for interfaces, cyan for orchestration, green for core, orange for storage), monospace font. -->
 
-![KAOS Architecture](image.png)
+![KAOS Architecture](docs/assets/image.png)
 
 The key insight: **everything flows into one SQLite database**. Every file write, every tool call, every state change, every lifecycle event — all queryable with SQL, all portable in a single file.
 
@@ -305,7 +305,7 @@ GROUP BY a.agent_id ORDER BY tokens DESC
 
 Run `kaos dashboard` for a live TUI that shows agent status, aggregate stats, and event streams in real time.
 
-![KAOS Dashboard — real-time agent monitoring with status, token counts, and event log](image-1.png)
+![KAOS Dashboard — real-time agent monitoring with status, token counts, and event log](docs/assets/image-1.png)
 
 The top bar shows aggregate stats at a glance — running/completed/failed counts, total tool calls and tokens, storage usage. The table shows every agent with its status (color-coded), file count, tool calls, and token consumption. The bottom panel streams events in real time — tool calls, state changes, checkpoints, errors.
 
@@ -394,7 +394,7 @@ Use these prompts with an image generation tool (Midjourney, DALL-E, Figma, or a
 
 ### 2. Architecture Diagram
 
-> *(Already created — use `image.png` from the repo)*
+> *(Already created — use `docs/assets/image.png` from the repo)*
 
 ### 3. The Problem — Before KAOS
 

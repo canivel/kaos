@@ -21,7 +21,7 @@ binding kill-gate probe consumes:
 
 Assignment is a pure function of (agent_id, task_hash): retrying the same task
 lands in the same arm, so selection can't leak into arm membership. Rates are
-LOCK-BOUND constants (demo_attraktor_loop_bench/ISA.lock.json) — changing them
+LOCK-BOUND constants (benchmarks/demo_attraktor_loop_bench/ISA.lock.json) — changing them
 mid-accumulation would be retuning. ``arms_mode: serve`` (post-ACCEPT) always
 injects.
 

@@ -238,6 +238,8 @@ def _load_probe_class(spec: str):
             f"--probe must be 'pkg.module:ClassName', got {spec!r}"
         )
     mod_name, cls_name = spec.split(":", 1)
+    from kaos.plugins import ensure_probe_paths
+    ensure_probe_paths()
     mod = importlib.import_module(mod_name)
     try:
         return getattr(mod, cls_name)
@@ -1573,7 +1575,7 @@ def bench_pull(ctx, task_text: str, db: str, config_file: str, k: int):
 @click.option("--config-file", default=DEFAULT_CONFIG, help="kaos.yaml path")
 @click.option("--bind", is_flag=True, default=False,
               help="THE binding run: falsification self-test + write results.json")
-@click.option("--out", default="demo_attraktor_loop_bench",
+@click.option("--out", default="benchmarks/demo_attraktor_loop_bench",
               help="output dir for results.json (with --bind)")
 @click.pass_context
 def bench_probe(ctx, db: str, config_file: str, bind: bool, out: str):
@@ -3382,5 +3384,59 @@ def obsidian_info(ctx, db: str):
         console.print(f"  {key:<14} {n}")
 
 
+@cli.command("plugins")
+@click.pass_context
+def plugins_cmd(ctx):
+    """List installed KAOS plugins (entry-point group 'kaos.plugins')."""
+    from kaos.plugins import get_registry
+    reg = get_registry()
+    data = {
+        "loaded": reg.loaded,
+        "errors": reg.errors,
+        "providers": sorted(reg.providers),
+        "benchmarks": sorted(reg.benchmarks),
+        "mcp_tools": sorted(
+            t["name"] for pack in reg.mcp_tool_packs for t in pack.tools
+        ),
+        "fleet_adapters": sorted(reg.fleet_adapters),
+        "dream_phases": sorted(reg.dream_phases),
+    }
+    if _json_out(ctx, data):
+        return
+    if not reg.loaded and not reg.errors:
+        console.print(
+            "No plugins installed. A plugin is any package exposing an "
+            "entry point in the [bold]kaos.plugins[/bold] group."
+        )
+        return
+    for name in reg.loaded:
+        console.print(f"[green]loaded[/green]  {name}")
+    for name, err in reg.errors.items():
+        console.print(f"[red]failed[/red]  {name}: {err}")
+    for label, items in [
+        ("providers", data["providers"]),
+        ("benchmarks", data["benchmarks"]),
+        ("mcp tools", data["mcp_tools"]),
+        ("fleet adapters", data["fleet_adapters"]),
+        ("dream phases", data["dream_phases"]),
+    ]:
+        if items:
+            console.print(f"  {label}: {', '.join(items)}")
+
+
+def main() -> None:
+    """Console-script entry point (v2.0).
+
+    Turns a missing optional dependency into one actionable install line
+    instead of a traceback — G1.2 of the v0.11/v2.0 adoption roadmap.
+    """
+    from kaos._extras import MissingExtraError
+    try:
+        cli()
+    except MissingExtraError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    cli()
+    main()
