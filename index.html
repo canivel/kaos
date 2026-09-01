@@ -267,6 +267,7 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
     <li><a href="#features">Features</a></li>
     <li><a href="#compaction">Compaction</a></li>
     <li><a href="#demos">Demos</a></li>
+    <li><a href="#get-started">Get Started</a></li>
     <li><a href="#use-cases">Use Cases</a></li>
     <li><a href="#real-session">Real Session</a></li>
     <li><a href="#changelog">Changelog</a></li>
@@ -309,6 +310,45 @@ footer .links{display:flex;gap:2rem;justify-content:center;margin-bottom:1rem}
 </section>
 
 <!-- Research Foundation -->
+<!-- Get started -->
+<section class="solution" id="get-started">
+<div class="wrap">
+  <h2>Up and Running in 3 Steps</h2>
+  <p style="text-align:center;color:var(--fg2);max-width:640px;margin:0 auto 2.5rem">No API key needed &mdash; KAOS drives the Claude Code login you already have. Any command that needs something extra tells you the exact install line.</p>
+
+  <div class="code-block" style="margin-bottom:1.5rem">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;Step 1 &mdash; install (30 seconds)</div>
+    <pre><span class="comment">$</span> pip install 'kaos-harness[all]'
+<span class="comment">$</span> kaos init
+<span class="comment">$</span> kaos demo        <span class="comment"># live dashboard with example agents — no keys, nothing configured</span></pre>
+  </div>
+
+  <div class="code-block" style="margin-bottom:1.5rem">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;Step 2 &mdash; one model, five lines (kaos.yaml)</div>
+    <pre><span class="keyword">models:</span>
+  claude:
+    provider: <span class="string">agent_sdk</span>     <span class="comment"># in-process Claude Agent SDK — no API key, no CLI contention</span>
+    model_id: <span class="string">sonnet</span>
+    use_for: [trivial, moderate, complex, critical]</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;Step 3 &mdash; run your first swarm</div>
+    <pre><span class="comment">$</span> kaos parallel \
+    -t fix    <span class="string">"fix the double-charge bug in this module: ..."</span> \
+    -t tests  <span class="string">"write pytest tests proving the fix: ..."</span> \
+    -t review <span class="string">"security-review this code: ..."</span>
+
+Agent fix (ok)   Agent tests (ok)   Agent review (ok)
+
+<span class="comment"># each agent worked in its own isolated filesystem — inspect everything:</span>
+<span class="comment">$</span> kaos ls          <span class="comment"># who ran, what happened</span>
+<span class="comment">$</span> kaos read &lt;id&gt; /src/payments.py
+<span class="comment">$</span> kaos ui           <span class="comment"># the whole run on a Gantt timeline</span></pre>
+  </div>
+</div>
+</section>
+
 <section class="research-banner" id="research">
 <div class="wrap">
   <div class="rb-header">
@@ -656,79 +696,66 @@ cp = db.<span class="func">checkpoint</span>(agent_a, label=<span class="string"
 <section class="solution" id="real-session">
 <div class="wrap">
   <h2>A Real Session, Start to Finish</h2>
-  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:0 auto 2.5rem">A payments module double-charges customers: the request succeeds server-side, times out client-side, and gets retried. Below is an actual KAOS 2.0.1 session fixing it &mdash; including the part where an agent stalls. Nothing is hidden, because the whole run is on the record.</p>
+  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:0 auto 2.5rem">A payments module double-charges customers: the request succeeds server-side, times out client-side, and gets retried. This is an actual KAOS 2.0.2 session fixing it &mdash; every command ran against a real project with real model calls.</p>
 
   <div class="code-block" style="margin-bottom:1.5rem">
-    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;1 &mdash; install &amp; point it at the problem</div>
-    <pre><span class="comment">$ pip install 'kaos-harness[all]' && kaos init</span>
-Initialized KAOS database: ./kaos.db
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;1 &mdash; three agents on the bug, in parallel</div>
+    <pre><span class="comment">$</span> kaos parallel \
+    -t fix    <span class="string">"double-charges on timeout retry — fix with an idempotency key ..."</span> \
+    -t tests  <span class="string">"pytest tests proving the key is generated once and reused ..."</span> \
+    -t review <span class="string">"security-review beyond the retry bug ..."</span>
 
-<span class="comment"># kaos.yaml — one provider, no API key (uses your Claude Code login)</span>
-<span class="keyword">models:</span>
-  claude:
-    provider: <span class="string">claude_code</span>
-    idle_timeout: <span class="string">120</span>   <span class="comment"># give the CLI room on cold starts</span>
-    use_for: [trivial, moderate, complex, critical]</pre>
+Agent fix (ok)      Agent tests (ok)      Agent review (ok)</pre>
   </div>
 
   <div class="code-block" style="margin-bottom:1.5rem">
-    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;2 &mdash; three agents, one command</div>
-    <pre><span class="comment">$ kaos parallel \
-    -t fix    "This payments module double-charges ... fix it with an idempotency key" \
-    -t tests  "Write pytest tests that PROVE the retry path can double-charge" \
-    -t review "Security-review this payment code for other defects"</span>
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;2 &mdash; everything happened in isolated sandboxes, on the record</div>
+    <pre><span class="comment">$</span> kaos query "SELECT a.name, t.tool_name, COUNT(*) FROM agents a
+             JOIN tool_calls t ON t.agent_id=a.agent_id GROUP BY 1,2"
+fix      fs_write   x1
+review   fs_mkdir   x1      <span class="comment"># every write went to the agent's own</span>
+review   fs_write   x1      <span class="comment"># virtual filesystem inside kaos.db —</span>
+tests    fs_read    x1      <span class="comment"># your working directory is untouched</span>
+tests    fs_write   x1
 
-Agent fix (ok)      Agent review (ok)      <span class="highlight-line">1/3 agent(s) failed</span></pre>
+<span class="comment">$</span> ls
+kaos.db  kaos.yaml  payments.py</pre>
   </div>
 
   <div class="code-block" style="margin-bottom:1.5rem">
-    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;3 &mdash; one failed. The flight recorder says exactly why</div>
-    <pre><span class="comment">$ kaos ls</span>
-01M1FG26...  fix     completed
-01M1FG26...  tests   <span class="highlight-line">failed</span>
-01M1FG26...  review  completed
-
-<span class="comment">$ kaos logs 01M1FG26...   # the failed one</span>
-agent_spawn | {"name": "tests"}
-agent_fail  | <span class="highlight-line">{"error": "claude produced no output for 60.0s (received 0 bytes total)"}</span>
-
-<span class="comment"># not a mystery, not a vibe — upstream CLI contention, on the record.
-# widen idle_timeout, retry just that one task:</span>
-<span class="comment">$ kaos run "Write pytest tests that PROVE ..." -n tests-v3</span>
-Agent tests-v3 (ok): "...3/5 pass now, 2/5 fail now, and a patched
-implementation (Idempotency-Key header, generated once per call,
-reused across retries) makes those 2 pass"</pre>
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;3 &mdash; harvest and verify</div>
+    <pre><span class="comment">$</span> kaos read &lt;fix-agent&gt; /src/payments.py &gt; payments.py
+<span class="comment">$</span> kaos read &lt;tests-agent&gt; /tests/test_payments.py &gt; tests/test_payments.py
+<span class="comment">$</span> pytest tests/ -q
+<span class="string">6 passed in 0.09s</span>   <span class="comment"># agent-written tests, green against the agent-written fix</span></pre>
   </div>
 
   <div class="code-block" style="margin-bottom:1.5rem">
-    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;4 &mdash; harvest from the isolated VFS, verify for real</div>
-    <pre><span class="comment">$ kaos read 01M1FG26... /src/payments.py   # the fix agent's sandbox</span>
-<span class="keyword">def</span> <span class="func">charge</span>(customer_id, amount_cents, idempotency_key=<span class="keyword">None</span>):
-    <span class="comment"># key generated once per logical charge (not per attempt),</span>
-    <span class="comment"># sent as Idempotency-Key on every retry — a timeout-then-retry</span>
-    <span class="comment"># now returns the original charge instead of a second one</span>
-    key = idempotency_key <span class="keyword">or</span> str(uuid.uuid4())
-    ...
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;4 &mdash; make the next incident cheaper</div>
+    <pre><span class="comment">$</span> kaos checkpoint &lt;fix-agent&gt; -l "idempotency-fix-verified"
+<span class="comment">$</span> kaos memory write ... --key payment-retry-idempotency
+<span class="comment">$</span> kaos skills save --name idempotent-retry-fix --template "Add an Idempotency-Key to {function}: ..."
 
-<span class="comment">$ pytest tests/test_payments.py -q   # agent-written tests vs agent-written fix</span>
-<span class="string">4 passed in 0.03s</span></pre>
+<span class="comment"># months later, any agent, any session:</span>
+<span class="comment">$</span> kaos memory search "double charge"
+payment-retry-idempotency &rarr; <span class="string">"client timeout != server failure. Fix =
+Idempotency-Key generated once per logical charge, reused across retries."</span></pre>
   </div>
 
   <div class="code-block">
-    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;5 &mdash; make the next incident cheaper</div>
-    <pre><span class="comment">$ kaos checkpoint 01M1FG26... -l "idempotency-fix-verified"</span>
-<span class="comment">$ kaos memory write ... "client timeout != server failure; idempotency key
-    generated once per logical charge, reused across retries" --key payment-retry-idempotency</span>
-<span class="comment">$ kaos skills save --name idempotent-retry-fix \
-    --template "Add an idempotency key to {function}: uuid4 once per operation..."</span>
+    <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span>&nbsp;and when something does fail &mdash; it&rsquo;s on the record</div>
+    <pre><span class="comment"># from an earlier run of this same session, when an agent stalled:</span>
+<span class="comment">$</span> kaos ls
+01M1FG26...  tests   <span class="highlight-line">failed</span>
+<span class="comment">$</span> kaos logs 01M1FG26...
+agent_fail | <span class="highlight-line">{"error": "claude produced no output for 60.0s (received 0 bytes total)"}</span>
 
-<span class="comment"># months later, any agent in any session:</span>
-<span class="comment">$ kaos memory search "double charge retry"</span>
-payment-retry-idempotency &rarr; <span class="string">"Payment retry double-charge: client timeout
-!= server failure. Fix = idempotency key generated once per logical charge..."</span></pre>
+<span class="comment"># not a mystery, not a vibe — the exact cause, queryable with SQL.
+# that failure led to the 2.0.2 agent_sdk provider fix: isolated in-process
+# sessions, no CLI contention, no stalls.</span></pre>
   </div>
 
-  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:2.5rem auto 0">Every command above ran against a real project with real model calls. The stall, the retry, the fix, the tests, the lesson &mdash; all queryable afterwards with plain SQL in one <code style="font-family:var(--mono);color:var(--accent2)">kaos.db</code> file.</p>
+  <p style="text-align:center;color:var(--fg2);max-width:720px;margin:2.5rem auto 0">The swarm, the sandboxes, the tests, the lesson, and the one failure &mdash; all in one <code style="font-family:var(--mono);color:var(--accent2)">kaos.db</code> file you can query with plain SQL.</p>
 </div>
 </section>
 
