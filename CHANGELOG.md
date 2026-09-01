@@ -6,7 +6,7 @@ All notable changes to KAOS are documented here.
 
 KAOS 2.0 is about being installable, adoptable, and extensible — the follow-through on
 `docs/roadmap/v0.11-adoption.md` (the Pi-gap analysis). No new mechanisms; the discipline
-holds. **927 tests passing (+12), 1 skipped.**
+holds. **931 tests passing (+16), 1 skipped.**
 
 - **PyPI distribution `kaos-harness`** (the bare `kaos` name has been squatted since 2016;
   the import stays `kaos`, the CLI stays `kaos`). `pip install 'kaos-harness[all]'` +
@@ -37,6 +37,20 @@ holds. **927 tests passing (+12), 1 skipped.**
 - **README inversion (G0.3).** Install + runnable commands + dashboard GIF in the first
   screen; the discipline story follows the product. Extras table documents the tiered
   install; jargon gets a plain-English alias on first use.
+- **`consolidate --apply` after a dry-run actually applies (P0 fix, red-first).** The
+  v0.10 re-proposal dedup treated *pending* journal rows as blocking, so the documented
+  dry-run → apply workflow (and any apply after the automatic threshold cycle) applied
+  nothing. Dedup now blocks only DECIDED identities (applied/rejected); pending rows are
+  what `--apply` acts on — flipped by proposal_id, never re-inserted. Second latent fix in
+  the same path: `_mark_applied` matched by targets blob, which the promote path mutates
+  (`new_skill_id`) before marking — promotes were applied but journaled pending forever.
+  Found by the ARC-AGI-3 validation scenario (70/76 → 75/75, which also had a stale
+  schema-version assertion now pinned to `kaos.schema.SCHEMA_VERSION`). 4 new tests.
+- **Dependency truth from clean-install testing.** The web dashboard imported
+  `starlette`/`uvicorn` that no dependency declared — it worked only via `mcp`'s
+  transitive deps; both are now declared under `[ui]` with a `require()` boundary. And
+  `mcp>=1.0` resolved to mcp 2.x on fresh installs, whose Server API drops the
+  `list_tools()`/`call_tool()` decorators this server uses — now pinned `>=1.0,<2`.
 - **Release automation (G0.4).** Tag-triggered GitHub Actions workflow builds and
   publishes to PyPI (trusted publishing) and creates the GitHub Release.
 

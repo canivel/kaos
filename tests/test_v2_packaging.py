@@ -47,6 +47,7 @@ class TestG11BaseFootprint:
         assert any("mcp" in d for d in extras["mcp"])
         assert any("httpx" in d for d in extras["router"])
         assert any("textual" in d for d in extras["ui"])
+        assert any("starlette" in d for d in extras["ui"])
         assert "eval" in extras and "all" in extras
 
     def test_version_is_consistent(self):
@@ -62,7 +63,7 @@ class TestG12Layering:
             import sys
             import kaos, kaos.core, kaos.memory, kaos.skills, kaos.shared_log
             import kaos.cli.main
-            leaked = [m for m in ("httpx", "mcp", "textual") if m in sys.modules]
+            leaked = [m for m in ("httpx", "mcp", "textual", "starlette") if m in sys.modules]
             assert not leaked, f"base import pulled extras: {leaked}"
             print("layering ok")
         """)

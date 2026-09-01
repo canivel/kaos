@@ -29,6 +29,9 @@ class _SuppressConnReset(logging.Filter):
 
 _conn_reset_filter = _SuppressConnReset()
 
+from kaos._extras import require
+
+require("starlette", "ui", "The web dashboard")
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request

@@ -216,7 +216,8 @@ def phase_schema(checks: Checks) -> Kaos:
     version = kaos.conn.execute(
         "SELECT MAX(version) FROM schema_version"
     ).fetchone()[0]
-    checks.check("schema version == 5", version == 5, f"got {version}")
+    from kaos.schema import SCHEMA_VERSION
+    checks.check(f"schema version == {SCHEMA_VERSION}", version == SCHEMA_VERSION, f"got {version}")
     return kaos
 
 

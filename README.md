@@ -34,10 +34,10 @@ The base install is deliberately small — the flight recorder (isolated agent f
 
 | Install | You get |
 |---|---|
-| `pip install kaos-harness` | core: isolation, checkpoints, audit, memory, skills, web dashboard, CLI |
+| `pip install kaos-harness` | core: isolation, checkpoints, audit, memory, skills, CLI |
 | `kaos-harness[router]` | model providers — Claude Code, Anthropic, OpenAI-compatible, local vLLM |
 | `kaos-harness[mcp]` | the 58-tool MCP server for Claude Code / Cursor |
-| `kaos-harness[ui]` | terminal (TUI) dashboard |
+| `kaos-harness[ui]` | dashboards — web (Gantt timeline, `kaos ui`/`kaos demo`) and terminal TUI |
 | `kaos-harness[all]` | everything above |
 
 Any command that needs a missing extra tells you the exact install line. Third parties extend KAOS through the `kaos.plugins` entry-point group (providers, benchmarks, MCP tool packs — see `kaos plugins`).

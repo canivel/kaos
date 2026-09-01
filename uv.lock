@@ -409,7 +409,9 @@ dependencies = [
 all = [
     { name = "httpx" },
     { name = "mcp" },
+    { name = "starlette" },
     { name = "textual" },
+    { name = "uvicorn" },
 ]
 benchmarks = [
     { name = "numpy" },
@@ -421,7 +423,9 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "starlette" },
     { name = "textual" },
+    { name = "uvicorn" },
 ]
 fuse = [
     { name = "fusepy" },
@@ -433,7 +437,9 @@ router = [
     { name = "httpx" },
 ]
 ui = [
+    { name = "starlette" },
     { name = "textual" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -443,7 +449,7 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'router'", specifier = ">=0.27" },
     { name = "kaos-harness", extras = ["all"], marker = "extra == 'dev'" },
     { name = "kaos-harness", extras = ["mcp", "router", "ui", "eval"], marker = "extra == 'all'" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0,<2" },
     { name = "numpy", marker = "extra == 'benchmarks'", specifier = ">=1.24" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
@@ -451,8 +457,10 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "rich", specifier = ">=13.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
+    { name = "starlette", marker = "extra == 'ui'", specifier = ">=0.37" },
     { name = "textual", marker = "extra == 'ui'", specifier = ">=0.50" },
     { name = "ulid-py", specifier = ">=1.1" },
+    { name = "uvicorn", marker = "extra == 'ui'", specifier = ">=0.29" },
     { name = "zstandard", specifier = ">=0.22" },
 ]
 provides-extras = ["mcp", "router", "ui", "eval", "all", "dev", "fuse", "benchmarks"]

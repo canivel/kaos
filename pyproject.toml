@@ -22,13 +22,19 @@ dependencies = [
 [project.optional-dependencies]
 # feature extras (v2.0) — `kaos <cmd>` tells you which extra it needs
 mcp = [
-    "mcp>=1.0",
+    # mcp 2.x removed the low-level Server.list_tools()/call_tool() decorator
+    # API this server is written against; caught by the v2.0 clean-install test
+    "mcp>=1.0,<2",
 ]
 router = [
     "httpx>=0.27",
 ]
 ui = [
     "textual>=0.50",
+    # web dashboard (kaos ui / kaos demo) — previously undeclared, worked only
+    # via mcp's transitive deps; caught by the v2.0 clean-install test
+    "starlette>=0.37",
+    "uvicorn>=0.29",
 ]
 eval = [
     # the falsifiable-probe harness is pure stdlib today; the extra exists so

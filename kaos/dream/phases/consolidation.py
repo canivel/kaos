@@ -36,6 +36,7 @@ class Proposal:
     targets: dict      # arbitrary JSON-serialisable identifying the change
     rationale: str
     applied: bool = False
+    journal_id: int | None = None  # set when this candidate matches a pending journal row
 
 
 @dataclass
@@ -84,31 +85,47 @@ def run(
     finally:
         conn.row_factory = prev
 
-    # Persist proposals — but never re-propose an identity already on the
-    # journal in ANY state. A merge pair a human rejected reappears every run
-    # (both skills stay active), and an applied promote can re-surface; without
-    # this dedup the journal fills with noise and, worse, silently re-asks a
-    # question already answered 'no'. Dedup is by canonical identity (kind +
-    # order-independent target ids), not by the full targets blob (which carries
-    # volatile fields like hit counts and jaccard scores).
-    seen = _existing_identities(conn)
+    # Persist proposals — but never re-journal an identity already there.
+    # DECIDED identities (applied / rejected) block outright: a merge pair a
+    # human rejected must not reappear every run, and an applied promote must
+    # not re-surface — without that the journal fills with noise and silently
+    # re-asks a question already answered 'no'. PENDING identities (journaled
+    # by an earlier dry-run or the automatic threshold cycle) are different:
+    # they are exactly what a non-dry run exists to act on, so on --apply they
+    # become apply-eligible (without a duplicate INSERT); on a dry run they
+    # count as duplicates. Dedup is by canonical identity (kind +
+    # order-independent target ids), not by the full targets blob (which
+    # carries volatile fields like hit counts and jaccard scores).
+    decided, pending = _journal_identities(conn)
     fresh: list[Proposal] = []
     for p in report.proposals:
         ident = _proposal_identity(p.kind, p.targets)
-        if ident in seen:
+        if ident in decided:
             report.skipped_duplicates += 1
             continue
-        seen.add(ident)
+        if ident in pending:
+            if dry_run:
+                report.skipped_duplicates += 1
+            else:
+                p.journal_id = pending.pop(ident)
+                fresh.append(p)
+            continue
+        decided.add(ident)  # guard against same-run duplicates
         fresh.append(p)
         try:
-            conn.execute(
+            cur = conn.execute(
                 "INSERT INTO consolidation_proposals "
                 "(run_id, kind, targets, rationale) VALUES (?, ?, ?, ?)",
                 (run_id, p.kind, json.dumps(p.targets), p.rationale),
             )
+            # remember the row so _mark_applied flips it by id — matching by
+            # targets blob breaks when apply mutates targets (e.g. promote
+            # adds new_skill_id), which left promotes journaled as pending
+            # forever
+            p.journal_id = cur.lastrowid
         except sqlite3.OperationalError:
             pass
-    # Only newly-proposed (non-duplicate) candidates are eligible to apply.
+    # Newly-proposed candidates plus (on --apply) pending journaled ones.
     report.proposals = fresh
 
     if not dry_run:
@@ -150,23 +167,38 @@ def _proposal_identity(kind: str, targets: dict) -> str:
     return f"{kind}:" + json.dumps(targets, sort_keys=True, default=str)
 
 
-def _existing_identities(conn: sqlite3.Connection) -> set[str]:
-    """Identities of every proposal already on the journal, any status. A
-    previously applied/rejected/pending decision blocks re-proposal."""
+def _journal_identities(
+    conn: sqlite3.Connection,
+) -> tuple[set[str], dict[str, int]]:
+    """Split journaled proposal identities into (decided, pending).
+
+    decided — applied/rejected/anything non-pending: blocks re-proposal.
+    pending — identity → proposal_id of the open journal row: eligible to be
+    applied by a non-dry run (never re-inserted). An identity that is both
+    decided and pending counts as decided.
+    """
     try:
         rows = conn.execute(
-            "SELECT kind, targets FROM consolidation_proposals"
+            "SELECT proposal_id, kind, targets, "
+            "COALESCE(status, 'pending') FROM consolidation_proposals"
         ).fetchall()
     except sqlite3.OperationalError:
-        return set()
-    out: set[str] = set()
-    for r in rows:
+        return set(), {}
+    decided: set[str] = set()
+    pending: dict[str, int] = {}
+    for pid, kind, targets_s, status in rows:
         try:
-            targets = json.loads(r[1]) if r[1] else {}
+            targets = json.loads(targets_s) if targets_s else {}
         except (json.JSONDecodeError, TypeError):
             targets = {}
-        out.add(_proposal_identity(r[0], targets))
-    return out
+        ident = _proposal_identity(kind, targets)
+        if status == "pending":
+            pending[ident] = pid  # latest open row wins
+        else:
+            decided.add(ident)
+    for ident in decided:
+        pending.pop(ident, None)
+    return decided, pending
 
 
 # ── Finders ─────────────────────────────────────────────────────────
@@ -359,6 +391,21 @@ def _apply_safe(conn: sqlite3.Connection, proposals: list[Proposal]) -> int:
 
 def _mark_applied(conn: sqlite3.Connection, p: Proposal) -> None:
     try:
+        if p.journal_id is not None:
+            # candidate matched a pending journal row from an earlier
+            # dry-run — flip that exact row (its stored targets may differ
+            # in volatile fields like hit counts, so no blob match works)
+            conn.execute(
+                """
+                UPDATE consolidation_proposals
+                SET applied = 1,
+                    status = 'applied',
+                    applied_at = strftime('%Y-%m-%dT%H:%M:%f','now')
+                WHERE proposal_id = ?
+                """,
+                (p.journal_id,),
+            )
+            return
         conn.execute(
             """
             UPDATE consolidation_proposals
