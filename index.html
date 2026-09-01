@@ -1031,9 +1031,22 @@ kaos import snapshot.db
 
     <div class="release">
       <div class="release-header">
-        <span class="release-version">v2.0.1</span>
+        <span class="release-version">v2.0.2</span>
         <span class="release-date">September 1, 2026</span>
         <span class="release-tag">latest</span>
+      </div>
+      <p class="release-category">agent_sdk provider: tool-calling + session isolation</p>
+      <ul>
+        <li><strong>The in-process provider works for real now</strong> &mdash; tool-using tasks through <code>provider: agent_sdk</code> used to die with "Reached maximum number of turns (1)". Root causes: the SDK session inherited the user's own Claude Code config (their personal MCP servers leaked into KAOS agents) and KAOS tool schemas were dropped.</li>
+        <li><strong>Fully isolated sessions</strong> &mdash; no MCP inheritance, no built-in tools; agents speak the shared <code>&lt;tool_call&gt;</code> protocol and every action lands in the audited virtual filesystem. This is the recommended provider next to an active Claude Code session: no CLI quota contention, no stalls.</li>
+        <li><strong>New <code>[agent-sdk]</code> extra</strong> declares the SDK dependency (included in <code>[all]</code>); v2.0.1 was a packaging patch (437&nbsp;KB sdist, idempotent publish). 948 tests passing.</li>
+      </ul>
+    </div>
+
+    <div class="release">
+      <div class="release-header">
+        <span class="release-version">v2.0.0</span>
+        <span class="release-date">September 1, 2026</span>
       </div>
       <p class="release-category">Distribution &amp; Modularity &mdash; pip-installable, extras, plugins</p>
       <ul>
