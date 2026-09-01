@@ -183,6 +183,13 @@ class TextClassifyBenchmark(Benchmark):
         shuffled = list(self._data)
         rng.shuffle(shuffled)
         self._labels = sorted(set(item["label"] for item in self._data))
+        # Cap the split to the data actually available: with the defaults
+        # (search_size=100) and the 32-item synthetic set, the search split
+        # swallowed everything and get_test_set() was silently EMPTY — any
+        # selection-on-search-set run had no held-out data at all.
+        if len(shuffled) < search_size + test_size:
+            search_size = max(1, len(shuffled) // 2)
+            test_size = len(shuffled) - search_size
         self._search_data = shuffled[:search_size]
         self._test_data = shuffled[search_size:search_size + test_size]
 

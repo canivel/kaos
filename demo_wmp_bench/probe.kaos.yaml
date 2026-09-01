@@ -1,0 +1,20 @@
+# WMP probe router config — frozen by the lock's search budget.
+# idle_timeout is real now (fleet-report fix): stalls at 300s, wall 900s.
+database:
+  path: ./kaos.db
+  wal_mode: true
+
+models:
+  claude-sonnet:
+    provider: claude_code
+    model_id: claude-sonnet-4-6
+    max_context: 200000
+    timeout: 900
+    idle_timeout: 300
+    use_for: [trivial, moderate, complex, critical, code_completion, code_generation, planning]
+
+router:
+  type: gepa
+  fallback_model: claude-sonnet
+  context_compression: true
+  max_retries: 1

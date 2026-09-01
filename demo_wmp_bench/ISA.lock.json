@@ -1,0 +1,72 @@
+{
+  "name": "wmp-probe-v1",
+  "version": "v1",
+  "pre_registered_at": "2026-08-18",
+  "source_paper": "WikiSkill arXiv:2608.27454 (Google Research) — WMP distillation per paper-eval exp:4 (wikiskill-paper-eval), candidate #17",
+  "mechanism_described_but_NOT_implemented": "WMP — Wiki-Maintained Proposer. An LLM 'wiki maintainer' performs root-cause analysis over the mh_search archive after each iteration (failed vs successful harness candidates, their scores and per-problem outcomes) and maintains a compact failure-pattern wiki; the wiki is injected ONLY into the PROPOSER's prompt (never into harness/inference context — the paper's own ablation shows inference-side access hurts). This lock ships ONLY the probe; the maintainer is bench-local code and does NOT enter kaos/ unless the verdict is ACCEPT.",
+
+  "binding_thesis": "A maintained failure-pattern wiki in the mh_search proposer's context causally improves the search frontier over the same proposer reading raw archive digests alone, the lift is NOT reproduced by injecting the same wiki word-scrambled (padding control the paper never ran), and the wiki's token overhead stays within 2x of baseline proposer context (cost the paper never reported).",
+
+  "workload_invariants": {
+    "benchmarks": "text_classify (synthetic 4-label, 32 items) and math_rag (synthetic, seed 42) — the two KAOS surfaces with dense MECHANICAL outcome signals (M2 present by construction; no LLM judge anywhere in scoring)",
+    "search_budget_frozen": {
+      "iterations": 3,
+      "candidates_per_iteration": 2,
+      "eval_subset_size": 10,
+      "max_parallel_evals": 2,
+      "proposer_model": "workspace default (claude-sonnet via claude_code provider)",
+      "idle_timeout_s": 300
+    },
+    "runs": "3 replicate searches per arm per benchmark = 18 searches total. LLM proposer/evaluator are nondeterministic (repro_class llm_nondeterministic); replicates, not seeds, carry the variance.",
+    "metric": "frontier best accuracy at end of search (SearchResult.frontier best_by_objective['accuracy'])",
+    "void_rule": "VOID if any arm x benchmark cell has fewer than 3 completed searches, or if B0 mean accuracy < 0.30 on both benchmarks (search machinery broken — nothing to conclude)"
+  },
+
+  "arms": {
+    "B0": "current mh_search proposer: archive digest + frontier summary, unmodified.",
+    "FULL": "B0 + '## Failure-pattern wiki' section appended to the proposer prompt: maintained by one LLM call per iteration over the same archive the digest reads; wiki capped at 2,000 chars.",
+    "L1": "FULL with the wiki text word-scrambled (kaos.bench.replay.scramble_payload — same tokens, destroyed instruction). The placebo arm the paper never ran."
+  },
+
+  "kill_gates": {
+    "G1": {
+      "name": "wiki lifts the frontier",
+      "kill": true,
+      "predicate": "pooled per-benchmark delta mean(FULL) - mean(B0) averaged across the 2 benchmarks >= +0.05 absolute accuracy AND one-sided 90% bootstrap lower bound of that pooled delta (resampling runs within arms, 2000 iterations, seed 20260818) > 0",
+      "rationale": "the paper claims ~+23pt proposer-side effects; a heavily discounted +5pt with a positive LB at n=3/arm/benchmark is the honest floor for a mechanism this cheap to fake with noise"
+    },
+    "G2": {
+      "name": "scrambled wiki must not reproduce the gain",
+      "kill": true,
+      "predicate": "mean(FULL) - mean(L1) averaged across benchmarks >= +0.03 absolute accuracy",
+      "rationale": "if word salad in the proposer prompt buys the same frontier, the 'knowledge' is padding — the exact control WikiSkill omitted"
+    },
+    "G3": {
+      "name": "cost stays sane",
+      "kill": true,
+      "predicate": "mean proposer-context chars per iteration in FULL (prompt incl. wiki + maintainer prompt+response) <= 2.0x mean proposer-context chars in B0",
+      "rationale": "the paper reports zero cost accounting; a mechanism that doubles proposer cost must at least clear its gates on merit, and one that more than doubles it is rejected regardless"
+    }
+  },
+
+  "non_kill_gates": {
+    "G0": {
+      "name": "completion + machinery sanity",
+      "kill": false,
+      "predicate": "all 18 searches complete (>= 3 per arm x benchmark cell) AND B0 mean accuracy >= 0.30 on at least one benchmark",
+      "rationale": "VOID-on-fail: crashed cells or a dead baseline make every comparison uninterpretable"
+    }
+  },
+
+  "verdict_rule": "VOID if G0 fails. ACCEPT iff G1 AND G2 AND G3 all pass. ANY single kill-gate failure REJECTS. No retune-and-rerun: budget, arm definitions, wiki cap, bootstrap seed, and thresholds are BYTE-FROZEN at this commit; any change requires a NEW lock + NEW KNOWN_LOCK_SHA256 entry.",
+
+  "judge": {
+    "kind": "mechanical",
+    "implementation": "benchmark score() functions — exact-match accuracy for text_classify, mechanical scoring for math_rag; no LLM judgment anywhere in labeling",
+    "judge_kappa": "not applicable (mechanical); passed as null, kappa audit skipped per kaos.eval.harness.verdict semantics"
+  },
+
+  "falsification_self_test": "FULL := B0 (the FULL arm's run results replaced by an independent copy of B0's) MUST fail G1 and emit REJECT. A harness that cannot kill an inert wiki is INADMISSIBLE and must not produce a binding verdict.",
+
+  "honest_expected_outcome": "ACCEPT prior ~0.35. Ranked risks: (1) n=3 replicates per cell against LLM search variance — a real but modest lift can easily miss the LB>0 bar (VOID-shaped REJECT with information); (2) G2 — 'more structured text in the proposer prompt' is a classic padding effect and the scrambled arm exists to catch exactly that; (3) the synthetic benchmarks are small enough that frontier ceilings may compress deltas. REJECT via G2 would close proposer-side synthesis the way the FTS-vise closed retrieval-side synthesis — a successful outcome. Verdict publishes to Attraktor either way, superseding the paper-eval VOID record."
+}

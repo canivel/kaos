@@ -84,7 +84,7 @@ class HarnessEvaluator:
                 try:
                     output = await asyncio.wait_for(
                         self._run_single(run_fn, problem, agent_id),
-                        timeout=self.timeout_seconds / max(len(problems), 1),
+                        timeout=self.timeout_seconds,  # PER-PROBLEM (docs said so; code divided by n_problems, giving 60/32=1.9s and killing every real llm() call)
                     )
                     scores = self.benchmark.score(problem, output)
                     is_correct = scores.get("accuracy", scores.get("pass_rate", scores.get("f1_score", 0))) > 0.5

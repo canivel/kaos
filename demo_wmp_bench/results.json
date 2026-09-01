@@ -1,0 +1,77 @@
+{
+  "lock_name": "wmp-probe-v1",
+  "self_test_passed": true,
+  "self_test_detail": "FULL := B0 correctly fails G1 (pooled delta FULL-B0 = +0.0000 (floor +0.05), bootstrap 90% LB = +0.0000 (must be > 0))",
+  "cells": {
+    "B0/text_classify": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "B0/math_rag": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "FULL/text_classify": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "FULL/math_rag": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "L1/text_classify": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "L1/math_rag": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "means": {
+    "B0/text_classify": 1.0,
+    "B0/math_rag": 1.0,
+    "FULL/text_classify": 1.0,
+    "FULL/math_rag": 1.0,
+    "L1/text_classify": 1.0,
+    "L1/math_rag": 1.0
+  },
+  "gates": [
+    {
+      "gate": "G0",
+      "name": "completion + machinery sanity",
+      "passed": true,
+      "kill": false,
+      "detail": "cells={'B0/text_classify': 3, 'B0/math_rag': 3, 'FULL/text_classify': 3, 'FULL/math_rag': 3, 'L1/text_classify': 3, 'L1/math_rag': 3} (floor 3 each), B0 means=[1.0, 1.0] (sanity floor 0.3 on >=1 benchmark)"
+    },
+    {
+      "gate": "G1",
+      "name": "wiki lifts the frontier",
+      "passed": false,
+      "kill": true,
+      "detail": "pooled delta FULL-B0 = +0.0000 (floor +0.05), bootstrap 90% LB = +0.0000 (must be > 0)"
+    },
+    {
+      "gate": "G2",
+      "name": "scrambled wiki must not reproduce the gain",
+      "passed": false,
+      "kill": true,
+      "detail": "pooled delta FULL-L1 = +0.0000 (floor +0.03); below floor means the 'knowledge' is prompt padding"
+    },
+    {
+      "gate": "G3",
+      "name": "cost stays sane",
+      "passed": true,
+      "kill": true,
+      "detail": "proposer-context chars FULL/B0 = 1.79x (cap 2.0x; maintainer prompt+response counted)"
+    }
+  ],
+  "judge_kappa": null,
+  "verdict": "REJECT: kill gate(s) failed: G1, G2"
+}

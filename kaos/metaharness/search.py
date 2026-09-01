@@ -82,8 +82,16 @@ class MetaHarnessSearch:
         # Step 2: Evaluate seed harnesses
         seeds = self._load_seeds()
         logger.info("Evaluating %d seed harnesses...", len(seeds))
+        # Seeds must be scored on the SAME problem set as iteration
+        # candidates — this path was the one caller not applying
+        # eval_subset_size (seeds ran the full set at a divided timeout).
+        seed_problems = self.benchmark.get_search_set()
+        if self.config.eval_subset_size:
+            seed_problems = self.benchmark.get_subset(
+                seed_problems, self.config.eval_subset_size)
         seed_results = await self.evaluator.evaluate_parallel(
             seeds,
+            problems=seed_problems,
             max_parallel=self.config.max_parallel_evals,
         )
         for harness, result in zip(seeds, seed_results):
