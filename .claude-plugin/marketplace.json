@@ -1,5 +1,6 @@
 {
   "name": "kaos",
+  "description": "KAOS — flight recorder and team memory for Claude Code: sessions journaled into one local SQLite file, lessons recalled at session start, 58 MCP tools. Local-first, no embeddings, MIT.",
   "owner": { "name": "Danilo Canivel" },
   "plugins": [
     {
