@@ -213,14 +213,14 @@ footer .links a{color:var(--fg2)}
     <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
     <a href="#moat" class="btn btn-ghost">Why it wins &darr;</a>
   </div>
-  <div class="install"><span class="p">$</span><span class="c">git clone https://github.com/canivel/kaos.git &amp;&amp; cd kaos &amp;&amp; uv sync</span></div>
+  <div class="install"><span class="p">$</span><span class="c">pip install 'kaos-harness[all]' &amp;&amp; kaos demo</span></div>
   <div class="badges">
-    <span class="badge v">v0.9.2</span>
+    <span class="badge v">v2.0.2</span>
     <span class="badge p">falsifiable eval</span>
-    <span class="badge g">10 mechanisms evaluated · 0 shipped on hope</span>
+    <span class="badge g">15 mechanisms evaluated · 0 shipped on hope</span>
     <span class="badge">58 MCP tools</span>
-    <span class="badge">701 tests</span>
-    <span class="badge">MIT · local-first</span>
+    <span class="badge">948 tests</span>
+    <span class="badge">on PyPI · MIT · local-first</span>
   </div>
 
   <a class="arc" href="https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard?search=canivel" target="_blank" rel="noopener">
@@ -499,17 +499,28 @@ kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 
   </div>
 
   <div class="rel">
-    <div class="rel-h"><span class="rel-v">v0.10</span><span class="rel-d">in progress</span><span class="rel-t wip">unreleased</span></div>
-    <div class="rel-sum">Tier-1: measure &amp; harden — 701 tests passing</div>
+    <div class="rel-h"><span class="rel-v">v2.0.0–2.0.2</span><span class="rel-d">Sep 1, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-sum">KAOS 2 — pip-installable, modular, extensible. 948 tests passing.</div>
     <ul>
-      <li><b>storage-scale-bench:</b> single-DB does <em>not</em> saturate — cross-agent FTS5 search is 9 ms p95 at 10k agents. Per-agent-DB sharding rejected by measurement.</li>
-      <li><b>synchronous=NORMAL default</b> — measured <b>~125× faster</b> write p95 (1895 ms → 15 ms) and ~38× throughput under contention.</li>
-      <li><b>Router reliability + verdict rigor</b> — timeout taxonomy preserved end-to-end, cluster-bootstrap CIs for run-to-run variance, tool-count single source of truth.</li>
+      <li><b>On PyPI as <code>kaos-harness</code></b> — <code>pip install 'kaos-harness[all]'</code> then <code>kaos demo</code>: live dashboard, zero API keys, two commands. Slim 5-dependency base; <code>[router]</code> / <code>[mcp]</code> / <code>[ui]</code> / <code>[agent-sdk]</code> extras, each missing extra prints its own install line.</li>
+      <li><b>Plugin surface</b> — the <code>kaos.plugins</code> entry-point group: third-party providers, benchmarks, and MCP tool packs with zero core changes.</li>
+      <li><b>agent_sdk provider fixed (2.0.2)</b> — fully isolated in-process sessions (the SDK used to inherit the user's own MCP servers into agents) with real tool-calling; the recommended provider next to an active Claude Code session. Validated by a live end-to-end run: 3 parallel agents, all writes in sandboxes, agent-written tests green against the agent-written fix, then the dream cycle promoting one memory to a skill and pruning a 1/6 flaky skill.</li>
+      <li><b>Launch sweep fixed 4 latent defects red-first</b> — including <code>consolidate --apply</code> after a dry-run applying nothing, and two undeclared-dependency bugs only a clean-install test could catch.</li>
     </ul>
   </div>
 
   <div class="rel">
-    <div class="rel-h"><span class="rel-v">v0.9.2</span><span class="rel-d">Jun 24, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-h"><span class="rel-v">v0.10</span><span class="rel-d">Aug 8, 2026</span></div>
+    <div class="rel-sum">Tier-1: measure &amp; harden — 764 tests passing</div>
+    <ul>
+      <li><b>storage-scale-bench:</b> single-DB does <em>not</em> saturate — cross-agent FTS5 search is 9 ms p95 at 10k agents. Per-agent-DB sharding rejected by measurement.</li>
+      <li><b>synchronous=NORMAL default</b> — measured <b>~125× faster</b> write p95 (1895 ms → 15 ms) and ~38× throughput under contention.</li>
+      <li><b>verify-numerics</b> — numbers in generated artifacts must trace to recorded measurements; router reliability + cluster-bootstrap verdict statistics.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v0.9.2</span><span class="rel-d">Jun 24, 2026</span></div>
     <div class="rel-sum">Tier-0 correctness debt — 650 tests passing</div>
     <ul>
       <li><b>Storage hardening:</b> fixed a version-collision crash, a reader-lock that blocked writers, and a <code>query()</code> read-only bypass — now enforced at the SQLite parse layer.</li>
