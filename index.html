@@ -233,7 +233,7 @@ footer .links a{color:var(--fg2)}
     <a href="https://github.com/canivel/kaos" class="btn btn-ghost">View on GitHub</a>
   </div>
   <div class="badges">
-    <span class="badge v">v2.1.0</span>
+    <span class="badge v">v2.1.1</span>
     <span class="badge p">falsifiable eval</span>
     <span class="badge g">16 mechanisms evaluated · 0 shipped on hope</span>
     <span class="badge">Claude Code plugin</span>
@@ -649,7 +649,7 @@ kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 
   </div>
 
   <div class="rel">
-    <div class="rel-h"><span class="rel-v">v2.1.0</span><span class="rel-d">Sep 2, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-h"><span class="rel-v">v2.1.0–2.1.1</span><span class="rel-d">Sep 2, 2026</span><span class="rel-t">latest</span></div>
     <div class="rel-sum">Attaches to the tools you already run — and publishes its numbers, including the failed ones. 971 tests.</div>
     <ul>
       <li><b>Claude Code plugin</b> — <code>claude plugin marketplace add canivel/kaos</code>: every session becomes an auditable agent in <code>kaos.db</code>, team memory is injected at session start, the 58-tool MCP server auto-registers, <code>/kaos:recall</code> searches memory. A pre-registered latency probe <b>rejected</b> prompt-time recall (275 ms p95 vs a 200 ms gate), so that hook ships off by default — session-start passed at 241 ms.</li>
