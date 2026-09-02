@@ -11,6 +11,9 @@ All notable changes to KAOS are documented here.
   end-to-end validation: a real Claude Code session with the plugin quoted the injected
   team lesson verbatim, but the seed step written the way the skill describes had failed.
 - Marketplace manifest gains a description (`claude plugin validate` warning).
+- `kaos experiment list` ordering is deterministic when runs share a millisecond
+  (`exp_id` tiebreak) — this was the recurring CI test flake; it failed the first
+  2.1.1 release run.
 
 ## [2.1.0] - 2026-09-02
 

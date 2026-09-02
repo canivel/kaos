@@ -158,7 +158,9 @@ class ExperimentStore:
             params.append(verdict_prefix + "%")
         if clauses:
             sql += " WHERE " + " AND ".join(clauses)
-        sql += " ORDER BY started_at DESC LIMIT ?"
+        # exp_id breaks ties: runs logged within the same millisecond (fast CI
+        # runners, batch loggers) must still list newest-first deterministically
+        sql += " ORDER BY started_at DESC, exp_id DESC LIMIT ?"
         params.append(int(limit))
         rows = self._conn.execute(sql, params).fetchall()
         return [self._row_to_experiment(r) for r in rows]
