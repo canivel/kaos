@@ -226,18 +226,19 @@ footer .links a{color:var(--fg2)}
 <div class="wrap hero-inner">
   <h1>Run a team of AI agents.<br><span class="grad">Sandboxed. Recorded. Learning.</span></h1>
   <p class="sub">KAOS runs swarms of AI agents on your machine. Each agent works in its own private sandbox inside a single SQLite file, every action it takes is on the record — auditing an agent is a SQL query — and the lessons that actually worked are remembered and re-ranked for next time. No cloud account, no GPU, no embeddings.</p>
-  <div class="install"><span class="p">$</span><span class="c">pip install 'kaos-harness[all]' &amp;&amp; kaos demo</span></div>
-  <p style="font-size:.82rem;color:var(--fg3);margin:-1rem 0 1.6rem"><code>kaos demo</code> opens a live dashboard of a working swarm — about 30 seconds, no API keys, nothing leaves your machine.</p>
+  <div class="install"><span class="p">$</span><span class="c">pip install kaos-harness &amp;&amp; kaos demo --print</span></div>
+  <p style="font-size:.82rem;color:var(--fg3);margin:-1rem 0 1.6rem">One measured screen in about 2 seconds — no API keys, nothing written to your directory. Using Claude Code? <code>claude plugin marketplace add canivel/kaos</code></p>
   <div class="btns">
     <a href="#start" class="btn btn-primary">Get started &darr;</a>
     <a href="https://github.com/canivel/kaos" class="btn btn-ghost">View on GitHub</a>
   </div>
   <div class="badges">
-    <span class="badge v">v2.0.2</span>
+    <span class="badge v">v2.1.0</span>
     <span class="badge p">falsifiable eval</span>
-    <span class="badge g">15 mechanisms evaluated · 0 shipped on hope</span>
+    <span class="badge g">16 mechanisms evaluated · 0 shipped on hope</span>
+    <span class="badge">Claude Code plugin</span>
     <span class="badge">58 MCP tools</span>
-    <span class="badge">948 tests</span>
+    <span class="badge">971 tests</span>
     <span class="badge">on PyPI · MIT · local-first</span>
   </div>
 
@@ -288,17 +289,19 @@ footer .links a{color:var(--fg2)}
   <div class="steps">
     <div class="step"><div class="sn">1</div><div>
       <h3>Install and see it run</h3>
-      <pre><span class="p">$</span> pip install 'kaos-harness[all]'
-<span class="p">$</span> kaos demo</pre>
-      <p>A live dashboard of a working agent swarm, entirely local. Prefer a slim install? The base package has 5 dependencies; extras like <code>[router]</code> and <code>[mcp]</code> tell you their own install line when needed.</p>
+      <pre><span class="p">$</span> pip install kaos-harness
+<span class="p">$</span> kaos demo --print</pre>
+      <p>Seeds 50,000 memories in a temporary file, runs a real cross-agent search and prints the <em>measured</em> p95, shows the audit table, exits — about 2 seconds, nothing written here. <code>pip install 'kaos-harness[all]' &amp;&amp; kaos demo</code> opens the live dashboard instead. The base package has 4 dependencies; extras tell you their own install line when needed.</p>
     </div></div>
     <div class="step"><div class="sn">2</div><div>
-      <h3>Put agents on a real task</h3>
-      <pre><span class="p">$</span> kaos init
+      <h3>Plug it into Claude Code — or run your own swarm</h3>
+      <pre><span class="p">$</span> claude plugin marketplace add canivel/kaos
+<span class="p">&gt;</span> /plugin install kaos@kaos            <span class="c"># every session journaled; team memory recalled at start</span>
+
 <span class="p">$</span> kaos parallel -t fix   "fix the double-charge bug in payments.py" \
                -t tests "write pytest tests proving the fix" \
                -t review "security-review the module"</pre>
-      <p>Three agents run in parallel, each in its own sandbox. Watch them live with <code>kaos ui</code> — or skip the CLI entirely and drive KAOS from Claude Code or Cursor in natural language via MCP.</p>
+      <p>The plugin turns each Claude Code session into an auditable KAOS agent and injects the lessons your team saved (no marketplace? <code>kaos connect claude-code</code>). Or run three agents in parallel, each in its own sandbox, and watch them with <code>kaos ui</code>.</p>
     </div></div>
     <div class="step"><div class="sn">3</div><div>
       <h3>Inspect, then take what's good</h3>
@@ -371,7 +374,13 @@ agent_fail | <span class="hl">{"error": "claude produced no output for 60.0s"}</
 # (isolated in-process sessions — no CLI contention, no stalls).
 # and the one recall miss we hit is filed, with a probe sketch:</span>
 <span class="c">$ kaos memory search "duplicate processing"</span>
-<span class="hl">no match</span>   <span class="c"># FTS is literal — measured, disclosed, issue #42</span></code></pre>
+<span class="hl">no match</span>   <span class="c"># FTS is literal — measured, disclosed, issue #42</span>
+
+<span class="c"># v2.1: we benchmarked ourselves and published the losses too</span>
+<span class="c">$ uv run python benchmarks/afb/run_afb.py</span>
+fault_localization  median 9.5 entries  gate ≤ 5   <span class="hl">REJECT</span>   <span class="c"># real localizer bug, issue queued</span>
+<span class="c">$ uv run python benchmarks/cc_hook_latency/run_cc_hook_latency.py</span>
+prompt p95 275 ms  gate ≤ 200          <span class="hl">REJECT:prompt</span>  <span class="c"># prompt-time recall ships off</span></code></pre>
     </div>
 
   </div>
@@ -640,7 +649,18 @@ kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 
   </div>
 
   <div class="rel">
-    <div class="rel-h"><span class="rel-v">v2.0.0–2.0.2</span><span class="rel-d">Sep 1, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-h"><span class="rel-v">v2.1.0</span><span class="rel-d">Sep 2, 2026</span><span class="rel-t">latest</span></div>
+    <div class="rel-sum">Attaches to the tools you already run — and publishes its numbers, including the failed ones. 971 tests.</div>
+    <ul>
+      <li><b>Claude Code plugin</b> — <code>claude plugin marketplace add canivel/kaos</code>: every session becomes an auditable agent in <code>kaos.db</code>, team memory is injected at session start, the 58-tool MCP server auto-registers, <code>/kaos:recall</code> searches memory. A pre-registered latency probe <b>rejected</b> prompt-time recall (275 ms p95 vs a 200 ms gate), so that hook ships off by default — session-start passed at 241 ms.</li>
+      <li><b><code>kaos demo --print</code></b> — the terminal aha: 50k memories, a measured p95, the audit table, ~2 s, nothing written. <code>ulid-py</code> removed: it cost 216 ms of every CLI start.</li>
+      <li><b>Benchmarks, hash-locked before running, results committed as found</b> — Paraphrase Recall Gap (owns issue #42: 100 % miss on paraphrases with the default query); LongMemEval-S split-reported (verbatim 0.991 / paraphrase 0.965, with the caveats spelled out); Agent Forensics Bench v1 — five tests pass, <b>fault localization REJECTED</b> (median 9.5 entries vs ≤ 5): a real localizer bug, published, issue queued.</li>
+      <li><b><code>kaos-eval</code> GitHub Action</b> runs them on every release and fails on REJECT — so the next release fails until the localizer is fixed. Plus a Pi extension (<code>integrations/pi-kaos</code>), a plugin template, <code>CONTRIBUTING.md</code>, and five good-first-issues.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-h"><span class="rel-v">v2.0.0–2.0.2</span><span class="rel-d">Sep 1, 2026</span></div>
     <div class="rel-sum">KAOS 2 — pip-installable, modular, extensible. 948 tests passing.</div>
     <ul>
       <li><b>On PyPI as <code>kaos-harness</code></b> — <code>pip install 'kaos-harness[all]'</code> then <code>kaos demo</code>: live dashboard, zero API keys, two commands. Slim 5-dependency base; <code>[router]</code> / <code>[mcp]</code> / <code>[ui]</code> / <code>[agent-sdk]</code> extras, each missing extra prints its own install line.</li>
