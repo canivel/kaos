@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAOS — The Harness That Proves Itself</title>
-<meta name="description" content="The field agreed the harness matters more than the model. KAOS is the local-first agent harness built on that premise — isolated auditable SQLite runtimes, self-tuning memory, and a discipline no other framework has: every feature must survive a kill test locked before its code exists. Measured, not claimed.">
-<meta property="og:title" content="KAOS — The Harness That Proves Itself">
-<meta property="og:description" content="Local-first multi-agent harness: one SQLite file per project holding every agent's VFS, append-only audit journal, and checkpoints. The only framework whose own changes must pass pre-registered falsifiable kill gates.">
+<title>KAOS — Sandboxed AI agents that remember what worked</title>
+<meta name="description" content="KAOS runs teams of AI agents on your machine. Each agent works in its own sandbox inside one SQLite file, every action is queryable with plain SQL, and lessons that work are remembered for next time. pip install 'kaos-harness[all]'. Local-first, MIT.">
+<meta property="og:title" content="KAOS — Sandboxed AI agents that remember what worked">
+<meta property="og:description" content="A local-first harness for multi-agent work: sandboxed per-agent filesystems, an append-only audit journal, checkpoints, and memory that re-ranks itself on real outcomes — all in one SQLite file.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AF</text></svg>">
 <style>
@@ -38,6 +38,23 @@ section{padding:4.5rem 0;border-top:1px solid var(--line)}
 .head{max-width:720px;margin:0 auto 2.6rem;text-align:center}
 .head h2{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:800;margin-bottom:.8rem}
 .head p{color:var(--fg2);font-size:1.02rem;line-height:1.65}
+
+/* What is KAOS */
+.what-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;max-width:980px;margin:0 auto}
+.chk{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.2rem 1.1rem 2.7rem;position:relative}
+.chk::before{content:'✓';position:absolute;left:1.05rem;top:1.05rem;color:var(--green);font-weight:800}
+.chk b{display:block;font-size:.95rem;margin-bottom:.25rem;color:var(--fg)}
+.chk span{font-size:.85rem;color:var(--fg2);line-height:1.6;display:block}
+
+/* Quickstart steps */
+.steps{max-width:780px;margin:0 auto;display:grid;gap:1.2rem}
+.step{display:flex;gap:1.2rem;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.5rem}
+.step .sn{flex:0 0 2rem;height:2rem;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;margin-top:.15rem}
+.step h3{font-size:1.02rem;margin-bottom:.55rem}
+.step pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;font-size:.8rem;line-height:1.65;overflow-x:auto;margin-bottom:.6rem;color:var(--fg2)}
+.step pre .p{color:var(--green)}
+.step p{font-size:.85rem;color:var(--fg2);line-height:1.6}
+.step > div:last-child{min-width:0;flex:1}
 
 /* Nav */
 nav{position:fixed;inset:0 0 auto 0;z-index:100;background:rgba(10,10,15,.84);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
@@ -180,7 +197,7 @@ footer .links{display:flex;gap:1.3rem;justify-content:center;flex-wrap:wrap;marg
 footer .links a{color:var(--fg2)}
 
 @media(max-width:900px){
-  .era-grid,.ent-grid,.blog-grid{grid-template-columns:1fr}
+  .era-grid,.ent-grid,.blog-grid,.what-grid{grid-template-columns:1fr}
   .moat-grid,.demos-grid{grid-template-columns:1fr}
 }
 </style>
@@ -191,13 +208,13 @@ footer .links a{color:var(--fg2)}
 <div class="wrap">
   <a href="#top" class="logo"><span>K</span>AOS</a>
   <ul>
-    <li class="hide-sm"><a href="#moat">Moat</a></li>
+    <li class="hide-sm"><a href="#start">Get started</a></li>
+    <li class="hide-sm"><a href="#session">A real session</a></li>
+    <li class="hide-sm"><a href="#moat">Why KAOS</a></li>
     <li class="hide-sm"><a href="#compare">Compare</a></li>
-    <li class="hide-sm"><a href="#attraktor">Attraktor</a></li>
     <li class="hide-sm"><a href="#examples">Examples</a></li>
     <li class="hide-sm"><a href="#enterprise">Enterprise</a></li>
     <li class="hide-sm"><a href="#changelog">Changelog</a></li>
-    <li class="hide-sm"><a href="#session">Session</a></li>
     <li class="hide-sm"><a href="#blog">Blog</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
   </ul>
@@ -207,14 +224,14 @@ footer .links a{color:var(--fg2)}
 <!-- ── Hero ── -->
 <header class="hero" id="top">
 <div class="wrap hero-inner">
-  <p class="kicker">The industry finally agreed: <a href="https://addyosmani.com/blog/agent-harness-engineering/" target="_blank" rel="noopener">the harness matters more than the model</a>.</p>
-  <h1>The harness that<br><span class="grad">proves itself.</span></h1>
-  <p class="sub">KAOS is a local-first multi-agent harness. Every agent runs in an isolated, auditable runtime backed by one SQLite file — a flight recorder for your fleet. Its memory self-tunes with use. And it's the only framework whose own mechanisms must pass <strong style="color:var(--fg)">pre-registered, falsifiable kill gates</strong> before they ship. Measured, not claimed.</p>
-  <div class="btns">
-    <a href="https://github.com/canivel/kaos" class="btn btn-primary">View on GitHub</a>
-    <a href="#moat" class="btn btn-ghost">Why it wins &darr;</a>
-  </div>
+  <h1>Run a team of AI agents.<br><span class="grad">Sandboxed. Recorded. Learning.</span></h1>
+  <p class="sub">KAOS runs swarms of AI agents on your machine. Each agent works in its own private sandbox inside a single SQLite file, every action it takes is on the record — auditing an agent is a SQL query — and the lessons that actually worked are remembered and re-ranked for next time. No cloud account, no GPU, no embeddings.</p>
   <div class="install"><span class="p">$</span><span class="c">pip install 'kaos-harness[all]' &amp;&amp; kaos demo</span></div>
+  <p style="font-size:.82rem;color:var(--fg3);margin:-1rem 0 1.6rem"><code>kaos demo</code> opens a live dashboard of a working swarm — about 30 seconds, no API keys, nothing leaves your machine.</p>
+  <div class="btns">
+    <a href="#start" class="btn btn-primary">Get started &darr;</a>
+    <a href="https://github.com/canivel/kaos" class="btn btn-ghost">View on GitHub</a>
+  </div>
   <div class="badges">
     <span class="badge v">v2.0.2</span>
     <span class="badge p">falsifiable eval</span>
@@ -239,27 +256,124 @@ footer .links a{color:var(--fg2)}
 </div>
 </header>
 
-<!-- ── The harness era ── -->
-<section id="era">
+<!-- ── What is KAOS ── -->
+<section id="whatis">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow">The harness era</div>
-    <h2>2026 is the year "harness engineering" got a name.</h2>
-    <p>KAOS has been building on this premise since v0.1 — and it answers the critique the discourse hasn't solved.</p>
+    <div class="eyebrow">What is KAOS?</div>
+    <h2>A safe place for agents to work — that gets smarter as they do.</h2>
+    <p>KAOS is not another coding agent. It's the infrastructure <em>underneath</em> agents: you bring the model (Claude, GPT, or a local one), KAOS supplies everything around it.</p>
   </div>
-  <div class="era-grid">
-    <div class="era">
-      <q>A decent model with a great harness beats a great model with a bad harness.</q>
-      <div class="who"><a href="https://addyosmani.com/blog/agent-harness-engineering/" target="_blank" rel="noopener">Addy Osmani, "Agent Harness Engineering"</a> · Apr 2026</div>
+  <div class="what-grid">
+    <div class="chk"><b>Sandboxed agents</b><span>Each agent gets its own private filesystem. Your real files are never touched until you copy results out yourself.</span></div>
+    <div class="chk"><b>Everything on the record</b><span>Every tool call, file write, and decision lands in an append-only journal. "What did the agent do, and why?" is a SQL query.</span></div>
+    <div class="chk"><b>Checkpoints &amp; time-travel</b><span>Snapshot an agent before a risky step; restore it byte-for-byte when things go wrong.</span></div>
+    <div class="chk"><b>Memory that learns</b><span>Team lessons and skills are re-ranked by real outcomes — what worked rises, what keeps failing is pruned. We call it neuroplasticity.</span></div>
+    <div class="chk"><b>Features proven, not promised</b><span>Every KAOS mechanism must survive a pass/fail kill test locked <em>before</em> its code exists. Most candidates fail; you get the survivors.</span></div>
+    <div class="chk"><b>Works with your tools</b><span>58 MCP tools for Claude Code, Cursor, or any MCP client; a CLI with <code>--json</code> everywhere; a live terminal dashboard.</span></div>
+    <div class="chk"><b>Any model, five providers</b><span>Anthropic, OpenAI-compatible, Claude Code, Claude Agent SDK, or fully-local vLLM — all behind one router.</span></div>
+    <div class="chk"><b>One file, zero services</b><span>The entire runtime — agents, files, journal, memory — is one SQLite <code>kaos.db</code>. Copy the file and you've copied everything.</span></div>
+  </div>
+</div>
+</section>
+
+<!-- ── Get started ── -->
+<section id="start">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Get started</div>
+    <h2>Three steps to your first swarm.</h2>
+    <p>The demo needs no configuration and no API keys. You connect a real model provider only when you put agents on real work.</p>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div>
+      <h3>Install and see it run</h3>
+      <pre><span class="p">$</span> pip install 'kaos-harness[all]'
+<span class="p">$</span> kaos demo</pre>
+      <p>A live dashboard of a working agent swarm, entirely local. Prefer a slim install? The base package has 5 dependencies; extras like <code>[router]</code> and <code>[mcp]</code> tell you their own install line when needed.</p>
+    </div></div>
+    <div class="step"><div class="sn">2</div><div>
+      <h3>Put agents on a real task</h3>
+      <pre><span class="p">$</span> kaos init
+<span class="p">$</span> kaos parallel -t fix   "fix the double-charge bug in payments.py" \
+               -t tests "write pytest tests proving the fix" \
+               -t review "security-review the module"</pre>
+      <p>Three agents run in parallel, each in its own sandbox. Watch them live with <code>kaos ui</code> — or skip the CLI entirely and drive KAOS from Claude Code or Cursor in natural language via MCP.</p>
+    </div></div>
+    <div class="step"><div class="sn">3</div><div>
+      <h3>Inspect, then take what's good</h3>
+      <pre><span class="p">$</span> kaos query "SELECT agent_id, tool_name, COUNT(*) FROM tool_calls GROUP BY 1,2"
+<span class="p">$</span> kaos read &lt;agent&gt; /src/payments.py &gt; payments.py</pre>
+      <p>Nothing reaches your working directory until you copy it out. The full audit trail of who did what stays in <code>kaos.db</code> forever. Here's what that looks like on a real bug ↓</p>
+    </div></div>
+  </div>
+</div>
+</section>
+
+<!-- ── A real session ── -->
+<section id="session">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">A real session</div>
+    <h2>Bug to green tests to a smarter brain.</h2>
+    <p>An actual KAOS 2.0.2 session, real model calls throughout: a payments module that double-charges on timeout retries, fixed by a swarm — then the workspace learns from it.</p>
+  </div>
+  <div class="ex-grid">
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">01</span><h3>Three agents on the bug, in parallel</h3></div>
+      <pre><code><span class="c">$ pip install 'kaos-harness[all]' && kaos init</span>
+<span class="c">$ kaos parallel \</span>
+<span class="c">    -t fix    "double-charges on timeout retry — fix with an idempotency key ..." \</span>
+<span class="c">    -t tests  "pytest tests proving the key is generated once and reused ..." \</span>
+<span class="c">    -t review "security-review beyond the retry bug ..."</span>
+
+Agent fix (<span class="s">ok</span>)    Agent tests (<span class="s">ok</span>)    Agent review (<span class="s">ok</span>)</code></pre>
     </div>
-    <div class="era">
-      <q>Anytime you find an agent makes a mistake, you engineer a solution such that the agent never makes that mistake again.</q>
-      <div class="who"><a href="https://mitchellh.com/writing/my-ai-adoption-journey" target="_blank" rel="noopener">Mitchell Hashimoto, naming "harness engineering"</a> · Feb 2026</div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">02</span><h3>Sandboxed and on the record</h3></div>
+      <pre><code><span class="c">$ kaos query "SELECT a.name, t.tool_name, COUNT(*) FROM agents a
+    JOIN tool_calls t ON t.agent_id=a.agent_id GROUP BY 1,2"</span>
+fix     fs_write x1   tests  fs_read x1, fs_write x1   review  fs_mkdir x1, fs_write x1
+
+<span class="c">$ ls                        # your working directory: untouched</span>
+kaos.db  kaos.yaml  payments.py
+
+<span class="c">$ kaos read &lt;fix&gt; /src/payments.py &gt; payments.py
+$ kaos read &lt;tests&gt; /tests/test_payments.py &gt; tests/test_payments.py
+$ pytest tests/ -q</span>
+<span class="s">6 passed in 0.09s</span>          <span class="c"># agent tests, green against the agent fix</span></code></pre>
     </div>
-    <div class="era gap">
-      <q>What's missing from the story: verification that the change actually helped.</q>
-      <div class="who">The open critique of harness engineering (<a href="https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html" target="_blank" rel="noopener">Böckeler, martinfowler.com</a>, paraphrased) — <strong style="color:var(--fg)">exactly the gap KAOS closes</strong></div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">03</span><h3>Then the brain learns</h3></div>
+      <pre><code><span class="c"># sprints later: 17 skill outcomes, 6 recalls, 12 hebbian edges of telemetry</span>
+<span class="c">$ kaos dream consolidate --apply</span>
+{ "promoted": 1, "pruned": 1, <span class="hl">"applied": 2</span> }
+
+<span class="c"># the 6×-retrieved lesson became a skill; the 1/6 flaky skill is hidden:</span>
+<span class="c">$ kaos skills search "deploy service"</span>
+deploy-canary-checklist     <span class="c"># only the one that actually works (5/5)</span>
+
+<span class="c">$ kaos memory search "timeout retry"</span>
+payment-retry-idempotency → <span class="s">"client timeout != server failure. Fix =
+Idempotency-Key generated once per logical charge, reused across retries."</span></code></pre>
     </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">04</span><h3>Failures stay honest</h3></div>
+      <pre><code><span class="c"># an earlier run of this same session — one agent stalled:</span>
+<span class="c">$ kaos logs 01M1FG26...</span>
+agent_fail | <span class="hl">{"error": "claude produced no output for 60.0s"}</span>
+
+<span class="c"># exact cause on the record → became the 2.0.2 agent_sdk fix
+# (isolated in-process sessions — no CLI contention, no stalls).
+# and the one recall miss we hit is filed, with a probe sketch:</span>
+<span class="c">$ kaos memory search "duplicate processing"</span>
+<span class="hl">no match</span>   <span class="c"># FTS is literal — measured, disclosed, issue #42</span></code></pre>
+    </div>
+
   </div>
 </div>
 </section>
@@ -268,9 +382,9 @@ footer .links a{color:var(--fg2)}
 <section id="moat" class="moat">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow">The moat</div>
+    <div class="eyebrow">Why KAOS</div>
     <h2>Four things no other harness combines.</h2>
-    <p>Each pillar is verifiable in the repo today — and each claim below was checked against the primary docs of nine competing frameworks (July 2026).</p>
+    <p>Each pillar is verifiable in the repo today — and each claim below was checked against the primary docs of the competing frameworks in the table above.</p>
   </div>
   <div class="moat-grid">
     <div class="pillar">
@@ -307,20 +421,21 @@ footer .links a{color:var(--fg2)}
   <div class="head">
     <div class="eyebrow">Honest comparison</div>
     <h2>Where each harness stands.</h2>
-    <p>Verified from primary docs, July 2026. Competitors' real strengths are conceded below the table — a comparison that hides them wouldn't survive readers who use these tools.</p>
+    <p>Most tools below are coding agents or orchestration graphs. KAOS is the layer <em>underneath</em> — the sandbox, audit trail, and shared memory their agents can run on top of. Where we overlap, here's the honest picture, verified from primary docs (Jul–Sep 2026); competitors' real strengths are conceded below the table.</p>
   </div>
   <div class="cmp-scroll">
   <table class="cmp">
     <thead><tr>
       <th>Framework</th>
-      <th>Pre-registered falsifiable gates</th>
-      <th>Single-file audit journal + time-travel</th>
-      <th>Usage-tuned retrieval</th>
-      <th>Local-first, no default phone-home</th>
+      <th>Features proven before shipping</th>
+      <th>Full audit trail + time-travel</th>
+      <th>Memory that learns from outcomes</th>
+      <th>Runs fully local</th>
       <th>License</th>
     </tr></thead>
     <tbody>
-      <tr class="kaos"><td>KAOS</td><td class="y">✓ hash-locked, self-falsifying</td><td class="y">✓ VFS + journal + checkpoints, one SQLite file</td><td class="y">✓ measured, n disclosed</td><td class="y">✓ incl. local models</td><td>MIT</td></tr>
+      <tr class="kaos"><td>KAOS</td><td class="y">✓ hash-locked, self-falsifying kill gates</td><td class="y">✓ VFS + journal + checkpoints, one SQLite file</td><td class="y">✓ measured, n disclosed</td><td class="y">✓ incl. local models</td><td>MIT</td></tr>
+      <tr><td><a href="https://pi.dev">Pi</a></td><td class="n">—</td><td class="part">◐ JSONL session files + branching; no tool-call journal or checkpoints</td><td class="n">—</td><td class="y">✓ incl. llama.cpp</td><td>MIT</td></tr>
       <tr><td><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a></td><td class="n">—</td><td class="n">— <sup>1</sup></td><td class="part">◐ agent-curated learning loop</td><td class="y">✓ (hosted tiers optional)</td><td>MIT</td></tr>
       <tr><td><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph</a></td><td class="n">— eval via LangSmith SaaS</td><td class="part">◐ checkpoint time-travel; no event journal</td><td class="n">—</td><td class="y">✓ (platform is SaaS)</td><td>MIT</td></tr>
       <tr><td><a href="https://adk.dev/evaluate/">Google ADK</a></td><td class="part">◐ eval thresholds, no pre-registration</td><td class="n">—</td><td class="n">—</td><td class="y">✓ (Vertex is the upsell)</td><td>Apache-2.0</td></tr>
@@ -332,7 +447,7 @@ footer .links a{color:var(--fg2)}
     </tbody>
   </table>
   </div>
-  <p class="cmp-notes">✓ shipped in-framework · ◐ partial or different approach · — not found in primary docs as of July 2026 (corrections welcome — open an issue). <sup>1</sup> Hermes documents command-approval and container isolation; no append-only audit journal or checkpoint/restore appears in its docs. <strong style="color:var(--fg2)">Credit where due:</strong> LangGraph's <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpoint time-travel</a>, ADK's <a href="https://adk.dev/evaluate/">eval thresholds</a>, smolagents' <a href="https://huggingface.co/docs/smolagents/tutorials/secure_code_execution">sandboxed executors</a>, Letta's <a href="https://docs.letta.com/guides/agents/architectures/sleeptime/">sleep-time memory agents</a>, and Hermes' ecosystem reach are genuinely good. KAOS's bet is different: <em>verification and auditability are the product, not features.</em></p>
+  <p class="cmp-notes">✓ shipped in-framework · ◐ partial or different approach · — not found in primary docs as of Jul–Sep 2026 (corrections welcome — open an issue). <sup>1</sup> Hermes documents command-approval and container isolation; no append-only audit journal or checkpoint/restore appears in its docs. <strong style="color:var(--fg2)">Credit where due:</strong> Pi's <a href="https://pi.dev/docs/latest/sessions">session trees</a> and minimal self-extensible core are excellent — KAOS is designed to run <em>underneath</em> a Pi or Claude Code workflow, not to replace it. Likewise LangGraph's <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpoint time-travel</a>, ADK's <a href="https://adk.dev/evaluate/">eval thresholds</a>, smolagents' <a href="https://huggingface.co/docs/smolagents/tutorials/secure_code_execution">sandboxed executors</a>, Letta's <a href="https://docs.letta.com/guides/agents/architectures/sleeptime/">sleep-time memory agents</a>, and Hermes' ecosystem reach are genuinely good. KAOS's bet is different: <em>verification and auditability are the product, not features.</em></p>
 </div>
 </section>
 
@@ -453,74 +568,32 @@ kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 
 </div>
 </section>
 
-<!-- ── Enterprise ── -->
-<section id="session">
+<!-- ── The harness era ── -->
+<section id="era">
 <div class="wrap">
   <div class="head">
-    <div class="eyebrow">A real session</div>
-    <h2>Bug to green tests to a smarter brain.</h2>
-    <p>An actual KAOS 2.0.2 session, real model calls throughout: a payments module that double-charges on timeout retries, fixed by a swarm — then the workspace learns from it.</p>
+    <div class="eyebrow">The harness era</div>
+    <h2>2026 is the year "harness engineering" got a name.</h2>
+    <p>KAOS has been building on this premise since v0.1 — and it answers the critique the discourse hasn't solved.</p>
   </div>
-  <div class="ex-grid">
-
-    <div class="ex">
-      <div class="ex-h"><span class="n">01</span><h3>Three agents on the bug, in parallel</h3></div>
-      <pre><code><span class="c">$ pip install 'kaos-harness[all]' && kaos init</span>
-<span class="c">$ kaos parallel \</span>
-<span class="c">    -t fix    "double-charges on timeout retry — fix with an idempotency key ..." \</span>
-<span class="c">    -t tests  "pytest tests proving the key is generated once and reused ..." \</span>
-<span class="c">    -t review "security-review beyond the retry bug ..."</span>
-
-Agent fix (<span class="s">ok</span>)    Agent tests (<span class="s">ok</span>)    Agent review (<span class="s">ok</span>)</code></pre>
+  <div class="era-grid">
+    <div class="era">
+      <q>A decent model with a great harness beats a great model with a bad harness.</q>
+      <div class="who"><a href="https://addyosmani.com/blog/agent-harness-engineering/" target="_blank" rel="noopener">Addy Osmani, "Agent Harness Engineering"</a> · Apr 2026</div>
     </div>
-
-    <div class="ex">
-      <div class="ex-h"><span class="n">02</span><h3>Sandboxed and on the record</h3></div>
-      <pre><code><span class="c">$ kaos query "SELECT a.name, t.tool_name, COUNT(*) FROM agents a
-    JOIN tool_calls t ON t.agent_id=a.agent_id GROUP BY 1,2"</span>
-fix     fs_write x1   tests  fs_read x1, fs_write x1   review  fs_mkdir x1, fs_write x1
-
-<span class="c">$ ls                        # your working directory: untouched</span>
-kaos.db  kaos.yaml  payments.py
-
-<span class="c">$ kaos read &lt;fix&gt; /src/payments.py &gt; payments.py
-$ kaos read &lt;tests&gt; /tests/test_payments.py &gt; tests/test_payments.py
-$ pytest tests/ -q</span>
-<span class="s">6 passed in 0.09s</span>          <span class="c"># agent tests, green against the agent fix</span></code></pre>
+    <div class="era">
+      <q>Anytime you find an agent makes a mistake, you engineer a solution such that the agent never makes that mistake again.</q>
+      <div class="who"><a href="https://mitchellh.com/writing/my-ai-adoption-journey" target="_blank" rel="noopener">Mitchell Hashimoto, naming "harness engineering"</a> · Feb 2026</div>
     </div>
-
-    <div class="ex">
-      <div class="ex-h"><span class="n">03</span><h3>Then the brain learns</h3></div>
-      <pre><code><span class="c"># sprints later: 17 skill outcomes, 6 recalls, 12 hebbian edges of telemetry</span>
-<span class="c">$ kaos dream consolidate --apply</span>
-{ "promoted": 1, "pruned": 1, <span class="hl">"applied": 2</span> }
-
-<span class="c"># the 6×-retrieved lesson became a skill; the 1/6 flaky skill is hidden:</span>
-<span class="c">$ kaos skills search "deploy service"</span>
-deploy-canary-checklist     <span class="c"># only the one that actually works (5/5)</span>
-
-<span class="c">$ kaos memory search "timeout retry"</span>
-payment-retry-idempotency → <span class="s">"client timeout != server failure. Fix =
-Idempotency-Key generated once per logical charge, reused across retries."</span></code></pre>
+    <div class="era gap">
+      <q>What's missing from the story: verification that the change actually helped.</q>
+      <div class="who">The open critique of harness engineering (<a href="https://martinfowler.com/articles/exploring-gen-ai/harness-engineering-memo.html" target="_blank" rel="noopener">Böckeler, martinfowler.com</a>, paraphrased) — <strong style="color:var(--fg)">exactly the gap KAOS closes</strong></div>
     </div>
-
-    <div class="ex">
-      <div class="ex-h"><span class="n">04</span><h3>Failures stay honest</h3></div>
-      <pre><code><span class="c"># an earlier run of this same session — one agent stalled:</span>
-<span class="c">$ kaos logs 01M1FG26...</span>
-agent_fail | <span class="hl">{"error": "claude produced no output for 60.0s"}</span>
-
-<span class="c"># exact cause on the record → became the 2.0.2 agent_sdk fix
-# (isolated in-process sessions — no CLI contention, no stalls).
-# and the one recall miss we hit is filed, with a probe sketch:</span>
-<span class="c">$ kaos memory search "duplicate processing"</span>
-<span class="hl">no match</span>   <span class="c"># FTS is literal — measured, disclosed, issue #42</span></code></pre>
-    </div>
-
   </div>
 </div>
 </section>
 
+<!-- ── Enterprise ── -->
 <section id="enterprise">
 <div class="wrap">
   <div class="head">
