@@ -7,7 +7,7 @@
       "name": "kaos",
       "source": "./plugins/claude-code",
       "description": "Flight recorder + team memory for Claude Code — sessions journaled into one SQLite file, lessons injected at session start. Local-first, no embeddings.",
-      "version": "2.1.0"
+      "version": "2.1.1"
     }
   ]
 }

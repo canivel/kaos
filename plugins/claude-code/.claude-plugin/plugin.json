@@ -1,7 +1,7 @@
 {
   "name": "kaos",
   "description": "Flight recorder + team memory for Claude Code: every session is journaled into kaos.db (audit = SQL) and relevant lessons are injected at session start. Local-first, no embeddings, no cloud.",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": { "name": "Danilo Canivel" },
   "homepage": "https://canivel.github.io/kaos/",
   "repository": "https://github.com/canivel/kaos",

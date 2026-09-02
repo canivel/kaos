@@ -2165,10 +2165,25 @@ def memory():
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.pass_context
 def memory_write(ctx, agent_id: str, content: str, mem_type: str, key: str, db: str):
-    """Write a memory entry for AGENT_ID with CONTENT."""
+    """Write a memory entry for AGENT_ID with CONTENT.
+
+    AGENT_ID may also be an agent *name* (e.g. ``claude-code`` or ``me``); if no
+    agent has that id or name, a lightweight one is created so a human can save
+    a lesson without spawning anything first.
+    """
     from kaos.memory import MemoryStore
     afs = _get_afs(db)
     try:
+        row = afs.conn.execute("SELECT agent_id FROM agents WHERE agent_id = ?", (agent_id,)).fetchone()
+        if row is None:
+            row = afs.conn.execute(
+                "SELECT agent_id FROM agents WHERE name = ? ORDER BY created_at DESC LIMIT 1", (agent_id,)
+            ).fetchone()
+            if row is None:
+                agent_id = afs.spawn(agent_id, config={"role": "memory-author"})
+                afs.complete(agent_id)
+            else:
+                agent_id = row[0]
         mem = MemoryStore(afs.conn)
         mid = mem.write(agent_id=agent_id, content=content, type=mem_type, key=key)
         result = {"memory_id": mid, "agent_id": agent_id, "type": mem_type, "key": key}

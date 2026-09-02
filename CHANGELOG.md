@@ -2,6 +2,16 @@
 
 All notable changes to KAOS are documented here.
 
+## [2.1.1] - 2026-09-02
+
+- **`kaos memory write <name> …` no longer crashes with a foreign-key error** when the
+  first argument is not an existing agent id. It now accepts an agent *name* and creates a
+  lightweight agent on first use — which is exactly what the plugin's `/kaos:recall` skill
+  tells users to run (`kaos memory write claude-code "<lesson>"`). Found by the 2.1.0
+  end-to-end validation: a real Claude Code session with the plugin quoted the injected
+  team lesson verbatim, but the seed step written the way the skill describes had failed.
+- Marketplace manifest gains a description (`claude plugin validate` warning).
+
 ## [2.1.0] - 2026-09-02
 
 **KAOS attaches to the tools you already run — and publishes its numbers, including the

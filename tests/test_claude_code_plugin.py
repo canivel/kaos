@@ -137,6 +137,18 @@ def test_journal_append_cli(db):
     assert conn.execute("SELECT COUNT(*) FROM events WHERE event_type IN ('session_start','tool_use')").fetchone()[0] == 2
 
 
+def test_memory_write_accepts_a_name_and_creates_the_agent(db):
+    # what plugins/claude-code/skills/recall/SKILL.md tells users to run
+    r = CliRunner().invoke(cli, ["--json", "memory", "write", "claude-code", "lesson one", "-t", "insight", "--db", db])
+    assert r.exit_code == 0, r.output
+    r2 = CliRunner().invoke(cli, ["--json", "memory", "write", "claude-code", "lesson two", "--db", db])
+    assert r2.exit_code == 0, r2.output
+    assert json.loads(r.output)["agent_id"] == json.loads(r2.output)["agent_id"]  # reused by name
+    conn = sqlite3.connect(db)
+    assert conn.execute("SELECT COUNT(*) FROM agents WHERE name='claude-code'").fetchone()[0] == 1
+    assert conn.execute("SELECT COUNT(*) FROM memory WHERE content LIKE 'lesson%'").fetchone()[0] == 2
+
+
 def test_memory_search_inject_format(db):
     r = CliRunner().invoke(cli, ["memory", "search", '"payment"', "--format", "inject", "--token-cap", "200", "--db", db])
     assert r.exit_code == 0, r.output
