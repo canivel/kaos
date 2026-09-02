@@ -197,6 +197,7 @@ footer .links a{color:var(--fg2)}
     <li class="hide-sm"><a href="#examples">Examples</a></li>
     <li class="hide-sm"><a href="#enterprise">Enterprise</a></li>
     <li class="hide-sm"><a href="#changelog">Changelog</a></li>
+    <li class="hide-sm"><a href="#session">Session</a></li>
     <li class="hide-sm"><a href="#blog">Blog</a></li>
     <li><a href="https://github.com/canivel/kaos" class="nav-cta">GitHub</a></li>
   </ul>
@@ -453,6 +454,73 @@ kaos query <span class="s">"SELECT tool_name, COUNT(*) FROM tool_calls GROUP BY 
 </section>
 
 <!-- ── Enterprise ── -->
+<section id="session">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">A real session</div>
+    <h2>Bug to green tests to a smarter brain.</h2>
+    <p>An actual KAOS 2.0.2 session, real model calls throughout: a payments module that double-charges on timeout retries, fixed by a swarm — then the workspace learns from it.</p>
+  </div>
+  <div class="ex-grid">
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">01</span><h3>Three agents on the bug, in parallel</h3></div>
+      <pre><code><span class="c">$ pip install 'kaos-harness[all]' && kaos init</span>
+<span class="c">$ kaos parallel \</span>
+<span class="c">    -t fix    "double-charges on timeout retry — fix with an idempotency key ..." \</span>
+<span class="c">    -t tests  "pytest tests proving the key is generated once and reused ..." \</span>
+<span class="c">    -t review "security-review beyond the retry bug ..."</span>
+
+Agent fix (<span class="s">ok</span>)    Agent tests (<span class="s">ok</span>)    Agent review (<span class="s">ok</span>)</code></pre>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">02</span><h3>Sandboxed and on the record</h3></div>
+      <pre><code><span class="c">$ kaos query "SELECT a.name, t.tool_name, COUNT(*) FROM agents a
+    JOIN tool_calls t ON t.agent_id=a.agent_id GROUP BY 1,2"</span>
+fix     fs_write x1   tests  fs_read x1, fs_write x1   review  fs_mkdir x1, fs_write x1
+
+<span class="c">$ ls                        # your working directory: untouched</span>
+kaos.db  kaos.yaml  payments.py
+
+<span class="c">$ kaos read &lt;fix&gt; /src/payments.py &gt; payments.py
+$ kaos read &lt;tests&gt; /tests/test_payments.py &gt; tests/test_payments.py
+$ pytest tests/ -q</span>
+<span class="s">6 passed in 0.09s</span>          <span class="c"># agent tests, green against the agent fix</span></code></pre>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">03</span><h3>Then the brain learns</h3></div>
+      <pre><code><span class="c"># sprints later: 17 skill outcomes, 6 recalls, 12 hebbian edges of telemetry</span>
+<span class="c">$ kaos dream consolidate --apply</span>
+{ "promoted": 1, "pruned": 1, <span class="hl">"applied": 2</span> }
+
+<span class="c"># the 6×-retrieved lesson became a skill; the 1/6 flaky skill is hidden:</span>
+<span class="c">$ kaos skills search "deploy service"</span>
+deploy-canary-checklist     <span class="c"># only the one that actually works (5/5)</span>
+
+<span class="c">$ kaos memory search "timeout retry"</span>
+payment-retry-idempotency → <span class="s">"client timeout != server failure. Fix =
+Idempotency-Key generated once per logical charge, reused across retries."</span></code></pre>
+    </div>
+
+    <div class="ex">
+      <div class="ex-h"><span class="n">04</span><h3>Failures stay honest</h3></div>
+      <pre><code><span class="c"># an earlier run of this same session — one agent stalled:</span>
+<span class="c">$ kaos logs 01M1FG26...</span>
+agent_fail | <span class="hl">{"error": "claude produced no output for 60.0s"}</span>
+
+<span class="c"># exact cause on the record → became the 2.0.2 agent_sdk fix
+# (isolated in-process sessions — no CLI contention, no stalls).
+# and the one recall miss we hit is filed, with a probe sketch:</span>
+<span class="c">$ kaos memory search "duplicate processing"</span>
+<span class="hl">no match</span>   <span class="c"># FTS is literal — measured, disclosed, issue #42</span></code></pre>
+    </div>
+
+  </div>
+</div>
+</section>
+
 <section id="enterprise">
 <div class="wrap">
   <div class="head">
