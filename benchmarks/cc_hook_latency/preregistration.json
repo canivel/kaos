@@ -1,0 +1,20 @@
+{
+  "benchmark": "cc-hook-latency-v2",
+  "registered": "2026-09-02",
+  "supersedes": "cc-hook-latency-v1 (lock 2eff0e07…; result kept in results/kaos_v2.1.0_v1-instrument-defect.json). v1 REJECTed on G3 because its seed corpus contained no memory that the session-start hint (cwd basename 'payments-service') could match, so no run could inject regardless of hook quality — an instrument defect, not a mechanism result. v2 fixes the instrument only; gates and thresholds are unchanged.",
+  "hypothesis": "The kaos-hook entrypoint (no click/rich/yaml/ulid-py imports) keeps Claude Code hook latency inside budget as a cold process against a 10,000-agent / 50,000-memory kaos.db: p95 <= 400 ms for session-start and p95 <= 200 ms for prompt with memory injection enabled.",
+  "method": {
+    "seed": "deterministic: 10,000 agents, 5 memories each, random.Random(7); 1% of memories additionally mention the probe project's words ('payments service') so the session-start hint has something to recall — mirrors a team that has notes about the project it is working in",
+    "trials": 50,
+    "measure": "wall-clock of a fresh `kaos-hook <cmd> --db <seeded db>` subprocess with a realistic JSON payload on stdin; python startup included, 5 warm-up runs discarded",
+    "prompt_inject": "enabled via KAOS_HOOK_PROMPT_INJECT=1 so the prompt arm measures the expensive path",
+    "machine": "recorded in results (platform, python, db mount)"
+  },
+  "gates": {
+    "G1_session_start": {"kill": true, "pass_if": "p95_session_start_ms <= 400"},
+    "G2_prompt": {"kill": true, "pass_if": "p95_prompt_ms <= 200"},
+    "G3_never_blocks": {"kill": true, "pass_if": "every trial exits 0 and the session-start trials print a <kaos-memory> block"}
+  },
+  "verdict_rule": "ACCEPT if all gates pass; REJECT if G1 or G3 fails; REJECT:prompt if only G2 fails — then the UserPromptSubmit hook stays off by default and only journals; VOID if kaos-hook is not on PATH or the seed fails.",
+  "no_retune": "thresholds are final; a REJECT is published, not re-run with looser gates"
+}

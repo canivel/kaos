@@ -1,6 +1,6 @@
 [project]
 name = "kaos-harness"
-version = "2.0.2"
+version = "2.1.0"
 description = "KAOS — Kernel for Agent Orchestration & Sandboxing. Isolated, auditable, portable agent runtimes backed by SQLite."
 readme = "README.md"
 license = "MIT"
@@ -13,7 +13,6 @@ requires-python = ">=3.11"
 # Everything heavier lives behind an extra — see [project.optional-dependencies].
 dependencies = [
     "click>=8.1",
-    "ulid-py>=1.1",
     "zstandard>=0.22",
     "pyyaml>=6.0",
     "rich>=13.0",
@@ -70,6 +69,7 @@ Changelog = "https://github.com/canivel/kaos/blob/main/CHANGELOG.md"
 
 [project.scripts]
 kaos = "kaos.cli.main:main"
+kaos-hook = "kaos.hook:main"
 
 [build-system]
 requires = ["hatchling"]

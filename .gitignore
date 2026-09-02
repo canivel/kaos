@@ -31,3 +31,6 @@ paper/*.fdb_latexmk
 
 # local config — kaos setup generates it; kaos.yaml.example is the template
 kaos.yaml
+
+# Claude Code local settings + hook state (never commit)
+.claude/

@@ -1,0 +1,30 @@
+{
+  "benchmark": "cc-hook-latency-v1",
+  "verdict": "REJECT: G3 hook failed or no injection",
+  "lock_sha256": "2eff0e07a8e2f09f8ede1fd66d2f4b66dce626eedc1ace2f82512bde1c286383",
+  "trials": 50,
+  "seed_s": 1.0,
+  "session_start_ms": {
+    "p50": 195.5,
+    "p95": 222.8,
+    "min": 176.4
+  },
+  "prompt_ms": {
+    "p50": 249.1,
+    "p95": 273.7,
+    "min": 226.1
+  },
+  "gates": {
+    "G1_session_start": true,
+    "G2_prompt": false,
+    "G3_never_blocks": false
+  },
+  "injected_blocks": 0,
+  "machine": {
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "db_dir": "/tmp/cc-hook-lat-27wmy138",
+    "note": "WSL2 /tmp on this dev box; CI runner numbers will differ"
+  },
+  "timestamp": "2026-09-02T16:25:46Z"
+}

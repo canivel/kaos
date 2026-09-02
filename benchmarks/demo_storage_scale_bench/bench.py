@@ -86,7 +86,7 @@ def populate(db_path: str, n_agents: int, *, files_per=3, mems_per=5,
     import hashlib
     import sqlite3
 
-    import ulid
+    from kaos._ids import new_ulid
 
     rng = random.Random(seed)
     # Ensure schema exists via a normal Kaos open, then seed on a raw conn.
@@ -137,7 +137,7 @@ def populate(db_path: str, n_agents: int, *, files_per=3, mems_per=5,
             mem_rows.clear(); tc_rows.clear()
 
         for i in range(n_agents):
-            aid = str(ulid.new())
+            aid = new_ulid()
             agent_ids.append(aid)
             agents_rows.append((aid, f"agent-{i}", "{}"))
             for f in range(files_per):
@@ -149,7 +149,7 @@ def populate(db_path: str, n_agents: int, *, files_per=3, mems_per=5,
                 mem_rows.append((aid, rng.choice(("observation", "result", "insight")),
                                  None, _sentence(rng, 14)))
             for _ in range(tools_per):
-                tc_rows.append((str(ulid.new()), aid, "search",
+                tc_rows.append((new_ulid(), aid, "search",
                                 json.dumps({"q": _sentence(rng, 4)})))
             if (i + 1) % batch == 0:
                 _flush()

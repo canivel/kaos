@@ -8,8 +8,7 @@ import threading
 from pathlib import PurePosixPath
 from typing import Any
 
-import ulid
-
+from kaos._ids import new_ulid
 from kaos.blobs import BlobStore
 from kaos.checkpoints import CheckpointManager
 from kaos.events import EventJournal
@@ -101,7 +100,7 @@ class Kaos:
 
         Retries on OperationalError (database locked) to handle concurrent spawns.
         """
-        agent_id = str(ulid.new())
+        agent_id = new_ulid()
         for attempt in range(3):
             try:
                 self.conn.execute(
@@ -525,7 +524,7 @@ class Kaos:
         parent_call_id: str | None = None,
     ) -> str:
         """Log a tool call. Returns call_id."""
-        call_id = str(ulid.new())
+        call_id = new_ulid()
         self.conn.execute(
             "INSERT INTO tool_calls (call_id, agent_id, tool_name, input, status, parent_call_id) "
             "VALUES (?, ?, ?, ?, 'pending', ?)",

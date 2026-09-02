@@ -1,0 +1,25 @@
+name: kaos-eval
+
+# Dogfood: every release runs the pre-registered benchmarks through the
+# same composite action anyone else can `uses: canivel/kaos@v2`.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      benchmarks:
+        description: "Comma-separated benchmark names"
+        default: "prg,longmemeval,afb"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          benchmarks: ${{ github.event.inputs.benchmarks || 'prg,longmemeval,afb' }}

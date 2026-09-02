@@ -1,22 +1,53 @@
-# KAOS — the harness that proves itself
+# KAOS — sandboxed AI agents that remember what worked
 
-Run fleets of AI agents locally — each one isolated, auditable, checkpointable, and on a live dashboard. The whole runtime is one SQLite file.
+Run teams of AI agents on your machine. Each agent works in its own sandbox inside one SQLite file, every action it takes is on the record (auditing an agent is a SQL query), and the lessons that actually worked come back next time. No cloud account, no GPU, no embeddings.
 
 ```bash
-pip install 'kaos-harness[all]'    # Python 3.11+
-kaos demo                          # live dashboard with an example fleet — no API keys needed
+pip install kaos-harness && kaos demo --print      # ~2 s · no API keys · writes nothing to your directory
 ```
 
+```
+  KAOS · local-first agent harness · no keys · no cloud · MIT
+  ──────────────────────────────────────────────────────────────────
+  Seeded 2,000 agents × 25 memories = 50,000 entries in a temp SQLite file   1.1 s
+
+  [1/3] Cross-agent memory search      query: "payment" OR "retry" OR "idempotency"
+    #720    observation agent-0028 Payment duplicate processing in reporting: root cause traced; fix = Idempoten…
+    #954    skill       agent-0038 Payment duplicate processing in checkout: root cause traced; fix = Idempotenc…
+    #1058   insight     agent-0042 Payment duplicate processing in refunds: root cause traced; fix = Idempotency…
+    50,000 entries searched · p95 15.0 ms over 20 runs · measured now, not quoted
+
+  [2/3] The audit trail is a table
+    started_at               agent      tool      status   input
+    2026-09-02T16:30:11.864  fix-agent  fs_read   success  {"path": "/src/payments.py"}
+    2026-09-02T16:30:11.864  fix-agent  fs_write  success  {"path": "/src/payments.py"}
+    2026-09-02T16:30:11.864  fix-agent  fs_write  success  {"path": "/tests/test_payments.py"}
+    SELECT * FROM tool_calls WHERE agent_id = ?   — plain SQL, forever
+
+  [3/3] Plug it into Claude Code
+    claude plugin marketplace add canivel/kaos   →   /plugin install kaos@kaos
+    or:  pip install kaos-harness && kaos connect claude-code
+```
+
+**Use it from Claude Code** — a flight recorder and team memory for every session you already run:
+
 ```bash
-kaos parallel \
-  -t security "find vulnerabilities in auth.py" \
-  -t tests    "write unit tests" \
-  -t docs     "update API docs"    # three isolated agents, one Gantt timeline
+claude plugin marketplace add canivel/kaos
+/plugin install kaos@kaos          # sessions journaled into kaos.db; team lessons recalled at session start
+```
+
+**Or run your own swarm** — the live dashboard needs no keys either:
+
+```bash
+pip install 'kaos-harness[all]' && kaos demo      # dashboard with an example fleet
+kaos parallel -t security "find vulnerabilities in auth.py" \
+              -t tests    "write unit tests" \
+              -t docs     "update API docs"      # three isolated agents, one Gantt timeline
 ```
 
 ![KAOS — parallel agents, Gantt dashboard, live events](docs/demos/kaos_03_parallel_agents.gif)
 
-[![Version](https://img.shields.io/badge/version-2.0.2-blueviolet)]()
+[![Version](https://img.shields.io/badge/version-2.1.0-blueviolet)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21533588.svg)](https://doi.org/10.5281/zenodo.21533588)

@@ -2,6 +2,50 @@
 
 All notable changes to KAOS are documented here.
 
+## [2.1.0] - 2026-09-02
+
+**KAOS attaches to the tools you already run — and publishes its numbers, including the
+ones it failed.** Everything here is M1–M6 of `docs/roadmap/v2.1-stars.md`, a roadmap
+produced by running KAOS on its own growth question.
+
+- **Claude Code plugin** — `claude plugin marketplace add canivel/kaos` then
+  `/plugin install kaos@kaos`. Every session becomes an auditable agent
+  (`claude-code:<session>`) in `kaos.db`: SessionStart injects weighted-ranked team
+  memory, PostToolUse/Stop/SessionEnd journal every tool call and turn (async), the
+  58-tool MCP server auto-registers, `/kaos:recall` searches memory. No-marketplace
+  path: `kaos connect claude-code` (writes `.claude/settings.json` + `.mcp.json`, idempotent).
+- **`kaos-hook`** — new dependency-light entrypoint the hooks call; never blocks a session.
+  **Pre-registered latency probe (`benchmarks/cc_hook_latency`) verdict: `REJECT:prompt`** —
+  session-start p95 241 ms passed its 400 ms gate, prompt-time recall p95 275 ms failed
+  its 200 ms gate, so the `UserPromptSubmit` hook journals only and injects memory off by
+  default (`kaos connect claude-code --prompt-inject` to enable). The v1 probe's
+  instrument defect is kept on record.
+- **`kaos journal append`** — record external sessions' events (what the Pi extension and
+  the hooks use). **`kaos memory search --format inject --token-cap N`** — compact context
+  block; raw FTS5 syntax errors (hyphens, colons) now fall back to a sanitized query
+  instead of crashing.
+- **`kaos demo --print`** — the terminal aha: seeds 50,000 memories in a temp file, runs a
+  real search and prints the measured p95 (never a quoted number), shows the audit table,
+  exits in ~2 s, writes nothing to your directory. It is now the README's first screen.
+- **ulid-py removed** — `import ulid` cost 216 ms per CLI start; `kaos/_ids.py` generates
+  format-identical ULIDs. Base install is 4 dependencies.
+- **Benchmarks, all hash-locked before running, results committed as they came:**
+  - `benchmarks/prg` (Paraphrase Recall Gap, owns issue #42): instrument ACCEPT; paraphrase
+    miss rate **100 %** with the CLI default query, 86 % with OR-joined terms.
+  - `benchmarks/longmemeval` (split-reported, S set, 500 questions): verbatim R@5 **0.991**,
+    paraphrase **0.965**, aggregate 0.976 at 0.9 ms p95 — with the README explaining why a
+    BM25-class retriever is expected to be strong at S scale and what this does *not* claim.
+  - `benchmarks/afb` (Agent Forensics Bench v1): checkpoint fidelity 100 %, journal
+    completeness 100 %, isolation 0 leaks, replay deterministic, recovery overhead 8 % —
+    and **REJECT on fault localization** (median 9.5 entries vs ≤ 5): the critical-step
+    localizer's "earliest write before the first error" heuristic points at session
+    set-up. Published as found; a fix must pass the same lock.
+- **`kaos-eval` GitHub Action** (`action.yml`, Marketplace-ready) + `.github/workflows/kaos-eval.yml`
+  run the benchmarks on every release and fail on REJECT/VOID — so the next release
+  fails until the localizer is fixed. That is the discipline working.
+- **`integrations/pi-kaos`** — Pi extension (TypeScript, shells to the same CLI verbs);
+  `contrib/plugin-template` + `CONTRIBUTING.md` + five queued good-first-issues.
+
 ## [2.0.2] - 2026-09-01
 
 **`agent_sdk` provider actually works now — tool-calling + session isolation (red-first).**

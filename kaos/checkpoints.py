@@ -6,7 +6,7 @@ import json
 import sqlite3
 from typing import Any
 
-import ulid
+from kaos._ids import new_ulid
 
 
 class CheckpointManager:
@@ -31,7 +31,7 @@ class CheckpointManager:
         metadata: dict[str, Any] | None = None,
     ) -> str:
         """Create a checkpoint capturing the agent's current file and state snapshots."""
-        checkpoint_id = str(ulid.new())
+        checkpoint_id = new_ulid()
 
         # Capture file manifest
         files = self.conn.execute(

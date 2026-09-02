@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import os
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -1006,13 +1007,20 @@ def ui(db: str, port: int, host: str, no_browser: bool):
 @click.option("--port", default=8765, help="UI server port")
 @click.option("--host", default="127.0.0.1", help="UI server host")
 @click.option("--no-browser", is_flag=True, default=False, help="Don't open browser automatically")
-def demo(port: int, host: str, no_browser: bool):
+@click.option("--print", "print_only", is_flag=True, default=False,
+              help="Terminal-only aha: seed a temporary db, run a real search, print one "
+                   "screen with measured numbers, exit. No browser, nothing written here.")
+def demo(port: int, host: str, no_browser: bool, print_only: bool):
     """Seed a demo database and open the live dashboard.
 
     Creates demo.db with realistic agent data (code review swarm, parallel
     refactors, failed migrations) so you can explore the UI without running
-    real agents.
+    real agents. With --print, prints a one-screen terminal demo instead.
     """
+    if print_only:
+        from kaos.demo_print import run_print
+        run_print(out=lambda s: click.echo(s))
+        return
     import random
     import threading
     import time as _time
@@ -2083,6 +2091,63 @@ def mh_knowledge(ctx, db):
         afs.close()
 
 
+# ── Journal + connect (kaos journal append / kaos connect) ────────────────
+
+@cli.group()
+def journal():
+    """Append-only event journal — record events from external sessions
+    (Claude Code, Pi) so they show up as auditable KAOS agents."""
+
+
+@journal.command("append")
+@click.option("--agent", "family", default="claude-code",
+              help="External agent family; one KAOS agent is kept per (family, session)")
+@click.option("--session", required=True, help="External session id")
+@click.option("--event", "event_type", required=True,
+              help="Event type, e.g. session_start, user_prompt, tool_use, turn_end, session_end")
+@click.option("--payload", default=None, help="JSON payload string")
+@click.option("--stdin", "from_stdin", is_flag=True, default=False,
+              help="Read the JSON payload from stdin (what hooks do)")
+@click.option("--db", default=DEFAULT_DB, help="Database file path")
+@click.pass_context
+def journal_append(ctx, family: str, session: str, event_type: str, payload: str,
+                   from_stdin: bool, db: str):
+    """Append one event for an external session to the journal."""
+    from kaos.hook import append_external_event
+    data: dict = {}
+    if from_stdin:
+        raw = sys.stdin.read()
+        data = json.loads(raw) if raw.strip() else {}
+    elif payload:
+        data = json.loads(payload)
+    res = append_external_event(db, family, session, event_type, data)
+    if _json_out(ctx, res):
+        return
+    console.print(f"[green]✓[/green] {event_type}  agent={res['agent_id'][:14]}  event #{res['event_id']}")
+
+
+@cli.command("connect")
+@click.argument("target", type=click.Choice(["claude-code"]))
+@click.option("--scope", type=click.Choice(["project", "user"]), default="project",
+              help="project: .claude/settings.json + .mcp.json here; user: ~/.claude/settings.json")
+@click.option("--prompt-inject/--no-prompt-inject", default=False,
+              help="Also inject memory on every prompt (off until the latency probe accepts it)")
+@click.option("--dir", "root", default=".", help="Project directory (project scope)")
+@click.pass_context
+def connect(ctx, target: str, scope: str, prompt_inject: bool, root: str):
+    """Wire KAOS into a tool you already run — hooks + MCP server, no marketplace needed.
+
+    Prefer the marketplace when you can:  claude plugin marketplace add canivel/kaos
+    """
+    from kaos.connect import connect_claude_code
+    res = connect_claude_code(Path(root), scope=scope, prompt_inject=prompt_inject)
+    if _json_out(ctx, res):
+        return
+    for f in res["written"]:
+        console.print(f"[green]✓[/green] wrote {f}")
+    console.print(f"[dim]{res['next']}[/dim]")
+
+
 # ── Memory CLI (kaos memory ...) ──────────────────────────────────────────
 
 @cli.group()
@@ -2130,20 +2195,39 @@ def memory_write(ctx, agent_id: str, content: str, mem_type: str, key: str, db: 
 @click.option("--record-hits/--no-record-hits", default=False,
               help="Record retrieval as memory_hits rows so plasticity "
                    "learns which entries are actually consulted.")
+@click.option("--format", "fmt", type=click.Choice(["plain", "inject"]), default="plain",
+              help="inject: compact <kaos-memory> block for hook/context injection")
+@click.option("--token-cap", default=800, help="Max tokens for --format inject (~4 chars/token)")
 @click.option("--db", default=DEFAULT_DB, help="Database file path")
 @click.pass_context
 def memory_search(ctx, query: str, limit: int, mem_type: str, agent: str,
-                  rank: str, record_hits: bool, db: str):
+                  rank: str, record_hits: bool, fmt: str, token_cap: int, db: str):
     """Full-text search across shared memory (FTS5 + porter stemming,
     optionally plasticity-weighted)."""
     from kaos.memory import MemoryStore
     afs = _get_afs(db)
     try:
         mem = MemoryStore(afs.conn)
-        hits = mem.search(query=query, limit=limit, type=mem_type,
-                          agent_id=agent, rank=rank,
-                          record_hits=record_hits,
-                          requesting_agent_id=agent)
+        try:
+            hits = mem.search(query=query, limit=limit, type=mem_type,
+                              agent_id=agent, rank=rank,
+                              record_hits=record_hits,
+                              requesting_agent_id=agent)
+        except sqlite3.OperationalError:
+            # Raw FTS5 syntax rejected the text (hyphens, colons, unbalanced
+            # quotes…): retry as plain words instead of crashing the user.
+            from kaos.hook import fts_query
+            safe = fts_query(query)
+            hits = mem.search(query=safe, limit=limit, type=mem_type,
+                              agent_id=agent, rank=rank,
+                              record_hits=record_hits,
+                              requesting_agent_id=agent) if safe else []
+        if fmt == "inject":
+            from kaos.hook import format_inject
+            block = format_inject(hits, token_cap)
+            if block:
+                click.echo(block)
+            return
         if _json_out(ctx, [h.to_dict() for h in hits]):
             return
         if not hits:

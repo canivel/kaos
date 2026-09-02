@@ -1,0 +1,30 @@
+{
+  "bench": "prg",
+  "title": "Paraphrase Recall Gap (PRG) v1 — pre-registration",
+  "registered": "2026-09-02",
+  "hypothesis": "KAOS memory search (SQLite FTS5 + porter stemming, no embeddings) misses a large fraction of paraphrased queries whose stored lesson exists. PRG measures that miss rate honestly and pins a control showing the instrument itself works. It is a measurement instrument, not a mechanism: its falsification is the control, and its purpose is to be the acceptance gate for any future paraphrase fix (issue #42).",
+  "pairs_file": "pairs.json",
+  "pairs_version": "v1",
+  "n_pairs_required": 50,
+  "setup": "Fresh in-memory Kaos database per run. One agent is spawned; every stored_phrase is written with MemoryStore.write(type='insight', key='prg-<id>'). All 50 phrases are present simultaneously, so each acts as a distractor for the others.",
+  "query_sanitizer_source": "def sanitize(text: str, mode: str) -> str:\n    toks = [t for t in re.findall(r\"[a-z0-9]+\", text.lower()) if t not in STOPWORDS]\n    seen: list[str] = []\n    for t in toks:\n        if t not in seen:\n            seen.append(t)\n    return (\" \" if mode == \"and\" else \" OR \").join(seen)",
+  "query_modes": {
+    "and": "tokens joined by whitespace = FTS5 implicit AND. This is what `kaos memory search \"<words>\"` does today; it is the CLI-default condition and the headline.",
+    "or": "tokens joined by ' OR ' = lenient condition, reported alongside to show the ceiling of term-overlap retrieval."
+  },
+  "rank_modes": ["bm25", "weighted"],
+  "top_k": 5,
+  "hit_definition": "A query is a hit when any of the top-5 MemoryEntry results has key == 'prg-<id>' of its own pair. Otherwise it is a miss.",
+  "metrics": {
+    "headline": "paraphrase/and/bm25 miss_rate",
+    "control": "verbatim/and/bm25 miss_rate (the stored phrase itself, sanitized, as the query)",
+    "also_reported": ["paraphrase/or/*", "verbatim/or/*", "*/*/weighted", "p95 query latency ms per condition", "missed pair ids per condition"]
+  },
+  "gates": {
+    "VOID": "n_pairs < 50, OR control miss_rate > 0.10 (the instrument cannot even find verbatim text — broken bench, no claim may be made)",
+    "ACCEPT": "not VOID. The measurement stands and is published whatever the paraphrase miss rate is.",
+    "REJECT": "not applicable — PRG measures, it does not propose a mechanism. Any mechanism that claims to close the gap must pre-register its own gate against PRG (e.g. paraphrase/and/bm25 miss_rate <= 0.20 with control unchanged)."
+  },
+  "reproduce": "uv run python benchmarks/prg/run_prg.py",
+  "notes": "Expected paraphrase/and miss rate before any fix: 80-90%. That expectation is recorded here so it cannot be retro-fitted."
+}

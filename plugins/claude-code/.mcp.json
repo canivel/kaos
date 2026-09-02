@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "kaos": {
+      "command": "kaos",
+      "args": ["serve", "--transport", "stdio"]
+    }
+  }
+}

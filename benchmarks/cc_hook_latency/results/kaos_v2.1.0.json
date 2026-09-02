@@ -1,0 +1,30 @@
+{
+  "benchmark": "cc-hook-latency-v1",
+  "verdict": "REJECT:prompt \u2014 UserPromptSubmit stays off by default",
+  "lock_sha256": "42f4a278a1ca5018c013cf231ab5eb117cd7d3d7a76a6f544a0e98343a3b2418",
+  "trials": 50,
+  "seed_s": 1.0,
+  "session_start_ms": {
+    "p50": 219.2,
+    "p95": 241.3,
+    "min": 194.0
+  },
+  "prompt_ms": {
+    "p50": 250.0,
+    "p95": 275.2,
+    "min": 226.0
+  },
+  "gates": {
+    "G1_session_start": true,
+    "G2_prompt": false,
+    "G3_never_blocks": true
+  },
+  "injected_blocks": 50,
+  "machine": {
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "db_dir": "/tmp/cc-hook-lat-789sfkz4",
+    "note": "WSL2 /tmp on this dev box; CI runner numbers will differ"
+  },
+  "timestamp": "2026-09-02T16:27:24Z"
+}

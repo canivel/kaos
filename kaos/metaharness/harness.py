@@ -8,7 +8,7 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
-import ulid
+from kaos._ids import new_ulid
 
 
 @dataclass
@@ -23,7 +23,7 @@ class HarnessCandidate:
 
     @staticmethod
     def new_id() -> str:
-        return str(ulid.new())
+        return new_ulid()
 
     @classmethod
     def create(

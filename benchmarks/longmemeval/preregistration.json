@@ -1,0 +1,41 @@
+{
+  "bench": "longmemeval",
+  "title": "LongMemEval, split-reported, on KAOS FTS5 memory — pre-registration",
+  "registered": "2026-09-02",
+  "hypothesis": "KAOS memory (SQLite FTS5 + porter stemming + BM25, no embeddings, no LLM at retrieval) reaches recall@5 >= 0.70 at session level on the subset of LongMemEval questions that share vocabulary with their evidence sessions (the 'verbatim' bucket), while its recall on the remaining 'paraphrase' bucket is expected to be poor. Both buckets and the aggregate are published whatever they are; the aggregate is NOT a comparison figure against embedding systems and is labelled as such.",
+  "dataset": {
+    "name": "LongMemEval (cleaned), Wu et al.",
+    "source": "https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned",
+    "license": "MIT",
+    "primary_file": "longmemeval_s_cleaned.json",
+    "primary_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+    "primary_bytes": 277383467,
+    "control_file": "longmemeval_oracle.json",
+    "control_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c",
+    "control_note": "The oracle file contains only evidence sessions (median 2 per question); recall on it is a sanity floor for the instrument, never a headline."
+  },
+  "protocol": {
+    "per_question": "Fresh in-memory Kaos database. One agent spawned. Each haystack session is written as ONE memory entry: key = session id, content = turns joined as '<role>: <content>' lines, type = 'observation'. Then a single MemoryStore.search(query, limit=5, rank='bm25') call is timed.",
+    "recall_at_5": "Session level: hit iff any returned entry's key is in the question's answer_session_ids.",
+    "excluded": "Questions with empty answer_session_ids (abstention items) are excluded from recall and counted separately as 'excluded_no_evidence'.",
+    "query_sanitizer_source": "def content_tokens(text: str) -> list[str]:\n    return [t for t in re.findall(r\"[a-z0-9]+\", text.lower()) if t not in STOPWORDS and len(t) > 1]\n\ndef query_of(question: str) -> str:\n    seen: list[str] = []\n    for t in content_tokens(question):\n        if t not in seen:\n            seen.append(t)\n    return \" OR \".join(seen)",
+    "query_note": "OR-joined content tokens: a natural-language question AND-joined would almost never match a session; OR lets BM25 rank by overlap. This is more lenient than today's CLI default (implicit AND) and is stated here so nobody mistakes it for the CLI's behaviour.",
+    "split_source": "def trigrams(tokens: list[str]) -> set[tuple[str, str, str]]:\n    return set(zip(tokens, tokens[1:], tokens[2:]))\n\ndef bucket_of(question: str, evidence_texts: list[str]) -> str:\n    q = trigrams(content_tokens(question))\n    for text in evidence_texts:\n        if q & trigrams(content_tokens(text)):\n            return \"verbatim\"\n    return \"paraphrase\"",
+    "split_note": "Mechanical, computed before any retrieval: verbatim iff the question shares at least one content-word 3-gram with any evidence session's text. Labels are published per question so anyone can re-split.",
+    "stopwords": "a an the of on in to for by with and or is are was were be been from at as it its this that these those when after before into over under not no i me my we our you your he she they them his her their what which who whom how why where did do does done have has had was am is",
+    "latency": "p95 of the timed search call across all scored questions, milliseconds, in-memory SQLite."
+  },
+  "gates": {
+    "VOID": "primary dataset missing or sha256 mismatch, OR verbatim bucket has < 50 questions, OR the control (oracle) recall@5 < 0.80 (instrument broken: cannot find a session even when only evidence sessions exist)",
+    "ACCEPT": "verbatim recall@5 >= 0.70 AND p95 latency < 25 ms",
+    "REJECT": "not VOID and not ACCEPT (verbatim recall@5 < 0.70, or latency over budget). REJECT is published with the numbers."
+  },
+  "reporting_rules": [
+    "The split table (verbatim / paraphrase) is shown first.",
+    "Per question_type recall is shown second.",
+    "The aggregate recall@5 is shown last and labelled 'aggregate — not comparable to embedding-based systems'.",
+    "Missed question ids and bucket labels are written to the results json."
+  ],
+  "reproduce": "uv run python benchmarks/longmemeval/download.py && uv run python benchmarks/longmemeval/run_longmemeval.py",
+  "expected_before_running": "verbatim 0.65-0.85, paraphrase 0.10-0.35, aggregate 0.45-0.65. Recorded here so it cannot be retro-fitted."
+}

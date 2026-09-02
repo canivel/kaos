@@ -1,0 +1,28 @@
+{
+  "benchmark": "KAOS Agent Forensics Bench (AFB)",
+  "version": "1.0",
+  "registered": "2026-09-02",
+  "hypothesis": "KAOS 2.0.2 passes every binary forensics test (checkpoint fidelity, journal completeness, cross-agent isolation) at 100%, the critical-step localizer points an auditor at the planted decisive step within a median of 5 inspected entries, cold-start replay of the journal is deterministic, and mid-task recovery from a checkpoint costs less than 20% redo work.",
+  "generator": {
+    "seed": 20260902,
+    "n_agents": 12,
+    "k_steps": 24,
+    "checkpoint_at": 12,
+    "crash_offset": 2,
+    "shape": "read-only steps, then ONE decisive fs_write (the planted culprit), then reads, then a visible fs_read error on a path that does not exist; the sessions are fully determined by the seed"
+  },
+  "tests": {
+    "checkpoint_fidelity": "for every agent: sha256 of (path, content) of the whole VFS after restore == the same hash taken at checkpoint time",
+    "journal_completeness": "for every agent: every executed tool call has a tool_calls row AND a tool_call_start AND a tool_call_end event",
+    "cross_agent_isolation": "agent B reading agent A's file raises FileNotFoundError; a memory written by A is not returned by a search scoped to B. Leak count must be 0",
+    "fault_localization": "entries an auditor inspects, starting from the localizer's pointer and walking outward, before reaching the planted decisive step (1 = exact hit; no pointer = every entry). Median over agents",
+    "cold_start_replay": "replaying each agent's journal (tool_calls inputs in order) into a fresh database reproduces the original VFS hash; two replays produce identical hashes",
+    "mid_task_recovery": "restore from the mid-session checkpoint after a simulated crash crash_offset steps later, replay the remainder; overhead = redone steps / total steps"
+  },
+  "gates": {
+    "ACCEPT": "checkpoint_fidelity == 1.0 AND journal_completeness == 1.0 AND isolation_leaks == 0 AND fault_localization_median <= 5 AND replay_match == 1.0 AND recovery_overhead < 0.20",
+    "REJECT": "any binary test below its threshold (fidelity < 1.0, completeness < 1.0, leaks > 0, replay_match < 1.0) OR localization median > 5 OR recovery_overhead >= 0.20",
+    "VOID": "generator is not seed-deterministic (two generations differ) OR two replays of the same journal differ"
+  },
+  "no_retune": "Gates are final once this file's sha256 is in KNOWN_LOCK_SHA256. A failing gate is published as REJECT with its numbers, not re-run with different parameters."
+}

@@ -20,7 +20,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 
-BASE_DEPS = {"click", "ulid-py", "zstandard", "pyyaml", "rich"}
+# ulid-py dropped in 2.1: its import cost 216 ms per CLI start (kaos/_ids.py replaces it)
+BASE_DEPS = {"click", "zstandard", "pyyaml", "rich"}
 
 
 def _project() -> dict:

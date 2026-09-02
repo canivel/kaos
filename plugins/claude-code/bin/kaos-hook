@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Thin launcher for the KAOS hook entrypoint.
+# Prefers the installed console script (fast path, ~100 ms); falls back to the
+# project's uv environment, then to uvx (slow, first run downloads). Never
+# fails the hook: if KAOS is not installed at all, exit 0 silently so Claude
+# Code keeps working.
+if command -v kaos-hook >/dev/null 2>&1; then
+  exec kaos-hook "$@"
+fi
+if [ -n "$CLAUDE_PROJECT_DIR" ] && [ -x "$CLAUDE_PROJECT_DIR/.venv/bin/kaos-hook" ]; then
+  exec "$CLAUDE_PROJECT_DIR/.venv/bin/kaos-hook" "$@"
+fi
+if command -v uvx >/dev/null 2>&1; then
+  exec uvx --quiet --from kaos-harness kaos-hook "$@"
+fi
+cat >/dev/null
+exit 0

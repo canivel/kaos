@@ -1,0 +1,25 @@
+{
+  "name": "pi-kaos",
+  "version": "0.1.0",
+  "description": "Pi extension: journals every Pi session into kaos.db (flight recorder) and injects KAOS team memory before each turn.",
+  "type": "module",
+  "main": "index.ts",
+  "files": ["index.ts", "README.md"],
+  "keywords": ["pi", "pi-extension", "kaos", "memory", "audit", "flight-recorder"],
+  "license": "MIT",
+  "author": "Danilo Canivel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canivel/pi-kaos"
+  },
+  "homepage": "https://canivel.github.io/kaos/",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

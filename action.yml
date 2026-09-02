@@ -1,0 +1,67 @@
+name: "kaos-eval"
+description: "Run KAOS's pre-registered benchmarks (Agent Forensics Bench, Paraphrase Recall Gap, LongMemEval split) and fail the build on REJECT or VOID."
+author: "canivel"
+branding:
+  icon: "check-square"
+  color: "orange"
+
+inputs:
+  benchmarks:
+    description: "Comma-separated benchmark names under benchmarks/<name>/run_<name>.py"
+    required: false
+    default: "prg,longmemeval,afb"
+  python-version:
+    description: "Python version for uv"
+    required: false
+    default: "3.12"
+  fail-on:
+    description: "Comma-separated verdict heads that fail the job"
+    required: false
+    default: "REJECT,VOID"
+  working-directory:
+    description: "Directory containing pyproject.toml and benchmarks/"
+    required: false
+    default: "."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Sync dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: uv sync --extra all
+
+    - name: Run benchmarks
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        mkdir -p results
+        IFS=',' read -ra NAMES <<< "${{ inputs.benchmarks }}"
+        for name in "${NAMES[@]}"; do
+          name="$(echo "$name" | xargs)"
+          runner="benchmarks/$name/run_$name.py"
+          if [ -f "$runner" ]; then
+            echo "::group::$name"
+            uv run python "$runner" --output "results/$name.json" || echo "$name exited non-zero (verdict recorded)"
+            echo "::endgroup::"
+          else
+            echo "warning: $runner not found — skipping $name"
+          fi
+        done
+
+    - name: Check gates
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: uv run python benchmarks/check_gates.py results/ --fail-on "${{ inputs.fail-on }}"
+
+    - name: Upload results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: kaos-eval-results
+        path: ${{ inputs.working-directory }}/results/

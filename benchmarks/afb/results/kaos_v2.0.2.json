@@ -1,0 +1,66 @@
+{
+  "verdict": "REJECT: fault_localization_median=9.5",
+  "tests": {
+    "checkpoint_fidelity": {
+      "value": 1.0,
+      "n": 12,
+      "gate": "== 1.0"
+    },
+    "journal_completeness": {
+      "value": 1.0,
+      "executed": 288,
+      "gate": "== 1.0"
+    },
+    "cross_agent_isolation": {
+      "leaks": 0,
+      "checks": 2,
+      "gate": "leaks == 0"
+    },
+    "fault_localization": {
+      "median_entries_inspected": 9.5,
+      "exact_hits": 0,
+      "n": 12,
+      "per_agent": [
+        9,
+        8,
+        10,
+        7,
+        11,
+        8,
+        11,
+        7,
+        11,
+        10,
+        8,
+        11
+      ],
+      "gate": "median <= 5"
+    },
+    "cold_start_replay": {
+      "match": 1.0,
+      "deterministic": true,
+      "gate": "== 1.0"
+    },
+    "mid_task_recovery": {
+      "overhead": 0.08333333333333333,
+      "recovered": 12,
+      "n": 12,
+      "gate": "< 0.20"
+    }
+  },
+  "benchmark": "afb",
+  "version": "1.0",
+  "kaos_version": "2.0.2",
+  "git_sha": "f6847ea",
+  "lock_sha256": "018a9fff8831d9795d7aef0285742d2eadb3c3fa02ad73a3879c360dd303c35c",
+  "generator": {
+    "seed": 20260902,
+    "n_agents": 12,
+    "k_steps": 24,
+    "checkpoint_at": 12,
+    "crash_offset": 2,
+    "shape": "read-only steps, then ONE decisive fs_write (the planted culprit), then reads, then a visible fs_read error on a path that does not exist; the sessions are fully determined by the seed"
+  },
+  "elapsed_s": 2.31,
+  "timestamp": "2026-09-02T16:20:20Z"
+}
