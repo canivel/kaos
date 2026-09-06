@@ -44,6 +44,15 @@ class ModelConfig:
     idle_timeout: float = 60.0  # streaming providers: no-new-output stall threshold
 
 
+def _plugin_providers() -> dict:
+    """Names of providers registered by installed kaos plugins (lazy, safe)."""
+    try:
+        from kaos.plugins import get_registry
+        return get_registry().providers
+    except Exception:  # plugin discovery must never break router construction
+        return {}
+
+
 class GEPARouter:
     """
     Intelligent request routing based on task complexity.
@@ -98,6 +107,19 @@ class GEPARouter:
                     model_id=cfg.model_id,
                     timeout=cfg.timeout,
                     idle_timeout=cfg.idle_timeout,
+                )
+            elif cfg.provider != "local" and cfg.provider in _plugin_providers():
+                # A provider contributed by an installed kaos plugin (entry-point
+                # group ``kaos.plugins``). Before 2.1.2 this branch fell through
+                # to the vLLM client, so ``provider: codex`` (or any plugin name)
+                # in kaos.yaml silently talked to localhost:8000.
+                self.clients[name] = create_provider(
+                    cfg.provider,
+                    model_id=cfg.model_id,
+                    timeout=cfg.timeout,
+                    idle_timeout=cfg.idle_timeout,
+                    endpoint=cfg.vllm_endpoint or None,
+                    api_key_env=cfg.api_key_env,
                 )
             else:
                 # Default: local vLLM/ollama endpoint

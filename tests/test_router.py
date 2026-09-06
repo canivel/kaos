@@ -232,3 +232,50 @@ class TestContextCompressor:
         messages = [{"role": "user", "content": "a" * 400}]
         tokens = compressor.estimate_tokens(messages)
         assert tokens == 101  # len/4 + 1 per block (Claude Code pattern)
+
+
+class TestPluginProviderResolution:
+    """kaos.yaml `provider: <plugin name>` must resolve through the plugin
+    registry (v2.1.2). Before, GEPARouter.__init__ only knew the five built-in
+    names and silently built a vLLM client for anything else."""
+
+    def test_plugin_provider_is_created_not_vllm(self, tmp_path, monkeypatch):
+        import kaos.plugins as plugins
+        from kaos.router.gepa import GEPARouter, ModelConfig
+        from kaos.router.providers import LLMProvider
+
+        class Dummy(LLMProvider):
+            def __init__(self, **kw):
+                self.kw = kw
+
+            async def chat(self, *a, **k):  # pragma: no cover - never called
+                raise NotImplementedError
+
+            async def close(self):
+                return None
+
+        reg = plugins.PluginRegistry()
+        reg.add_provider("dummy", lambda **kw: Dummy(**kw))
+        monkeypatch.setattr(plugins, "get_registry", lambda reload=False: reg)
+
+        router = GEPARouter(models={
+            "m": ModelConfig(name="m", provider="dummy", model_id="dummy-1",
+                             use_for=["trivial"], timeout=7.0, idle_timeout=3.0),
+        })
+        client = router.clients["m"]
+        assert isinstance(client, Dummy)
+        assert client.kw["model_id"] == "dummy-1"
+        assert client.kw["timeout"] == 7.0
+        assert client.kw["idle_timeout"] == 3.0
+
+    def test_unknown_provider_still_defaults_to_vllm(self, monkeypatch):
+        import kaos.plugins as plugins
+        from kaos.router.gepa import GEPARouter, ModelConfig, VLLMClient
+
+        monkeypatch.setattr(plugins, "get_registry",
+                            lambda reload=False: plugins.PluginRegistry())
+        router = GEPARouter(models={
+            "m": ModelConfig(name="m", provider="not-a-plugin",
+                             vllm_endpoint="http://localhost:9/v1", use_for=["trivial"]),
+        })
+        assert isinstance(router.clients["m"], VLLMClient)
